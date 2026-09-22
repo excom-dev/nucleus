@@ -1,0 +1,124 @@
+@import "@excom/valence/src/content/table.css";
+
+/**
+ * Styles for `<data-table>` and the plain structural tags that make up a
+ * table: `<data-thead>`, `<data-tbody>`, `<data-tr>`, `<data-th>`,
+ * `<data-td>`, `<data-tfoot>`, `<data-tf>`. Only `<data-table>` and
+ * `<data-th>` are registered Neutron elements — the rest are inert custom
+ * tags styled here so markup reads like a real `<table>`. Use the
+ * `.tag-data-*` classes to apply the same styling to other elements
+ * (e.g. a real `<table>` / `<tr>` / `<td>`).
+ * @element data-table
+ */
+
+/* Aliases */
+@custom-selector :--data-table data-table, .tag-data-table;
+@custom-selector :--data-thead data-thead, .tag-data-thead;
+@custom-selector :--data-tbody data-tbody, .tag-data-tbody;
+@custom-selector :--data-tfoot data-tfoot, .tag-data-tfoot;
+@custom-selector :--data-tr data-tr, .tag-data-tr;
+@custom-selector :--data-th data-th, .tag-data-th;
+@custom-selector :--data-td data-td, .tag-data-td;
+@custom-selector :--data-tf data-tf, .tag-data-tf;
+/* NOOP: we treat every `<data-th>` as sortable */
+@custom-selector :--data-th--sort :is(:--data-th);
+@custom-selector :--data-th--sort-asc [sort-direction="asc"], [aria-sort="ascending"];
+@custom-selector :--data-th--sort-desc [sort-direction="desc"], [aria-sort="descending"];
+
+@define-mixin data-table-detect-cols $n {
+  &:has(:--data-tr > :nth-child($(n))) {
+    --data-table-cols-detected: $(n);
+  }
+}
+
+@define-mixin module-data-table {
+  @mixin module-table :--data-table, :--data-thead, :--data-tbody,
+    :--data-tfoot, :--data-tr, :--data-th, :--data-td, :--data-th--sort,
+    :--data-th--sort-asc, :--data-th--sort-desc;
+  :--data-table {
+    display: grid;
+    /**
+     * Column count for shared subgrid tracks. Auto-detected from the
+     * widest row; set on the host to override.
+     * @cssproperty --data-table-cols
+     * @syntax <integer>
+     */
+    --data-table-cols-detected: 1;
+    /* Leading columns hug content; last takes leftover so the table
+       stays `width: 100%`. `1fr` on every track would equalize. */
+    grid-template-columns:
+      repeat(
+        calc(var(--data-table-cols, var(--data-table-cols-detected)) - 1),
+        auto
+      )
+      minmax(min-content, 1fr);
+
+    /* Widest row wins (later rules override). Author `--data-table-cols` wins. */
+    @mixin data-table-detect-cols 2;
+    @mixin data-table-detect-cols 3;
+    @mixin data-table-detect-cols 4;
+    @mixin data-table-detect-cols 5;
+    @mixin data-table-detect-cols 6;
+    @mixin data-table-detect-cols 7;
+    @mixin data-table-detect-cols 8;
+    @mixin data-table-detect-cols 9;
+    @mixin data-table-detect-cols 10;
+    @mixin data-table-detect-cols 11;
+    @mixin data-table-detect-cols 12;
+    @mixin data-table-detect-cols 13;
+    @mixin data-table-detect-cols 14;
+    @mixin data-table-detect-cols 15;
+    @mixin data-table-detect-cols 16;
+
+    :--data-thead > :--data-tr {
+      order: 0;
+    }
+    :--data-tbody > :--data-tr {
+      /**
+       * Visual row order (1-based). Set by `<data-table>` on sort —
+       * not meant to be set by hand.
+       * @cssproperty
+       * @syntax <integer>
+       */
+      order: var(--data-tr-order);
+    }
+    :--data-tfoot > :--data-tr {
+      order: 9999;
+    }
+
+    :--data-thead,
+    :--data-tbody,
+    :--data-tfoot {
+      display: contents;
+    }
+    :--data-tr {
+      /**
+       * Row display. `<data-table>` sets `none` to hide filtered-out
+       * rows — not meant to be set by hand.
+       * @cssproperty
+       * @syntax none | grid
+       * @default grid
+       */
+      display: var(--data-tr-display, grid);
+      grid-column: 1 / -1;
+      grid-template-columns: subgrid;
+      :--data-th,
+      :--data-td,
+      :--data-tf {
+        display: block;
+        /* Borders via `:nth-of-type`; `order` only changes visual layout */
+        border-bottom: var(--v-border-width) solid var(--v-table-border-color) !important;
+        border-radius: 0 !important;
+      }
+    }
+    &:not(:has(:--data-tbody :--data-tr + :--data-tr)) {
+      /* One row or none: don't look sortable */
+      :--data-th {
+        cursor: default;
+        &::after {
+          content: "";
+        }
+      }
+    }
+  }
+}

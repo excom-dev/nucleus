@@ -1,0 +1,324 @@
+@import "@excom/nucleus-kit/basic.css";
+/*
+ * Element pane, styled after Chrome DevTools' Styles tab: system-ui 12px
+ * chrome, Menlo 11px code, rule blocks separated by hairlines, section bars
+ * for "Current properties" / "History", property names in DevTools' token
+ * colors. System colors follow the DevTools / OS scheme.
+ */
+:root {
+  color-scheme: light dark;
+  --fg: CanvasText;
+  --muted: color-mix(in srgb, CanvasText 55%, Canvas);
+  --line: color-mix(in srgb, CanvasText 14%, Canvas);
+  --bar: color-mix(in srgb, CanvasText 6%, Canvas);
+  --hover: color-mix(in srgb, CanvasText 5%, Canvas);
+  --selector: CanvasText;
+  --property: light-dark(rgb(200, 0, 0), rgb(93, 176, 215));
+  --value: CanvasText;
+  --string: light-dark(rgb(26, 26, 166), rgb(242, 139, 84));
+  --number: light-dark(rgb(26, 26, 166), rgb(160, 200, 255));
+  --keyword: light-dark(rgb(128, 128, 128), rgb(161, 161, 161));
+  --error: light-dark(rgb(196, 43, 28), rgb(255, 125, 125));
+  --link: light-dark(rgb(26, 115, 232), rgb(124, 172, 248));
+  --mono: Menlo, Consolas, "DejaVu Sans Mono", monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --content-tabs-header-padding: 3px 10px;
+  --v-primary: var(--link);
+  --v-primary-border: var(--link);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+quark-sheet {
+  display: none;
+}
+
+/*
+ * Valence.css styles native elements (details/summary accordions, p, code)
+ * inside an anonymous @layer. The pane wants DevTools-native compact
+ * rendering for its log, trees and labels, so those elements are reset to
+ * UA defaults with a zero-specificity unlayered rule, every rule below
+ * (also unlayered, any specificity) still wins over it.
+ */
+:where(#element-pane header, [data-role="log"], [data-role="current"], [data-role="empty"], [data-role="history"])
+  :where(details, summary, div, section, li, p, h2, code, strong, span),
+:where(#element-pane)
+  :where([data-role="empty"], [bind-selection], [data-role="log"], [data-role="current"], [data-role="history"]) {
+  all: revert;
+}
+
+/* Valence.css draws its accordion chevron here; the pane draws its own carets */
+#element-pane summary::after {
+  display: none;
+}
+
+/* `unanimated-all *` cannot reach pseudo-elements: no open/close animation */
+#element-pane details::details-content {
+  transition: none;
+}
+
+body {
+  margin: 0;
+  font: 12px/1.4 var(--sans);
+  color: var(--fg);
+  background: Canvas;
+  overflow-x: hidden;
+}
+
+#element-pane {
+  padding: 0;
+}
+
+/* Selection header: like the Styles tab's filter/selector bar */
+#element-pane header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-block-end: 1px solid var(--line);
+  background: var(--bar);
+}
+
+#element-pane header [bind-selection] {
+  flex: 1;
+  min-width: 0;
+}
+
+/* "Copy for AI": compact, DevTools-toolbar sized */
+#element-pane header event-handler {
+  display: contents;
+}
+
+#element-pane header [bind-copy] {
+  flex: none;
+  padding: 1px 6px;
+  font: 11px/1.5 var(--sans);
+  min-height: 0;
+}
+
+[bind-selection] {
+  margin: 0;
+  font: 11px/1.5 var(--mono);
+  color: var(--fg);
+}
+
+[bind-selection][data-empty] {
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: 12px;
+}
+
+#element-pane content-tabs {
+  display: block;
+}
+
+#element-pane content-tabs-header {
+  font: 12px/1.5 var(--sans);
+  color: var(--muted);
+}
+
+#element-pane content-tabs-header[is-open] {
+  color: var(--fg);
+}
+
+#element-pane content-tabs.underline content-tabs-body[is-open] {
+  margin-top: 0;
+  border-block-start: 1px solid var(--line);
+}
+
+[data-role="empty"] {
+  margin: 0;
+  padding: 6px;
+  color: var(--muted);
+  font: 12px/1.5 var(--sans);
+}
+
+/* Section bars ("Current properties", "History"), like "Layer <anonymous>" */
+[data-role="current"] > summary,
+[data-role="history"] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 2px 6px;
+  font: 12px/1.5 var(--sans);
+  font-weight: 400;
+  color: var(--fg);
+  background: var(--bar);
+  border-block: 1px solid var(--line);
+}
+
+[data-role="history"]::after {
+  content: "";
+  flex: 1;
+  border-block-start: 1px solid var(--line);
+}
+
+/* Shared caret for every summary the pane owns; never wraps */
+#element-pane summary {
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#element-pane summary::-webkit-details-marker {
+  display: none;
+}
+
+#element-pane summary::before {
+  content: "▸";
+  display: inline-block;
+  width: 1.2em;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+#element-pane details[open] > summary::before {
+  content: "▾";
+}
+
+/* "Current" blocks */
+[data-role="current"] {
+  margin: 0;
+  font: 11px/1.5 var(--mono);
+}
+
+[data-role="current"] > [bind-tree] {
+  padding: 2px 6px 4px;
+  border-block-end: 1px solid var(--line);
+}
+
+/* Log rows: one rule block each, hairline separated, like Styles rules */
+[data-role="log"] {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  > li {
+    --row-depth: 0;
+    padding-inline-start: calc(var(--row-depth) * 12px);
+    border-block-end: 1px solid var(--line);
+  }
+}
+
+[data-role="log"] details[data-role="lifecycle"] {
+  padding: 3px 6px 4px;
+}
+
+[data-role="log"] details[data-role="lifecycle"]:hover {
+  background: var(--hover);
+}
+
+[data-role="log"] details[data-role="lifecycle"] > summary {
+  font: 11px/1.5 var(--mono);
+}
+
+[data-role="log"] strong {
+  font-weight: 400;
+  color: var(--selector);
+}
+
+[data-role="log"] li[data-status="no-op"] strong,
+[data-role="log"] li[data-status="wipe"] strong {
+  color: var(--muted);
+}
+
+[data-role="log"] li[data-status="error"] strong {
+  color: var(--error);
+}
+
+[data-role="log"] [data-role="body"] {
+  padding-inline-start: 1.2em;
+}
+
+[data-role="log"] section[data-role="effect"] {
+  font: 11px/1.5 var(--mono);
+}
+
+/*
+ * JSON tree (log bodies and "current" blocks).
+ *
+ *   entries            block; nested lists indent 2ch under their parent line
+ *   entry (leaf)       one line: key: value
+ *   entry (details)    summary = caret + key + preview on ONE nowrap line;
+ *                      opening hides the preview and shows the child entries
+ */
+[data-role="tree-root"] {
+  display: block;
+  width: 100%;
+}
+
+[data-role="entries"] {
+  display: block;
+  min-width: 0;
+}
+
+[data-role="entries"] [data-role="entries"] {
+  padding-inline-start: 2ch;
+}
+
+[data-role="entry"] {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* leaves have no caret; align their key with summary keys */
+div[data-role="entry"] {
+  padding-inline-start: 1.2em;
+}
+
+details[data-role="entry"] > summary {
+  color: var(--value);
+}
+
+details[data-role="entry"][open] > summary > [data-role="preview"] {
+  display: none;
+}
+
+[data-role="preview"] {
+  color: var(--muted);
+}
+
+#element-pane [data-role="key"] {
+  color: var(--property);
+}
+
+#element-pane [data-role="key"]::after {
+  content: ": ";
+  color: var(--value);
+}
+
+#element-pane [data-kind] {
+  color: var(--value);
+}
+
+#element-pane [data-kind="string"] {
+  color: var(--string);
+}
+
+#element-pane [data-kind="number"],
+#element-pane [data-kind="boolean"] {
+  color: var(--number);
+}
+
+#element-pane [data-kind="null"],
+#element-pane [data-kind="undefined"] {
+  color: var(--keyword);
+  font-style: italic;
+}
+
+#element-pane [data-kind="constructor"],
+#element-pane [data-kind="node"] {
+  color: var(--keyword);
+  font-style: italic;
+}
+
+#element-pane [title] {
+  cursor: help;
+}

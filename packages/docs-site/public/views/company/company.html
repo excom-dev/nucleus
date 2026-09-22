@@ -1,0 +1,37 @@
+<article class="company">
+  <link rel="stylesheet" href="/views/company/company.css">
+  <nav aria-label="Documentation">
+    <spa-a route-href="/nucleus" role="link">Nucleus Stack docs →</spa-a>
+  </nav>
+  <header>
+    <!-- The wordmark is brand blue in the asset, so it reads on either theme -->
+    <img src="/img/excom.svg" alt="excom">
+    <h1>Experimental · Company</h1>
+  </header>
+  <section aria-labelledby="company-contact">
+    <h2 id="company-contact">Available for consulting and questions</h2>
+    <super-form>
+      <form action="/api/contact-messages" method="post">
+        <label>
+          Name
+          <input type="text" name="name" required autocomplete="name">
+        </label>
+        <label>
+          Email
+          <input type="email" name="email" required autocomplete="email">
+        </label>
+        <label>
+          Message
+          <textarea name="message" rows="6" maxlength="4000" required></textarea>
+        </label>
+        <!-- honeypot: off-screen for people, irresistible to bots -->
+        <div aria-hidden="true" data-honeypot>
+          <label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+        </div>
+        <button type="submit">Send</button>
+      </form>
+      <p bind-thanks role="status">Thanks — we'll reply to that address shortly.</p>
+      <p bind-error role="alert">Something went wrong. Please try again.</p>
+    </super-form>
+  </section>
+</article>

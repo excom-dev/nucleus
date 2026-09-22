@@ -1,0 +1,15 @@
+<div>
+  <detect-browser></detect-browser>
+  <style>
+    #demo-detect-browser-simple> :first-child {
+      detect-browser::before { content: "Rendered with CSS: "; }
+      detect-browser::after {
+        content:
+        "browser: " attr(browser-name) " " attr(browser-version)
+        " · engine: " attr(browser-engine)
+        " · os: " attr(operating-system)
+        " · device: " attr(device-type);
+      }
+    }
+  </style>
+</div>

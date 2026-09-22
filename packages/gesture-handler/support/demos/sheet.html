@@ -1,0 +1,50 @@
+<gesture-handler gesture-types="pan-y swipe" pointer-types="touch pen mouse" from-ref=":scope > content-drawer > header"
+  handoff-ref=":scope > content-drawer" progress-axis="up" range-ref=":scope > content-drawer" snap-points="0 1">
+  <quark-sheet>
+    :scope {
+      /* dragging an open sheet starts from fully open */
+      &:has(> content-drawer[is-open]) {
+        progress-offset: 1;
+      }
+      &:not(:has(> content-drawer[is-open])) {
+        progress-offset: 0;
+      }
+      @on gesture-handler-start {
+        content-drawer { is-scrubbing: ""; }
+      }
+      @on gesture-handler-end {
+        content-drawer { is-open: event.detail.snap == 1; is-scrubbing: none; }
+      }
+    }
+  </quark-sheet>
+  <button type="button" command="--open" commandfor="demo-gesture-sheet">Open sheet</button>
+  <content-drawer id="demo-gesture-sheet" class="absolute">
+    <header><h2>Drag me</h2></header>
+    <p>Two ways to dismiss it. Drag the header down and let go, or flick it —
+      that is the <code>from-ref</code> grab handle.</p>
+    <p>Or pull the text itself down: <code>handoff-ref</code> lets the sheet's
+      own content scroll first, and only once it is back at the top does the
+      next pull down become the same drag. Pulling up, or pulling down while
+      the text is scrolled, keeps scrolling as usual.</p>
+    <p>Scroll on. The sheet only takes the drag over at the very top, which is
+      how a native sheet behaves.</p>
+    <p>Keep going.</p>
+    <p>Nearly there.</p>
+    <p>Now scroll back up and pull once more — the sheet follows your finger
+      and snaps to <code>0</code> or <code>1</code> on release.</p>
+  </content-drawer>
+  <style>
+    #demo-gesture-handler-sheet > :first-child {
+      /* short enough that the text scrolls: the handoff needs a scroller */
+      content-drawer { max-block-size: 11rem; }
+      /* the drag handle owns its touches; the content keeps scrolling */
+      content-drawer > header {
+        position: sticky;
+        top: 0;
+        touch-action: none;
+        cursor: grab;
+        background-color: inherit;
+      }
+    }
+  </style>
+</gesture-handler>

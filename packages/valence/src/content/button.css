@@ -1,0 +1,184 @@
+/**
+ * Button
+ *
+ * Reboot from normalize.css v8.0.1 (MIT) and sanitize.css v13.0.0 (CC0).
+ */
+
+@define-mixin module-button {
+  :is(:--button) {
+    /* 1. Font styles (all browsers)
+       2. Drop Safari control margin
+       3. Show overflow in Edge */
+    margin: 0; /* 2 */
+    overflow: visible; /* 3 */
+    font-family: inherit; /* 1 */
+    text-transform: none; /* 1 */
+    /* Aliases must use `button` UA styles */
+    padding-block: 1px;
+    padding-inline: 6px;
+    text-indent: 0px;
+    text-shadow: none;
+    display: inline-block;
+    letter-spacing: normal;
+    text-rendering: auto;
+  }
+
+  /* Style buttons in iOS / Safari */
+  button,
+  [type="submit"],
+  [type="reset"],
+  [type="button"] {
+    -webkit-appearance: button;
+  }
+
+  :--button,
+  [type="submit"],
+  [type="reset"],
+  [type="file"]::file-selector-button {
+    --v-background-color: var(--v-primary-background);
+    --v-border-color: var(--v-primary-border);
+    --v-color: var(--v-primary-inverse);
+    --v-box-shadow: var(--v-button-box-shadow, 0 0 0 rgba(0, 0, 0, 0));
+    padding: var(--v-form-element-spacing-vertical)
+      var(--v-form-element-spacing-horizontal);
+    border: var(--v-border-width) solid var(--v-border-color);
+    border-radius: var(--v-border-radius);
+    outline: none;
+    background-color: var(--v-background-color);
+    box-shadow: var(--v-box-shadow);
+    color: var(--v-color);
+    font-weight: var(--v-font-weight);
+    font-size: var(--v-font-size);
+    line-height: var(--v-line-height);
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    user-select: none;
+
+    transition:
+      background-color var(--v-transition),
+      border-color var(--v-transition),
+      color var(--v-transition),
+      box-shadow var(--v-transition);
+
+    &:is([aria-current]:not([aria-current="false"])),
+    &:is(:hover, :active, :focus) {
+      --v-background-color: var(--v-primary-hover-background);
+      --v-border-color: var(--v-primary-hover-border);
+      --v-box-shadow: var(--v-button-hover-box-shadow, 0 0 0 rgba(0, 0, 0, 0));
+      --v-color: var(--v-primary-inverse);
+    }
+
+    &:focus,
+    &:is([aria-current]:not([aria-current="false"])):focus {
+      --v-box-shadow:
+        var(--v-button-hover-box-shadow, 0 0 0 rgba(0, 0, 0, 0)),
+        0 0 0 var(--v-outline-width) var(--v-primary-focus);
+    }
+  }
+
+  [type="submit"],
+  [type="reset"],
+  [type="button"] {
+    margin-bottom: var(--v-spacing);
+  }
+
+  /**
+   * Secondary button / submit flavor.
+   * @cssclass secondary
+   */
+  /* Secondary */
+  :is(:--button, [type="submit"]).secondary,
+  [type="reset"],
+  [type="file"]::file-selector-button {
+    --v-background-color: var(--v-secondary-background);
+    --v-border-color: var(--v-secondary-border);
+    --v-color: var(--v-secondary-inverse);
+    cursor: pointer;
+
+    &:is([aria-current]:not([aria-current="false"]), :hover, :active, :focus) {
+      --v-background-color: var(--v-secondary-hover-background);
+      --v-border-color: var(--v-secondary-hover-border);
+      --v-color: var(--v-secondary-inverse);
+    }
+
+    &:focus,
+    &:is([aria-current]:not([aria-current="false"])):focus {
+      --v-box-shadow:
+        var(--v-button-hover-box-shadow, 0 0 0 rgba(0, 0, 0, 0)),
+        0 0 0 var(--v-outline-width) var(--v-secondary-focus);
+    }
+  }
+
+  /**
+   * High-contrast button / submit flavor.
+   * @cssclass contrast
+   */
+  /* Contrast */
+  :is(:--button, [type="submit"]).contrast {
+    --v-background-color: var(--v-contrast-background);
+    --v-border-color: var(--v-contrast-border);
+    --v-color: var(--v-contrast-inverse);
+
+    &:is([aria-current]:not([aria-current="false"]), :hover, :active, :focus) {
+      --v-background-color: var(--v-contrast-hover-background);
+      --v-border-color: var(--v-contrast-hover-border);
+      --v-color: var(--v-contrast-inverse);
+    }
+
+    &:focus,
+    &:is([aria-current]:not([aria-current="false"])):focus {
+      --v-box-shadow:
+        var(--v-button-hover-box-shadow, 0 0 0 rgba(0, 0, 0, 0)),
+        0 0 0 var(--v-outline-width) var(--v-contrast-focus);
+    }
+  }
+
+  /**
+   * Outline (ghost) button flavor — pair with `.secondary` / `.contrast`.
+   * @cssclass outline
+   */
+  /* Outline (primary) */
+  :is(:--button, [type="submit"]).outline,
+  [type="reset"].outline {
+    --v-background-color: transparent;
+    --v-color: var(--v-primary);
+    --v-border-color: var(--v-primary);
+
+    &:is([aria-current]:not([aria-current="false"]), :hover, :active, :focus) {
+      --v-background-color: transparent;
+      --v-color: var(--v-primary-hover);
+      --v-border-color: var(--v-primary-hover);
+    }
+  }
+
+  /* Outline (secondary) */
+  :is(:--button, [type="submit"]).outline.secondary,
+  [type="reset"].outline {
+    --v-color: var(--v-secondary);
+    --v-border-color: var(--v-secondary);
+
+    &:is([aria-current]:not([aria-current="false"]), :hover, :active, :focus) {
+      --v-color: var(--v-secondary-hover);
+      --v-border-color: var(--v-secondary-hover);
+    }
+  }
+
+  /* Outline (contrast) */
+  :is(:--button, [type="submit"]).outline.contrast {
+    --v-color: var(--v-contrast);
+    --v-border-color: var(--v-contrast);
+
+    &:is([aria-current]:not([aria-current="false"]), :hover, :active, :focus) {
+      --v-color: var(--v-contrast-hover);
+      --v-border-color: var(--v-contrast-hover);
+    }
+  }
+
+  /* Button [disabled] */
+  :where(:--button, [type="submit"], [type="reset"]):--button--disabled,
+  :where(fieldset[disabled]) :is(:--button, [type="submit"], [type="reset"]) {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}

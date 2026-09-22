@@ -1,0 +1,14 @@
+<div id="orient-demo">
+  <button type="button" command="--request" commandfor="orient">
+    Enable compass
+  </button>
+  <provider-orientation id="orient" is-paused></provider-orientation>
+  <p class="status">No reading yet — click above. Requires a device
+    sensor (desktop browsers usually have none).</p>
+  <output>Waiting…</output>
+  <quark-sheet>
+    @use "/demo-utils" as *;
+
+    #orient-demo { @on neutron-provision (handle: setOutputFromElementData); }
+  </quark-sheet>
+</div>

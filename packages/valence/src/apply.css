@@ -1,0 +1,54 @@
+/* ============================================================
+ * Apply every framework mixin.
+ *
+ * Mixins: `mixins.default.css`. Theme tokens: `<theme>-vars.css`.
+ *
+ * Element / alias styles sit in an anonymous `@layer` so consumer
+ * and custom-element sheets can override them. Class-only utilities
+ * stay unlayered: unlayered beats every `@layer` (including later
+ * anonymous `@layer { }` from custom elements imported after Valence.css),
+ * so `.grid` / `.abstract` still win at equal specificity.
+ * ============================================================ */
+
+@layer {
+  @mixin module-document;
+  @mixin module-landmarks;
+  @mixin module-section;
+
+  @mixin module-typography;
+  @mixin module-link;
+  @mixin module-button;
+  @mixin module-table;
+  @mixin module-embedded;
+  @mixin module-code;
+  @mixin module-figure;
+  @mixin module-misc;
+
+  @mixin module-basics;
+  @mixin module-checkbox-radio-switch;
+  @mixin module-input-color;
+  @mixin module-input-date;
+  @mixin module-input-file;
+  @mixin module-input-range;
+  @mixin module-input-search;
+
+  @mixin module-accordion;
+  @mixin module-card;
+  @mixin module-dropdown;
+  @mixin module-group;
+  @mixin module-loading;
+  @mixin module-modal;
+  @mixin module-nav;
+  @mixin module-popover;
+  @mixin module-progress;
+  @mixin module-tooltip;
+
+  @mixin module-accessibility;
+}
+
+/* Class-only utilities. Unlayered, so they beat layered CE styles. */
+@mixin module-abstract;
+@mixin module-container;
+@mixin module-grid;
+@mixin module-overflow-auto;
+@mixin module-opt-outs;

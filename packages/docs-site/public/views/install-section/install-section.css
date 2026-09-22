@@ -1,0 +1,59 @@
+include-content[bind-dist-files] {
+  display: flow-root;
+  margin-top: var(--v-spacing);
+}
+
+/* A footnote, not a button: no chrome, muted, with a folder glyph. */
+.dist-files-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--v-muted-color);
+  cursor: pointer;
+  &::before {
+    content: "";
+    width: 1em;
+    height: 1em;
+    flex: 0 0 auto;
+    background-color: currentColor;
+    mask: var(--ico-folder) center / contain no-repeat;
+    -webkit-mask: var(--ico-folder) center / contain no-repeat;
+  }
+  &:hover,
+  &:focus-visible {
+    color: var(--v-color);
+  }
+  > small {
+    display: inline;
+  }
+}
+
+.height-constrained {
+  max-height: 80vh;
+}
+
+.compressed {
+  --v-spacing: 0.5rem;
+  --v-form-element-spacing-vertical: calc(0.75rem / 2);
+  --v-form-element-spacing-horizontal: calc(0.75rem / 2);
+}
+
+/* Libraries (neutron, quark, …) have no HTML import snippet, so the
+   "HTML Imports" tab would open onto an empty panel. Hide that header +
+   body and show the JS / CSS panel in its place. Tab order in the markup:
+   header(html), header(js), body(html), body(js). */
+content-tabs:has(> content-tabs-body > [bind-import-html]:empty) {
+  > content-tabs-header:first-of-type,
+  > content-tabs-body:first-of-type {
+    display: none;
+  }
+  > content-tabs-body:last-of-type {
+    display: block;
+  }
+}

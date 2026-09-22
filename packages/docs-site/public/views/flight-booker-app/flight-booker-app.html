@@ -1,0 +1,34 @@
+<article id="flight-booker-app" data-trip="one-way">
+  <link rel="stylesheet" href="/views/flight-booker-app/flight-booker-app.css">
+  <quark-sheet src-url="/views/flight-booker-app/flight-booker-app.quark"></quark-sheet>
+  <event-handler listen-for="super-form-success" target-ref="#flight-booker-app dialog" command-name="show-modal">
+    <super-form>
+      <form action="/api/echo" method="post">
+        <label>
+          Trip
+          <select name="data-trip">
+            <option value="one-way">one-way flight</option>
+            <option value="return">return flight</option>
+          </select>
+        </label>
+        <label>
+          Departure
+          <input type="date" name="data-outbound" required>
+        </label>
+        <label>
+          Return
+          <input type="date" name="data-inbound" required>
+        </label>
+        <button type="submit" disabled>Book</button>
+      </form>
+      <dialog>
+        <article>
+          <p bind-confirmation></p>
+          <footer>
+            <dialog-anchor role="button">OK</dialog-anchor>
+          </footer>
+        </article>
+      </dialog>
+    </super-form>
+  </event-handler>
+</article>

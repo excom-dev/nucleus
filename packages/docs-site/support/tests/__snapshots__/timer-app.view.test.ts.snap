@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`timer-app view > writes duration from the slider and reset reloads the bar > complexity 1`] = `
+{
+  "attributeRuns": 3,
+  "closest": 0,
+  "getVar": 2,
+  "importNode": 0,
+  "listenerRuns": 1,
+  "matches": 1,
+  "parentElement": 2,
+  "quarkRuns": 2,
+  "queryScopeCost": 10,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 3,
+  "schedulePaint": 3,
+  "setAttribute": 2,
+  "setVar": 1,
+  "textContent": 1,
+  "variableRuns": 1,
+}
+`;

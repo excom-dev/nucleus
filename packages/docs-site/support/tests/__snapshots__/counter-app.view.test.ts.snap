@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`counter-app view > starts at 0 and increments on each click > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 2,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 1,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 0,
+  "setVar": 1,
+  "textContent": 1,
+  "variableRuns": 1,
+}
+`;

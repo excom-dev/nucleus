@@ -1,0 +1,117 @@
+/* Every cut in this gallery is a Quark write inside a @view-transition
+   block. The sheet writes State (attributes, content) on the host and its
+   descendants; the CSS names the elements that should animate and picks
+   the motion by transition type. Branches are facts, not if(): a click
+   writes what it touched, and a rule per state reads it — always with the
+   inverse rule, since rules do not revert. No app JS. */
+@use "quark:list" as list;
+
+:scope {
+  /* --- card expansion: one open card at a time ------------------------- */
+  $open-card: attr("data-open-card");
+  @on click (target: ".cards > li") {
+    data-clicked-card: target.getAttribute("data-card-id");
+    data-clicked-is-open: target.getAttribute("data-card-id") == $open-card;
+  }
+  /* clicking the open card closes it; any other click opens that one */
+  &[data-clicked-is-open] {
+    data-open-card: none;
+  }
+  &:not([data-clicked-is-open]) {
+    data-open-card: attr("data-clicked-card");
+  }
+  .cards > li {
+    --vt-name: "card-#{attr("data-card-id")}";
+  }
+  &[data-open-card] {
+    @view-transition (types: "card-open") {
+      .cards > li {
+        is-open: attr("data-card-id") == $open-card;
+      }
+    }
+  }
+  &:not([data-open-card]) {
+    @view-transition (types: "card-close") {
+      .cards > li {
+        is-open: none;
+      }
+    }
+  }
+
+  /* --- page slide: the current page, and which way we went -------------- */
+  $page: +attr("data-page");
+  $move: attr("data-last-move");
+  @on click (target: "[data-move='forward']") {
+    data-page: $page + 1;
+    data-last-move: "forward";
+  }
+  @on click (target: "[data-move='back']") {
+    data-page: $page - 1;
+    data-last-move: "back";
+  }
+  [data-move="back"] {
+    disabled: $page == 1;
+  }
+  [data-move="forward"] {
+    disabled: $page == 3;
+  }
+  [bind-page] {
+    content: "#{$page} / 3";
+  }
+  @view-transition (types: "slide-#{$move}") {
+    .pages > article {
+      is-current: +attr("data-page-index") == $page;
+    }
+  }
+
+  /* --- list reflow: add, remove, reverse; rows keep their identity ------ */
+  $planets: ("Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn");
+  $count: +attr("data-count");
+  $shown: $planets.slice(0, $count);
+  $is-reversed: attr("data-is-reversed") != none;
+  /* one writer of the rows: the boolean picks the list, no branch to repeat.
+     Two rules cannot take turns writing `content` here — the second one is
+     skipped as a repeat of a write whose bindings did not change. */
+  $ordered: (false: $shown, true: list.reverse($shown))[$is-reversed];
+  @on click (target: "[data-list='add']") {
+    data-count: $count + 1;
+  }
+  @on click (target: "[data-list='remove']") {
+    data-count: $count - 1;
+  }
+  @on click (target: "[data-list='reverse']") {
+    data-is-reversed: attr("data-is-reversed") == none;
+  }
+  [data-list="add"] {
+    disabled: $count == $planets.length;
+  }
+  [data-list="remove"] {
+    disabled: $count == 1;
+  }
+  @view-transition (types: "list") {
+    .planets {
+      content: iterate($ordered);
+    }
+  }
+  .planets > li {
+    content: item;
+    --vt-name: "planet-#{item.toLowerCase()}";
+  }
+
+  /* --- content crossfade: a tip swapped in place ------------------------ */
+  $tips: (
+    "Declare the target State; let CSS own the motion.",
+    "Put every write of one cut inside the block.",
+    "Name elements in CSS; Quark only hands over the types.",
+    "Keep until waits short: the page is frozen meanwhile."
+  );
+  $tip: +attr("data-tip");
+  @on click (target: "[data-next-tip]") {
+    data-tip: ($tip + 1) % $tips.length;
+  }
+  @view-transition (types: "tip") {
+    [bind-tip] {
+      content: $tips[$tip];
+    }
+  }
+}

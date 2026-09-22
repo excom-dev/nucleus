@@ -1,0 +1,85 @@
+*:has(> #api-github-link) {
+  position: relative;
+  #api-github-link {
+    margin: 0;
+    position: absolute;
+    top: -52px;
+    right: 0;
+    width: auto;
+  }
+}
+
+#api-reference {
+  /* Pico header spacing: collapse the lone-article chrome */
+  &:not(:has(> article + article)) {
+    > article {
+      padding-top: 0;
+      > header {
+        display: none;
+      }
+    }
+  }
+  &:has(> article + article) > article > header {
+    margin-bottom: 0;
+  }
+  > article {
+    padding-bottom: 0;
+    &:not(:has(data-tbody data-tr))::after {
+      /* empty tables */
+      content: "No APIs to display.";
+      display: block;
+      padding: var(--v-spacing);
+    }
+    > header hgroup {
+      margin-bottom: 0;
+    }
+  }
+  /* /Pico header spacing */
+  article {
+    --v-spacing: 0.5rem;
+    data-table {
+      --v-table-sticky-top: var(--site-header-height);
+      --v-spacing: 0.8rem;
+      code {
+        word-break: keep-all; /* keep hyphenated tokens whole */
+        overflow-wrap: normal; /* break only at spaces */
+        hyphens: none;
+      }
+      data-tbody > :nth-child(1 of data-tr:has([bind-role][data-role="option"])),
+      data-tbody > :nth-child(1 of data-tr:has([bind-role][data-role="hybrid"])),
+      data-tbody > :nth-child(1 of data-tr:has([bind-role][data-role="state"])) {
+        /* first row of each role group */
+        border-top: 28px solid var(--v-multiply-color-1);
+      }
+      data-tbody > data-tr:first-of-type {
+        border-top: none !important;
+      }
+      *:has(> [bind-property]:empty) {
+        display: none;
+      }
+      *:has(> [bind-property]:not(:empty))::before {
+        content: "JS property: ";
+      }
+      [bind-inherited-from] {
+        &:not(:has(spa-a)) {
+          display: none;
+        }
+        &::before {
+          content: "Inherited from ";
+        }
+      }
+      small {
+        margin-bottom: 0;
+      }
+    }
+    > details {
+      &,
+      section {
+        &:has(data-tbody):not(:has(data-tbody data-tr)) {
+          /* no rows: hide the details */
+          display: none;
+        }
+      }
+    }
+  }
+}

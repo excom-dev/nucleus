@@ -1,0 +1,43 @@
+{
+  "name": "@excom/content-tabs",
+  "version": "0.1.0",
+  "description": "<content-tabs> custom element",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24.13.0"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "node node_modules/@excom/heft-rig/scripts/vite-build.mjs",
+    "build:watch": "node node_modules/@excom/heft-rig/scripts/vite-build-watch.mjs",
+    "format": "node node_modules/@excom/heft-rig/scripts/format.mjs",
+    "test": "node node_modules/@excom/heft-rig/scripts/vitest.mjs",
+    "coverage": "node node_modules/@excom/heft-rig/scripts/coverage.mjs",
+    "dev": "node node_modules/@excom/heft-rig/scripts/vite-dev.mjs",
+    "preview": "node node_modules/@excom/heft-rig/scripts/vite-preview.mjs",
+    "build:package-metas": "node node_modules/@excom/heft-rig/scripts/build-package-metas.mjs",
+    "build:docs": "node node_modules/@excom/heft-rig/scripts/build-docs.mjs"
+  },
+  "dependencies": {
+    "@excom/neutron": "workspace:^",
+    "@excom/valence": "workspace:^"
+  },
+  "peerDependencies": {},
+  "devDependencies": {
+    "@excom/heft-rig": "workspace:^"
+  },
+  "repository": {
+    "url": "excom-dev/nucleus",
+    "directory": "packages/content-tabs"
+  },
+  "homepage": "https://github.com/excom-dev/nucleus/tree/main/packages/content-tabs/support/docs/README.md",
+  "bugs": "https://github.com/excom-dev/nucleus/issues",
+  "keywords": [
+    "content-tabs",
+    "neutron",
+    "custom-elements"
+  ],
+  "excom": {
+    "packageType": "kit-element"
+  }
+}

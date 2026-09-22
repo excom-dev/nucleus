@@ -1,0 +1,50 @@
+{
+  "name": "@excom/nucleus-devtools",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Nucleus DevTools — Chrome extension adding an Element sidebar for Neutron lifecycles and Quark orchestration",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24.13.0"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "wxt build 2>&1",
+    "build:watch": "wxt",
+    "format": "node node_modules/@excom/heft-rig/scripts/format.mjs",
+    "test": "node node_modules/@excom/heft-rig/scripts/vitest.mjs",
+    "coverage": "node node_modules/@excom/heft-rig/scripts/coverage.mjs",
+    "dev": "wxt",
+    "zip": "wxt zip",
+    "compile": "tsc --noEmit",
+    "postinstall": "wxt prepare",
+    "build:package-metas": "node node_modules/@excom/heft-rig/scripts/build-package-metas.mjs"
+  },
+  "dependencies": {
+    "@excom/content-tabs": "workspace:^",
+    "@excom/neutron": "workspace:^",
+    "@excom/nucleus-kit": "workspace:^",
+    "@excom/quark": "workspace:^",
+    "@excom/quark-sheet": "workspace:^",
+    "@excom/valence": "workspace:^"
+  },
+  "peerDependencies": {},
+  "devDependencies": {
+    "@excom/heft-rig": "workspace:^",
+    "typescript": "^5.9.2",
+    "wxt": "^0.20.5"
+  },
+  "bugs": "https://github.com/excom-dev/nucleus/issues",
+  "keywords": [
+    "nucleus-devtools",
+    "tool",
+    "nucleus-stack",
+    "devtools",
+    "chrome-extension",
+    "neutron",
+    "quark"
+  ],
+  "excom": {
+    "packageType": "tool"
+  }
+}

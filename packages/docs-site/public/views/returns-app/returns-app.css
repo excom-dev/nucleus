@@ -1,0 +1,506 @@
+@scope {
+  /* ======================================================================
+     data-driven css. Every rule here keys off a fact the sheet wrote on the
+     host <data-return> or on a <data-item> / <data-part> line: mode,
+     membership, which methods are blocked and why, eligibility, blocking
+     reason, selection, amounts.
+     ====================================================================== */
+
+  /* the heading and the mode pills follow return-mode */
+  &[return-mode="replace"] header h2 {
+    font-size: 0;
+    &::before {
+      content: "Order a replacement";
+      font-size: 1.6rem;
+    }
+  }
+  &[return-mode="return"] label[mode-option="return"],
+  &[return-mode="replace"] label[mode-option="replace"] {
+    background: var(--v-primary);
+    border-color: var(--v-primary);
+    color: var(--returns-on-accent);
+  }
+  &[return-mode="replace"] :is(data-item, data-part) .amount::before {
+    content: "fee ";
+  }
+  &[return-mode="replace"] data-item[component-count] .components {
+    display: block;
+  }
+  &[return-mode="replace"]
+    data-item[component-count]
+    > .line
+    .details
+    strong::after {
+    content: " · whole item";
+    color: var(--v-muted-color);
+    font-weight: 400;
+    font-size: 0.8rem;
+  }
+
+  /* membership: a pill on the title, strike-through pricing, the restocking fee */
+  &[membership-level="member"] header h2::after {
+    content: "Member";
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: var(--v-primary);
+    color: var(--returns-on-accent);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    vertical-align: middle;
+  }
+  &[membership-level="member"] :is(data-item, data-part) {
+    .price {
+      font-weight: 400;
+      color: var(--v-muted-color);
+      text-decoration: line-through;
+      font-size: 0.8rem;
+    }
+    .member-price {
+      display: block;
+    }
+  }
+  &[return-mode="return"][membership-level="guest"]
+    data-item[restocking-fee-pct]:not([restocking-fee-pct="0"])
+    > .line
+    .amount::after {
+    content: " (−" attr(restocking-fee-pct) "% fee)";
+  }
+  &[return-mode="replace"][membership-level="member"]
+    :is(data-item, data-part)[is-eligible]
+    .amount
+    data {
+    font-size: 0;
+    &::before {
+      content: "free";
+      font-size: 0.75rem;
+      color: var(--returns-ok);
+    }
+  }
+
+  /* blocked methods: muted label, tooltip text chosen by the reason */
+  &[home-pickup-block] label[method-name="home-pickup"],
+  &[store-dropoff-block] label[method-name="store-dropoff"] {
+    color: var(--v-muted-color);
+    cursor: not-allowed;
+    &:hover::after,
+    &:focus-within::after {
+      opacity: 1;
+    }
+  }
+  &[home-pickup-block="members-only"] label[method-name="home-pickup"]::after {
+    content: "Members only — or select a large item or one of its parts";
+  }
+  &[home-pickup-block="weekend"] label[method-name="home-pickup"]::after,
+  &[store-dropoff-block="weekend"] label[method-name="store-dropoff"]::after {
+    content: "Not on weekends — pick a weekday, or UPS drop-off";
+  }
+
+  /* thumbnails keyed by item-category */
+  data-item[item-category="sofa"] .thumb {
+    background: #c9a27e;
+  }
+  data-item[item-category="table"] .thumb {
+    background: #8b5e3c;
+  }
+  data-item[item-category="lamp"] .thumb {
+    background: #e4b04a;
+  }
+  data-item[item-category="shelf"] .thumb {
+    background: #6b7c93;
+  }
+  data-item[item-category="mattress"] .thumb {
+    background: #b8c4d6;
+  }
+  data-item[item-category="rug"] .thumb {
+    background: #a34d4d;
+  }
+  data-item[item-category="chair"] .thumb {
+    background: #4f8a8b;
+  }
+
+  /* eligibility: muted lines, the reason spelled out from the facts */
+  :is(data-item, data-part):not([is-eligible]) > .line {
+    cursor: not-allowed;
+    .thumb,
+    .details strong,
+    .prices {
+      opacity: 0.45;
+    }
+    .amount {
+      visibility: hidden;
+    }
+  }
+  :is(data-item, data-part)[is-eligible] > .line .reason::before {
+    content: "Eligible";
+    color: var(--returns-ok);
+  }
+  &[return-mode="return"] data-item[is-final-sale] > .line .reason::before {
+    content: "Final sale — cannot be returned";
+  }
+  &[return-mode="return"]
+    data-item:not([is-in-window])
+    > .line
+    .reason::before {
+    content: "Return window (" attr(return-window-days) " days) has closed";
+  }
+  &[return-mode="replace"]
+    .items
+    > data-item:not([is-in-warranty])
+    > .line
+    .reason::before {
+    content: "Warranty (" attr(warranty-days) " days) has expired";
+  }
+  &[return-mode="replace"]
+    data-item:not([is-in-warranty])
+    .components
+    > data-part
+    > .line
+    .reason::before {
+    content: "Warranty has expired";
+  }
+  &[return-method="ups-dropoff"]
+    :is(data-item, data-part)[is-blocked-by-method]
+    > .line
+    .reason::before {
+    content: "Too large for UPS drop-off — choose home pickup";
+  }
+  &[return-method="store-dropoff"]
+    :is(data-item, data-part)[is-blocked-by-method]
+    > .line
+    .reason::before {
+    content: "Assembled items cannot go back to a store";
+  }
+  data-part[is-locked-by-bundle] > .line .reason::before {
+    content: "The whole item is selected";
+  }
+  data-item[is-locked-by-part] > .line .reason::before {
+    content: "One of its parts is selected";
+  }
+
+  /* selection: highlight, and the counters the footer prints */
+  :is(data-item, data-part)[is-selected] {
+    counter-increment: selected-count 1 amount-total
+      attr(line-amount type(<integer>), 0);
+    > .line {
+      background: color-mix(in oklab, var(--v-primary) 8%, transparent);
+    }
+  }
+  &[return-mode="replace"] .summary .totals::before {
+    content: counter(selected-count) " selected · fee $" counter(amount-total);
+  }
+  &[return-mode="replace"] .summary button::after {
+    content: " replacement";
+  }
+  .summary[disabled-reason]:hover::after,
+  .summary[disabled-reason]:focus-within::after {
+    opacity: 1;
+  }
+
+  /* request lifecycle */
+  super-form[is-error] .confirmation {
+    display: block;
+    background: color-mix(in oklab, var(--returns-warn) 14%, transparent);
+    &::before {
+      content: "The request was refused. Pick at least one eligible line and a weekday.";
+    }
+  }
+  super-form[is-loading] .summary button {
+    opacity: 0.5;
+  }
+  #order[is-error] .items::before {
+    display: block;
+    padding: 0.85rem;
+    color: var(--returns-warn);
+    font-size: 0.875rem;
+    content: "Could not load the order.";
+  }
+
+  /* ======================================================================
+     styling
+     ====================================================================== */
+  :scope {
+    --returns-radius: 0.7rem;
+    --returns-gap: 0.75rem;
+    --returns-on-accent: var(--v-primary-inverse);
+    --returns-ok: var(--v-ins-color, #2f9e44);
+    --returns-warn: #f28c28;
+    --returns-tip-bg: var(--v-color);
+    --returns-tip-fg: var(--v-background-color);
+
+    /* a custom element is inline until it is told otherwise */
+    display: block;
+    max-width: 30rem;
+    margin: 0;
+    padding: calc(var(--v-spacing) * 0.75) 1.1rem 2.5rem;
+    background: var(--v-background-color);
+    color: var(--v-color);
+  }
+
+  header {
+    margin: 0 0 var(--returns-gap);
+    padding: 0;
+    hgroup {
+      margin: 0 0 var(--returns-gap);
+      h2 {
+        margin: 0;
+        font-size: 1.6rem;
+        letter-spacing: -0.03em;
+      }
+      p {
+        margin: 0.25rem 0 0;
+        color: var(--v-muted-color);
+        font-size: 0.875rem;
+      }
+    }
+  }
+
+  .options {
+    display: grid;
+    /* two columns while a date field and a select can sit side by side,
+       one column in a phone-width frame */
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: var(--returns-gap);
+    align-items: start;
+    margin: 0;
+    padding: var(--returns-gap);
+    background: var(--v-card-sectioning-background-color);
+    border-radius: var(--returns-radius);
+    label,
+    select,
+    input {
+      margin: 0;
+    }
+    fieldset {
+      margin: 0;
+      padding: 0;
+      border: 0;
+      display: grid;
+      gap: 0.15rem;
+      legend {
+        font-size: 0.8125rem;
+        color: var(--v-muted-color);
+        margin-bottom: 0.25rem;
+      }
+      label {
+        font-size: 0.875rem;
+        position: relative;
+      }
+    }
+    .mode {
+      grid-column: 1 / -1;
+      grid-auto-flow: column;
+      justify-content: start;
+      gap: var(--returns-gap);
+      label {
+        padding: 0.3rem 0.8rem;
+        border: 1px solid var(--v-muted-border-color);
+        border-radius: 999px;
+        cursor: pointer;
+      }
+      input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+    }
+    .date small {
+      margin-left: 0.35rem;
+      color: var(--v-muted-color);
+      &:empty {
+        display: none;
+      }
+    }
+  }
+
+  /* tooltips: a label or the footer explains itself on hover / focus */
+  label[method-name],
+  .summary {
+    &::after {
+      content: attr(disabled-reason);
+      position: absolute;
+      left: 0;
+      bottom: calc(100% + 0.35rem);
+      z-index: 1;
+      width: max-content;
+      max-width: min(16rem, 70vw);
+      padding: 0.35rem 0.55rem;
+      border-radius: 0.4rem;
+      background: var(--returns-tip-bg);
+      color: var(--returns-tip-fg);
+      font-size: 0.75rem;
+      line-height: 1.3;
+      text-transform: none;
+      white-space: normal;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 120ms;
+    }
+  }
+
+  super-form,
+  provider-fetch {
+    display: contents;
+  }
+  form {
+    margin: 0;
+  }
+
+  .items {
+    /* role="list" earns Valence's list-item display; no markers here */
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    background: var(--v-card-background-color);
+    border-radius: var(--returns-radius);
+    overflow: hidden;
+    counter-reset: selected-count amount-total;
+  }
+  .items > data-item:not(:last-child) {
+    border-bottom: 1px solid var(--v-muted-border-color);
+  }
+
+  data-item,
+  data-part {
+    display: block;
+    position: relative;
+    .line {
+      display: grid;
+      grid-template-columns: auto 2.4rem minmax(0, 1fr) 7rem;
+      align-items: center;
+      gap: var(--returns-gap);
+      width: 100%;
+      margin: 0;
+      padding: 0.7rem 0.85rem;
+      cursor: pointer;
+    }
+    input[type="checkbox"] {
+      margin: 0;
+    }
+    .thumb {
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 0.5rem;
+      background: var(--v-primary);
+      opacity: 0.85;
+    }
+    .details {
+      display: grid;
+      gap: 0.1rem;
+      min-width: 0;
+      strong {
+        font-size: 0.95rem;
+        line-height: 1.25;
+      }
+      small {
+        color: var(--v-muted-color);
+        font-size: 0.75rem;
+      }
+      [bind-field="category"] {
+        text-transform: capitalize;
+      }
+      .weight::after {
+        content: " kg";
+      }
+      .reason {
+        color: var(--returns-warn);
+        font-weight: 500;
+      }
+    }
+    .prices {
+      display: grid;
+      justify-items: end;
+      gap: 0.1rem;
+      font-variant-numeric: tabular-nums;
+      data {
+        font-weight: 600;
+        &::before {
+          content: "$";
+        }
+      }
+      .amount {
+        color: var(--v-muted-color);
+        font-size: 0.75rem;
+        data {
+          font-weight: 500;
+        }
+        &::before {
+          content: "refund ";
+        }
+      }
+    }
+  }
+  .member-price {
+    display: none;
+    color: var(--returns-ok);
+  }
+
+  /* a bundle's parts, hidden until a replacement is being ordered */
+  .components {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0.35rem;
+    display: none;
+    > data-part .line {
+      grid-template-columns: auto minmax(0, 1fr) 7rem;
+      padding: 0.35rem 0.85rem 0.35rem 3.85rem;
+      font-size: 0.875rem;
+      .details strong {
+        font-size: 0.85rem;
+        font-weight: 500;
+      }
+    }
+  }
+
+  .summary {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* the totals line and the button share a row until they cannot */
+    flex-wrap: wrap;
+    gap: var(--returns-gap);
+    margin: var(--returns-gap) 0 0;
+    padding: 0;
+    &::after {
+      left: auto;
+      right: 0;
+    }
+    .totals {
+      margin: 0;
+      font-size: 0.875rem;
+      color: var(--v-muted-color);
+      &::before {
+        content: counter(selected-count) " selected · refund $"
+          counter(amount-total);
+        font-variant-numeric: tabular-nums;
+      }
+    }
+    button {
+      width: auto;
+      margin: 0;
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      &::after {
+        content: " return";
+      }
+    }
+  }
+
+  .confirmation {
+    display: block;
+    margin-top: var(--returns-gap);
+    padding: 0.7rem 0.85rem;
+    border-radius: var(--returns-radius);
+    background: color-mix(in oklab, var(--returns-ok) 14%, transparent);
+    color: var(--v-color);
+    font-size: 0.875rem;
+    &:empty {
+      display: none;
+    }
+  }
+}

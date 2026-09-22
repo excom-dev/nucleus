@@ -1,0 +1,36 @@
+<provider-fetch api-url="/package-metas/search-docs.json" id="search-docs" class="tag-article">
+  <quark-sheet src-url="/views/search-docs/search-docs.quark"></quark-sheet>
+  <header>
+    <dialog-anchor role="button" rel="prev"></dialog-anchor>
+    <br>
+    <br>
+    <event-handler listen-for="input" delay-ms="200" is-debounced fire-event="search-query" form-ref=":scope form">
+      <form role="search">
+        <input name="detail.query" type="search" placeholder="Search packages, elements, attributes, events, variables, …"
+          autocomplete="off" />
+      </form>
+    </event-handler>
+  </header>
+  <!-- this handler will close dialog when spa-a is clicked -->
+  <event-handler selector-filter="spa-a, spa-a *" target-ref="dialog:has(:scope)" command-name="close"
+    class="abstract">
+    <small role="note" bind-result-length></small>
+    <ul id="search-results" class="show-scrollbar">
+      <template>
+        <li>
+          <spa-a role="link">
+            <div class="breadcrumbs">
+              <span bind-result-type></span>
+              <span bind-result-package></span>
+              <span bind-result-title></span>
+            </div>
+            <div>
+              <!-- this parent div is important for the selector that guarantees only first mark is styles -->
+              <span class="tag-small" role="note" bind-result-text></span>
+            </div>
+          </spa-a>
+        </li>
+      </template>
+    </ul>
+  </event-handler>
+</provider-fetch>

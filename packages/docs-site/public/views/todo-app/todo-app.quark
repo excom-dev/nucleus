@@ -1,0 +1,25 @@
+provider-fetch[is-success] {
+  $todos: prop("provision").body;
+  ul {
+    content: iterate($todos, none, "id");
+    form {
+      action: "/api/todos/#{item.id}";
+    }
+  }
+  input[name="completed"] {
+    checked: item.completed;
+  }
+  input[name="title"] {
+    value: item.title or "";
+  }
+  super-form:has([name="completed"]) {
+    /* Submits form when inputs change. Uses native Command. */
+    @on change {
+      @command --submit;
+    }
+  }
+  /* Re-fetches todos after successful form submission. */
+  @on super-form-success {
+    @command --fetch;
+  }
+}

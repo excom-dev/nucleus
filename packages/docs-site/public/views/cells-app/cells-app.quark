@@ -1,0 +1,38 @@
+/* State: each <td data-formula> holds its cell's committed text; the form's
+   data-revision counts commits. Only formula cells derive a value, and only
+   when the revision changes. */
+@use "/views/cells-app/cells-app" as *;
+
+:scope {
+  $columns: " ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  @on change (handle: commit);
+
+  form {
+    @on submit (prevent-default);
+  }
+  thead tr {
+    content: iterate($columns);
+    th {
+      content: item;
+    }
+  }
+  tbody {
+    content: iterate(range(100));
+  }
+  tbody tr {
+    $row: index;
+    content: iterate($columns.slice(1));
+  }
+  tbody td {
+    $ref: "#{item}#{$row}";
+    input {
+      name: $ref;
+    }
+  }
+  form[data-revision] td[data-formula^="="] output {
+    content: evalCell(closest("td"));
+  }
+  td[data-formula]:not([data-formula^="="]) output {
+    content: none;
+  }
+}

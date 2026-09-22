@@ -1,0 +1,42 @@
+{
+  "sections": [
+    {
+      "id": "defining-elements",
+      "title": "Defining Elements",
+      "docs": [
+        "props",
+        "provision",
+        "typescript"
+      ]
+    },
+    {
+      "id": "behavior",
+      "title": "Behavior",
+      "docs": [
+        "lifecycles",
+        "effects",
+        "prop_reactions",
+        "methods",
+        "events",
+        "commands",
+        "promise_props"
+      ]
+    },
+    {
+      "id": "composition",
+      "title": "Composition",
+      "docs": [
+        "compose",
+        "recompose"
+      ]
+    },
+    {
+      "id": "runtime",
+      "title": "Runtime",
+      "docs": [
+        "define",
+        "debug"
+      ]
+    }
+  ]
+}

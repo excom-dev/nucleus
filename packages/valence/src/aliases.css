@@ -1,0 +1,125 @@
+/* ============================================================
+ * Element aliases. Each tag alias is a `@custom-selector` that expands to:
+ *   1. native tag (`article`)
+ *   2. role alias (`[role="article"]`)
+ *   3. class alias (`.tag-article`)
+ *
+ * Only for elements that can be styled/behaved generically. `input`
+ * cannot; `dialog` can (`[open]` ≡ `[aria-expanded="true"]`).
+ *
+ * - No aliases for inimitable natives (input, textarea, …).
+ * - State like `[open]` must also use `:is(dialog)` so it hits the
+ *   right element. Same for `:not()`.
+ * - No `>` / `+`: these aliases get used inside `:not()`.
+ * - State aliases: `:--{el}--{name}`. No class aliases for states
+ *   (aria / data only). Nested under the element alias
+ *   (`:--details { &:--details--open { } }`). Assert against the
+ *   right element (`:not([aria-valuenow])` breaks native `progress`).
+ * - No pseudo-elements: `postcss-custom-selectors` wraps in `:is()`,
+ *   which breaks them. See `modal.css` backdrop.
+ * - This file is tag synonyms only, exclusive to the `@custom-selector`.
+ *   Mixin-style aliases (no clear element) live elsewhere.
+ * ============================================================ */
+
+/* No ARIA role: HTML AAM maps <details> to no corresponding role. ARIA 1.3 mentions "group" but adoption is inconsistent and would collide with :--group. */
+@custom-selector :--details details, .tag-details;
+
+@custom-selector :--details--open [open], [aria-expanded="true"];
+/* No ARIA role: <summary>'s implicit role is "button" per HTML AAM, but exposing that here would collide with :--button. The disclosure state belongs on the parent <details>, not on summary. */
+@custom-selector :--summary summary, .tag-summary;
+
+@custom-selector :--dialog dialog, [role="dialog"], .tag-dialog;
+@custom-selector :--dialog--open :is(dialog)[open], [aria-expanded="true"];
+/* No native tag. Child of `:--dialog`, or next sibling of `content-drawer`. */
+@custom-selector :--dialog-backdrop-aliases [role="presentation"], .tag-backdrop;
+
+/* Popover is a global HTML attribute (Popover API), not a tag. */
+@custom-selector :--popover [popover], .tag-popover;
+@custom-selector :--popover--open :popover-open, [aria-expanded="true"];
+
+@custom-selector :--header header, [role="header"], .tag-header;
+@custom-selector :--footer footer, [role="footer"], .tag-footer;
+
+@custom-selector :--nav nav, [role="navigation"], .tag-nav;
+@custom-selector :--main main, [role="main"], .tag-main;
+@custom-selector :--section section, [role="section"], .tag-section;
+@custom-selector :--article article, [role="article"], .tag-article;
+@custom-selector :--aside aside, [role="complementary"], .tag-aside;
+
+@custom-selector :--link a, [role="link"], .tag-link;
+
+@custom-selector :--button button, [role="button"], [type="button"], .tag-button;
+@custom-selector :--button--disabled [disabled], [aria-disabled="true"];
+
+@custom-selector :--list ul, ol, [role="list"], .tag-list;
+@custom-selector :--li li, [role="listitem"], .tag-li;
+@custom-selector :--tree [role="tree"], .tag-tree;
+/* No ARIA role: <label> maps to no corresponding role per HTML AAM. */
+@custom-selector :--label label, [role="label"], .tag-label;
+@custom-selector :--group [role="group"], .tag-group;
+@custom-selector :--search [role="search"], .tag-search;
+
+@custom-selector :--progress progress, [role="progressbar"], .tag-progress;
+@custom-selector :--progress-aliases [role="progressbar"], .tag-progress;
+@custom-selector :--progress--value [value], [aria-valuenow];
+@custom-selector :--progress--indeterminate :is(progress):indeterminate, :is([role="progressbar"], .tag-progress):not(:--progress--value);
+
+/* No ARIA role: <pre> maps to no corresponding role per HTML AAM. */
+@custom-selector :--pre pre, .tag-pre;
+@custom-selector :--code code, [role="code"], .tag-code;
+/* No ARIA role: <kbd> maps to no corresponding role per HTML AAM. */
+@custom-selector :--kbd kbd, .tag-kbd;
+/* No ARIA role: <samp> maps to no corresponding role per HTML AAM. */
+@custom-selector :--samp samp, .tag-samp;
+
+@custom-selector :--img img, [role="img"], .tag-img;
+
+@custom-selector :--figure figure, [role="figure"], .tag-figure;
+@custom-selector :--figcaption figcaption, [role="caption"]:is(figure *, [role="figure"] *), .tag-figcaption;
+
+@custom-selector :--hr hr, [role="separator"], .tag-hr;
+
+@custom-selector :--table table, [role="table"], .tag-table;
+@custom-selector :--tr tr, [role="row"], .tag-tr;
+@custom-selector :--th th, [role="columnheader"], [role="rowheader"], [scope="col"], [scope="row"], .tag-th;
+@custom-selector :--th--sort [aria-sort];
+@custom-selector :--th--sort-asc [aria-sort="ascending"];
+@custom-selector :--th--sort-desc [aria-sort="descending"];
+@custom-selector :--td td, [role="cell"], [role="gridcell"], .tag-td;
+@custom-selector :--thead-th th:not([scope="row"]), [role="columnheader"], [scope="col"], .tag-th-col;
+@custom-selector :--thead thead, [role="rowgroup"]:has(:--thead-th), .tag-thead;
+@custom-selector :--tbody-th th:not([scope="col"]), [role="rowheader"], [scope="row"], .tag-th-row;
+@custom-selector :--tbody tbody, [role="rowgroup"]:has(:--tbody-th, :--td), .tag-tbody;
+/* No ARIA role: <tfoot> shares [role="rowgroup"] with thead/tbody and there is no positional/structural cue to disambiguate it (no equivalent of :--thead-th / :--tbody-th for footer cells). */
+@custom-selector :--tfoot tfoot, .tag-tfoot;
+
+@custom-selector :--p p, [role="paragraph"], .tag-p;
+/* No ARIA role: <address> maps to no corresponding role per HTML AAM. */
+@custom-selector :--address address, .tag-address;
+@custom-selector :--blockquote blockquote, [role="blockquote"], .tag-blockquote;
+/* No ARIA role: <dl> maps to no corresponding role per HTML AAM (the legacy "definitionlist" role was removed; "list" is in :--list and would lose dl-specific semantics). */
+@custom-selector :--dl dl, .tag-dl;
+@custom-selector :--form form, [role="form"], .tag-form;
+/* No ARIA role: <hgroup> maps to no corresponding role per HTML AAM. */
+@custom-selector :--hgroup hgroup, .tag-hgroup;
+/* No ARIA role on the ul-/ol-specific aliases: their implicit role is "list", which is already exposed via :--list. Adding [role="list"] here would make any role="list" element match :--ul AND :--ol simultaneously, defeating the tag-specific intent (e.g. ul-only square markers). */
+@custom-selector :--ul ul, .tag-ul;
+@custom-selector :--ol ol, .tag-ol;
+@custom-selector :--small small, .tag-small;
+@custom-selector :--note [role="note"], .tag-note;
+@custom-selector :--b b, .tag-b;
+@custom-selector :--strong strong, .tag-strong;
+@custom-selector :--sub sub, .tag-sub;
+@custom-selector :--sup sup, .tag-sup;
+@custom-selector :--h1 h1, [role="heading"][aria-level="1"], .tag-h1;
+@custom-selector :--h2 h2, [role="heading"][aria-level="2"], .tag-h2;
+@custom-selector :--h3 h3, [role="heading"][aria-level="3"], .tag-h3;
+@custom-selector :--h4 h4, [role="heading"][aria-level="4"], .tag-h4;
+@custom-selector :--h5 h5, [role="heading"][aria-level="5"], .tag-h5;
+@custom-selector :--h6 h6, [role="heading"][aria-level="6"], .tag-h6;
+@custom-selector :--heading h1, h2, h3, h4, h5, h6, [role="heading"], .tag-heading;
+@custom-selector :--mark mark, [role="mark"], .tag-mark;
+@custom-selector :--ins ins, [role="insertion"], .tag-ins;
+@custom-selector :--del del, [role="deletion"], .tag-del;
+/* No ARIA role: <abbr> maps to no corresponding role per HTML AAM (the legacy "acronym" role was deprecated). */
+@custom-selector :--abbr abbr, .tag-abbr;

@@ -1,0 +1,15 @@
+<super-input reflect-value class="raised" id="si-rv">
+    <label>Email</label>
+    <input type="email" />
+    <style>
+        super-input#si-rv {
+            &::after { color: orange; }
+            &:not([current-value*="."])::after {
+                content: 'Email is missing "." character.';
+            }
+            &:not([current-value*="@"])::after {
+                content: 'Email is missing "@" character.';
+            }
+        }
+    </style>
+</super-input>

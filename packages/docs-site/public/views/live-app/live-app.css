@@ -1,0 +1,414 @@
+.live-app {
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+
+  /* both panes fit between the site header and the release-notice bar; the
+     preview scrolls as a whole, the editor scrolls inside the open file so
+     the file tabs stay put */
+  --pane-height: calc(
+    100vh - var(--site-header-height) - var(--release-notice-height)
+  );
+  &:is([data-mini] > .live-app) {
+    margin-bottom: var(--v-typography-spacing-vertical);
+    --pane-height: 400px;
+    @media (min-width: 1101px) {
+      > event-handler {
+        grid-template-columns: minmax(18rem, 22rem) minmax(0, 1fr);
+      }
+    }
+    @media (min-width: 1101px) {
+      content-tabs-header {
+        font-size: 0.8em;
+      }
+      content-tabs-body {
+        --code-font-size: 0.8em;
+      }
+    }
+    content-tabs-body {
+      padding-top: 8px;
+      padding-bottom: 8px;
+    }
+    .imported-header {
+      display: none;
+    }
+    [aria-label="preview"] iframe {
+      min-height: var(--pane-height) !important;
+    }
+  }
+  .left-pane {
+    max-height: var(--pane-height);
+    overflow-y: auto;
+  }
+  /* editor: the file tabs stay put, the open file scrolls inside */
+  [aria-label="editor"] {
+    display: flex;
+    flex-direction: column;
+    > small,
+    provider-fetch.fresh,
+    content-tabs {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+  }
+  @media (min-width: 1101px) {
+    --editor-in-flow: 1;
+  }
+  [aria-label="editor"] {
+    @container style(--editor-in-flow: 1) {
+      & {
+        position: static;
+        transform: none;
+        transition: none;
+        width: auto;
+        /* flex item: shrink to the grid column, never to min-content */
+        min-width: 0;
+        max-width: none;
+        height: var(--pane-height);
+        max-height: none;
+        margin: 0;
+        padding: 0;
+        border-radius: 0;
+        box-shadow: none;
+        background: transparent;
+        overflow: visible;
+        border-left: 1px solid var(--v-muted-border-color);
+      }
+      > .grabber,
+      > .close {
+        display: none;
+      }
+    }
+  }
+  [bind-file-bodies] {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  content-tabs-body {
+    &[is-open],
+    content-tabs:not(:has(content-tabs-body[is-open])) &:first-of-type {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+    }
+  }
+  @media (max-width: 1100px) {
+    .left-pane {
+      max-height: none;
+    }
+  }
+
+  .imported-header {
+    margin: 0;
+    padding: var(--v-block-spacing-vertical) var(--v-block-spacing-horizontal);
+    border-bottom: 1px solid var(--v-muted-border-color);
+    background: var(--v-background-color);
+    hgroup {
+      margin: 0;
+      padding: 0;
+    }
+    p {
+      margin: 0.35rem 0 0;
+      color: var(--v-muted-color);
+      font-size: 0.8125rem;
+    }
+  }
+
+  /* preview | editor; most apps are narrow, the editor takes the rest */
+  > event-handler {
+    display: grid;
+    grid-template-columns: minmax(18rem, 26rem) minmax(0, 1fr);
+    align-items: stretch;
+    > gesture-handler {
+      display: flex;
+      min-width: 0;
+      > [aria-label="editor"] {
+        flex: 1;
+      }
+    }
+  }
+  .editor-toggle {
+    display: none;
+  }
+  @media (max-width: 1100px) {
+    > event-handler {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    [aria-label="editor"] {
+      --content-drawer-z-index: 5;
+      bottom: calc(var(--site-header-height) + env(safe-area-inset-bottom));
+      /* closed: fully below the tab bar, not just below its own bottom edge */
+      --content-drawer-closed: calc(
+        101% + var(--site-header-height) + env(safe-area-inset-bottom)
+      );
+      width: 100%;
+      max-width: none;
+      height: 72dvh;
+      max-height: none;
+      margin: 0;
+      padding: 0 var(--v-spacing) calc(var(--v-spacing) * 0.5);
+      overflow: hidden;
+      border-radius: calc(var(--v-border-radius) * 2)
+        calc(var(--v-border-radius) * 2) 0 0;
+      > .grabber {
+        flex-shrink: 0;
+        padding: calc(var(--v-spacing) * 0.5) 0;
+        touch-action: none;
+        cursor: grab;
+        &::before {
+          content: "";
+          display: block;
+          width: 2.25rem;
+          height: 5px;
+          margin: 0 auto;
+          border-radius: 999px;
+          background: var(--v-muted-border-color);
+        }
+      }
+      > .close {
+        position: absolute;
+        top: calc(var(--v-spacing) * 0.5);
+        right: var(--v-spacing);
+        margin: 0;
+      }
+      /* The grabber keeps the top row to itself */
+      > small {
+        padding-top: calc(var(--v-spacing) * 2);
+      }
+    }
+    .editor-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      position: absolute;
+      left: 8px;
+      bottom: 8px;
+      z-index: 2;
+      width: auto;
+      margin: 0;
+      padding: 6px 14px;
+      border: 1px solid var(--v-muted-border-color);
+      border-radius: 999px;
+      background: var(--v-background-color);
+      color: var(--v-color);
+      font-size: 0.95rem;
+      &::before {
+        content: "";
+        width: 1.25em;
+        height: 1.25em;
+        background-color: currentColor;
+        mask: var(--ico-file-html) center / contain no-repeat;
+        -webkit-mask: var(--ico-file-html) center / contain no-repeat;
+      }
+    }
+    &:has([aria-label="editor"][is-open]) .editor-toggle {
+      display: none;
+    }
+  }
+  /* no tab bar between 769px and 1100px */
+  @media (min-width: 769px) and (max-width: 1100px) {
+    [aria-label="editor"] {
+      bottom: 0;
+    }
+  }
+
+  [aria-label="preview"] {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    display: flex;
+    /* containing block for the Code pill */
+    position: relative;
+    include-content {
+      display: flex;
+      flex: 1;
+    }
+    iframe {
+      display: block;
+      flex: 1;
+      width: 100%;
+      min-height: 60vh;
+      border: 0;
+      border-radius: var(--v-border-radius);
+      background: var(--v-background-color);
+    }
+  }
+
+  /* Only while the worker is mounted but not yet controlling the page. */
+  .sw-error {
+    display: none;
+    position: static;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0 0 var(--v-block-spacing-vertical);
+    color: var(--v-del-color);
+    overflow-wrap: break-word;
+  }
+
+  /* one row of tabs; scrolls sideways instead of wrapping */
+  [bind-file-headers] {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: flex-end;
+    justify-content: flex-start;
+    gap: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-shrink: 0;
+    scrollbar-width: thin;
+    content-tabs-header {
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+  }
+  /* file-type glyphs for the tab headers (mask icons, same technique as shell.css .ico-*) */
+  --ico-file-html: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='black'%3E%3Ctext x='8' y='12.5' text-anchor='middle' font-family='ui-monospace,Menlo,Consolas,monospace' font-weight='700' font-size='9'%3E%26lt;/%26gt;%3C/text%3E%3C/svg%3E");
+  --ico-file-css: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='black'%3E%3Ctext x='8' y='12.5' text-anchor='middle' font-family='ui-monospace,Menlo,Consolas,monospace' font-weight='700' font-size='12'%3E{}%3C/text%3E%3C/svg%3E");
+  --ico-file-js: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='black'%3E%3Ctext x='8' y='12.5' text-anchor='middle' font-family='ui-monospace,Menlo,Consolas,monospace' font-weight='700' font-size='10'%3EJS%3C/text%3E%3C/svg%3E");
+  --ico-file-quark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 70 96' fill='black'%3E%3Cpath d='M14.7974 2.75049C16.3162 0.120058 19.6795 -0.780888 22.3101 0.737793L51.7554 17.7378C68.2561 27.2647 73.9097 48.3639 64.3833 64.8647C59.8431 72.7287 52.6732 78.1266 44.6265 80.5942L52.1997 84.9673C54.8301 86.4861 55.732 89.8494 54.2134 92.48C52.6946 95.1105 49.3303 96.0113 46.6997 94.4927L17.2554 77.4927C0.75456 67.9658 -4.89914 46.8667 4.62744 30.3657C9.16746 22.5023 16.3361 17.103 24.3823 14.6353L16.8101 10.2632C14.1798 8.74427 13.2787 5.38094 14.7974 2.75049ZM46.2554 27.2642C35.0155 20.7748 20.6432 24.626 14.1538 35.8657C7.76615 46.9299 11.3978 61.029 22.2339 67.6567L22.7554 67.9673L23.2847 68.2632C34.4426 74.3336 48.469 70.429 54.8569 59.3647C61.3458 48.125 57.4948 33.7535 46.2554 27.2642ZM23.8979 37.0083C29.7558 31.1505 39.254 31.1505 45.1118 37.0083C50.9696 42.8661 50.9696 52.3643 45.1118 58.2222C39.254 64.08 29.7558 64.08 23.8979 58.2222C18.0401 52.3643 18.0401 42.8662 23.8979 37.0083Z'/%3E%3C/svg%3E");
+  content-tabs-header {
+    cursor: pointer;
+    position: relative;
+    font-family: var(--v-font-family-monospace);
+    /* compact folder tabs so three or four file names fit on one row */
+    --content-tabs-header-padding: 0.35rem 0.6rem;
+    @media (max-width: 768px) {
+      --content-tabs-header-padding: 0.5rem 0.8rem;
+    }
+
+    --ico-orange: #c93e07;
+    --ico-teal: #129e82;
+    --ico-yellow: #978b00;
+    --ico-blue: #0087cf;
+    @media (prefers-color-scheme: dark) {
+      --ico-orange: #ce9178;
+      --ico-teal: #4ec9b0;
+      --ico-yellow: #d4c40d;
+      --ico-blue: #68caff;
+    }
+
+    .file-icon {
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+      vertical-align: -0.15em;
+      background-color: currentColor;
+      mask: var(--ico) center / contain no-repeat;
+      -webkit-mask: var(--ico) center / contain no-repeat;
+    }
+    &[data-file-type="html"] .file-icon {
+      --ico: var(--ico-file-html);
+      color: var(--ico-orange);
+    }
+    &[data-file-type="quark"] .file-icon {
+      --ico: var(--ico-file-quark);
+      color: var(--ico-teal);
+    }
+    &[data-file-type="js"] .file-icon {
+      --ico: var(--ico-file-js);
+      color: var(--ico-yellow);
+    }
+    &[data-file-type="css"] .file-icon {
+      --ico: var(--ico-file-css);
+      color: var(--ico-blue);
+    }
+
+    /* "modified" dot, shown by the rules below */
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0.2rem;
+      right: 0.2rem;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--v-primary);
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+  }
+  /* "Modified" while the file has a stored override: the worker reports
+     it on read (`data-file-source`, live-app.quark); a save (PUT) marks
+     it at once; reset rebuilds the editor and clears both. */
+  content-tabs:has(
+      content-tabs-body[tab-name="html"]
+        :is(
+          provider-fetch.source[data-file-source="override"],
+          provider-fetch[api-method="put"]:is([is-loading], [is-success])
+        )
+    )
+    content-tabs-header[tab-name="html"]::before,
+  content-tabs:has(
+      content-tabs-body[tab-name="quark"]
+        :is(
+          provider-fetch.source[data-file-source="override"],
+          provider-fetch[api-method="put"]:is([is-loading], [is-success])
+        )
+    )
+    content-tabs-header[tab-name="quark"]::before,
+  content-tabs:has(
+      content-tabs-body[tab-name="js"]
+        :is(
+          provider-fetch.source[data-file-source="override"],
+          provider-fetch[api-method="put"]:is([is-loading], [is-success])
+        )
+    )
+    content-tabs-header[tab-name="js"]::before,
+  content-tabs:has(
+      content-tabs-body[tab-name="css"]
+        :is(
+          provider-fetch.source[data-file-source="override"],
+          provider-fetch[api-method="put"]:is([is-loading], [is-success])
+        )
+    )
+    content-tabs-header[tab-name="css"]::before {
+    opacity: 1;
+  }
+  *:has(> .file-actions) {
+    position: relative;
+  }
+  content-tabs-body[is-open]:hover .file-actions {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .file-actions {
+    opacity: 0;
+    pointer-events: none;
+    display: flex;
+    height: 0;
+    position: sticky;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    margin-right: -15px;
+    left: auto;
+    top: 16px;
+    z-index: 2;
+    transition: opacity 0.15s;
+    [role="status"] {
+      display: none;
+      margin-right: auto;
+      color: var(--v-del-color);
+    }
+    /* PUT provider sits in the sibling input handler */
+    &:has(~ event-handler provider-fetch[api-method="put"][is-error])
+      [role="status"] {
+      display: inline;
+    }
+    [aria-label="reset"]:active {
+      background-color: var(--v-primary);
+    }
+  }
+
+  provider-fetch.source[is-loading] include-content {
+    opacity: 0.6;
+  }
+}
+body:has(> service-worker[is-mounted]:not([is-ready])) .live-app .sw-error {
+  display: block;
+}

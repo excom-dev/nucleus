@@ -1,0 +1,18 @@
+<div>
+  <event-handler role="button" fire-event="demo-seed-storage">
+    Seed localStorage &amp; re-read
+  </event-handler>
+  <provider-storage></provider-storage>
+  <output>Not read yet — click above.</output>
+  <small role="note">Same-tab writes only show up after
+    <code>key-name</code> is re-set; a write from another tab is picked up
+    live.</small>
+  <quark-sheet>
+    @use "/demo-utils" as *;
+
+    :scope {
+      @on demo-seed-storage (handle: seedDemoStorage);
+      @on neutron-provision (handle: setOutputFromElementData);
+    }
+  </quark-sheet>
+</div>

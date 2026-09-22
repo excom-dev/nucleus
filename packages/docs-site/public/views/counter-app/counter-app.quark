@@ -1,0 +1,9 @@
+button {
+  $count: 0;
+  span {
+    content: $count;
+  }
+  @on click {
+    $count: $count + 1;
+  }
+}

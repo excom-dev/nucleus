@@ -1,0 +1,16 @@
+<div>
+  <detect-media media-query="(prefers-color-scheme: dark)"></detect-media>
+  <p>Dark color scheme — <code>is-matched</code> is set.</p>
+  <p role="status">Light color scheme — <code>is-matched</code> is absent.</p>
+  <small role="note">Live — switch your OS / browser color scheme (or emulate <code>prefers-color-scheme</code> in DevTools) to flip it.</small>
+  <style>
+    #demo-detect-media-simple {
+      &:has(detect-media[is-matched]) p[role="status"] {
+        display: none;
+      }
+      &:has(detect-media:not([is-matched])) p:not([role="status"]) {
+        display: none;
+      }
+    }
+  </style>
+</div>

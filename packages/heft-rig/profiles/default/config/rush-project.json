@@ -1,0 +1,25 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush-project.schema.json",
+  "operationSettings": [
+    {
+      "operationName": "build",
+      "outputFolderNames": ["dist", "lib"]
+    },
+    {
+      "operationName": "coverage",
+      "outputFolderNames": ["coverage"]
+    },
+    {
+      "operationName": "test",
+      "disableBuildCacheForOperation": true
+    },
+    {
+      "operationName": "format",
+      "disableBuildCacheForOperation": true
+    },
+    {
+      "operationName": "apply-exports",
+      "disableBuildCacheForOperation": true
+    }
+  ]
+}

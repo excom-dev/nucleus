@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  // ---------------------------------------------------------------------------
+  // Workspace-root tsconfig.
+  //
+  // This file exists ONLY for the IDE's TypeScript server. It anchors the
+  // workspace so any file the IDE opens — including files in freshly-created
+  // packages whose per-package tsconfig hasn't yet been picked up by the TS
+  // server — falls back to the same modern `target` / `lib` defaults as the
+  // shared rig. Without this anchor, the IDE silently constructs an "inferred
+  // project" with `target: ES5` and no `DOM.Iterable` lib, which produces
+  // spurious errors like:
+  //
+  //   Type 'NodeList' can only be iterated through when using the
+  //   '--downlevelIteration' flag or with a '--target' of 'es2015' or higher.
+  //
+  // even though the per-package tsconfigs (and `tsc` from the CLI) are
+  // perfectly happy.
+  //
+  // It compiles nothing itself (`files: []` + `include: []`) — every package
+  // still owns its own build via its own `tsconfig.json` that extends the
+  // shared rig.
+  // ---------------------------------------------------------------------------
+  "extends": "./packages/heft-rig/profiles/default/config/tsconfig.json",
+  "files": [],
+  "include": [],
+  "exclude": ["**/dist/**", "**/node_modules/**", "**/common/temp/**"]
+}

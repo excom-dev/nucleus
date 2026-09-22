@@ -1,0 +1,190 @@
+
+#release-notice {
+  border-top: none;
+  border-bottom: 1px solid var(--intro-beta-border);
+  --content-drawer-z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(var(--v-spacing) * 0.5) var(--v-spacing);
+  margin: 0;
+  width: 100%;
+  max-width: none;
+  max-height: none;
+  overflow: visible;
+  padding: calc(var(--v-spacing) * 0.5) 3rem calc(var(--v-spacing) * 0.5)
+    var(--v-spacing);
+  background: var(--intro-beta-bg);
+  color: var(--intro-beta-color);
+  border-radius: 0;
+  box-shadow: none;
+  font-size: 0.875rem;
+  z-index: 7;
+
+  blockquote {
+    border: 0px;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin: 0 0 var(--v-typography-spacing-vertical);
+    padding: 0.2rem 0;
+    box-shadow: none;
+    margin: 0;
+    * {
+      color: var(--intro-beta-color);
+    }
+
+    &::before {
+      content: "";
+      flex: 0 0 1.15rem;
+      width: 1.15rem;
+      height: 1.15rem;
+      margin-top: 0.15em;
+      background-color: var(--intro-beta-icon);
+      mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="black" d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/></svg>')
+        center / contain no-repeat;
+      -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill="black" d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/></svg>')
+        center / contain no-repeat;
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+  }
+
+  /* theme close icon (Valence `.close`); float is inert in a flex row */
+  > .close {
+    order: 3;
+    margin: 0;
+    flex: 0 0 auto;
+    position: absolute;
+    top: calc(var(--v-spacing) * 0.5);
+    right: var(--v-spacing);
+  }
+
+  > p {
+    flex: 1 1 22rem;
+    margin: 0;
+  }
+
+  super-form {
+    display: block;
+    flex: 0 1 auto;
+  }
+
+  form {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--v-spacing) * 0.5);
+    margin: 0;
+  }
+
+  label {
+    margin: 0;
+    /* visually hidden label text; the placeholder carries the hint */
+    > span {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+  }
+  fieldset {
+    margin: 0;
+    --v-line-height: 0.5;
+  }
+
+  /* honeypot: clipped off-screen and out of the tab order, but still a real,
+     fillable field — `display: none` / `hidden` are what bots skip */
+  [data-honeypot] {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  input[type="email"] {
+    width: 16rem;
+    max-width: 100%;
+    margin: 0;
+    padding-block: calc(var(--v-form-element-spacing-vertical) * 0.25);
+  }
+
+  button[type="submit"] {
+    width: auto;
+    margin: 0;
+    padding-block: calc(var(--v-form-element-spacing-vertical) * 0.25);
+    white-space: nowrap;
+  }
+
+  /* lifecycle: state attributes drive the whole thing, no script */
+  super-form[is-loading] {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  [bind-thanks],
+  [bind-error] {
+    display: none;
+    margin: 0;
+  }
+
+  super-form[is-success] {
+    form {
+      display: none;
+    }
+    [bind-thanks] {
+      display: block;
+      color: var(--v-form-element-valid-border-color);
+    }
+  }
+
+  super-form[is-error]:not([is-success]) [bind-error] {
+    display: block;
+    margin-top: calc(var(--v-spacing) * 0.25);
+    color: var(--v-del-color);
+  }
+}
+
+/* Desktop: the bottom bar this has always been. `from-side` is an attribute,
+   so it cannot be media-queried */
+@media (min-width: 769px) {
+  #release-notice {
+    top: auto;
+    bottom: 0;
+    border-top: 1px solid var(--intro-beta-border);
+    border-bottom: none;
+    transform: translateY(var(--content-drawer-closed));
+    &[is-open] {
+      transform: translateY(var(--content-drawer-open-full));
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  #release-notice {
+    min-height: var(--release-notice-height);
+    padding: calc(var(--v-spacing) * 0.75) var(--v-spacing);
+    padding-top: calc(var(--v-spacing) * 0.75 + env(safe-area-inset-top));
+    /* room for the bigger circular close (shell.css mobile block) */
+    padding-right: 3.5rem;
+    border-bottom: var(--v-border-width) solid var(--v-muted-border-color);
+    /* the close sits below the notch, not in it */
+    > .close {
+      top: calc(var(--v-spacing) * 0.5 + env(safe-area-inset-top));
+    }
+    > p,
+    super-form {
+      flex: 1 1 100%;
+    }
+    input[type="email"] {
+      flex: 1 1 14rem;
+      width: auto;
+      min-width: 0;
+    }
+  }
+}

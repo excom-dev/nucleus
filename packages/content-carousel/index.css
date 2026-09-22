@@ -1,0 +1,5 @@
+@import "./src/content-carousel.css";
+
+@layer {
+  @mixin module-content-carousel;
+}

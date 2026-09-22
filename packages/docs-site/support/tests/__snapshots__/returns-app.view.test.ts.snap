@@ -1,0 +1,89 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`returns-app view > replace mode > opens the components, judges lines by warranty and prices them as fees > complexity 1`] = `
+{
+  "attributeRuns": 41,
+  "closest": 22,
+  "getVar": 28,
+  "importNode": 0,
+  "listenerRuns": 4,
+  "matches": 99,
+  "parentElement": 238,
+  "quarkRuns": 5,
+  "queryScopeCost": 1178,
+  "querySelectorAll": 14,
+  "removeAttribute": 7,
+  "ruleRuns": 16,
+  "schedulePaint": 41,
+  "setAttribute": 18,
+  "setVar": 7,
+  "textContent": 9,
+  "variableRuns": 7,
+}
+`;
+
+exports[`returns-app view > replace mode > selecting a component is a fact on its line and an aggregate on the host > complexity 1`] = `
+{
+  "attributeRuns": 12,
+  "closest": 10,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 132,
+  "parentElement": 76,
+  "quarkRuns": 3,
+  "queryScopeCost": 358,
+  "querySelectorAll": 3,
+  "removeAttribute": 2,
+  "ruleRuns": 9,
+  "schedulePaint": 11,
+  "setAttribute": 7,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`returns-app view > return mode > blocks oversized items for UPS drop-off, unticks them and re-enables them on the way back > complexity 1`] = `
+{
+  "attributeRuns": 36,
+  "closest": 4,
+  "getVar": 11,
+  "importNode": 0,
+  "listenerRuns": 4,
+  "matches": 210,
+  "parentElement": 93,
+  "quarkRuns": 7,
+  "queryScopeCost": 1030,
+  "querySelectorAll": 9,
+  "removeAttribute": 8,
+  "ruleRuns": 16,
+  "schedulePaint": 36,
+  "setAttribute": 7,
+  "setVar": 6,
+  "textContent": 0,
+  "variableRuns": 6,
+}
+`;
+
+exports[`returns-app view > the date > closes home pickup and store drop-off on weekends > complexity 1`] = `
+{
+  "attributeRuns": 40,
+  "closest": 4,
+  "getVar": 20,
+  "importNode": 0,
+  "listenerRuns": 8,
+  "matches": 235,
+  "parentElement": 105,
+  "quarkRuns": 11,
+  "queryScopeCost": 1300,
+  "querySelectorAll": 9,
+  "removeAttribute": 2,
+  "ruleRuns": 19,
+  "schedulePaint": 40,
+  "setAttribute": 14,
+  "setVar": 12,
+  "textContent": 1,
+  "variableRuns": 12,
+}
+`;

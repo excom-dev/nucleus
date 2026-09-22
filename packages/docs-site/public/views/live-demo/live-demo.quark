@@ -1,0 +1,47 @@
+/* Scoped to .live-demo. The hosting include-content (in the package view's
+   README) carries the demo name on [data-demo]; `$package-name` /
+   `$package-meta` are bindings published by the package view on the
+   ancestor `provider-fetch.doc-page`. */
+@use "/shell" as *;
+
+:scope {
+  $demo-ref: closest("include-content[data-demo]").getAttribute("data-demo");
+  $src: formatCode(getDemoSource($package-meta, $demo-ref));
+
+  [aria-label="preview"] {
+    /* IMPORTANT - immediate child selector is crucial for demos that also have include-content. Will infinitely recurse otherwise. */
+    > template {
+      content: dangerous-html($src);
+    }
+    > include-content {
+      id: getDemoId($package-name, $demo-ref);
+      is-active: "";
+    }
+  }
+  [aria-label="reset"] {
+    @on click (handle: resetDemo($src));
+  }
+  [aria-label="github"] {
+    href: buildGitHubLink($package-name, $demo-ref);
+  }
+  footer {
+    content-tabs-header[is-open] button {
+      class: "outline tag-small";
+    }
+    content-tabs-header:not([is-open]) button {
+      class: "outline secondary tag-small";
+    }
+    .edit-code {
+      textarea {
+        content: $src;
+        @on input (handle: (updateTemplate, renderPre));
+      }
+      [data-highlight] {
+        content: dangerous-html(renderLang($src, "html"));
+      }
+    }
+    .live-state dom-observer {
+      @on dom-observer-change (handle: renderPreFormatted);
+    }
+  }
+}

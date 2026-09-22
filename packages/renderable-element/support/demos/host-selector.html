@@ -1,0 +1,29 @@
+<p>Any other <code>host-ref</code> value is treated as a CSS selector. The element renders its template into whatever the selector resolves to.</p>
+
+<style>
+  .selector-demo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .selector-demo .mount-point {
+    border: 1px dashed currentColor;
+    padding: 8px;
+    min-height: 80px;
+  }
+</style>
+
+<div class="selector-demo">
+  <div>
+    <strong>Source element:</strong>
+    <include-content is-active host-ref=".sidebar-mount">
+      <template>
+        <p>I render into <code>.sidebar-mount</code> →</p>
+      </template>
+    </include-content>
+  </div>
+  <div>
+    <strong>Mount target:</strong>
+    <div class="mount-point sidebar-mount"></div>
+  </div>
+</div>

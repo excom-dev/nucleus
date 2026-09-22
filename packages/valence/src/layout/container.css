@@ -1,0 +1,43 @@
+/**
+ * Container
+ */
+
+@define-mixin module-container {
+  /**
+   * Centered page column with responsive max-width.
+   * @cssclass container
+   */
+  .container,
+  /**
+   * Full-width fluid column (padding only, no max-width).
+   * @cssclass container-fluid
+   */
+  .container-fluid {
+    width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+    padding-right: var(--v-spacing);
+    padding-left: var(--v-spacing);
+  }
+
+  .container {
+    /* sm: also drop horizontal padding (first breakpoint) */
+    @media (min-width: 576px) {
+      max-width: 510px;
+      padding-right: 0;
+      padding-left: 0;
+    }
+    @media (min-width: 768px) {
+      max-width: 700px;
+    }
+    @media (min-width: 1024px) {
+      max-width: 950px;
+    }
+    @media (min-width: 1280px) {
+      max-width: 1200px;
+    }
+    @media (min-width: 1536px) {
+      max-width: 1450px;
+    }
+  }
+}

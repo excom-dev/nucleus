@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2023", "ES2021.WeakRef", "DOM", "DOM.Iterable"],
+    "moduleResolution": "bundler",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "inlineSources": true,
+    "inlineSourceMap": false,
+    "stripInternal": true,
+    "outDir": "dist",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "useDefineForClassFields": true,
+    "moduleDetection": "force",
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "strictNullChecks": true,
+    "skipLibCheck": true,
+    "types": ["@excom/heft-rig/profiles/default/config/vite-env.d.ts"],
+    /* TODO, RESET THIS */
+    "strict": false,
+    "noEmitOnError": true,
+    "baseUrl": "."
+  },
+  "exclude": ["**/dist/**", "**/node_modules/**"]
+}

@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+  <title>Nucleus · docs</title>
+  <script type="module">
+    import "@excom/nucleus-kit/index";
+    // deprecated, no longer in Nucleus Kit; its docs page still demos it
+  </script>
+  <link rel="stylesheet" href="./shell.css">
+  <link rel="preload" as="style" href="/views/site-header/site-header.css">
+  <link rel="manifest" href="/manifest.json">
+  <script>
+    navigator.serviceWorker?.register("/service-worker/service-worker.js", {
+      scope: "/",
+      updateViaCache: "none",
+    });
+  </script>
+</head>
+
+<body>
+  <!-- Observes the worker registered above; views branch on [is-mounted] / [is-ready] -->
+  <service-worker></service-worker>
+  <detect-browser></detect-browser>
+  <quark-sheet>
+    @use "/shell" as *;
+
+    #release-notice {
+      @delay 3000 {
+        is-open: "";
+      }
+    }
+
+    provider-fetch[api-url*="package-metas/index.json"][is-success] {
+      $package-indices: prop("provision").body;
+      .package-links {
+        [bind-elements] ul:not(ul ul) {
+          content: iterate(getPackagesByType($package-indices, "kit-element"));
+        }
+        [bind-element-bases] ul:not(ul ul) {
+          content: iterate(getPackagesByType($package-indices, "element-base"));
+        }
+        [bind-tools] ul:not(ul ul) {
+          content: iterate(getPackagesByType($package-indices, "tool"));
+        }
+        /* the standalone libraries: same rows, rendered flat (shell.css) */
+        [bind-libraries] ul:not(ul ul) {
+          content: iterate(getPackagesByType($package-indices, "library"));
+        }
+        ul:not(ul ul) > li {
+          $pkg: item.shortName;
+          > spa-a {
+            route-href: "/nucleus/packages/#{item.shortName}";
+            content: item.shortName;
+          }
+        }
+        /* No specificity, so this has to follow the rule above */
+        [bind-libraries] ul:not(ul ul) > li > spa-a {
+          content: displayName(item.shortName);
+        }
+        /* packages whose docs span several pages: one collapsible group per section */
+        [bind-sections] {
+          content: iterate(item.docSections);
+          summary {
+            content: item.title;
+          }
+          details > ul {
+            content: iterate(item.docs);
+            spa-a {
+              route-href: "/nucleus/packages/#{$pkg}/#{item.name}";
+              content: item.title;
+            }
+          }
+          details:not(:has(spa-a[is-active])) {
+            open: none;
+          }
+        }
+      }
+    }
+    spa-route {
+      $route: prop("provision");
+      /* paramless routes name their guide in markup (the docs home); /nucleus/docs/:name gets it from params */
+      $route-doc-name: attr("data-doc-name");
+    }
+    /* the desktop aside and the mobile sheet stamp the same nav template */
+    [data-site-nav] {
+      details:has(spa-a[is-active]) {
+        /* not kosher */
+        open: "";
+      }
+      spa-a[is-active] {
+        aria-current: "";
+      }
+      spa-a:not([is-active]) {
+        aria-current: none;
+      }
+    }
+    /* mobile sheet: Escape / back gesture while open; a tapped link closes it */
+    #site-menu {
+      &[is-open] dismiss-watcher { is-active: ""; }
+      &:not([is-open]) dismiss-watcher { is-active: none; }
+      @on click (target: "spa-a") { is-open: none; }
+    }
+    #site-menu-gesture {
+      &:has(> #site-menu[is-open]) { progress-offset: 1; }
+      &:not(:has(> #site-menu[is-open])) { progress-offset: 0; }
+      @on gesture-handler-start { #site-menu { is-scrubbing: ""; } }
+      @on gesture-handler-end {
+        #site-menu { is-open: event.detail.snap == 1; is-scrubbing: none; }
+      }
+    }
+    main {
+      @on copy-source (handle: copySource);
+    }
+    #search-dialog[open] {
+      > include-content {
+        is-active: "";
+        /* for some reason this is necessary on first render */
+        @on include-content-did-render (handle: focusInput);
+      }
+      input[type="search"] {
+        /* works on all subsequent opens */
+        autofocus: "";
+      }
+    }
+    #search-dialog:not([open]) input[type="search"] {
+      autofocus: none;
+    }
+  </quark-sheet>
+
+  <include-content is-active class="abstract" template-ref="/views/site-header/site-header.html"></include-content>
+
+  <div class="loading-bar"></div>
+  <main>
+    <provider-fetch api-url="/package-metas/index.json">
+      <!-- One nav template, used by both the desktop aside and the mobile sheet depending on the media query -->
+      <template id="template-site-nav">
+          <nav class="tag-small" data-site-nav>
+            <div class="overview-links">
+              <details open>
+                <summary title="Getting Started">Getting Started</summary>
+                <ul role="tree">
+                  <li>
+                    <spa-a route-href="/nucleus" role="link" class="secondary">Introduction</spa-a>
+                  </li>
+                  <li>
+                    <spa-a route-href="/nucleus/docs/quick_start" role="link" class="secondary">Quick Start</spa-a>
+                  </li>
+                  <li>
+                    <spa-a route-href="/nucleus/docs/core_concepts" role="link" class="secondary">Core Concepts</spa-a>
+                  </li>
+                </ul>
+              </details>
+              <details>
+                <summary title="Examples">Examples</summary>
+                <ul role="tree">
+                    <li>
+                      <spa-a route-href="/nucleus/examples/todos" role="link" class="secondary">Todo App</spa-a>
+                    </li>
+                    <li>
+                      <spa-a route-href="/nucleus/examples/counter" role="link" class="secondary">Counter</spa-a>
+                    </li>
+                    <li>
+                      <spa-a route-href="/nucleus/examples/temperature" role="link" class="secondary">Temperature Converter</spa-a>
+                    </li>
+                    <li>
+                      <spa-a route-href="/nucleus/examples/flight-booker" role="link" class="secondary">Flight Booker</spa-a>
+                    </li>
+                    <li>
+                      <spa-a route-href="/nucleus/examples/timer" role="link" class="secondary">Timer</spa-a>
+                    </li>
+                    <li>
+                      <spa-a route-href="/nucleus/examples/cells" role="link" class="secondary">Cells</spa-a>
+                    </li>
+                    <li>
+                      <spa-a route-href="/nucleus/examples/returns" role="link" class="secondary">Furniture Returns</spa-a>
+                    </li>
+                    <li>
+                      <spa-a route-href="/nucleus/examples/view-transitions" role="link" class="secondary">View Transitions</spa-a>
+                    </li>
+                </ul>
+              </details>
+              <details>
+                <summary title="Guides">Guides</summary>
+                <ul role="tree">
+                  <li>
+                    <spa-a route-href="/nucleus/docs/using_elements" role="link" class="secondary">Using Elements</spa-a>
+                  </li>
+                  <li>
+                    <spa-a route-href="/nucleus/docs/orchestrating" role="link" class="secondary">Orchestrating</spa-a>
+                  </li>
+                  <li>
+                    <spa-a route-href="/nucleus/docs/styling" role="link" class="secondary">Styling</spa-a>
+                  </li>
+                  <li>
+                    <spa-a route-href="/nucleus/docs/building_views" role="link" class="secondary">Building Views</spa-a>
+                  </li>
+                  <li>
+                    <spa-a route-href="/nucleus/docs/business_logic" role="link" class="secondary">Business Logic</spa-a>
+                  </li>
+                  <li>
+                    <spa-a route-href="/nucleus/docs/creating_elements" role="link" class="secondary">Creating Elements</spa-a>
+                  </li>
+                  <li>
+                    <spa-a route-href="/nucleus/docs/best_practices" role="link" class="secondary">Best Practices</spa-a>
+                  </li>
+                  <li>
+                    <spa-a route-href="/nucleus/docs/troubleshooting" role="link" class="secondary">Troubleshooting</spa-a>
+                  </li>
+                  <li>
+                    <spa-a route-href="/nucleus/docs/debugging_with_agents" role="link" class="secondary">Debugging with Agents</spa-a>
+                  </li>
+                  <li>
+                    <spa-a route-href="/nucleus/docs/glossary" role="link" class="secondary">Glossary</spa-a>
+                  </li>
+                </ul>
+              </details>
+              <details>
+                <summary title="Advanced">Advanced</summary>
+                <ul role="tree">
+                  <li>
+                    <spa-a route-href="/nucleus/docs/diving_deeper" role="link" class="secondary">Diving Deeper</spa-a>
+                  </li>
+                  <li>
+                    <spa-a route-href="/nucleus/docs/origin_story" role="link" class="secondary">Origin Story</spa-a>
+                  </li>
+                  <li>
+                    <spa-a route-href="/nucleus/docs/adapter_state_orchestrator" role="link" class="secondary">Adapter, State, Orchestrator</spa-a>
+                  </li>
+                  <li>
+                    <spa-a route-href="/nucleus/docs/prior_art" role="link" class="secondary">Prior Art</spa-a>
+                  </li>
+                  <li>
+                    <spa-a route-href="/nucleus/docs/limitations" role="link" class="secondary">Limitations</spa-a>
+                  </li>
+                  <li>
+                    <spa-a route-href="/nucleus/docs/roadmap" role="link" class="secondary">Roadmap</spa-a>
+                  </li>
+                  <li>
+                    <spa-a route-href="/nucleus/docs/contributing" role="link" class="secondary">Contributing</spa-a>
+                  </li>
+                </ul>
+              </details>
+            </div>
+            <div class="package-links" aria-label="Packages">
+              <hgroup>
+                <h5>Packages</h5>
+              </hgroup>
+              <!-- Quark / Nucleus Kit / Valence.css set by `order` -->
+              <div class="library-links" bind-libraries>
+                <include-content is-active template-ref="#template-tree"></include-content>
+              </div>
+              <details open bind-elements>
+                <summary title="Drop-In Custom Elements">Elements</summary>
+                <include-content is-active template-ref="#template-tree"></include-content>
+              </details>
+              <details open bind-tools>
+                <summary title="Developer Tooling">Tools</summary>
+                <include-content is-active template-ref="#template-tree"></include-content>
+              </details>
+              <details open bind-element-bases>
+                <summary title="Composable Element Superclasses">Element Bases</summary>
+                <include-content is-active template-ref="#template-tree"></include-content>
+              </details>
+            </div>
+            <div class="site-nav-footer">
+              <small class="desktop-only">
+                <a href="https://github.com/excom-dev/nucleus" target="_blank" rel="noopener">Source</a>
+                <a href="https://github.com/excom-dev/nucleus/issues" target="_blank" rel="noopener">Issues</a>
+                <spa-a route-href="/nucleus/docs/contributing" role="link">Contribute</spa-a>
+              </small>
+              <!-- ≤768px only. This template is stamped twice, so no ids here.
+                   The socials repeat site-header.html's list: a shared
+                   `<template>` would have to live outside this block. -->
+              <p class="mobile-only">
+                <spa-a route-href="/nucleus" role="link" aria-label="Nucleus Stack home">
+                  <img src="/img/nucleus.svg" alt="Nucleus Stack" />
+                </spa-a>
+                <!-- the company page, not the docs home -->
+                <spa-a route-href="/" role="link">
+                  <span>Made by</span>
+                  <img src="/img/excom.svg" alt="excom" />
+                </spa-a>
+              </p>
+              <ul class="mobile-only">
+                <li>
+                  <a aria-label="Discord" title="Discord" data-social="discord" target="_blank" rel="noopener" href="https://discord.gg/s8hnujBrpn"></a>
+                </li>
+                <li>
+                  <a aria-label="Threads" title="Threads" data-social="threads" target="_blank" rel="noopener"></a>
+                </li>
+                <li>
+                  <a aria-label="X" title="X" data-social="x" target="_blank" rel="noopener" href="https://x.com/excomdev"></a>
+                </li>
+                <li>
+                  <spa-a route-href="/contact" role="link" aria-label="Contact" title="Contact" data-social="contact"></spa-a>
+                </li>
+                <li>
+                  <a href="https://www.npmjs.com/org/excom" aria-label="npm" title="npm" data-social="npm"
+                    target="_blank" rel="noopener"></a>
+                </li>
+                <li>
+                  <a href="https://github.com/excom-dev/nucleus" aria-label="GitHub" title="GitHub" data-social="github"
+                    target="_blank" rel="noopener"></a>
+                </li>
+              </ul>
+              <small>© excom-dev · MIT</small>
+            </div>
+          </nav>
+      </template>
+        <template id="template-tree">
+          <ul role="tree">
+            <template>
+              <li>
+                <spa-a role="link" class="secondary"></spa-a>
+                <ul role="tree" bind-anchors>
+                  <li><a href="#md-installation" class="secondary">Installation</a></li>
+                  <li>
+                    <a href="#md-usage" class="secondary">Usage</a>
+                    <ul role="tree">
+                      <li><a href="#md-api-reference" class="secondary">API Reference</a></li>
+                      <li><a href="#md-examples" class="secondary">Examples</a></li>
+                    </ul>
+                  </li>
+                </ul>
+                <!-- doc pages grouped by the package's support/docs-sections.json -->
+                <ul role="tree" bind-sections>
+                  <template>
+                    <li>
+                      <details>
+                        <summary></summary>
+                        <ul role="tree">
+                          <template>
+                            <li><spa-a role="link" class="secondary"></spa-a></li>
+                          </template>
+                        </ul>
+                      </details>
+                    </li>
+                  </template>
+                </ul>
+              </li>
+            </template>
+          </ul>
+        </template>
+      <aside>
+        <include-content lazy-load template-ref="#template-site-nav"></include-content>
+      </aside>
+      <!-- scrubbable mobile drawer -->
+      <gesture-handler id="site-menu-gesture" gesture-types="pan-y swipe" pointer-types="touch pen mouse"
+        from-ref=":scope > content-drawer > .grabber" handoff-ref=":scope > content-drawer" progress-axis="up"
+        range-ref=":scope > content-drawer" snap-points="0 1">
+        <content-drawer id="site-menu" class="tag-aside" aria-label="Site menu">
+          <dismiss-watcher command-name="--close"></dismiss-watcher>
+          <div class="grabber" aria-hidden="true"></div>
+          <button type="button" class="close" command="--close" commandfor="site-menu" aria-label="Close menu"></button>
+          <include-content lazy-load template-ref="#template-site-nav"></include-content>
+        </content-drawer>
+        <div role="presentation"></div>
+      </gesture-handler>
+      <spa-manager overscroll-behavior-x="navigate">
+        <!-- company page: no docs chrome (.chromeless, see shell.css), and its own title -->
+        <spa-route route-href="/" class="chromeless" document-title="Excom"
+          template-ref="/views/company/company.html"></spa-route>
+        <!-- docs home: the Introduction guide, named here rather than in a param -->
+        <spa-route route-href="/nucleus" template-ref="/views/package/package.html" ready-on="page-ready"
+          data-doc-name="introduction"></spa-route>
+        <!-- site guides. `introduction` is excluded (it is the docs home now) so it falls through to the 404.
+             `route-href` is compiled verbatim into a RegExp, so a lookahead works and `:name` still yields a param
+             (pinned by shell.test.ts). -->
+        <spa-route route-href="/nucleus/docs/(?!introduction$):name" template-ref="/views/package/package.html" ready-on="page-ready"
+        same-route="refresh"></spa-route>
+        <!-- Example apps open in the multi-file playground (live-app); the app itself runs in /sandbox/<data-app> -->
+        <spa-route route-href="/nucleus/examples/todos" template-ref="/views/live-app/live-app.html"
+          data-app="todo-app" data-files="html quark css"></spa-route>
+        <spa-route route-href="/nucleus/examples/counter" template-ref="/views/live-app/live-app.html"
+          data-app="counter-app" data-files="html quark"></spa-route>
+        <spa-route route-href="/nucleus/examples/temperature" template-ref="/views/live-app/live-app.html"
+          data-app="temperature-app" data-files="html quark css"></spa-route>
+        <spa-route route-href="/nucleus/examples/flight-booker" template-ref="/views/live-app/live-app.html"
+          data-app="flight-booker-app" data-files="html quark css"></spa-route>
+        <spa-route route-href="/nucleus/examples/timer" template-ref="/views/live-app/live-app.html"
+          data-app="timer-app" data-files="html quark css"></spa-route>
+        <spa-route route-href="/nucleus/examples/cells" template-ref="/views/live-app/live-app.html"
+          data-app="cells-app" data-files="html quark js css"></spa-route>
+        <spa-route route-href="/nucleus/examples/returns" template-ref="/views/live-app/live-app.html"
+          data-app="returns-app" data-files="html quark css"></spa-route>
+        <spa-route route-href="/nucleus/examples/view-transitions" template-ref="/views/live-app/live-app.html"
+          data-app="view-transitions-app" data-files="html quark css"></spa-route>
+        <spa-route route-href="/nucleus/packages/:packageName" template-ref="/views/package/package.html" ready-on="page-ready"
+          same-route="refresh"></spa-route>
+        <!-- one page of a package's docs (support/docs/<DOC>.md) -->
+        <spa-route route-href="/nucleus/packages/:packageName/:docName" template-ref="/views/package/package.html"
+          ready-on="page-ready" same-route="refresh"></spa-route>
+        <!-- 404. Must stay last: `is-fallback` only activates when no preceding sibling matched -->
+        <spa-route route-regex=".*" is-fallback template-ref="/views/not-found/not-found.html"></spa-route>
+      </spa-manager>
+      <dialog id="search-dialog">
+        <include-content template-ref="/views/search-docs/search-docs.html" pre-fetch="idle"
+          class="abstract"></include-content>
+      </dialog>
+    </provider-fetch>
+  </main>
+
+  <include-content is-active class="abstract" template-ref="/views/release-notice/release-notice.html"></include-content>
+</body>
+
+</html>

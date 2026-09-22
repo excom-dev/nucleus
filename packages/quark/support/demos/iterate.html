@@ -1,0 +1,13 @@
+<div>
+  <ul>
+    <template>
+      <li bind-name></li>
+    </template>
+  </ul>
+  <quark-sheet>
+    @use "/demo-utils" as *;
+
+    ul { content: iterate(getPlanets()); }
+    [bind-name] { content: item; }
+  </quark-sheet>
+</div>

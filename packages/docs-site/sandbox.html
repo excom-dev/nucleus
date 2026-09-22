@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>excom-dev · sandbox</title>
+  <script type="module">
+    import "@excom/nucleus-kit/index";
+  </script>
+  <!-- absolute: this document lives at /sandbox/<app> -->
+  <link rel="stylesheet" href="/shell.css">
+  <style>
+    /* Preview document for the example-app playground: the parent page's
+       iframe points at /sandbox/<app>; the service worker serves any
+       edited /views/<app>/* files to this document only. */
+    html {
+      --demo-gradient: linear-gradient(320deg, #341336 15%, #10173a 100%);
+      @media (prefers-color-scheme: light) {
+        --demo-gradient: linear-gradient(320deg, #f5befe 15%, #afc0ff 100%);
+      }
+
+      background: var(--demo-gradient);
+      height: 100%;
+    }
+
+    body.sandbox {
+      display: block;
+      width: auto;
+      min-height: 0;
+      margin: 0;
+      padding: var(--v-spacing);
+      background: transparent;
+      height: 100%;
+      /* Centre the app in the frame, but `safe`: an app taller than the frame
+         overflows in one direction only. Plain `center` splits the overflow
+         between both edges, which pushes the top of the app above the frame's
+         scroll origin, where nothing can scroll back to it. `safe` falls back to start alignment exactly
+         when that would happen. */
+      align-content: safe center;
+
+      /* a phone-width iframe has no width to spare: the gutter halves rather
+         than eating a tenth of the app */
+      @media (max-width: 480px) {
+        padding: calc(var(--v-spacing) * 0.5);
+      }
+    }
+
+    spa-route {
+      margin: 0 auto;
+      width: max-content;
+      max-width: 100%;
+    }
+  </style>
+</head>
+
+<body class="sandbox">
+  <quark-sheet>
+    spa-route[is-active] {
+    $app: prop("provision").params.app;
+    /* direct child only: apps (timer) have include-content of their own */
+    > include-content {
+    template-ref: "/views/#{$app}/#{$app}.html";
+    is-active: "";
+    }
+    }
+  </quark-sheet>
+  <!-- No spa-manager: a single route, no view transitions to run. -->
+  <spa-route route-href="/sandbox/:app">
+    <template>
+      <include-content></include-content>
+    </template>
+  </spa-route>
+</body>
+
+</html>

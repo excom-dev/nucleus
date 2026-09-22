@@ -1,0 +1,245 @@
+/* Edge-to-edge sticky top bar */
+html #site-header {
+  visibility: visible;
+}
+
+#site-header {
+  height: var(--site-header-height);
+  line-height: var(--site-header-height);
+  max-width: 100%;
+  margin: 0;
+  background-color: var(--v-card-sectioning-background-color);
+  border-bottom: var(--v-border-width) solid var(--v-muted-border-color);
+  position: sticky;
+  top: 0;
+  z-index: 7;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+
+  > nav {
+    max-width: 1450px;
+    margin-inline: auto;
+    padding-inline: var(--v-spacing);
+  }
+
+  > nav :is(ul, ol, li):not(#search-dialog, #search-dialog *) {
+    padding-block: 0 !important;
+    margin-block: 0 !important;
+  }
+}
+
+/* ---- Desktop: top bar ---- */
+@media (min-width: 769px) {
+  #site-header {
+    /* Valence has no input alias (inputs are inimitable); approximate
+       one with form-element tokens so the control reads as a search bar. */
+    #site-search {
+      margin-right: 24px;
+      .tag-input {
+        display: inline-block;
+        min-width: 220px;
+        padding-inline: var(--v-form-element-spacing-horizontal);
+        line-height: calc(var(--site-header-height) / 2);
+        background-color: var(--v-form-element-background-color);
+        border: var(--v-border-width) solid var(--v-form-element-border-color);
+        border-radius: var(--v-border-radius);
+        cursor: pointer;
+        color: var(--v-form-element-placeholder-color);
+        position: relative;
+        .shortcut {
+          position: absolute;
+          right: 8px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: var(--v-form-element-placeholder-color);
+          font-size: 0.875rem;
+          line-height: 0.875rem;
+          font-weight: 500;
+          padding: 4px;
+          border-radius: var(--v-border-radius);
+          background-color: var(--v-card-background-color);
+          border: var(--v-border-width) solid var(--v-form-element-border-color);
+        }
+      }
+    }
+
+    #logos {
+      display: flex;
+      align-items: center;
+      gap: var(--v-nav-element-spacing-horizontal);
+      line-height: normal;
+      spa-a {
+        display: inline-block;
+      }
+      /* height-sized: a wordmark or a square icon both fit */
+      img[src*="nucleus"] {
+        height: calc(var(--site-header-height) / 1.4);
+        width: auto;
+        display: block;
+      }
+      img[src*="excom"] {
+        height: calc(var(--site-header-height) / 3.4);
+        width: auto;
+        display: block;
+        margin-top: 5px;
+      }
+      *:has(> img[src*="excom"]) {
+        border-left: 4px solid var(--v-muted-border-color);
+        border-radius: 0px;
+        margin-left: 12px;
+        padding: 0px 20px;
+        color: var(--v-h5-color);
+      }
+    }
+
+    /* Icon-only social links; `--ico` per `data-social` comes from shell.css */
+    li:has([data-social]) {
+      padding-inline: calc(var(--v-nav-element-spacing-horizontal) * 0.75);
+    }
+    [data-social] {
+      display: flex;
+      align-items: center;
+      /* A flex box drops the bar's `line-height` centring, and Valence's
+         nav-link rule adds a negative block margin; span the bar instead. */
+      height: var(--site-header-height);
+      margin-block: 0;
+      color: var(--v-muted-color);
+      text-decoration: none;
+      cursor: pointer;
+      transition: color var(--v-transition);
+      &::before {
+        content: "";
+        width: 1.1rem;
+        height: 1.1rem;
+        background-color: currentColor;
+        mask: var(--ico) center / contain no-repeat;
+        -webkit-mask: var(--ico) center / contain no-repeat;
+      }
+      &:hover {
+        color: var(--v-primary);
+      }
+      .tab-label {
+        display: none;
+      }
+    }
+
+    /* the tab labels are the link text; `[data-tab="home"]` shows the logo */
+    [data-tab="home"] .tab-label,
+    .mobile-only {
+      display: none;
+    }
+  }
+}
+
+/* ---- Mobile: native-style bottom tab bar ---- */
+@media (max-width: 768px) {
+  #site-header {
+    position: fixed;
+    inset: auto 0 0 0;
+    height: auto;
+    line-height: normal;
+    padding-bottom: env(safe-area-inset-bottom) !important;
+    border-bottom: 0;
+    border-top: var(--v-border-width) solid var(--v-muted-border-color);
+    background-color: color-mix(
+      in srgb,
+      var(--v-card-sectioning-background-color) 88%,
+      transparent
+    );
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+
+    .desktop-only {
+      display: none;
+    }
+    .mobile-only,
+    [data-tab="home"] .tab-label {
+      display: block;
+    }
+
+    > nav {
+      padding-inline: 0;
+      justify-content: space-around;
+      /* one row of tabs: the two lists dissolve into the nav */
+      > ul {
+        display: contents;
+      }
+      li {
+        flex: 1 1 0;
+        padding: 0;
+      }
+      li:has([data-tab="menu"]) {
+        order: 1;
+      }
+      li:has([data-tab="search"]) {
+        order: 2;
+      }
+      li:has([data-tab="home"]) {
+        order: 3;
+      }
+      li:has([data-tab="github"]) {
+        order: 4;
+      }
+    }
+
+    /* a tab: icon above a small label, full-height tap target */
+    [data-tab] {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      width: 100%;
+      min-height: var(--site-header-height);
+      margin: 0;
+      padding: 0.35rem 0;
+      border: 0;
+      border-radius: 0;
+      background: none;
+      box-shadow: none;
+      color: var(--v-muted-color);
+      font-size: 0.65rem;
+      font-weight: 500;
+      line-height: 1;
+      letter-spacing: 0.01em;
+      text-decoration: none;
+      cursor: pointer;
+      transition:
+        color var(--v-transition),
+        transform var(--v-transition-duration-fast) var(--v-transition-ease-out);
+      &::before {
+        content: "";
+        width: 1.5rem;
+        height: 1.5rem;
+        background-color: currentColor;
+        mask: var(--ico) center / contain no-repeat;
+        -webkit-mask: var(--ico) center / contain no-repeat;
+      }
+      &:active {
+        transform: scale(0.9);
+      }
+      &[is-active] {
+        color: var(--v-primary);
+      }
+      img {
+        display: none;
+      }
+    }
+    [data-tab="home"] {
+      --ico: var(--ico-home);
+    }
+    [data-tab="search"] {
+      --ico: var(--ico-search);
+      min-width: 0;
+      line-height: 1;
+    }
+    [data-tab="menu"] {
+      --ico: var(--ico-menu);
+    }
+    [data-tab="github"] {
+      --ico: var(--ico-github);
+    }
+  }
+}

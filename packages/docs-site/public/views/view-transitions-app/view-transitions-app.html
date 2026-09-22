@@ -1,0 +1,81 @@
+<article id="view-transitions-app" data-page="1" data-count="3" data-tip="0">
+  <link rel="stylesheet" href="/views/view-transitions-app/view-transitions-app.css">
+  <quark-sheet src-url="/views/view-transitions-app/view-transitions-app.quark"></quark-sheet>
+
+  <section aria-labelledby="cards-title">
+    <hgroup>
+      <h3 id="cards-title">Card expansion</h3>
+      <p>Click a card. One write flips <code>is-open</code>; the box morphs because its name is the same before and after.</p>
+    </hgroup>
+    <ul class="cards">
+      <li data-card-id="alpha">
+        <h4>Alpha</h4>
+        <p>The open card spans the row. Its group animates size and position; nothing else is named, so the rest crossfades.</p>
+      </li>
+      <li data-card-id="beta">
+        <h4>Beta</h4>
+        <p>Every card has its own <code>view-transition-name</code>, written by the sheet as a CSS variable.</p>
+      </li>
+      <li data-card-id="gamma">
+        <h4>Gamma</h4>
+        <p>Click the open card again to close it: the same write, the same morph, in reverse.</p>
+      </li>
+      <li data-card-id="delta">
+        <h4>Delta</h4>
+        <p>Types name the cut, so CSS can tune the open and the close differently.</p>
+      </li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="pages-title">
+    <hgroup>
+      <h3 id="pages-title">Page slide</h3>
+      <p>The current page carries <code>is-current</code>. The transition type says which way you went, and the CSS slides accordingly.</p>
+    </hgroup>
+    <nav class="pager" aria-label="pages">
+      <button type="button" data-move="back">Back</button>
+      <output bind-page></output>
+      <button type="button" data-move="forward">Next</button>
+    </nav>
+    <div class="pages">
+      <article data-page-index="1">
+        <h4>One</h4>
+        <p>Forward slides the old page out to the left and the new one in from the right.</p>
+      </article>
+      <article data-page-index="2">
+        <h4>Two</h4>
+        <p>Back mirrors it. Both pages share one name, so only the current one is ever captured.</p>
+      </article>
+      <article data-page-index="3">
+        <h4>Three</h4>
+        <p>The pair is clipped to the page box, so the slide never spills over the rest of the view.</p>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="list-title">
+    <hgroup>
+      <h3 id="list-title">List reflow</h3>
+      <p>Rows keep their identity across adds, removals and reorders, so they move instead of flashing. A removed row gets an exit animation CSS transitions cannot give it.</p>
+    </hgroup>
+    <nav class="toolbar" aria-label="list">
+      <button type="button" data-list="add">Add</button>
+      <button type="button" data-list="remove">Remove</button>
+      <button type="button" data-list="reverse">Reverse</button>
+    </nav>
+    <ul class="planets">
+      <template>
+        <li></li>
+      </template>
+    </ul>
+  </section>
+
+  <section aria-labelledby="tip-title">
+    <hgroup>
+      <h3 id="tip-title">Content crossfade</h3>
+      <p>Text replaced in place fades between old and new.</p>
+    </hgroup>
+    <blockquote bind-tip></blockquote>
+    <button type="button" data-next-tip>Next tip</button>
+  </section>
+</article>

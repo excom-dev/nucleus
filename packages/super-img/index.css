@@ -1,0 +1,5 @@
+@import "./src/super-img.css";
+
+@layer {
+  @mixin module-super-img;
+}

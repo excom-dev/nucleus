@@ -1,0 +1,144 @@
+/**
+ * Table
+ *
+ * Reboot from normalize.css v8.0.1 (MIT) and sanitize.css v13.0.0 (CC0).
+ */
+
+@define-mixin module-table $table: :--table, $thead: :--thead, $tbody: :--tbody,
+  $tfoot: :--tfoot, $tr: :--tr, $th: :--th, $td: :--td, $th--sort: :--th--sort,
+  $th--sort-asc: :--th--sort-asc, $th--sort-desc: :--th--sort-desc {
+  /* 1. Collapse border-spacing (opinionated)
+     2. Drop table text-indent in Chrome, Edge, Safari */
+  :where($(table)) {
+    width: 100%;
+    border-collapse: collapse; /* 1 */
+    border-spacing: 0;
+    text-indent: 0; /* 2 */
+  }
+
+  $(table) {
+    display: table;
+    margin-bottom: var(--v-typography-spacing-vertical);
+
+    $(thead) {
+      display: table-header-group;
+    }
+
+    $(th) {
+      &:is($(th--sort)) {
+        cursor: pointer;
+        user-select: none;
+        &::after {
+          white-space: pre-wrap;
+          content: "▲\A▼";
+          font-size: 0.6em;
+          opacity: 0.5;
+          margin-left: calc(var(--v-spacing) * 0.5);
+          display: inline-block;
+          vertical-align: text-bottom;
+          text-align: center;
+          width: 20px;
+          line-height: 1em;
+        }
+      }
+      &:is($(th--sort-asc))::after {
+        content: "▲";
+        font-size: 0.85em;
+        vertical-align: baseline;
+      }
+      &:is($(th--sort-desc))::after {
+        content: "▼";
+        font-size: 0.85em;
+        vertical-align: baseline;
+      }
+    }
+
+    $(tbody) {
+      display: table-row-group;
+    }
+
+    $(tfoot) {
+      display: table-footer-group;
+    }
+
+    $(tr) {
+      display: table-row;
+    }
+
+    $(th),
+    $(td) {
+      display: table-cell;
+    }
+
+    /* Corner cell radii */
+    $(tr):first-of-type:not(:is($(thead) ~ *, $(tbody) ~ *) > $(tr)) {
+      > :first-child {
+        border-top-left-radius: var(--v-border-radius);
+      }
+      > :last-child {
+        border-top-right-radius: var(--v-border-radius);
+      }
+    }
+    $(tr):last-of-type:not(*:has(~ $(tfoot), ~ $(tbody)) > $(tr)) {
+      > * {
+        border-bottom-width: 0;
+      }
+      > :first-child {
+        border-bottom-left-radius: var(--v-border-radius);
+      }
+      > :last-child {
+        border-bottom-right-radius: var(--v-border-radius);
+      }
+    }
+    /* Cells */
+    $(th),
+    $(td) {
+      padding: calc(var(--v-spacing) / 2) var(--v-spacing);
+      border-bottom: var(--v-border-width) solid var(--v-table-border-color);
+      background-color: var(--v-background-color);
+      color: var(--v-color);
+      font-weight: var(--v-font-weight);
+      text-align: left;
+      text-align: start;
+    }
+
+    /* Header */
+    $(thead) {
+      $(th),
+      $(td) {
+        border-bottom: var(--v-border-width) solid var(--v-table-border-color);
+        border-top: 0;
+      }
+      /**
+       * Sticky table header row.
+       * @cssclass sticky
+       */
+      &.sticky $(th) {
+        position: sticky;
+        z-index: 2;
+        top: var(--v-table-sticky-top);
+      }
+    }
+
+    /* Footer */
+    $(tfoot) {
+      $(th),
+      $(td) {
+        border-top: var(--v-border-width) solid var(--v-table-border-color);
+        border-bottom: 0;
+      }
+    }
+
+    /**
+     * Alternating row background.
+     * @cssclass striped
+     */
+    /* Striped */
+    &.striped {
+      $(tbody) $(tr):nth-child(odd) $(th),
+      $(tbody) $(tr):nth-child(odd) $(td) {
+        background-color: var(--v-table-row-stripped-background-color);
+      }
+    }
+  }
+}

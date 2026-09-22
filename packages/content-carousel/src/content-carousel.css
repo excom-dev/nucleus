@@ -1,0 +1,239 @@
+/**
+ * Styles for `<content-carousel>`.
+ * @element content-carousel
+ */
+
+/* Aliases */
+@custom-selector :--content-carousel content-carousel, .tag-content-carousel;
+@custom-selector :--content-carousel--last-move [last-move], [data-last-move];
+@custom-selector :--content-carousel--last-move-forward [last-move="forward"], [data-last-move="forward"];
+@custom-selector :--content-carousel--last-move-back [last-move="back"], [data-last-move="back"];
+@custom-selector :--content-carousel--slide-animation [slide-animation], [data-slide-animation];
+@custom-selector :--content-carousel--slide-animation-slide [slide-animation="slide"], [data-slide-animation="slide"];
+@custom-selector :--content-carousel--slide-animation-fade [slide-animation="fade"], [data-slide-animation="fade"];
+@custom-selector :--content-carousel--slide-animation-track [slide-animation="track"], [data-slide-animation="track"];
+@custom-selector :--content-carousel--is-scrubbing [is-scrubbing], [data-scrubbing];
+@custom-selector :--content-carousel-slide content-carousel-slide, .tag-content-carousel-slide;
+@custom-selector :--content-carousel-slide--is-active [is-active], [aria-current];
+
+@define-mixin module-content-carousel {
+  :root {
+    /**
+     * Length of the slide / fade transition.
+     * @cssproperty
+     * @syntax <time>
+     * @default 0.25s
+     */
+    --content-carousel-slide-animation-duration: var(
+      --v-transition-duration-standard,
+      0.25s
+    );
+    /**
+     * Easing used for the fade transition.
+     * @cssproperty
+     * @syntax <easing-function>
+     * @default ease-out
+     */
+    --content-carousel-transition-ease: var(--v-transition-ease-out, ease-out);
+    /**
+     * Min-width of the nav buttons.
+     * @cssproperty
+     * @syntax <length>
+     * @default 25px
+     */
+    --content-carousel-button-size: 25px;
+  }
+
+  :--content-carousel {
+    /**
+     * `slide-animation="track"` only: how far the track is dragged, in slide
+     * widths — `1` shows the next slide, `-1` the previous. While
+     * `is-scrubbing` it follows a wrapping `<gesture-handler>`'s inherited
+     * `--gesture-progress` unless set explicitly — swipeable carousels.
+     * @cssproperty
+     * @syntax <number>
+     * @default 0
+     */
+    --content-carousel-progress: 0;
+    display: block;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: auto;
+    white-space: nowrap;
+
+    > [rel="prev"],
+    .tag-content-carousel-prev,
+    > [rel="next"],
+    .tag-content-carousel-next {
+      position: absolute;
+      top: calc(50% - calc(var(--content-carousel-button-size) / 2));
+      min-width: var(--content-carousel-button-size);
+      z-index: 3;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    /**
+     * Positions a direct child with `rel="prev"` (or
+     * `.tag-content-carousel-prev`) as the "previous slide" nav control.
+     * @cssclass tag-content-carousel-prev
+     */
+    > [rel="prev"],
+    .tag-content-carousel-prev {
+      left: 0;
+    }
+    /**
+     * Positions a direct child with `rel="next"` (or
+     * `.tag-content-carousel-next`) as the "next slide" nav control.
+     * @cssclass tag-content-carousel-next
+     */
+    > [rel="next"],
+    .tag-content-carousel-next {
+      right: 0;
+    }
+
+    :--content-carousel-slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* slide / default */
+    &:not(:--content-carousel--slide-animation),
+    &:--content-carousel--slide-animation-slide {
+      :--content-carousel-slide {
+        animation-duration: var(--content-carousel-slide-animation-duration);
+        animation-fill-mode: forwards;
+        z-index: -1;
+      }
+      /* Initial state. No animation. */
+      &:not(:--content-carousel--last-move) :--content-carousel-slide {
+        &:--content-carousel-slide--is-active {
+          transform: translateX(0);
+          z-index: 2;
+        }
+        &:not(:--content-carousel-slide--is-active) {
+          opacity: 0;
+          z-index: 1;
+        }
+      }
+      &:--content-carousel--last-move-forward :--content-carousel-slide {
+        &:--content-carousel-slide--is-active {
+          animation-name: right-to-center;
+          z-index: 2;
+        }
+        &:not(:--content-carousel-slide--is-active):has(
+            + :--content-carousel-slide--is-active
+          ),
+        &:first-of-type:--content-carousel-slide--is-active ~ :last-of-type {
+          animation-name: center-to-left;
+          z-index: 1;
+        }
+      }
+      &:--content-carousel--last-move-back :--content-carousel-slide {
+        &:--content-carousel-slide--is-active {
+          animation-name: left-to-center;
+          z-index: 2;
+        }
+        &:--content-carousel-slide--is-active
+          + :not(:--content-carousel-slide--is-active),
+        &:first-of-type:not(:--content-carousel-slide--is-active):has(
+            ~ :last-of-type:--content-carousel-slide--is-active
+          ) {
+          animation-name: center-to-right;
+          z-index: 1;
+        }
+      }
+    }
+
+    /* fade */
+    &:--content-carousel--slide-animation-fade {
+      :--content-carousel-slide {
+        opacity: 0;
+        z-index: 1;
+        transition: opacity var(--content-carousel-transition-ease);
+        transition-duration: var(--content-carousel-slide-animation-duration);
+        &:--content-carousel-slide--is-active {
+          opacity: 1;
+          z-index: 2;
+        }
+        &:not(:--content-carousel-slide--is-active) {
+          opacity: 0;
+          z-index: 1;
+        }
+      }
+    }
+
+    /* track: the active slide sits at 0, neighbours at ±100%, all shifted by
+       `--content-carousel-progress`. Transitions animate a slide change;
+       none while `is-scrubbing`, when a finger drives the offset. */
+    &:--content-carousel--slide-animation-track {
+      :--content-carousel-slide {
+        --content-carousel-slot: 1;
+        transform: translateX(
+          calc(
+            (var(--content-carousel-slot) - var(--content-carousel-progress)) *
+              100%
+          )
+        );
+        transition: transform var(--content-carousel-slide-animation-duration)
+          var(--content-carousel-transition-ease);
+        &:--content-carousel-slide--is-active {
+          --content-carousel-slot: 0;
+          z-index: 2;
+        }
+        &:has(~ :--content-carousel-slide--is-active) {
+          --content-carousel-slot: -1;
+        }
+        &:is(&:--content-carousel-slide--is-active + & + &),
+        &:has(+ & + &:--content-carousel-slide--is-active) {
+          /* hide slides that are two slides away */
+          display: none !important;
+        }
+      }
+      &:--content-carousel--is-scrubbing {
+        --content-carousel-progress: var(--gesture-progress, 0);
+        :--content-carousel-slide {
+          transition: none;
+        }
+      }
+    }
+  }
+
+  @keyframes right-to-center {
+    0% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+  @keyframes center-to-left {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+  @keyframes left-to-center {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+  @keyframes center-to-right {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+}

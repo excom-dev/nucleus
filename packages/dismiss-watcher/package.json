@@ -1,0 +1,48 @@
+{
+  "name": "@excom/dismiss-watcher",
+  "version": "0.1.0",
+  "description": "<dismiss-watcher> custom element",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24.13.0"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "node node_modules/@excom/heft-rig/scripts/vite-build.mjs",
+    "build:watch": "node node_modules/@excom/heft-rig/scripts/vite-build-watch.mjs",
+    "format": "node node_modules/@excom/heft-rig/scripts/format.mjs",
+    "test": "node node_modules/@excom/heft-rig/scripts/vitest.mjs",
+    "coverage": "node node_modules/@excom/heft-rig/scripts/coverage.mjs",
+    "dev": "node node_modules/@excom/heft-rig/scripts/vite-dev.mjs",
+    "preview": "node node_modules/@excom/heft-rig/scripts/vite-preview.mjs",
+    "build:package-metas": "node node_modules/@excom/heft-rig/scripts/build-package-metas.mjs",
+    "build:docs": "node node_modules/@excom/heft-rig/scripts/build-docs.mjs"
+  },
+  "dependencies": {
+    "@excom/kit-shims": "workspace:^",
+    "@excom/kit-utils": "workspace:^",
+    "@excom/neutron": "workspace:^"
+  },
+  "peerDependencies": {},
+  "devDependencies": {
+    "@excom/content-drawer": "workspace:^",
+    "@excom/event-handler": "workspace:^",
+    "@excom/heft-rig": "workspace:^",
+    "@excom/quark": "workspace:^",
+    "@excom/quark-sheet": "workspace:^"
+  },
+  "repository": {
+    "url": "excom-dev/nucleus",
+    "directory": "packages/dismiss-watcher"
+  },
+  "homepage": "https://github.com/excom-dev/nucleus/tree/main/packages/dismiss-watcher/support/docs/README.md",
+  "bugs": "https://github.com/excom-dev/nucleus/issues",
+  "keywords": [
+    "dismiss-watcher",
+    "neutron",
+    "custom-elements"
+  ],
+  "excom": {
+    "packageType": "kit-element"
+  }
+}

@@ -1,0 +1,83 @@
+/**
+ * Popover (`[popover]`).
+ *
+ * Override UA `position: fixed` centering with `position: absolute`,
+ * tethered via `position-anchor: auto` (implicit anchor from
+ * `popovertarget` / `showPopover({ source })`). `[data-placement]`
+ * picks the side (default: top).
+ *
+ *   <button popovertarget="tip">...</button>
+ *   <div id="tip" popover data-placement="bottom">Bubble content</div>
+ */
+
+@define-mixin module-popover {
+  *:has(> :--popover) {
+    anchor-scope: --v-popover-anchor;
+    anchor-name: --v-popover-anchor;
+  }
+  :--popover {
+    /* Override UA: position: fixed; inset: 0; margin: auto; */
+    position: absolute;
+    inset: auto;
+    margin: 0;
+    position-anchor: --v-popover-anchor;
+
+    z-index: 1;
+    max-width: min(
+      var(--v-popover-max-width),
+      calc(100vw - var(--v-spacing) * 2)
+    );
+    padding: var(--v-spacing);
+    border: 1px solid var(--v-popover-border-color);
+    border-radius: var(--v-border-radius);
+    background: var(--v-popover-background-color);
+    color: var(--v-popover-color);
+    box-shadow: var(--v-popover-box-shadow);
+    font-size: var(--v-font-size);
+    font-weight: normal;
+    text-wrap: pretty;
+    overflow-wrap: break-word;
+    opacity: 0;
+
+    transition:
+      display var(--v-transition) allow-discrete,
+      overlay var(--v-transition) allow-discrete,
+      opacity var(--v-transition);
+
+    &:--popover--open {
+      opacity: 1;
+    }
+
+    @starting-style {
+      &:--popover--open {
+        opacity: 0;
+      }
+    }
+
+    &::backdrop {
+      display: none;
+    }
+
+    /* Default + explicit top */
+    &:not([data-placement]),
+    &[data-placement="top"] {
+      position-area: top;
+      margin-bottom: calc(var(--v-spacing) * 0.5);
+    }
+
+    &[data-placement="bottom"] {
+      position-area: bottom;
+      margin-top: calc(var(--v-spacing) * 0.5);
+    }
+
+    &[data-placement="left"] {
+      position-area: left;
+      margin-right: calc(var(--v-spacing) * 0.5);
+    }
+
+    &[data-placement="right"] {
+      position-area: right;
+      margin-left: calc(var(--v-spacing) * 0.5);
+    }
+  }
+}

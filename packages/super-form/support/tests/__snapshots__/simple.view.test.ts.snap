@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`simple view > echoes the submitted name and stays within the complexity budget > complexity 1`] = `
+{
+  "attributeRuns": 2,
+  "closest": 0,
+  "getVar": 2,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 6,
+  "parentElement": 4,
+  "quarkRuns": 3,
+  "queryScopeCost": 15,
+  "querySelectorAll": 4,
+  "removeAttribute": 1,
+  "ruleRuns": 6,
+  "schedulePaint": 2,
+  "setAttribute": 2,
+  "setVar": 2,
+  "textContent": 2,
+  "variableRuns": 2,
+}
+`;

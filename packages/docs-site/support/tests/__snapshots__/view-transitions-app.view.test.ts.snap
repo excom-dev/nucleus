@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`view-transitions-app view > renders the initial state and stays within the complexity budget on a card click > complexity 1`] = `
+{
+  "attributeRuns": 7,
+  "closest": 7,
+  "getVar": 5,
+  "importNode": 0,
+  "listenerRuns": 7,
+  "matches": 9,
+  "parentElement": 71,
+  "quarkRuns": 2,
+  "queryScopeCost": 58,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 3,
+  "schedulePaint": 7,
+  "setAttribute": 3,
+  "setVar": 8,
+  "textContent": 0,
+  "variableRuns": 8,
+}
+`;

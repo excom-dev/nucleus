@@ -1,0 +1,27 @@
+/* State: `data-celsius` / `data-fahrenheit` on the host, plus `data-source`
+   naming the side the user last typed. Only the other side is ever written. */
+:scope {
+  @on input {
+    data-source: event.target.name.replace("data-", "");
+    data-celsius: if(
+      event.target.name == "data-celsius": event.target.value;
+      else: preserve
+    );
+    data-fahrenheit: if(
+      event.target.name == "data-fahrenheit": event.target.value;
+      else: preserve
+    );
+  }
+}
+:scope[data-source="celsius"] {
+  $celsius: attr("data-celsius");
+  [bind-fahrenheit] input {
+    value: ($celsius * 9 / 5 + 32).toFixed(1);
+  }
+}
+:scope[data-source="fahrenheit"] {
+  $fahrenheit: attr("data-fahrenheit");
+  [bind-celsius] input {
+    value: (($fahrenheit - 32) * 5 / 9).toFixed(1);
+  }
+}

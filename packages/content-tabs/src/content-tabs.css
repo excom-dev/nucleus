@@ -1,0 +1,137 @@
+@import "@excom/valence/src/util.default.css";
+
+/**
+ * Styles for `<content-tabs>`, `<content-tabs-header>`, and
+ * `<content-tabs-body>`. Primary layout lives on the `content-tabs`
+ * mixin; headers / bodies are styled via nested selectors.
+ * @element content-tabs
+ */
+
+/* Aliases */
+@custom-selector :--content-tabs content-tabs, .tag-content-tabs;
+@custom-selector :--content-tabs-header content-tabs-header, .tag-content-tabs-header;
+@custom-selector :--content-tabs-body content-tabs-body, .tag-content-tabs-body;
+@custom-selector :--content-tab--is-open [is-open], [aria-selected="true"];
+
+@define-mixin module-content-tabs {
+  :root {
+    /**
+     * Border color for `.file-tabs` headers / bodies.
+     * @cssproperty
+     * @syntax <color>
+     */
+    --content-tabs-border-color: var(--v-muted-border-color, currentColor);
+    /**
+     * Border width for `.file-tabs` headers / bodies.
+     * @cssproperty
+     * @syntax <length>
+     */
+    --content-tabs-border-width: var(--v-border-width, 2px);
+    /**
+     * Text color for the active header in `.underline`.
+     * @cssproperty
+     * @syntax <color>
+     */
+    --content-tabs-color-active: var(--v-color-primary, inherit);
+    /**
+     * Padding for each header.
+     * @cssproperty
+     * @syntax <length>{1,4}
+     */
+    --content-tabs-header-padding: 10px 15px;
+    /**
+     * Padding for each body in `.file-tabs`.
+     * @cssproperty
+     * @syntax <length>{1,4}
+     */
+    --content-tabs-body-padding: var(--v-spacing, 15px);
+    /**
+     * Height of the `.file-tabs` active-tab accent bar.
+     * @cssproperty
+     * @syntax <length>
+     */
+    --content-tabs-active-indicator-height: 2px;
+  }
+
+  :--content-tabs {
+    :--content-tabs-header {
+      cursor: pointer;
+      position: relative;
+      user-select: none;
+    }
+    :--content-tabs-body {
+      display: none;
+    }
+    :--content-tabs-body:--content-tab--is-open {
+      display: block;
+    }
+
+    /**
+     * File-explorer look — headers render as bordered folder tabs joined
+     * to the active body.
+     * @cssclass
+     */
+    &.file-tabs {
+      > :--content-tabs-header {
+        /* compensate for lack of flexbox */
+        margin-right: -5px;
+      }
+      :--content-tabs-header {
+        border: var(--content-tabs-border-width) solid
+          var(--content-tabs-border-color);
+        border-bottom: 0;
+        padding: var(--content-tabs-header-padding);
+        display: inline-block;
+
+        &:not(:last-of-type) {
+          border-right: 0;
+        }
+        :--content-tabs-body {
+          margin-top: -1px;
+        }
+      }
+      &:not(:has(:--content-tabs-header:--content-tab--is-open))
+        :--content-tabs-header:first-of-type,
+      :--content-tabs-header:--content-tab--is-open {
+        @mixin util-nested-card;
+        color: var(--v-primary);
+
+        &::after {
+          content: "";
+          position: absolute;
+          bottom: calc(var(--content-tabs-border-width) * -1);
+          left: 0;
+          width: 100%;
+          height: var(--content-tabs-active-indicator-height);
+          @mixin util-nested-card;
+        }
+      }
+      &:not(:has(:--content-tabs-body:--content-tab--is-open))
+        :--content-tabs-body:first-of-type,
+      :--content-tabs-body:--content-tab--is-open {
+        border: var(--content-tabs-border-width) solid
+          var(--content-tabs-border-color);
+        padding: var(--content-tabs-body-padding);
+        @mixin util-nested-card;
+      }
+    }
+    /**
+     * Paper / underline look — the active header gets a bottom accent
+     * border instead of a bordered card.
+     * @cssclass
+     */
+    &.underline {
+      :--content-tabs-header {
+        border-bottom: 2px solid transparent;
+        padding: var(--content-tabs-header-padding);
+        &:--content-tab--is-open {
+          color: var(--v-primary);
+          border-color: var(--v-primary-border);
+        }
+      }
+      :--content-tabs-body:--content-tab--is-open {
+        margin-top: 8px;
+      }
+    }
+  }
+}

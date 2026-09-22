@@ -1,0 +1,192 @@
+/* Scoped to this view's root <div>. `$package-name` / `$package-meta` are
+   bindings published by the package view on `provider-fetch.doc-page`: this
+   view only renders once that fetch succeeded. */
+@use "/shell" as *;
+
+:scope {
+  [bind-src-link] {
+    href: buildGitHubLink($package-name);
+  }
+  [bind-inherited-from] {
+    content: if(item.inheritedFrom: template("#inherited-from-link"));
+    spa-a {
+      route-href: "/nucleus/packages/#{fileNameOf(item.inheritedFrom)}";
+      content: fileNameOf(item.inheritedFrom);
+    }
+  }
+  [bind-type] {
+    content: item.type;
+  }
+  [bind-type-popover] {
+    content: if(item.typeExpanded: template("#type-popover"));
+  }
+  [bind-type-expanded] {
+    content: formatTsType(item.typeExpanded, $tag);
+  }
+  data-thead include-content {
+    /* to prevent the table from being sorted when the sorts are clicked */
+    @on click (stop-propagation);
+  }
+  #api-reference {
+    content: iterate($package-meta.elementApis);
+    article {
+      $tag: item.tag;
+    }
+    [bind-tag] {
+      content: $tag;
+    }
+    /* details 1 */
+    [bind-attributes-length] {
+      content: "(#{item.attributes.length or 0})";
+    }
+    [bind-attributes] data-tbody {
+      content: iterate(item.attributes);
+      [bind-name] {
+        content: item.name;
+      }
+      [bind-property] {
+        content: item.fieldName;
+      }
+      [bind-role] {
+        data-role: item.surface;
+        content: item.surface;
+      }
+      [bind-default] {
+        content: unescapeHtml(pickDefault(item));
+      }
+      [bind-values] {
+        content: unescapeHtml(item.values);
+      }
+      [bind-description] {
+        content: dangerous-html(item.description);
+      }
+    }
+    [bind-provisions-length] {
+      content: addLengths(item.provisions);
+    }
+    [bind-provisions] data-tbody {
+      content: iterate(item.provisions);
+      [bind-name] {
+        content: item.name;
+      }
+      [bind-property] {
+        content: item.fieldName;
+      }
+      [bind-description] {
+        content: dangerous-html(item.description);
+      }
+    }
+    /* details 2 */
+    [bind-children-length] {
+      content: " (#{item.expectedChildren.length})";
+    }
+    [bind-children] data-tbody {
+      content: iterate(item.expectedChildren);
+      [bind-name] {
+        content: item.selector;
+      }
+      [bind-relationship] {
+        content: item.relationship;
+      }
+      [bind-required] {
+        content: item.required;
+      }
+      [bind-description] {
+        content: dangerous-html(item.description);
+      }
+    }
+    /* details 3 */
+    [bind-events-length] {
+      content: addLengths(item.events, item.listens, item.commands);
+    }
+    [bind-dispatches] data-tbody {
+      content: iterate(item.events);
+      [bind-name] {
+        content: item.name;
+      }
+      [bind-description] {
+        content: dangerous-html(item.description);
+      }
+      [bind-defaultaction] {
+        content: dangerous-html(item.defaultAction);
+      }
+    }
+    [bind-listens] data-tbody {
+      content: iterate(item.listens);
+      [bind-name] {
+        content: item.name;
+      }
+      [bind-description] {
+        content: dangerous-html(item.description);
+      }
+    }
+    [bind-commands] data-tbody {
+      content: iterate(item.commands);
+      [bind-name] {
+        content: item.name;
+      }
+      [bind-description] {
+        content: dangerous-html(item.description);
+      }
+    }
+    /* details 4 */
+    [bind-styles] {
+      data-length: sumLengths(
+        item.cssClasses,
+        item.cssProperties,
+        item.cssAliases
+      );
+    }
+    [bind-styles-length] {
+      content: addLengths(item.cssClasses, item.cssProperties, item.cssAliases);
+    }
+    [bind-css-classes] {
+      data-length: item.cssClasses.length or 0;
+      data-tbody {
+        content: iterate(item.cssClasses);
+        [bind-name] {
+          content: ".#{item.name}";
+        }
+        [bind-description] {
+          content: dangerous-html(item.description);
+        }
+      }
+    }
+    [bind-css-properties] {
+      data-length: item.cssProperties.length or 0;
+      data-tbody {
+        content: iterate(item.cssProperties);
+        [bind-name] {
+          content: item.name;
+        }
+        [bind-syntax] {
+          content: unescapeCssType(item.syntax);
+        }
+        [bind-default] {
+          content: item.default;
+        }
+        [bind-description] {
+          content: dangerous-html(item.description);
+        }
+      }
+    }
+    [bind-css-aliases] {
+      data-length: item.cssAliases.length or 0;
+      data-tbody {
+        content: iterate(item.cssAliases);
+        [bind-name] {
+          content: item.name;
+        }
+        [bind-kind] {
+          content: item.kind;
+        }
+        [bind-selectors] {
+          content: joinSelectors(item.selectors);
+        }
+        [bind-description] {
+          content: dangerous-html(item.description);
+        }
+      }
+    }
+  }
+}

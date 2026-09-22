@@ -1,0 +1,13 @@
+<section>
+  <event-handler target-ref=":scope + content-drawer" command-name="--open">
+    Open drawer
+  </event-handler>
+  <content-drawer id="demo-enter-close-drawer" is-open>
+    <event-handler listen-for="keydown" keycode-filter="enter" target-ref="#demo-enter-close-drawer" command-name="--close">
+      <label>
+        Favorite color
+        <input type="text" placeholder="Type something, then press Enter to close drawer" autofocus />
+      </label>
+    </event-handler>
+  </content-drawer>
+</section>

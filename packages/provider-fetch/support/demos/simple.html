@@ -1,0 +1,13 @@
+<section>
+  <provider-fetch api-url="/api/todos/1">
+    <h4>Fetching todo...</h4>
+    <span></span>
+  </provider-fetch>
+  <quark-sheet>
+    provider-fetch[is-success] {
+      $todo: prop("provision").body;
+      h4 { content: "Todo ##{$todo.id}: #{$todo.title}"; }
+      span { content: "Completed: #{$todo.completed}"; }
+    }
+  </quark-sheet>
+</section>

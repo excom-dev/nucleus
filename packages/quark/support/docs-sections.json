@@ -1,0 +1,65 @@
+{
+  "sections": [
+    {
+      "id": "syntax",
+      "title": "Syntax",
+      "docs": [
+        "sheets",
+        "syntax"
+      ]
+    },
+    {
+      "id": "selectors",
+      "title": "Selectors",
+      "docs": [
+        "selectors",
+        "reactivity",
+        "no_reversion"
+      ]
+    },
+    {
+      "id": "declarations",
+      "title": "Declarations",
+      "docs": [
+        "declarations",
+        "attributes",
+        "content",
+        "css_variables"
+      ]
+    },
+    {
+      "id": "values",
+      "title": "Values & Expressions",
+      "docs": [
+        "variables",
+        "js_writes",
+        "values",
+        "expressions",
+        "builtins",
+        "modules",
+        "methods",
+        "element_properties"
+      ]
+    },
+    {
+      "id": "at-rules",
+      "title": "At-Rules",
+      "docs": [
+        "at_rules",
+        "use",
+        "on",
+        "dispatch",
+        "view_transition"
+      ]
+    },
+    {
+      "id": "runtime",
+      "title": "Runtime",
+      "docs": [
+        "js_api",
+        "loop_guard",
+        "limitations"
+      ]
+    }
+  ]
+}

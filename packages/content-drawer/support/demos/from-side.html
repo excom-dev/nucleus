@@ -1,0 +1,9 @@
+<section>
+  <button type="button" command="--toggle" commandfor="demo-drawer-side">
+    Toggle drawer
+  </button>
+  <content-drawer id="demo-drawer-side" class="absolute" from-side="left">
+    <nav>Menu</nav>
+  </content-drawer>
+  <event-handler class="tag-backdrop" role="presentation" target-ref="content-drawer:has(+ :scope)" command-name="--close"></event-handler>
+</section>

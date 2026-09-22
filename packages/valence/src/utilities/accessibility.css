@@ -1,0 +1,69 @@
+/**
+ * Accessibility and user interaction.
+ * Reboot from normalize.css v8.0.1 (MIT) and sanitize.css v13.0.0 (CC0).
+ */
+
+@define-mixin unanimated {
+  background-attachment: initial !important; /* 2 */
+  animation-duration: 1ms !important; /* 1 */
+  animation-delay: -1ms !important; /* 1 */
+  animation-iteration-count: 1 !important; /* 1 */
+  scroll-behavior: auto !important; /* 3 */
+  transition-delay: 0s !important; /* 4 */
+  transition-duration: 0s !important; /* 4 */
+}
+
+@define-mixin module-accessibility {
+  /* Pointer cursor on controls (opinionated) */
+  [aria-controls] {
+    cursor: pointer;
+  }
+
+  /* Not-allowed cursor on disabled / inoperable controls (opinionated) */
+  [aria-disabled="true"],
+  [disabled] {
+    cursor: not-allowed;
+  }
+
+  /* Show visually-hidden accessible elements (opinionated) */
+  [aria-hidden="false"][hidden] {
+    display: initial;
+  }
+
+  [aria-hidden="false"][hidden]:not(:focus) {
+    clip: rect(0, 0, 0, 0);
+    position: absolute;
+  }
+
+  /* Kill IE 10 tap delay */
+  a,
+  area,
+  button,
+  input,
+  label,
+  select,
+  summary,
+  textarea,
+  [tabindex] {
+    -ms-touch-action: manipulation;
+  }
+
+  [dir="rtl"] {
+    direction: rtl;
+  }
+
+  /**
+   * Reduced motion (opinionated):
+   * 1. Kill animations
+   * 2. Unfix background-attachment
+   * 3. Instant scroll
+   * 4. Kill transitions
+   */
+  @media (prefers-reduced-motion: reduce) {
+    *:not([aria-busy="true"]),
+    :not([aria-busy="true"])::before,
+    :not([aria-busy="true"])::after {
+      @mixin unanimated;
+    }
+  }
+}

@@ -1,0 +1,23 @@
+@import "@excom/listenable-element/src/index.css";
+
+/**
+ * Styles for `<scroll-into-view>`.
+ * @element scroll-into-view
+ */
+
+/* Aliases */
+/**
+ * Apply `<scroll-into-view>` host styles (positioning + the inherited
+ * pointer cursor when clickable) to any element, without registering the
+ * custom element — e.g. server-rendered markup.
+ * @cssalias
+ */
+@custom-selector :--scroll-into-view scroll-into-view, .tag-scroll-into-view;
+
+@define-mixin module-scroll-into-view {
+  :--scroll-into-view {
+    display: block;
+    position: relative;
+    @mixin listenable-element;
+  }
+}

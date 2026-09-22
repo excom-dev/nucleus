@@ -1,0 +1,19 @@
+<article id="timer-app" data-duration="10">
+  <link rel="stylesheet" href="/views/timer-app/timer-app.css">
+  <quark-sheet src-url="/views/timer-app/timer-app.quark"></quark-sheet>
+  <label>
+    Elapsed Time:
+    <include-content is-active bind-bar>
+      <template>
+        <div class="timer-bar">
+          <span class="timer-readout" aria-live="off"></span>
+        </div>
+      </template>
+    </include-content>
+  </label>
+  <label>
+    Duration: <span bind-duration>10s</span>
+    <input type="range" name="data-duration" min="1" max="30" step="1" value="10">
+  </label>
+  <button>Reset</button>
+</article>

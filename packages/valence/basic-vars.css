@@ -1,0 +1,395 @@
+/* ============================================================
+ * Theme: basic. Pico-faithful default tokens.
+ *
+ *   - Global tokens (`:root`, `:host`)
+ *   - Responsive font-size breakpoints
+ *   - Element-level overrides (h1-h6, code, forms, ...)
+ *   - Light scheme (default + `[data-scheme="light"]`)
+ *   - Dark scheme (`prefers-color-scheme` or `[data-scheme="dark"]`)
+ *
+ * Values from Pico v2.1.1 compiled output; `--pico-*` renamed `--v-*`.
+ * ============================================================ */
+
+@import "./src/mixins.basic.css";
+
+@layer {
+  :host,
+  :root {
+    @mixin scheme-constants;
+  }
+
+  /* Responsive root font size */
+  @media (min-width: 576px) {
+    :host,
+    :root {
+      --v-font-size: 106.25%;
+    }
+  }
+  @media (min-width: 768px) {
+    :host,
+    :root {
+      --v-font-size: 112.5%;
+    }
+  }
+  @media (min-width: 1024px) {
+    :host,
+    :root {
+      --v-font-size: 118.75%;
+    }
+  }
+  @media (min-width: 1280px) {
+    :host,
+    :root {
+      --v-font-size: 125%;
+    }
+  }
+  @media (min-width: 1536px) {
+    :host,
+    :root {
+      --v-font-size: 131.25%;
+    }
+  }
+  /* Link */
+  :--link {
+    --v-text-decoration: underline;
+  }
+  :--link.contrast,
+  :--link.secondary {
+    --v-text-decoration: underline;
+  }
+  /* Typography */
+
+  :--button,
+  [type="submit"],
+  [type="reset"],
+  [type="file"]::file-selector-button {
+    --v-font-size: 1rem;
+  }
+
+  input,
+  optgroup,
+  select,
+  textarea {
+    --v-font-size: 1rem;
+  }
+
+  :--pre,
+  :--code,
+  :--kbd,
+  :--samp,
+  :--popover,
+  [role="tooltip"] {
+    --v-font-size: 0.75em;
+  }
+
+  :--sub,
+  :--sup {
+    --v-font-size: 0.75em;
+  }
+  :--small {
+    --v-font-size: 0.875em;
+  }
+  :--heading {
+    --v-font-weight: 700;
+  }
+  :--h1 {
+    --v-font-size: 2rem;
+    --v-line-height: 1.125;
+    --v-typography-spacing-top: 3rem;
+  }
+  :--h2 {
+    --v-font-size: 1.75rem;
+    --v-line-height: 1.15;
+    --v-typography-spacing-top: 2.625rem;
+  }
+  :--h3 {
+    --v-font-size: 1.5rem;
+    --v-line-height: 1.175;
+    --v-typography-spacing-top: 2.25rem;
+  }
+  :--h4 {
+    --v-font-size: 1.25rem;
+    --v-line-height: 1.2;
+    --v-typography-spacing-top: 1.874rem;
+  }
+  :--h5 {
+    --v-font-size: 1.125rem;
+    --v-line-height: 1.225;
+    --v-typography-spacing-top: 1.6875rem;
+  }
+  :--h6 {
+    --v-font-size: 1rem;
+    --v-line-height: 1.25;
+    --v-typography-spacing-top: 1.5rem;
+  }
+
+  /* Table */
+  :--tfoot :--td,
+  :--tfoot :--th,
+  :--thead :--td,
+  :--thead :--th {
+    --v-font-weight: 600;
+    --v-border-width: 0.1875rem;
+  }
+
+  /* Code */
+  :--code,
+  :--kbd,
+  :--pre,
+  :--samp {
+    --v-font-family: var(--v-font-family-monospace);
+  }
+  :--kbd {
+    --v-font-weight: bolder;
+  }
+
+  /* Inputs and Selects */
+  :where(select, textarea),
+  input:not(
+    [type="submit"],
+    [type="button"],
+    [type="reset"],
+    [type="checkbox"],
+    [type="radio"],
+    [type="file"]
+  ) {
+    --v-outline-width: 0.0625rem;
+  }
+  [type="search"] {
+    --v-border-radius: 5rem;
+  }
+
+  /* Checkboxes, Radios and Switches */
+  [type="checkbox"],
+  [type="radio"] {
+    --v-border-width: 0.125rem;
+  }
+  [type="checkbox"][role="switch"] {
+    --v-border-width: 0.1875rem;
+  }
+
+  /* Dropdown */
+  :--details.dropdown :--summary:not([role="button"]) {
+    --v-outline-width: 0.0625rem;
+  }
+  :--nav :--details.dropdown :--summary:focus-visible {
+    --v-outline-width: 0.125rem;
+  }
+
+  /* Group / search */
+  :--search {
+    --v-border-radius: 5rem;
+  }
+  :--group:has(:--button.secondary:focus, [type="submit"].secondary:focus),
+  :--search:has(:--button.secondary:focus, [type="submit"].secondary:focus) {
+    --v-group-box-shadow-focus-with-button: 0 0 0 var(--v-outline-width)
+      var(--v-secondary-focus);
+  }
+  :--group:has(:--button.contrast:focus, [type="submit"].contrast:focus),
+  :--search:has(:--button.contrast:focus, [type="submit"].contrast:focus) {
+    --v-group-box-shadow-focus-with-button: 0 0 0 var(--v-outline-width)
+      var(--v-contrast-focus);
+  }
+  :--group :--button,
+  :--group [type="submit"],
+  :--search :--button,
+  :--search [type="submit"] {
+    --v-form-element-spacing-horizontal: 2rem;
+  }
+
+  /* White chevron on accordion / dropdown buttons */
+  :--details :--summary[role="button"]:not(.outline)::after {
+    filter: brightness(0) invert(1);
+  }
+
+  /* White loading icon on filled buttons */
+  [aria-busy="true"]:not(input, select, textarea):is(
+      :--button,
+      [type="submit"],
+      [type="reset"]
+    ):not(.outline)::before {
+    filter: brightness(0) invert(1);
+  }
+
+  /* Light scheme (default; force with `[data-scheme="light"]`) */
+  :host(:not([data-scheme="dark"])),
+  :root:not([data-scheme="dark"]),
+  [data-scheme="light"] {
+    @mixin scheme-light;
+  }
+  :host(:not([data-scheme="dark"]))
+    input:is(
+      [type="submit"],
+      [type="button"],
+      [type="reset"],
+      [type="checkbox"],
+      [type="radio"],
+      [type="file"]
+    ),
+  :root:not([data-scheme="dark"])
+    input:is(
+      [type="submit"],
+      [type="button"],
+      [type="reset"],
+      [type="checkbox"],
+      [type="radio"],
+      [type="file"]
+    ),
+  [data-scheme="light"]
+    input:is(
+      [type="submit"],
+      [type="button"],
+      [type="reset"],
+      [type="checkbox"],
+      [type="radio"],
+      [type="file"]
+    ) {
+    --v-form-element-focus-color: var(--v-primary-focus);
+  }
+
+  /* Dark scheme (auto via `prefers-color-scheme: dark`) */
+  @media only screen and (prefers-color-scheme: dark) {
+    :host(:not([data-scheme])),
+    :root:not([data-scheme]) {
+      @mixin scheme-dark;
+    }
+    :host(:not([data-scheme]))
+      input:is(
+        [type="submit"],
+        [type="button"],
+        [type="reset"],
+        [type="checkbox"],
+        [type="radio"],
+        [type="file"]
+      ),
+    :root:not([data-scheme])
+      input:is(
+        [type="submit"],
+        [type="button"],
+        [type="reset"],
+        [type="checkbox"],
+        [type="radio"],
+        [type="file"]
+      ) {
+      --v-form-element-focus-color: var(--v-primary-focus);
+    }
+    :host(:not([data-scheme]))
+      :--details
+      :--summary[role="button"].contrast:not(.outline)::after,
+    :root:not([data-scheme])
+      :--details
+      :--summary[role="button"].contrast:not(.outline)::after {
+      filter: brightness(0);
+    }
+    :host(:not([data-scheme]))
+      [aria-busy="true"]:not(input, select, textarea).contrast:is(
+        :--button,
+        [type="submit"],
+        [type="reset"]
+      ):not(.outline)::before,
+    :root:not([data-scheme])
+      [aria-busy="true"]:not(input, select, textarea).contrast:is(
+        :--button,
+        [type="submit"],
+        [type="reset"]
+      ):not(.outline)::before {
+      filter: brightness(0);
+    }
+  }
+
+  /* Dark scheme (force with `[data-scheme="dark"]`) */
+  [data-scheme="dark"] {
+    @mixin scheme-dark;
+  }
+  [data-scheme="dark"]
+    input:is(
+      [type="submit"],
+      [type="button"],
+      [type="reset"],
+      [type="checkbox"],
+      [type="radio"],
+      [type="file"]
+    ) {
+    --v-form-element-focus-color: var(--v-primary-focus);
+  }
+  [data-scheme="dark"]
+    :--details
+    :--summary[role="button"].contrast:not(.outline)::after {
+    filter: brightness(0);
+  }
+  [data-scheme="dark"]
+    [aria-busy="true"]:not(input, select, textarea).contrast:is(
+      :--button,
+      [type="submit"],
+      [type="reset"]
+    ):not(.outline)::before {
+    filter: brightness(0);
+  }
+
+  /* Native accent color (from schemes.scss) */
+  [type="checkbox"],
+  [type="radio"],
+  [type="range"],
+  :--progress {
+    accent-color: var(--v-primary);
+  }
+
+  /* Responsive spacing: landmarks / sections + cards */
+  @define-mixin section-spacing {
+    /* sm */
+    @media (min-width: 576px) {
+      --v-block-spacing-vertical: calc(var(--v-spacing) * 1.25);
+    }
+    /* md */
+    @media (min-width: 768px) {
+      --v-block-spacing-vertical: calc(var(--v-spacing) * 1.5);
+    }
+    /* lg */
+    @media (min-width: 1024px) {
+      --v-block-spacing-vertical: calc(var(--v-spacing) * 1.75);
+    }
+    /* xl */
+    @media (min-width: 1280px) {
+      --v-block-spacing-vertical: calc(var(--v-spacing) * 2);
+    }
+    /* xxl */
+    @media (min-width: 1536px) {
+      --v-block-spacing-vertical: calc(var(--v-spacing) * 2.25);
+    }
+  }
+  :--section {
+    @mixin section-spacing;
+  }
+  body {
+    @mixin abstract-wrapper {
+      > :--header,
+      > :--main,
+      > :--footer {
+        @mixin section-spacing;
+      }
+    }
+  }
+
+  :--article {
+    @media (min-width: 576px) {
+      --v-block-spacing-vertical: calc(var(--v-spacing) * 1.25);
+      --v-block-spacing-horizontal: calc(var(--v-spacing) * 1.25);
+    }
+    @media (min-width: 768px) {
+      --v-block-spacing-vertical: calc(var(--v-spacing) * 1.5);
+      --v-block-spacing-horizontal: calc(var(--v-spacing) * 1.5);
+    }
+    @media (min-width: 1024px) {
+      --v-block-spacing-vertical: calc(var(--v-spacing) * 1.75);
+      --v-block-spacing-horizontal: calc(var(--v-spacing) * 1.75);
+    }
+    @media (min-width: 1280px) {
+      --v-block-spacing-vertical: calc(var(--v-spacing) * 2);
+      --v-block-spacing-horizontal: calc(var(--v-spacing) * 2);
+    }
+    @media (min-width: 1536px) {
+      --v-block-spacing-vertical: calc(var(--v-spacing) * 2.25);
+      --v-block-spacing-horizontal: calc(var(--v-spacing) * 2.25);
+    }
+  }
+}

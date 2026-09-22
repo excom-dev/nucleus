@@ -1,0 +1,40 @@
+@scope {
+  :scope {
+    max-width: 30rem;
+    margin: 0;
+    padding: calc(var(--v-spacing) * 0.75) 1.1rem 2.5rem;
+    background: var(--v-background-color);
+    color: var(--v-color);
+  }
+
+  > event-handler,
+  form {
+    display: contents;
+  }
+
+  :scope {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0;
+    font-weight: 400;
+  }
+
+  super-input {
+    display: inline-block;
+    width: 7rem;
+    max-width: 100%;
+  }
+
+  input[type="number"] {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+}

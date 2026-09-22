@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`retarget view > pings the previous output > complexity 1`] = `
+{
+  "attributeRuns": 0,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 0,
+  "parentElement": 0,
+  "quarkRuns": 0,
+  "queryScopeCost": 0,
+  "querySelectorAll": 0,
+  "removeAttribute": 1,
+  "ruleRuns": 0,
+  "schedulePaint": 0,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 1,
+  "variableRuns": 0,
+}
+`;

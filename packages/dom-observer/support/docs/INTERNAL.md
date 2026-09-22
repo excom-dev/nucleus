@@ -1,0 +1,1 @@
+- Consider moving `findTargetElement` and related logic to its own Base element or common util. Could be useful for other elements that use `x-ref`s to watch for the desired element if it's not in the document yet.

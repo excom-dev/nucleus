@@ -1,0 +1,5 @@
+@import "./src/scroll-into-view.css";
+
+@layer {
+  @mixin module-scroll-into-view;
+}

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Element</title>
+  </head>
+  <body>
+    <main id="element-pane" class="unanimated-all">
+      <quark-sheet>
+        @use "/devtools-ui" as *;
+
+        /* The Adapter reflects selection state as attributes and publishes
+           history + current values as its provision. Every visible piece is
+           derived from those; every state writes its inverse (no reversion). */
+        devtools-selection {
+          $dt-state: attr("selection-state");
+          $dt-tag: attr("selection-tag");
+          $dt-published: attr("has-publications");
+          $dt-copied: attr("did-copy");
+          $dt-data: prop("provision");
+          $dt-effects: neutronEffects($dt-data.records);
+          $dt-applies: quarkApplies($dt-data.records);
+          $dt-neutron-current: neutronCurrent($dt-data.inspect);
+          $dt-quark-current: quarkCurrent($dt-data.inspect);
+
+          [bind-selection] {
+            content: selectionLabel($dt-state, $dt-tag, $dt-published);
+            data-empty: if(isEmptyLabel($dt-state): ""; else: none);
+          }
+          /* Copies `tools.dump()` (a JSON bug report) for a coding agent */
+          [bind-copy] {
+            content: copyLabel($dt-copied);
+            disabled: if($dt-state == "unavailable": ""; else: none);
+          }
+
+          /* Neutron */
+          [bind-neutron-current] {
+            hidden: if($dt-neutron-current: none; else: "");
+            [bind-tree] {
+              content: if($dt-neutron-current: renderTree($dt-neutron-current); else: none);
+            }
+          }
+          [bind-neutron-log] {
+            content: iterate($dt-effects, none, "key");
+          }
+          [bind-neutron-empty] {
+            hidden: if(hasRows($dt-effects): ""; else: none);
+          }
+
+          /* Quark */
+          [bind-quark-current] {
+            hidden: if($dt-quark-current: none; else: "");
+            [bind-tree] {
+              content: if($dt-quark-current: renderTree($dt-quark-current); else: none);
+            }
+          }
+          [bind-quark-log] {
+            content: iterate($dt-applies, none, "key");
+          }
+          [bind-quark-empty] {
+            hidden: if(hasRows($dt-applies): ""; else: none);
+          }
+
+          /* One row per publication (both logs share the template shape) */
+          [data-role="log"] > li {
+            data-depth: "#{item.depth}";
+            data-status: if(item.status: item.status; else: none);
+            --row-depth: "#{item.depth}";
+            [bind-signature] {
+              content: item.signature;
+              title: item.time;
+            }
+            [bind-effect] {
+              content: renderTree(item.effect, item.titles);
+            }
+          }
+        }
+      </quark-sheet>
+
+      <devtools-selection>
+        <header>
+          <p bind-selection data-empty>Select an element</p>
+          <event-handler fire-event="devtools-selection-dump">
+            <button type="button" bind-copy title="Copy a JSON bug report (State, sheets, diagnostics, trace) to paste into a coding agent">Copy for AI</button>
+          </event-handler>
+        </header>
+
+        <content-tabs class="underline">
+          <content-tabs-header is-open>Neutron</content-tabs-header>
+          <content-tabs-header>Quark</content-tabs-header>
+
+          <content-tabs-body is-open>
+            <details open data-role="current" bind-neutron-current hidden>
+              <summary>Current properties</summary>
+              <div bind-tree></div>
+            </details>
+            <h2 data-role="history">History</h2>
+            <ol data-role="log" bind-neutron-log>
+              <template>
+                <li>
+                  <details open data-role="lifecycle">
+                    <summary><strong bind-signature></strong></summary>
+                    <div data-role="body">
+                      <section data-role="effect" bind-effect></section>
+                    </div>
+                  </details>
+                </li>
+              </template>
+            </ol>
+            <p data-role="empty" bind-neutron-empty hidden>No lifecycle calls recorded for this element.</p>
+          </content-tabs-body>
+
+          <content-tabs-body>
+            <details open data-role="current" bind-quark-current hidden>
+              <summary>Current properties</summary>
+              <div bind-tree></div>
+            </details>
+            <h2 data-role="history">History</h2>
+            <ol data-role="log" bind-quark-log>
+              <template>
+                <li>
+                  <details open data-role="lifecycle">
+                    <summary><strong bind-signature></strong></summary>
+                    <div data-role="body">
+                      <section data-role="effect" bind-effect></section>
+                    </div>
+                  </details>
+                </li>
+              </template>
+            </ol>
+            <p data-role="empty" bind-quark-empty hidden>No orchestration rules applied to this element.</p>
+          </content-tabs-body>
+        </content-tabs>
+      </devtools-selection>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

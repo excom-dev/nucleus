@@ -1,0 +1,22 @@
+<form>
+  <fieldset>
+    <legend>Checkboxes</legend>
+    <label><input type="checkbox" checked /> Checked</label>
+    <label><input type="checkbox" id="demo-indeterminate" /> Indeterminate</label>
+    <label><input type="checkbox" disabled /> Disabled</label>
+  </fieldset>
+  <fieldset>
+    <legend>Radios</legend>
+    <label><input type="radio" name="r" checked /> One</label>
+    <label><input type="radio" name="r" /> Two</label>
+  </fieldset>
+  <fieldset>
+    <legend>Switches</legend>
+    <label><input type="checkbox" role="switch" checked /> On</label>
+    <label><input type="checkbox" role="switch" /> Off</label>
+    <label><input type="checkbox" role="switch" aria-invalid="true" checked /> Invalid</label>
+  </fieldset>
+  <script type="module">
+    document.getElementById("demo-indeterminate").indeterminate = true;
+  </script>
+</form>

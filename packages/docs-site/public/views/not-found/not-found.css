@@ -1,0 +1,60 @@
+#not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(var(--v-spacing) * 1.5);
+  max-width: 34rem;
+  min-height: 60svh;
+  margin-inline: auto;
+  padding: calc(var(--v-spacing) * 4) var(--v-spacing);
+  text-align: center;
+
+  > header {
+    margin: 0;
+
+    /* oversized, decorative numeral */
+    > [role="doc-subtitle"] {
+      margin: 0;
+      color: var(--v-muted-border-color);
+      font-size: clamp(5rem, 24vw, 9rem);
+      font-weight: 700;
+      letter-spacing: -0.05em;
+      line-height: 0.9;
+    }
+
+    > h1 {
+      margin: 0 0 calc(var(--v-spacing) * 0.75);
+      font-size: clamp(1.5rem, 6vw, 2rem);
+    }
+  }
+
+  /* the requested path; collapses until the route provision lands */
+  [bind-path] {
+    margin: 0;
+    color: var(--v-muted-color);
+    font-family: var(--v-font-family-monospace);
+    font-size: 0.85rem;
+    overflow-wrap: anywhere;
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  > p {
+    margin: 0;
+    color: var(--v-muted-color);
+    text-wrap: pretty;
+  }
+
+  > nav {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: calc(var(--v-spacing) * 0.75);
+
+    > * {
+      width: auto;
+      margin: 0;
+    }
+  }
+}

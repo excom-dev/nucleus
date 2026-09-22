@@ -1,0 +1,54 @@
+/**
+ * Card (<article>)
+ */
+
+@define-mixin module-card {
+  :--article {
+    display: block;
+    margin-bottom: var(--v-block-spacing-vertical);
+    padding: var(--v-block-spacing-vertical) var(--v-block-spacing-horizontal);
+    border-radius: var(--v-border-radius);
+    background: var(--v-card-background-color);
+    box-shadow: var(--v-card-box-shadow);
+    /**
+     * Nested card — quieter border / shadow inside another card.
+     * @cssclass nested
+     */
+    &.nested {
+      @mixin abstract-wrapper {
+        &,
+        > :--header,
+        > :--footer {
+          @mixin util-nested-card;
+        }
+      }
+    }
+
+    @mixin abstract-wrapper {
+      > :--header,
+      > :--footer {
+        margin-right: calc(var(--v-block-spacing-horizontal) * -1);
+        margin-left: calc(var(--v-block-spacing-horizontal) * -1);
+        padding: calc(var(--v-block-spacing-vertical) * 0.66)
+          var(--v-block-spacing-horizontal);
+        background-color: var(--v-card-sectioning-background-color);
+      }
+
+      > :--header {
+        margin-top: calc(var(--v-block-spacing-vertical) * -1);
+        margin-bottom: var(--v-block-spacing-vertical);
+        border-bottom: var(--v-border-width) solid var(--v-card-border-color);
+        border-top-right-radius: var(--v-border-radius);
+        border-top-left-radius: var(--v-border-radius);
+      }
+
+      > :--footer {
+        margin-top: var(--v-block-spacing-vertical);
+        margin-bottom: calc(var(--v-block-spacing-vertical) * -1);
+        border-top: var(--v-border-width) solid var(--v-card-border-color);
+        border-bottom-right-radius: var(--v-border-radius);
+        border-bottom-left-radius: var(--v-border-radius);
+      }
+    }
+  }
+}

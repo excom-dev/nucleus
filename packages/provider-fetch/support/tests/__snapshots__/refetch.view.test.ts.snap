@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`refetch view > loads then refetches > complexity 1`] = `
+{
+  "attributeRuns": 11,
+  "closest": 22,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 5,
+  "parentElement": 12,
+  "quarkRuns": 2,
+  "queryScopeCost": 42,
+  "querySelectorAll": 3,
+  "removeAttribute": 2,
+  "ruleRuns": 5,
+  "schedulePaint": 11,
+  "setAttribute": 2,
+  "setVar": 1,
+  "textContent": 0,
+  "variableRuns": 1,
+}
+`;

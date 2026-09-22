@@ -1,0 +1,18 @@
+<section>
+  <button type="button" command="--open" commandfor="demo-drawer-stages" data-open-stage="0">
+    Full (100%)
+  </button>
+  <button type="button" command="--open" commandfor="demo-drawer-stages" data-open-stage="1">
+    Half (50%)
+  </button>
+  <button type="button" command="--open" commandfor="demo-drawer-stages" data-open-stage="2">
+    Peek (25%)
+  </button>
+  <content-drawer id="demo-drawer-stages" class="absolute">
+    <header>
+      <button type="button" rel="prev" command="--close" commandfor="demo-drawer-stages" aria-label="Close"></button>
+      <h2>Open stages</h2>
+    </header>
+    <p>Full / half / peek via <code>data-open-stage</code> on the button.</p>
+  </content-drawer>
+</section>

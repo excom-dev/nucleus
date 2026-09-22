@@ -1,0 +1,54 @@
+/**
+ * Landmarks
+ *
+ * Reboot from normalize.css v8.0.1 (MIT) and sanitize.css v13.0.0 (CC0).
+ */
+
+@define-mixin module-landmarks {
+  /* 1. Drop body margin (opinionated) */
+  body {
+    width: 100%;
+    margin: 0;
+  }
+
+  /* Landmark aliases: match native HTML display (custom elements / role) */
+  :--header,
+  :--main,
+  :--footer {
+    display: block;
+  }
+
+  /* `<header>`, `<main>`, `<footer>` as semantic containers */
+  body {
+    @mixin abstract-wrapper {
+      > :--header,
+      > :--main,
+      > :--footer {
+        width: 100%;
+        margin-right: auto;
+        margin-left: auto;
+        padding: var(--v-block-spacing-vertical)
+          var(--v-block-spacing-horizontal);
+
+        /* sm: also drop horizontal padding (first breakpoint) */
+        @media (min-width: 576px) {
+          max-width: 510px;
+          padding-right: 0;
+          padding-left: 0;
+        }
+        @media (min-width: 768px) {
+          max-width: 700px;
+        }
+        @media (min-width: 1024px) {
+          max-width: 950px;
+        }
+        @media (min-width: 1280px) {
+          max-width: 1200px;
+        }
+        @media (min-width: 1536px) {
+          max-width: 1450px;
+        }
+      }
+    }
+  }
+}

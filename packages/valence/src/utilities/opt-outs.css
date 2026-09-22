@@ -1,0 +1,32 @@
+@define-mixin module-opt-outs {
+  /**
+   * Opt out of Valence.css styles on one element.
+   * @cssclass unstyled
+   */
+  .unstyled,
+  /**
+   * Opt out of Valence.css styles on an element and all descendants.
+   * @cssclass unstyled-all
+   */
+  .unstyled-all,
+  .unstyled-all * {
+    /* `revert`, not `revert-layer`. Utilities are unlayered; the rest of
+       Valence.css is layered. `revert-layer` would only peel the unlayered
+       slice and leave alias / element `@layer` styles intact. */
+    all: revert !important;
+  }
+
+  /**
+   * Disable transitions / animations on one element.
+   * @cssclass unanimated
+   */
+  .unanimated,
+  /**
+   * Disable transitions / animations on an element and all descendants.
+   * @cssclass unanimated-all
+   */
+  .unanimated-all,
+  .unanimated-all * {
+    @mixin unanimated;
+  }
+}

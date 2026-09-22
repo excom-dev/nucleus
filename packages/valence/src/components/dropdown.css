@@ -1,0 +1,235 @@
+/**
+ * Dropdown (details.dropdown)
+ */
+
+/**
+ * Dropdown menu — apply to `<details>` / `:--details`.
+ * @cssclass dropdown
+ */
+@define-mixin module-dropdown {
+  /* Container */
+  :--details.dropdown {
+    position: relative;
+    border-bottom: none;
+
+    /* Marker */
+    > :--summary,
+    > :--button,
+    > :--link {
+      &::after {
+        display: block;
+        width: 1rem;
+        height: calc(1rem * var(--v-line-height, 1.5));
+        margin-inline-start: 0.25rem;
+        float: right;
+        /* TODO: why 0.2rem? Needed to align the marker with a regular select */
+        transform: rotate(0deg) translateX(0.2rem);
+        background-image: var(--v-icon-chevron);
+        background-position: right center;
+        background-size: 1rem auto;
+        background-repeat: no-repeat;
+        content: "";
+      }
+    }
+  }
+
+  /* Accordion-style dropdown inside a nav */
+  :--nav :--details.dropdown {
+    margin-bottom: 0;
+  }
+
+  /* Select-style summary inside an accordion dropdown */
+  :--details.dropdown > :--summary:not(:--button) {
+    height: calc(
+      1rem * var(--v-line-height) + var(--v-form-element-spacing-vertical) * 2 +
+        var(--v-border-width) * 2
+    );
+    padding: var(--v-form-element-spacing-vertical)
+      var(--v-form-element-spacing-horizontal);
+    border: var(--v-border-width) solid var(--v-form-element-border-color);
+    border-radius: var(--v-border-radius);
+    background-color: var(--v-form-element-background-color);
+    color: var(--v-form-element-placeholder-color);
+    line-height: inherit;
+    cursor: pointer;
+    user-select: none;
+
+    transition:
+      background-color var(--v-transition),
+      border-color var(--v-transition),
+      color var(--v-transition),
+      box-shadow var(--v-transition);
+
+    &:active,
+    &:focus {
+      border-color: var(--v-form-element-active-border-color);
+      background-color: var(--v-form-element-active-background-color);
+    }
+
+    &:focus {
+      box-shadow: 0 0 0 var(--v-outline-width) var(--v-form-element-focus-color);
+    }
+
+    /* Undo accordion's `:focus-visible` */
+    &:focus-visible {
+      outline: none;
+    }
+
+    /* Aria-invalid */
+    &[aria-invalid="false"] {
+      --v-form-element-border-color: var(--v-form-element-valid-border-color);
+      --v-form-element-active-border-color: var(
+        --v-form-element-valid-focus-color
+      );
+      --v-form-element-focus-color: var(--v-form-element-valid-focus-color);
+    }
+
+    &[aria-invalid="true"] {
+      --v-form-element-border-color: var(--v-form-element-invalid-border-color);
+      --v-form-element-active-border-color: var(
+        --v-form-element-invalid-focus-color
+      );
+      --v-form-element-focus-color: var(--v-form-element-invalid-focus-color);
+    }
+  }
+
+  /* Dropdown inside a nav */
+  :--nav :--details.dropdown {
+    display: inline;
+    margin: calc(var(--v-nav-element-spacing-vertical) * -1) 0;
+
+    > :--summary {
+      &::after {
+        transform: rotate(0deg) translateX(0rem);
+      }
+
+      &:not(:--button) {
+        height: calc(
+          (1rem * var(--v-line-height)) +
+            (var(--v-nav-link-spacing-vertical) * 2)
+        );
+        padding: calc(
+            var(--v-nav-link-spacing-vertical) - (var(--v-border-width) * 2)
+          )
+          var(--v-nav-link-spacing-horizontal);
+
+        &:focus-visible {
+          box-shadow: 0 0 0 var(--v-outline-width) var(--v-primary-focus);
+        }
+      }
+    }
+  }
+
+  /* Submenu */
+  :--details.dropdown > :--summary + :--list {
+    display: flex;
+    z-index: 99;
+    position: absolute;
+    left: 0;
+    flex-direction: column;
+    width: 100%;
+    min-width: fit-content;
+    margin: 0;
+    margin-top: var(--v-outline-width);
+    padding: 0;
+    border: var(--v-border-width) solid var(--v-dropdown-border-color);
+    border-radius: var(--v-border-radius);
+    background-color: var(--v-dropdown-background-color);
+    box-shadow: var(--v-dropdown-box-shadow);
+    color: var(--v-dropdown-color);
+    white-space: nowrap;
+    opacity: 0;
+
+    transition:
+      opacity var(--v-transition),
+      transform 0s ease-in-out 1s;
+
+    &[dir="rtl"] {
+      right: 0;
+      left: auto;
+    }
+
+    :--li {
+      width: 100%;
+      margin-bottom: 0;
+      padding: calc(var(--v-form-element-spacing-vertical) * 0.5)
+        var(--v-form-element-spacing-horizontal);
+      list-style: none;
+
+      &:first-of-type {
+        margin-top: calc(var(--v-form-element-spacing-vertical) * 0.5);
+      }
+
+      &:last-of-type {
+        margin-bottom: calc(var(--v-form-element-spacing-vertical) * 0.5);
+      }
+
+      :--link {
+        display: block;
+        margin: calc(var(--v-form-element-spacing-vertical) * -0.5)
+          calc(var(--v-form-element-spacing-horizontal) * -1);
+        padding: calc(var(--v-form-element-spacing-vertical) * 0.5)
+          var(--v-form-element-spacing-horizontal);
+        overflow: hidden;
+        border-radius: 0;
+        color: var(--v-dropdown-color);
+        text-decoration: none;
+        text-overflow: ellipsis;
+
+        &:hover,
+        &:focus,
+        &:active,
+        &:focus-visible,
+        &[aria-current]:not([aria-current="false"]) {
+          background-color: var(--v-dropdown-hover-background-color);
+        }
+      }
+
+      :--label {
+        width: 100%;
+      }
+
+      /* Firefox lacks `:has()`, so this misses there */
+      &:has(:--label):hover {
+        background-color: var(--v-dropdown-hover-background-color);
+      }
+    }
+  }
+
+  /* Open summary inside an accordion dropdown */
+  :--details.dropdown:--details--open > :--summary {
+    margin-bottom: 0;
+  }
+
+  /* Open menu inside an accordion dropdown */
+  :--details.dropdown:--details--open > :--summary {
+    + :--list {
+      transform: scaleY(1);
+      opacity: 1;
+
+      transition:
+        opacity var(--v-transition),
+        transform 0s ease-in-out 0s;
+    }
+  }
+
+  /* Close control inside an accordion dropdown */
+  :--details.dropdown:--details--open > :--summary {
+    &::before {
+      display: block;
+      z-index: 1;
+      position: fixed;
+      width: 100vw;
+      height: 100vh;
+      inset: 0;
+      background: none;
+      content: "";
+      cursor: default;
+    }
+  }
+
+  /* Label */
+  :--label > :--details.dropdown {
+    margin-top: calc(var(--v-spacing) * 0.25);
+  }
+}

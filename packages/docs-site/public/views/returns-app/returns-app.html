@@ -1,0 +1,87 @@
+<!-- All `data-` elements are not Custom Elements. Simply namespaces to hold data. -->
+<data-return id="returns-app" role="article" return-mode="return" membership-level="member" return-method="home-pickup">
+  <link rel="stylesheet" href="/views/returns-app/returns-app.css">
+  <quark-sheet src-url="/views/returns-app/returns-app.quark"></quark-sheet>
+  <provider-fetch id="order" api-url="/api/returns/order">
+    <header>
+      <hgroup>
+        <h2>Start a return</h2>
+        <p>Order <span bind-order="id"></span> · delivered <span bind-order="deliveredDaysAgo"></span> days ago</p>
+      </hgroup>
+      <form class="options">
+        <fieldset class="mode">
+          <legend>I want to</legend>
+          <label mode-option="return"><input type="radio" name="return-mode" value="return" checked> Return</label>
+          <label mode-option="replace"><input type="radio" name="return-mode" value="replace"> Replace</label>
+        </fieldset>
+        <label class="viewer">
+          Viewing as
+          <select name="membership-level">
+            <option value="member">Member</option>
+            <option value="guest">Guest</option>
+          </select>
+        </label>
+        <label class="date">
+          Date <small bind-pickup-weekday></small>
+          <input type="date" name="pickup-date">
+        </label>
+        <fieldset class="methods">
+          <legend>Method</legend>
+          <label method-name="home-pickup"><input type="radio" name="return-method" value="home-pickup" checked> Home pickup</label>
+          <label method-name="ups-dropoff"><input type="radio" name="return-method" value="ups-dropoff"> UPS drop-off</label>
+          <label method-name="store-dropoff"><input type="radio" name="return-method" value="store-dropoff"> Store drop-off</label>
+        </fieldset>
+      </form>
+    </header>
+    <super-form>
+      <form action="/api/returns" method="post">
+        <div class="items" role="list">
+          <template>
+            <data-item role="listitem">
+              <label class="line">
+                <input type="checkbox" line-kind="item" disabled>
+                <span class="thumb" aria-hidden="true"></span>
+                <span class="details">
+                  <strong bind-field="name"></strong>
+                  <small bind-field="category"></small>
+                  <small class="reason"></small>
+                </span>
+                <span class="prices">
+                  <data class="price" bind-field="price"></data>
+                  <data class="member-price" bind-field="memberPrice"></data>
+                  <small class="amount"><data bind-amount></data></small>
+                </span>
+              </label>
+              <div class="components" role="list">
+                <template>
+                  <data-part role="listitem">
+                    <label class="line">
+                      <input type="checkbox" line-kind="component" disabled>
+                      <span class="details">
+                        <strong bind-field="name"></strong>
+                        <small class="weight" bind-field="weightKg"></small>
+                        <small class="reason"></small>
+                      </span>
+                      <span class="prices">
+                        <small class="amount"><data bind-amount></data></small>
+                      </span>
+                    </label>
+                  </data-part>
+                </template>
+              </div>
+            </data-item>
+          </template>
+        </div>
+        <footer class="summary">
+          <input type="hidden" name="mode">
+          <input type="hidden" name="membership">
+          <input type="hidden" name="return-method">
+          <input type="hidden" name="pickup-date">
+          <p class="totals"></p>
+          <button type="submit">Request</button>
+        </footer>
+      </form>
+      <output class="confirmation" bind-confirmation></output>
+    </super-form>
+  </provider-fetch>
+</data-return>

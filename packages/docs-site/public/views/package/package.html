@@ -1,0 +1,27 @@
+<!-- 20ms delay to allow Quark to render -->
+<event-handler delay-ms="20" fire-event="page-ready" listen-for="provider-fetch-success" selector-filter=".doc-page">
+  <link rel="stylesheet" href="/views/package/package.css">
+  <quark-sheet src-url="/views/package/package.quark"></quark-sheet>
+  <provider-fetch class="doc-page">
+      <!-- doc pages only: the package this page belongs to -->
+      <nav class="page-breadcrumb" aria-label="breadcrumb">
+        <ul>
+          <li><spa-a role="link" bind-package-link></spa-a></li>
+          <li><span bind-doc-title aria-current="page"></span></li>
+        </ul>
+      </nav>
+      <article class="md-content"></article>
+      <!-- doc pages only: previous / next page in docs-sections order -->
+      <nav class="page-neighbors" aria-label="Pages">
+        <spa-a role="link" class="secondary" rel="prev" transition-types="page-prev" bind-prev-page></spa-a>
+        <spa-a role="link" class="secondary" rel="next" transition-types="page-next" bind-next-page></spa-a>
+      </nav>
+      <template id="copy-source-button">
+        <event-handler target-ref="pre:has(+ [bind-copy-button] > :scope)"
+            fire-event="copy-source" role="tooltip" aria-description="Copy source" aria-label="copy"
+            role="button" class="icon-button">
+            <span class="ico-copy" aria-hidden="true"></span>
+        </event-handler>
+      </template>
+  </provider-fetch>
+</event-handler>

@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`events view > prevents navigation and notes the event > complexity 1`] = `
+{
+  "attributeRuns": 0,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 0,
+  "parentElement": 1,
+  "quarkRuns": 0,
+  "queryScopeCost": 0,
+  "querySelectorAll": 0,
+  "removeAttribute": 0,
+  "ruleRuns": 0,
+  "schedulePaint": 0,
+  "setAttribute": 0,
+  "setVar": 0,
+  "textContent": 1,
+  "variableRuns": 0,
+}
+`;

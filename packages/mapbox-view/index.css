@@ -1,0 +1,5 @@
+@import "./src/mapbox-view.css";
+
+@layer {
+  @mixin module-mapbox-view;
+}

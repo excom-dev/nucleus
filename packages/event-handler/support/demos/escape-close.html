@@ -1,0 +1,16 @@
+<section>
+  <event-handler target-ref=":scope ~ dialog" command-name="show-modal">
+    Open dialog
+  </event-handler>
+  <event-handler
+    host-ref="window"
+    listen-for="keydown"
+    keycode-filter="escape"
+    target-ref=":scope ~ dialog"
+    command-name="close"
+  ></event-handler>
+  <dialog>
+    Press Escape anywhere to close.
+    <form method="dialog"><button>Close</button></form>
+  </dialog>
+</section>

@@ -1,0 +1,16 @@
+<section>
+  <button type="button" command="--open" commandfor="drawer-a">Open A</button>
+  <button type="button" command="--open" commandfor="drawer-b">Open B</button>
+  <content-drawer id="drawer-a" class="absolute" singleton-name="demo">
+    <header>
+      <button type="button" rel="prev" command="--close" commandfor="drawer-a" aria-label="Close"></button>
+      <h2>Drawer A</h2>
+    </header>
+  </content-drawer>
+  <content-drawer id="drawer-b" class="absolute" singleton-name="demo">
+    <header>
+      <button type="button" rel="prev" command="--close" commandfor="drawer-b" aria-label="Close"></button>
+      <h2>Drawer B</h2>
+    </header>
+  </content-drawer>
+</section>

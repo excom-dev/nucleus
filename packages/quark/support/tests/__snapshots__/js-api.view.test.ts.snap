@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`js-api view > increments the click count through element.quark > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 1,
+  "getVar": 2,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 2,
+  "quarkRuns": 1,
+  "queryScopeCost": 3,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 0,
+  "setVar": 1,
+  "textContent": 1,
+  "variableRuns": 0,
+}
+`;

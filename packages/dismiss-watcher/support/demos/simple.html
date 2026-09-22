@@ -1,0 +1,24 @@
+<div>
+  <quark-sheet>
+    :scope {
+      @on menu-open { data-is-open: ""; }
+      @on dismiss-watcher-dismiss { data-is-open: none; }
+      &[data-is-open] dismiss-watcher { is-active: ""; }
+      &:not([data-is-open]) dismiss-watcher { is-active: none; }
+    }
+  </quark-sheet>
+  <style>
+    [data-demo-menu] { display: none; }
+    [data-is-open] > [data-demo-menu] { display: block; }
+  </style>
+  <event-handler role="button" fire-event="menu-open">Open menu</event-handler>
+  <nav data-demo-menu>
+    <dismiss-watcher></dismiss-watcher>
+    <ul>
+      <li><a href="#">Profile</a></li>
+      <li><a href="#">Settings</a></li>
+      <li><a href="#">Sign out</a></li>
+    </ul>
+    <p>Press Escape or click outside to close.</p>
+  </nav>
+</div>

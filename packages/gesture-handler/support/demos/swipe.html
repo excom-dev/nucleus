@@ -1,0 +1,24 @@
+<gesture-handler gesture-types="pan-x swipe tap" pointer-types="touch pen mouse" range-px="240" progress-min="-1" progress-max="1"
+  snap-points="-1 0 1" overshoot-resistance="0.4">
+  <quark-sheet>
+    :scope {
+      @on gesture-handler-snap {
+        article { data-is-dismissed: event.detail.value != 0; }
+      }
+      @on gesture-handler-tap {
+        article { data-is-dismissed: none; }
+      }
+    }
+  </quark-sheet>
+  <article>
+    <h2>Swipe me away</h2>
+    <p>Flick left or right. Tap to bring it back.</p>
+  </article>
+  <style>
+    #demo-gesture-handler-swipe > :first-child article {
+      translate: calc(var(--gesture-progress, 0) * 240px);
+      rotate: calc(var(--gesture-progress, 0) * 8deg);
+      &[data-is-dismissed] { opacity: 0.25; }
+    }
+  </style>
+</gesture-handler>

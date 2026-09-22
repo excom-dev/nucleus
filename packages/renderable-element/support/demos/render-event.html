@@ -1,0 +1,66 @@
+<p>Toggle the checkbox to activate the element. The cancelable
+<code>include-content-render</code> event is intercepted, the actual
+DOM mutation is wrapped in <code>document.startViewTransition()</code>,
+and a parent listener can defer or skip the render entirely.</p>
+
+<style>
+  .render-event-demo {
+    border: 1px solid var(--border, #444);
+    padding: 12px;
+    border-radius: 4px;
+  }
+  .render-event-demo include-content {
+    display: block;
+    margin-top: 8px;
+    padding: 8px;
+    border: 1px dashed currentColor;
+  }
+  .render-event-demo include-content > article {
+    background: rgba(255, 200, 80, 0.15);
+    padding: 12px;
+    view-transition-name: render-demo-card;
+  }
+  ::view-transition-old(render-demo-card),
+  ::view-transition-new(render-demo-card) {
+    animation-duration: 350ms;
+  }
+</style>
+
+<div class="render-event-demo" id="render-event-host">
+  <label>
+    <input type="checkbox" id="toggle-active" />
+    Active
+  </label>
+
+  <include-content id="render-target">
+    <template>
+      <article>
+        <h4>Just rendered (with a view transition)</h4>
+        <p>The host swallowed the default render and ran it through <code>startViewTransition</code>.</p>
+      </article>
+    </template>
+  </include-content>
+</div>
+
+<script>
+  (() => {
+    const host = document.querySelector("#render-event-host");
+    const target = host.querySelector("#render-target");
+    const toggle = host.querySelector("#toggle-active");
+
+    target.addEventListener("include-content-render", (e) => {
+      if (!document.startViewTransition) return;
+      e.preventDefault();
+      document.startViewTransition(() => e.detail());
+    });
+    target.addEventListener("include-content-unrender", (e) => {
+      if (!document.startViewTransition) return;
+      e.preventDefault();
+      document.startViewTransition(() => e.detail());
+    });
+
+    toggle.addEventListener("change", () => {
+      target.toggleAttribute("is-active", toggle.checked);
+    });
+  })();
+</script>

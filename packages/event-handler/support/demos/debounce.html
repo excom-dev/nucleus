@@ -1,0 +1,21 @@
+<div>
+  <section>
+    <event-handler listen-for="input" delay-ms="200" is-debounced fire-event="search-query" form-ref=":scope form">
+      <form>
+        <label>
+          <input name="detail.q" type="search" placeholder="Type to search…" />
+        </label>
+        <label>
+          Strict search
+          <input name="detail.strict" type="checkbox" role="switch" />
+        </label>
+      </form>
+    </event-handler>
+    <output>Waiting…</output>
+  </section>
+  <quark-sheet>
+    @use "/demo-utils" as *;
+
+    section { @on search-query (handle: setOutputFromDetail); }
+  </quark-sheet>
+</div>

@@ -1,0 +1,260 @@
+/* Facts, not branches. A record is an element named after it — <data-return>,
+   <data-item>, <data-part> — and every API field lands on its own line as a
+   dashed attribute. A few more are derived from them, and everything else —
+   the rules below and the CSS — selects on those facts. A tick becomes a fact
+   too (is-selected), and the host sums the rows up with :has(). */
+:scope {
+  $mode: attr("return-mode");
+  $membership: attr("membership-level");
+  $method: attr("return-method");
+  $pickup-date: attr("pickup-date");
+  $pickup-weekday: attr("pickup-weekday");
+  /* which amount a line is worth right now: refundMember, refundGuest, feeMember or feeGuest */
+  $amount-key: "#{if($mode == "replace": "fee"; else: "refund")}#{if($membership == "member": "Member"; else: "Guest")}";
+
+  /* header form → host facts: one @on per field, keyed by its target option.
+     Same event and same options are one listener, so a field writes all of
+     its facts from the one block. */
+  @on change (target: "[name='return-mode']") {
+    return-mode: event.target.value;
+  }
+  @on change (target: "[name='membership-level']") {
+    membership-level: event.target.value;
+  }
+  @on change (target: "[name='return-method']") {
+    return-method: event.target.value;
+  }
+  @on change (target: "[name='pickup-date']") {
+    pickup-date: event.target.value or none;
+    pickup-weekday: if(
+      event.target.valueAsDate: event.target.valueAsDate.toLocaleDateString(
+        "en-US",
+        (weekday: "short", timeZone: "UTC")
+      );
+      else: none
+    );
+  }
+  /* the host's facts ride along with the request: one hidden input per fact, keyed by its name */
+  $request: (
+    mode: $mode,
+    membership: $membership,
+    return-method: $method,
+    pickup-date: $pickup-date
+  );
+  input[type="hidden"] {
+    value: $request[attr("name")];
+  }
+  [bind-pickup-weekday] {
+    content: $pickup-weekday;
+  }
+  label[method-name] input {
+    checked: attr("value") == $method;
+  }
+
+  /* --- the calendar ------------------------------------------------------ */
+  &[pickup-weekday="Sat"],
+  &[pickup-weekday="Sun"] {
+    is-weekend: "";
+  }
+  &:not([pickup-weekday="Sat"]):not([pickup-weekday="Sun"]) {
+    is-weekend: none;
+  }
+
+  /* --- what is selected: two facts summed up from the rows ---------------- */
+  &:has(data-item[is-selected], data-part[is-selected]) {
+    has-selection: "";
+  }
+  &:not(:has(data-item[is-selected], data-part[is-selected])) {
+    has-selection: none;
+  }
+  &:has(data-item[component-count][is-selected], data-part[is-selected]) {
+    has-bundle-selected: "";
+  }
+  &:not(:has(data-item[component-count][is-selected], data-part[is-selected])) {
+    has-bundle-selected: none;
+  }
+
+  /* --- which methods are open: one fact per method, its value the reason -- */
+  &[is-weekend] {
+    home-pickup-block: "weekend";
+    store-dropoff-block: "weekend";
+  }
+  &:not([is-weekend]) {
+    store-dropoff-block: none;
+  }
+  /* home pickup is a member perk, unless a large item or one of its parts is going back */
+  &[membership-level="guest"]:not([has-bundle-selected]):not([is-weekend]) {
+    home-pickup-block: "members-only";
+  }
+  &[membership-level="member"]:not([is-weekend]),
+  &[has-bundle-selected]:not([is-weekend]) {
+    home-pickup-block: none;
+  }
+  &[home-pickup-block] label[method-name="home-pickup"] input,
+  &[store-dropoff-block] label[method-name="store-dropoff"] input {
+    disabled: "";
+  }
+  &:not([home-pickup-block]) label[method-name="home-pickup"] input,
+  &:not([store-dropoff-block]) label[method-name="store-dropoff"] input {
+    disabled: none;
+  }
+  /* a method that just closed falls back to the one that is always open */
+  &[home-pickup-block][return-method="home-pickup"],
+  &[store-dropoff-block][return-method="store-dropoff"] {
+    return-method: "ups-dropoff";
+  }
+
+  /* --- the order: one row per item, one nested row per part of a bundle --- */
+  #order[is-success] {
+    $order: prop("provision").body;
+    [bind-order] {
+      content: $order[attr("bind-order")];
+    }
+    input[type="date"] {
+      min: $order.today;
+    }
+    .items {
+      content: iterate($order.items, none, "sku");
+      > data-item {
+        /* every API field on its own line; component-count is how many parts
+           the item has — only a bundle has any */
+        sku-id: item.sku;
+        item-name: item.name;
+        item-category: item.category;
+        list-price: item.price;
+        member-price: item.memberPrice;
+        weight-kg: item.weightKg;
+        return-window-days: item.returnWindowDays;
+        warranty-days: item.warrantyDays;
+        is-final-sale: item.isFinalSale;
+        is-assembled: item.isAssembled;
+        restocking-fee-pct: item.restockingFeePct;
+        refund-member: item.refundMember;
+        refund-guest: item.refundGuest;
+        fee-member: item.feeMember;
+        fee-guest: item.feeGuest;
+        component-count: item.components.length;
+        is-in-window: $order.deliveredDaysAgo <= item.returnWindowDays;
+        is-in-warranty: $order.deliveredDaysAgo <= item.warrantyDays;
+        is-oversized: item.weightKg > 30;
+        .components {
+          content: iterate(item.components, none, "sku");
+          > data-part {
+            sku-id: item.sku;
+            item-name: item.name;
+            weight-kg: item.weightKg;
+            is-assembled: item.isAssembled;
+            fee-member: item.feeMember;
+            fee-guest: item.feeGuest;
+            is-oversized: item.weightKg > 30;
+          }
+        }
+      }
+    }
+  }
+  /* every line, item or part: its checkbox, its fields, its amount, its tick */
+  :is(data-item, data-part) {
+    line-amount: item[$amount-key];
+    input[type="checkbox"] {
+      name: item.sku;
+    }
+    [bind-field] {
+      content: item[attr("bind-field")];
+    }
+    [bind-amount] {
+      content: item[$amount-key];
+    }
+    @on change (target: "input[type='checkbox']") {
+      is-selected: if(
+        target.closest("data-item, data-part") ==
+          closest("data-item, data-part"): target.checked;
+        else: preserve
+      );
+    }
+  }
+
+  /* --- a bundle and its parts exclude each other -------------------------- */
+  .items > data-item[is-selected] .components > data-part {
+    is-locked-by-bundle: "";
+  }
+  .items > data-item:not([is-selected]) .components > data-part {
+    is-locked-by-bundle: none;
+  }
+  .items > data-item:has(data-part[is-selected]) {
+    is-locked-by-part: "";
+  }
+  .items > data-item:not(:has(data-part[is-selected])) {
+    is-locked-by-part: none;
+  }
+
+  /* --- the chosen method blocks some lines: UPS cannot take oversized
+     pieces, the store cannot take assembled furniture back ---------------- */
+  &[return-method="ups-dropoff"] :is(data-item, data-part)[is-oversized],
+  &[return-method="store-dropoff"] :is(data-item, data-part)[is-assembled] {
+    is-blocked-by-method: "";
+  }
+  &[return-method="home-pickup"] :is(data-item, data-part),
+  &[return-method="ups-dropoff"] :is(data-item, data-part):not([is-oversized]),
+  &[return-method="store-dropoff"] :is(data-item, data-part):not([is-assembled]) {
+    is-blocked-by-method: none;
+  }
+
+  /* --- eligibility: a return needs the return window and no final sale; a
+     replacement needs the warranty (a part shares its bundle's); parts exist
+     for replacements only; nothing blocked or locked ------------------------ */
+  &[return-mode="return"] .items > data-item[is-in-window]:not([is-final-sale]):not([is-blocked-by-method]):not([is-locked-by-part]),
+  &[return-mode="replace"] .items > data-item[is-in-warranty]:not([is-blocked-by-method]):not([is-locked-by-part]),
+  &[return-mode="replace"] data-item[is-in-warranty] .components > data-part:not([is-blocked-by-method]):not([is-locked-by-bundle]) {
+    is-eligible: "";
+  }
+  &[return-mode="return"] .items > data-item:not([is-in-window]),
+  &[return-mode="return"] .items > data-item[is-final-sale],
+  &[return-mode="return"] .components > data-part,
+  &[return-mode="replace"] .items > data-item:not([is-in-warranty]),
+  &[return-mode="replace"] data-item:not([is-in-warranty]) .components > data-part,
+  :is(data-item, data-part)[is-blocked-by-method],
+  data-part[is-locked-by-bundle],
+  data-item[is-locked-by-part] {
+    is-eligible: none;
+  }
+  :is(data-item, data-part)[is-eligible] > .line input[type="checkbox"] {
+    disabled: none;
+  }
+  :is(data-item, data-part):not([is-eligible]) {
+    is-selected: none;
+    > .line input[type="checkbox"] {
+      disabled: "";
+      checked: none;
+    }
+  }
+
+  /* --- the request button: something picked, and a date ------------------ */
+  &:not([has-selection]) .summary {
+    disabled-reason: "Pick at least one line";
+    button {
+      disabled: "";
+    }
+  }
+  &[has-selection]:not([pickup-date]) .summary {
+    disabled-reason: "Pick a date";
+    button {
+      disabled: "";
+    }
+  }
+  &[has-selection][pickup-date] .summary {
+    disabled-reason: none;
+    button {
+      disabled: none;
+    }
+  }
+
+  super-form[is-success] {
+    $rma: prop("provision").body;
+    [bind-confirmation] {
+      content: "Return #{$rma.rma} created for #{$rma.itemCount} line(s) — #{$rma.mode}, $#{$rma.amount} via #{$rma.method} on #{$rma.date}.";
+    }
+  }
+  super-form[is-error] [bind-confirmation] {
+    content: none;
+  }
+}

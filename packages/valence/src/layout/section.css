@@ -1,0 +1,10 @@
+/**
+ * Section
+ */
+
+@define-mixin module-section {
+  :--section {
+    display: block;
+    margin-bottom: var(--v-block-spacing-vertical);
+  }
+}

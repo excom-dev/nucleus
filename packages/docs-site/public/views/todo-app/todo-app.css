@@ -1,0 +1,233 @@
+@scope {
+  /* data-driven css */
+  provider-fetch[is-error] ul::before {
+    display: block;
+    padding: var(--todo-row-pad-x) 1rem;
+    color: var(--v-del-color);
+    font-size: 0.875rem;
+    content: "Could not load todos.";
+  }
+  li:has(:checked) input[name="title"] {
+    color: var(--v-muted-color);
+    text-decoration: line-through;
+  }
+
+  /* styling */
+  :scope {
+    --todo-radius: 0.7rem;
+    --todo-radius-page: 1.15rem;
+    --todo-gap: 0.75rem;
+    --todo-row-pad-y: 0.1rem;
+    --todo-row-pad-x: 0.6rem;
+    --todo-title-size: 1.0625rem;
+    --todo-title-leading: 1.3;
+    --todo-check: 1.375rem;
+    --todo-control: 1.35rem;
+    --todo-add: 1.5rem;
+    --todo-check-inset: 3.15rem;
+    --todo-stroke: var(--v-outline-width);
+    --todo-on-accent: var(--v-primary-inverse);
+
+    min-width: min(350px, calc(100vw - 3rem));
+    max-width: 26rem;
+    margin: 0;
+    background: var(--v-background-color);
+    color: var(--v-color);
+    font-family: var(--v-font-family);
+    -webkit-font-smoothing: antialiased;
+    border-radius: var(--todo-radius-page);
+  }
+
+  event-handler:not(:has(> super-form)),
+  provider-fetch,
+  ul super-form,
+  ul super-form form {
+    display: contents;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    background: var(--v-card-background-color);
+    border-radius: var(--todo-radius);
+    overflow: hidden;
+  }
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    overflow: hidden;
+    padding: var(--todo-row-pad-y) var(--todo-row-pad-x);
+    position: relative;
+    margin: 0;
+    interpolate-size: allow-keywords;
+    height: auto;
+    min-height: 2.75rem;
+    transition:
+      height var(--v-transition),
+      min-height var(--v-transition),
+      padding-block var(--v-transition);
+    @starting-style {
+      height: 0;
+      min-height: 0;
+      padding-block: 0;
+    }
+  }
+
+  event-handler:has(> super-form > form[method="patch"]) {
+    display: flex;
+    align-items: center;
+    gap: var(--todo-gap);
+    flex: 1;
+    min-width: 0;
+    width: auto;
+    margin: 0;
+    cursor: pointer;
+    font-weight: 400;
+  }
+
+  input[name="title"] {
+    min-width: 0;
+    font-size: var(--todo-title-size);
+    line-height: var(--todo-title-leading);
+    overflow-wrap: anywhere;
+  }
+
+  input[name="completed"] {
+    appearance: none;
+    width: var(--todo-check);
+    height: var(--todo-check);
+    margin: 0;
+    flex-shrink: 0;
+    border: var(--todo-stroke) solid var(--v-muted-border-color);
+    border-radius: 50%;
+    background-color: transparent;
+    background-image: none;
+    display: grid;
+    place-items: center;
+    box-shadow: none;
+
+    &:checked,
+    &:checked:active,
+    &:checked:focus {
+      border-color: var(--v-primary);
+      background-color: var(--v-primary);
+      background-image: none;
+
+      &::after {
+        content: "";
+        width: 0.28rem;
+        height: 0.52rem;
+        border: solid var(--todo-on-accent);
+        border-width: 0 var(--todo-stroke) var(--todo-stroke) 0;
+        translate: 0 -0.06rem;
+        rotate: 45deg;
+      }
+    }
+
+    &:focus-visible {
+      outline: var(--todo-stroke) solid var(--v-primary);
+      outline-offset: var(--todo-stroke);
+    }
+  }
+
+  input[type="text"],
+  input:not([type]) {
+    appearance: none;
+    width: 100%;
+    margin: 0;
+    padding: var(--todo-row-pad-y) 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    color: var(--v-color);
+    font-family: inherit;
+    font-size: var(--todo-title-size);
+    line-height: var(--todo-title-leading);
+
+    &::placeholder {
+      color: var(--v-muted-color);
+      opacity: 1;
+    }
+
+    &:focus,
+    &:focus-visible {
+      outline: none;
+      box-shadow: none;
+      background: transparent;
+    }
+  }
+
+  form[method="delete"] button {
+    background: var(--v-form-element-invalid-active-border-color);
+    &::after {
+      content: "-";
+      width: 0.55rem;
+      height: var(--todo-stroke);
+      background: var(--todo-on-accent);
+      border-radius: 1px;
+    }
+  }
+  form[method="delete"] button,
+  form[method="post"] button {
+    appearance: none;
+    width: var(--todo-add);
+    min-width: var(--todo-add);
+    height: var(--todo-add);
+    min-height: var(--todo-add);
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    box-shadow: none;
+    color: transparent;
+    font-size: 0;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    box-shadow: none;
+
+    &::before {
+      color: var(--todo-on-accent);
+      font-size: 1.25rem;
+      font-weight: 500;
+      line-height: var(--todo-add);
+      display: block;
+      height: 100%;
+    }
+  }
+
+  super-form:has(form[method="post"]) {
+    display: block;
+    margin-top: var(--todo-gap);
+    padding: var(--todo-row-pad-y) var(--todo-row-pad-x);
+    background: var(--v-card-background-color);
+    border-radius: var(--todo-radius);
+    form {
+      display: flex;
+      align-items: center;
+      gap: var(--todo-gap);
+      margin: 0;
+    }
+    button {
+      background: var(--v-primary);
+      order: -1;
+      &::before {
+        content: "+";
+      }
+
+      &:hover,
+      &:active,
+      &:focus-visible {
+        background: var(--v-primary);
+        box-shadow: none;
+      }
+
+      &:focus-visible {
+        outline: var(--todo-stroke) solid var(--v-primary);
+        outline-offset: var(--todo-stroke);
+      }
+    }
+  }
+}

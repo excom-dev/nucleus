@@ -1,0 +1,66 @@
+@import "@excom/renderable-element/src/index.css";
+
+/**
+ * Styles for `<include-content>`.
+ * @element include-content
+ */
+
+/* Aliases */
+@custom-selector :--include-content include-content, .tag-include-content;
+@custom-selector :--include-content--lazy-load [lazy-load], [data-lazy-load];
+@custom-selector :--include-content--lazy-unload [lazy-unload], [data-lazy-unload];
+@custom-selector :--include-content--did-load [did-load], [data-did-load];
+@custom-selector :--include-content--is-active [is-active], [aria-current];
+@custom-selector :--include-content--host-shadow [host-ref="shadow"], [data-host-ref="shadow"];
+
+@define-mixin module-include-content {
+  :root {
+    /**
+     * Fade-in duration.
+     * @cssproperty
+     * @syntax <time>
+     * @default 0.15s
+     */
+    --include-content-transition-duration: var(
+      --v-transition-duration-fast,
+      0.15s
+    );
+    /**
+     * Fade-in easing.
+     * @cssproperty
+     * @syntax *
+     * @default ease-in
+     */
+    --include-content-transition-ease: var(--v-transition-ease-out, ease-in);
+  }
+
+  :--include-content {
+    display: block;
+
+    &:--include-content--lazy-load,
+    &:--include-content--lazy-unload {
+      min-height: 10px;
+      min-width: 10px;
+    }
+
+    /**
+     * Skip the built-in fade — bring your own animation / view transition.
+     * Also opts-out if the element is portalling content elsewhere ([host-ref])
+     * @cssclass instant
+     */
+    &:not(.instant):not([host-ref]) {
+      opacity: 0;
+      transition: opacity var(--include-content-transition-duration)
+        var(--include-content-transition-ease);
+
+      &:--include-content--did-load:--include-content--is-active {
+        &:--include-content--host-shadow,
+        &:has(> *:not(template)) {
+          opacity: 1;
+        }
+      }
+    }
+
+    @mixin renderable-element;
+  }
+}

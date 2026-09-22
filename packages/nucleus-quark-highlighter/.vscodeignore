@@ -1,0 +1,10 @@
+.rush/**
+src/**
+scripts/**
+support/**
+node_modules/**
+rush-logs/**
+config/**
+shiki.mjs
+tsconfig.json
+*.vsix

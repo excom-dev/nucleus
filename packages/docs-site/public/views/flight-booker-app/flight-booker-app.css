@@ -1,0 +1,44 @@
+@scope {
+  /* data-driven css */
+  input:disabled {
+    opacity: 0.5;
+  }
+
+  /* styling */
+  :scope {
+    max-width: 26rem;
+    margin: 0;
+    padding: calc(var(--v-spacing) * 0.75) 1.1rem 2.5rem;
+    background: var(--v-background-color);
+    color: var(--v-color);
+  }
+
+  event-handler,
+  super-form {
+    display: contents;
+  }
+
+  form {
+    display: grid;
+    gap: calc(var(--v-spacing) * 0.5);
+    margin: 0;
+  }
+
+  label {
+    margin: 0;
+  }
+
+  select,
+  input {
+    margin: 0;
+  }
+
+  button[type="submit"] {
+    margin-top: calc(var(--v-spacing) * 0.5);
+  }
+
+  dialog > article {
+    /* the confirmation never grows past the frame the dialog opens in */
+    max-width: min(24rem, 100%);
+  }
+}

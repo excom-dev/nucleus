@@ -1,0 +1,16 @@
+<div>
+  <a>Hover me</a>
+  <include-content lazy-load>
+    <template>
+      <p>HTML inserted</p>
+    </template>
+  </include-content>
+  <small role="note">See Live document tab for DOM changes.</small>
+  <style>
+    #demo-include-content-simple > :first-child {
+      a:not(:hover) + include-content:not([is-active]) {
+        display: none;
+      }
+    }
+  </style>
+</div>

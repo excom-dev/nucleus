@@ -1,0 +1,11 @@
+/**
+ * Shared styles for `RenderableElement` hosts. Hide while
+ * `delaying-ready` (waiting on `ready-on`).
+ */
+
+@define-mixin renderable-element {
+  &[delaying-ready] {
+    /* Always hide, even against later display rules */
+    display: none !important;
+  }
+}

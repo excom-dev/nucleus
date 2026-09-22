@@ -1,0 +1,89 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Quark with providers > binds provider-fetch body fields via prop() > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 1,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 5,
+  "parentElement": 9,
+  "quarkRuns": 2,
+  "queryScopeCost": 7,
+  "querySelectorAll": 3,
+  "removeAttribute": 1,
+  "ruleRuns": 4,
+  "schedulePaint": 1,
+  "setAttribute": 3,
+  "setVar": 1,
+  "textContent": 1,
+  "variableRuns": 1,
+}
+`;
+
+exports[`Quark with providers > binds provider-storage via prop() > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 1,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 2,
+  "parentElement": 4,
+  "quarkRuns": 1,
+  "queryScopeCost": 6,
+  "querySelectorAll": 2,
+  "removeAttribute": 0,
+  "ruleRuns": 2,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 1,
+  "textContent": 1,
+  "variableRuns": 1,
+}
+`;
+
+exports[`Quark with providers > iterates provider-fetch body into a list > complexity 1`] = `
+{
+  "attributeRuns": 3,
+  "closest": 2,
+  "getVar": 1,
+  "importNode": 3,
+  "listenerRuns": 0,
+  "matches": 7,
+  "parentElement": 11,
+  "quarkRuns": 3,
+  "queryScopeCost": 35,
+  "querySelectorAll": 9,
+  "removeAttribute": 2,
+  "ruleRuns": 9,
+  "schedulePaint": 3,
+  "setAttribute": 5,
+  "setVar": 1,
+  "textContent": 2,
+  "variableRuns": 1,
+}
+`;
+
+exports[`Quark with providers > updates bindings when provider-fetch re-provisions > complexity 1`] = `
+{
+  "attributeRuns": 2,
+  "closest": 0,
+  "getVar": 2,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 9,
+  "parentElement": 11,
+  "quarkRuns": 5,
+  "queryScopeCost": 9,
+  "querySelectorAll": 5,
+  "removeAttribute": 3,
+  "ruleRuns": 8,
+  "schedulePaint": 2,
+  "setAttribute": 5,
+  "setVar": 2,
+  "textContent": 2,
+  "variableRuns": 2,
+}
+`;

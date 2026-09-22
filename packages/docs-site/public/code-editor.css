@@ -1,0 +1,79 @@
+/* Shared source editor: a transparent <textarea> typed over a Shiki
+   overlay (`[data-highlight]`) */
+:root {
+  --code-font-size: 0.75rem;
+  @media (max-width: 768px) {
+    --code-font-size: 0.8rem;
+  }
+}
+
+pre.shiki {
+  font-size: var(--code-font-size);
+}
+
+.code-editor {
+  display: grid;
+  position: relative;
+  font-family: var(--v-font-family-monospace);
+  line-height: 1.5;
+  overflow: scroll;
+  width: 100%;
+  &::before {
+    display: none;
+  }
+
+  .shiki {
+    background-color: transparent;
+  }
+  [data-highlight],
+  textarea {
+    margin: 0;
+    /* `!important`: shell.css sizes every `textarea` at 1rem on phones, and
+       the overlay must not be left behind at the editor's size. */
+    font-size: var(--code-font-size) !important;
+    padding: 0 0 0 8px;
+    grid-area: 1 / 1;
+    font: inherit;
+    line-height: inherit;
+    white-space: pre;
+    overflow-wrap: normal;
+    tab-size: 2;
+    border-radius: 0px;
+    max-width: 100%;
+    max-height: 100%;
+    overflow: hidden;
+  }
+  textarea {
+    border: none;
+    --v-box-shadow: none !important;
+    margin: 0;
+    background: transparent;
+    color: transparent;
+    caret-color: var(--v-color);
+    outline: none;
+    resize: none;
+    border-left: 2px solid var(--v-form-element-border-color);
+    transition: border-left-color var(--v-transition);
+    &:focus {
+      border-left-color: var(--v-form-element-focus-color);
+    }
+  }
+  [data-highlight] {
+    width: min-content;
+    pointer-events: none;
+    overflow: auto;
+    border-left: 2px solid transparent;
+    pre {
+      margin: 0;
+      font: inherit;
+      line-height: inherit;
+      white-space: pre;
+      tab-size: 2;
+      min-height: 100%;
+      background: transparent !important;
+    }
+    code {
+      padding: 0 !important;
+    }
+  }
+}

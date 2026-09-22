@@ -1,0 +1,17 @@
+<div data-demo-counter>
+  <button>+1</button>
+  <output></output>
+  <quark-sheet>
+    @use "/demo-utils" as *;
+
+    :scope {
+      $count: 0;
+    }
+    button {
+      @on click (handle: incrementFromJs(closest("[data-demo-counter]")));
+    }
+    output {
+      content: "Clicked #{$count} times";
+    }
+  </quark-sheet>
+</div>

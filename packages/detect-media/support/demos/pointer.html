@@ -1,0 +1,28 @@
+<div>
+  <detect-media media-query="(pointer: coarse)">
+    <include-content bind-touch>
+      <template>
+        <p>Touch layout</p>
+      </template>
+    </include-content>
+    <include-content bind-pointer>
+      <template>
+        <p>Pointer layout</p>
+      </template>
+    </include-content>
+  </detect-media>
+  <quark-sheet>
+    detect-media[is-matched] include-content[bind-touch] {
+      is-active: "";
+    }
+    detect-media[is-matched] include-content[bind-pointer] {
+      is-active: none;
+    }
+    detect-media:not([is-matched]) include-content[bind-pointer] {
+      is-active: "";
+    }
+    detect-media:not([is-matched]) include-content[bind-touch] {
+      is-active: none;
+    }
+  </quark-sheet>
+</div>

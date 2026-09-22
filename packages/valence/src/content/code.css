@@ -1,0 +1,68 @@
+/**
+ * Code
+ *
+ * Reboot from normalize.css v8.0.1 (MIT) and sanitize.css v13.0.0 (CC0).
+ */
+
+@define-mixin module-code {
+  /* 1. Inherit / scale font-size
+     2. Fix odd `em` sizing */
+  :--pre,
+  :--code,
+  :--kbd,
+  :--samp {
+    font-size: var(--v-font-size); /* 2 */
+    font-family: var(--v-font-family); /* 1 */
+  }
+
+  :--pre :--code,
+  :--pre :--samp {
+    font-size: inherit;
+    font-family: inherit;
+  }
+
+  /* Don't overflow the container (opinionated) */
+  :--pre {
+    -ms-overflow-style: scrollbar;
+    overflow: auto;
+  }
+
+  :--pre,
+  :--code,
+  :--kbd,
+  :--samp {
+    border-radius: var(--v-border-radius);
+    background: var(--v-code-background-color);
+    color: var(--v-code-color);
+    font-weight: var(--v-font-weight);
+    line-height: initial;
+  }
+
+  :--code,
+  :--kbd,
+  :--samp {
+    display: inline-block;
+    padding: 0.12rem 0.25rem;
+  }
+
+  :--pre {
+    display: block;
+    margin-bottom: var(--v-spacing);
+    overflow-x: auto;
+
+    > :--code,
+    > :--samp {
+      display: block;
+      padding: var(--v-spacing);
+      background: none;
+      line-height: var(--v-line-height);
+    }
+  }
+
+  /* kbd */
+  :--kbd {
+    background-color: var(--v-code-kbd-background-color);
+    color: var(--v-code-kbd-color);
+    vertical-align: baseline;
+  }
+}

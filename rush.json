@@ -1,0 +1,260 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
+
+  "rushVersion": "5.166.0",
+
+  "pnpmVersion": "10.26.2",
+
+  "nodeSupportedVersionRange": ">=18.15.0",
+  "ensureConsistentVersions": true,
+
+  "projects": [
+    {
+      "packageName": "@excom/neutron",
+      "projectFolder": "packages/neutron",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/nucleus-devtools",
+      "projectFolder": "packages/nucleus-devtools"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "projectFolder": "packages/nucleus-kit",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/docs-site",
+      "projectFolder": "packages/docs-site"
+    },
+    {
+      "packageName": "@excom/nucleus-quark-highlighter",
+      "projectFolder": "packages/nucleus-quark-highlighter",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/quark",
+      "projectFolder": "packages/quark",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/quark-parser",
+      "projectFolder": "packages/quark-parser",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/quark-formatter",
+      "projectFolder": "packages/quark-formatter",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/hash-object",
+      "projectFolder": "packages/hash-object",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/kit-utils",
+      "projectFolder": "packages/kit-utils",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/kit-router",
+      "projectFolder": "packages/kit-router",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/kit-logger",
+      "projectFolder": "packages/kit-logger",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/kit-devtools",
+      "projectFolder": "packages/kit-devtools",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/kit-scroller",
+      "projectFolder": "packages/kit-scroller",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/valence",
+      "projectFolder": "packages/valence",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/kit-shims",
+      "projectFolder": "packages/kit-shims",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/heft-rig",
+      "projectFolder": "packages/heft-rig"
+    },
+    {
+      "packageName": "@excom/abortable-element",
+      "projectFolder": "packages/abortable-element",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/fetchable-element",
+      "projectFolder": "packages/fetchable-element",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/loadable-element",
+      "projectFolder": "packages/loadable-element",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/listenable-element",
+      "projectFolder": "packages/listenable-element",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/renderable-element",
+      "projectFolder": "packages/renderable-element",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/routable-element",
+      "projectFolder": "packages/routable-element",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/content-carousel",
+      "projectFolder": "packages/content-carousel",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/content-drawer",
+      "projectFolder": "packages/content-drawer",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/content-tabs",
+      "projectFolder": "packages/content-tabs",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/data-table",
+      "projectFolder": "packages/data-table",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/detect-browser",
+      "projectFolder": "packages/detect-browser",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/detect-media",
+      "projectFolder": "packages/detect-media",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/detect-features",
+      "projectFolder": "packages/detect-features",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/dismiss-watcher",
+      "projectFolder": "packages/dismiss-watcher",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/gesture-handler",
+      "projectFolder": "packages/gesture-handler",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/dialog-anchor",
+      "projectFolder": "packages/dialog-anchor",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/dom-observer",
+      "projectFolder": "packages/dom-observer",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/event-handler",
+      "projectFolder": "packages/event-handler",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/include-content",
+      "projectFolder": "packages/include-content",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/mapbox-view",
+      "projectFolder": "packages/mapbox-view",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/network-status",
+      "projectFolder": "packages/network-status",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/provider-fetch",
+      "projectFolder": "packages/provider-fetch",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/provider-geolocation",
+      "projectFolder": "packages/provider-geolocation",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/provider-orientation",
+      "projectFolder": "packages/provider-orientation",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/provider-storage",
+      "projectFolder": "packages/provider-storage",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/quark-sheet",
+      "projectFolder": "packages/quark-sheet",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/scroll-into-view",
+      "projectFolder": "packages/scroll-into-view",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/service-worker",
+      "projectFolder": "packages/service-worker",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/spa-route",
+      "projectFolder": "packages/spa-route",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/super-form",
+      "projectFolder": "packages/super-form",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/super-img",
+      "projectFolder": "packages/super-img",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/super-input",
+      "projectFolder": "packages/super-input",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/web-authn",
+      "projectFolder": "packages/web-authn",
+      "shouldPublish": true
+    }
+  ]
+}

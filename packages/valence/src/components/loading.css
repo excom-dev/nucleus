@@ -1,0 +1,41 @@
+/**
+ * Loading ([aria-busy=true])
+ */
+
+@define-mixin module-loading {
+  /* Everything except form elements */
+  [aria-busy="true"]:not(input, select, textarea, html, form) {
+    white-space: nowrap;
+
+    &::before {
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+      background-image: var(--v-icon-loading);
+      background-size: 1em auto;
+      background-repeat: no-repeat;
+      content: "";
+      vertical-align: -0.125em; /* Visual alignment */
+    }
+
+    &:not(:empty) {
+      &::before {
+        margin-inline-end: calc(var(--v-spacing) * 0.5);
+      }
+    }
+
+    &:empty {
+      text-align: center;
+    }
+  }
+
+  /* Buttons and links */
+  :--button,
+  [type="submit"],
+  [type="reset"],
+  :--link {
+    &[aria-busy="true"] {
+      pointer-events: none;
+    }
+  }
+}

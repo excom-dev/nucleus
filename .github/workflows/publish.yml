@@ -1,0 +1,53 @@
+name: Publish Packages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-monorepo
+      # Build cache only on main (see .github/actions/setup-monorepo).
+      - name: Cache Rush build cache
+        uses: actions/cache@v5
+        with:
+          path: common/temp/build-cache
+          key: rush-build-cache-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            rush-build-cache-${{ runner.os }}-
+      - name: Configure git author
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Publish (dry run)
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+        run: node common/scripts/install-run-rush.js publish
+      - run: node .github/scripts/run-rush-for-changes.mjs build --verbose
+      - run: node common/scripts/install-run-rush.js build:package-metas
+      - run: node common/scripts/install-run-rush.js build:docs
+      - run: node common/scripts/install-run-rush.js build:docs-index
+      - name: Apply versions and commit
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+        run: node common/scripts/install-run-rush.js publish --apply --target-branch main
+      - run: node common/scripts/install-run-rush.js apply-exports
+      - name: Publish Packages
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+        run: node common/scripts/install-run-rush.js publish --publish --include-all --set-access-level public --registry "https://registry.npmjs.org"

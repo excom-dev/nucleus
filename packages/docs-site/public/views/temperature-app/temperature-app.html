@@ -1,0 +1,17 @@
+<article id="temperature-app">
+  <link rel="stylesheet" href="/views/temperature-app/temperature-app.css">
+  <quark-sheet src-url="/views/temperature-app/temperature-app.quark"></quark-sheet>
+  <label>
+    <super-input reflect-value bind-celsius>
+      <input type="number" name="data-celsius" step="any" value="0.0" autocomplete="off">
+    </super-input>
+    Celsius
+  </label>
+  <span aria-hidden="true">=</span>
+  <label>
+    <super-input reflect-value bind-fahrenheit>
+      <input type="number" name="data-fahrenheit" step="any" value="32.0" autocomplete="off">
+    </super-input>
+    Fahrenheit
+  </label>
+</article>

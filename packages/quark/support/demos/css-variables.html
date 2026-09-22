@@ -1,0 +1,18 @@
+<div>
+  <details>
+    <summary>Open me</summary>
+    <p>The border turns blue while open.</p>
+  </details>
+  <quark-sheet>
+    details { --border-color: "silver"; }
+    details[open] { --border-color: "#3fa9f5"; }
+  </quark-sheet>
+  <style>
+    #demo-quark-css-variables > :first-child {
+      details {
+        border: 2px solid var(--border-color);
+        padding: 0.5rem;
+      }
+    }
+  </style>
+</div>

@@ -1,0 +1,45 @@
+/**
+ * Document: border-box and responsive typography.
+ * Reboot from normalize.css v8.0.1 (MIT) and sanitize.css v13.0.0 (CC0).
+ */
+
+@define-mixin module-document {
+  /* 1. Border-box (opinionated)
+     2. No background-repeat (opinionated) */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    background-repeat: no-repeat;
+  }
+
+  /* 1. Inherit text-decoration (opinionated)
+     2. Inherit vertical-align (opinionated) */
+  ::before,
+  ::after {
+    text-decoration: inherit;
+    vertical-align: inherit;
+  }
+
+  /* 1. Line-height (opinionated)
+     2. Break words to avoid overflow (opinionated)
+     3. 4-space tabs (opinionated)
+     4. No iOS tap highlight (opinionated)
+     5. Don't resize text after iOS orientation change */
+  :where(:root),
+  :where(:host) {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    background-color: var(--v-background-color);
+    color: var(--v-color);
+    font-weight: var(--v-font-weight);
+    font-size: var(--v-font-size);
+    line-height: var(--v-line-height);
+    font-family: var(--v-font-family);
+    text-underline-offset: var(--v-text-underline-offset);
+    text-rendering: optimizeLegibility;
+    overflow-wrap: break-word;
+    tab-size: 4;
+  }
+}

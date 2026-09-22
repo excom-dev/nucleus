@@ -1,0 +1,12 @@
+<section>
+  <button type="button" command="--toggle" commandfor="demo-drawer-simple">
+    Toggle sheet
+  </button>
+  <content-drawer id="demo-drawer-simple" class="absolute">
+    <header>
+      <button type="button" rel="prev" command="--close" commandfor="demo-drawer-simple" aria-label="Close"></button>
+      <h2>Sheet open</h2>
+    </header>
+  </content-drawer>
+  <event-handler class="tag-backdrop" role="presentation" target-ref="content-drawer:has(+ :scope)" command-name="--close"></event-handler>
+</section>

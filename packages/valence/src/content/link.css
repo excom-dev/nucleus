@@ -1,0 +1,79 @@
+/**
+ * Link
+ */
+
+@define-mixin module-link {
+  :where(:--link:not(:--button)) {
+    --v-color: var(--v-primary);
+    --v-background-color: transparent;
+    --v-underline: var(--v-primary-underline);
+    display: inline;
+    outline: none;
+    background-color: var(--v-background-color); /* 1 */
+    color: var(--v-color);
+    text-decoration: var(--v-text-decoration);
+    text-decoration-color: var(--v-underline);
+    text-underline-offset: 0.125em;
+
+    transition:
+      background-color var(--v-transition),
+      color var(--v-transition),
+      text-decoration var(--v-transition),
+      box-shadow var(--v-transition);
+
+    &:is([aria-current]:not([aria-current="false"]), :hover, :active, :focus) {
+      --v-color: var(--v-primary-hover);
+      --v-underline: var(--v-primary-hover-underline);
+      --v-text-decoration: underline;
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 var(--v-outline-width) var(--v-primary-focus);
+    }
+
+    /* Secondary */
+    /**
+     * Muted / secondary link flavor.
+     * @cssclass secondary
+     */
+    &.secondary {
+      --v-color: var(--v-secondary);
+      --v-underline: var(--v-secondary-underline);
+
+      &:is(
+        [aria-current]:not([aria-current="false"]),
+        :hover,
+        :active,
+        :focus
+      ) {
+        --v-color: var(--v-secondary-hover);
+        --v-underline: var(--v-secondary-hover-underline);
+      }
+    }
+
+    /* Contrast */
+    /**
+     * High-contrast link flavor.
+     * @cssclass contrast
+     */
+    &.contrast {
+      --v-color: var(--v-contrast);
+      --v-underline: var(--v-contrast-underline);
+
+      &:is(
+        [aria-current]:not([aria-current="false"]),
+        :hover,
+        :active,
+        :focus
+      ) {
+        --v-color: var(--v-contrast-hover);
+        --v-underline: var(--v-contrast-hover-underline);
+      }
+    }
+  }
+
+  /* Anchor-as-button needs block-like layout */
+  a:--button {
+    display: inline-block;
+  }
+}

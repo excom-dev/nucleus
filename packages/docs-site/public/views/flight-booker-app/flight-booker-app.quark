@@ -1,0 +1,37 @@
+/* State: `data-trip` / `data-outbound` / `data-inbound` on the host, copied
+   from the form on every edit (the field names double as the POST payload).
+   `data-is-bookable` is derived once; the controls select on the facts. */
+:scope {
+  $trip: attr("data-trip");
+  $outbound: attr("data-outbound");
+  $inbound: attr("data-inbound");
+  /* data-trip, data-outbound, data-inbound */
+  @on input, change {
+    $inputs: event.target.form.elements;
+    data-trip: $inputs["data-trip"].value;
+    data-outbound: $inputs["data-outbound"].value;
+    data-inbound: $inputs["data-inbound"].value;
+  }
+  data-is-bookable: if(
+    $outbound and ($trip == "one-way" or $inbound and $inbound >= $outbound):
+      "";
+    else: none
+  );
+  input[name="data-inbound"] {
+    min: $outbound;
+  }
+  &[data-trip="one-way"] input[name="data-inbound"],
+  &:not([data-is-bookable]) button[type="submit"] {
+    disabled: "";
+  }
+  &[data-trip="return"] input[name="data-inbound"],
+  &[data-is-bookable] button[type="submit"] {
+    disabled: none;
+  }
+  super-form[is-success] {
+    $booking: prop("provision").body.json;
+    [bind-confirmation] {
+      content: "You have booked a #{$booking["data-trip"]} flight #{if($booking["data-trip"] == "return": "from #{$booking["data-outbound"]} to #{$booking["data-inbound"]}"; else: "on #{$booking["data-outbound"]}")}.";
+    }
+  }
+}

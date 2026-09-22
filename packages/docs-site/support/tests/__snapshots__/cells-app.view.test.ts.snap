@@ -1,0 +1,45 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`cells-app view > renders the grid, evaluates a commit, and stays within the complexity budget > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 2,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 3,
+  "parentElement": 7,
+  "quarkRuns": 1,
+  "queryScopeCost": 8039,
+  "querySelectorAll": 2,
+  "removeAttribute": 0,
+  "ruleRuns": 2,
+  "schedulePaint": 1,
+  "setAttribute": 2,
+  "setVar": 0,
+  "textContent": 1,
+  "variableRuns": 0,
+}
+`;
+
+exports[`cells-app view > renders the grid, evaluates a commit, and stays within the complexity budget > mount complexity 1`] = `
+{
+  "attributeRuns": 2729,
+  "closest": 2727,
+  "getVar": 5301,
+  "importNode": 2829,
+  "listenerRuns": 2,
+  "matches": 11,
+  "parentElement": 13745,
+  "quarkRuns": 3,
+  "queryScopeCost": 215712,
+  "querySelectorAll": 929,
+  "removeAttribute": 102,
+  "ruleRuns": 1031,
+  "schedulePaint": 2729,
+  "setAttribute": 2804,
+  "setVar": 2701,
+  "textContent": 27,
+  "variableRuns": 2701,
+}
+`;

@@ -1,0 +1,12 @@
+/**
+ * Pointer affordance when listening for click / mouse (or default click).
+ * @element noop-tag
+ */
+
+@define-mixin listenable-element {
+  &[listen-for*="click"],
+  &[listen-for*="mouse"],
+  &:not([listen-for]):not([listen-for-lifecycle]) {
+    cursor: pointer;
+  }
+}

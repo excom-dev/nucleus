@@ -1,0 +1,29 @@
+import "../../index";
+import {
+  afterEach,
+  describe,
+  expect,
+  it,
+  wait,
+} from "@excom/heft-rig/profiles/default/config/test-utils";
+import { mountView, readDemo } from "@excom/quark/support/tests/view-helpers";
+
+describe("multi view", () => {
+  afterEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  it("keeps multiple accordion sections open", async () => {
+    const { root } = await mountView(readDemo(import.meta.url, "multi"));
+    const headers = root.querySelectorAll("content-tabs-header");
+    const bodies = root.querySelectorAll("content-tabs-body");
+    expect(root.getAttribute("tab-type")).toBe("multi");
+    expect(headers[0].hasAttribute("is-open")).toBe(true);
+    headers[1].dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    await wait(0);
+    expect(headers[0].hasAttribute("is-open")).toBe(true);
+    expect(headers[1].hasAttribute("is-open")).toBe(true);
+    expect(bodies[0].hasAttribute("is-open")).toBe(true);
+    expect(bodies[1].hasAttribute("is-open")).toBe(true);
+  });
+});

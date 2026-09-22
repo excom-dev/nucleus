@@ -1,0 +1,17 @@
+/* State: `data-duration` on the host (seconds), written by the slider.
+   `--timer-duration` hands it to the CSS animation, which owns the clock. */
+:scope {
+  $duration: +attr("data-duration");
+  --timer-duration: $duration;
+  [bind-duration] {
+    content: "#{$duration}s";
+  }
+  @on input {
+    data-duration: event.target.value;
+  }
+  button {
+    @on click {
+      @command --reload (target: "#timer-app include-content");
+    }
+  }
+}

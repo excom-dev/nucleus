@@ -1,0 +1,57 @@
+<p>Type into both inputs, then toggle them off and on. The right side
+keeps its value because <code>persist-content</code> reuses the same
+template node instead of cloning a fresh copy each render.</p>
+
+<style>
+  .persist-demo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .persist-demo include-content {
+    display: block;
+    border: 1px dashed currentColor;
+    padding: 8px;
+    margin-top: 4px;
+  }
+</style>
+
+<div class="persist-demo" id="persist-host">
+  <div>
+    <strong>Default (cloned each render):</strong>
+    <label>
+      <input type="checkbox" data-target="#cloned" checked />
+      Active
+    </label>
+    <include-content id="cloned" is-active>
+      <template>
+        <input type="text" placeholder="Type, then toggle off + on" />
+      </template>
+    </include-content>
+  </div>
+
+  <div>
+    <strong><code>persist-content</code>:</strong>
+    <label>
+      <input type="checkbox" data-target="#persisted" checked />
+      Active
+    </label>
+    <include-content id="persisted" is-active persist-content>
+      <template>
+        <input type="text" placeholder="Type, then toggle off + on" />
+      </template>
+    </include-content>
+  </div>
+</div>
+
+<script>
+  (() => {
+    document.querySelectorAll("#persist-host input[type=checkbox]").forEach((cb) => {
+      cb.addEventListener("change", () => {
+        document
+          .querySelector(cb.dataset.target)
+          .toggleAttribute("is-active", cb.checked);
+      });
+    });
+  })();
+</script>

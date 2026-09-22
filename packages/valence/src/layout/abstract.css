@@ -1,0 +1,9 @@
+/**
+ * abstract
+ */
+
+@define-mixin module-abstract {
+  .abstract {
+    display: contents;
+  }
+}

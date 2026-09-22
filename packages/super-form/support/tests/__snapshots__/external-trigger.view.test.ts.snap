@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`external-trigger view > lists the echo after an outside trigger > complexity 1`] = `
+{
+  "attributeRuns": 12,
+  "closest": 20,
+  "getVar": 2,
+  "importNode": 12,
+  "listenerRuns": 0,
+  "matches": 6,
+  "parentElement": 25,
+  "quarkRuns": 2,
+  "queryScopeCost": 88,
+  "querySelectorAll": 12,
+  "removeAttribute": 1,
+  "ruleRuns": 12,
+  "schedulePaint": 12,
+  "setAttribute": 4,
+  "setVar": 1,
+  "textContent": 10,
+  "variableRuns": 1,
+}
+`;

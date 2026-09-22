@@ -1,0 +1,24 @@
+/**
+ * Minimal auto-layout grid
+ */
+
+@define-mixin module-grid {
+  /**
+   * Auto-fit responsive columns.
+   * @cssclass grid
+   */
+  .grid {
+    grid-column-gap: var(--v-grid-column-gap);
+    grid-row-gap: var(--v-grid-row-gap);
+    display: grid;
+    grid-template-columns: 1fr;
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(auto-fit, minmax(0%, 1fr));
+    }
+
+    & > * {
+      min-width: 0; /* HACK for children in overflow */
+    }
+  }
+}

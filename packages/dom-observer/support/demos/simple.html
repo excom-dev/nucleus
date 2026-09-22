@@ -1,0 +1,18 @@
+<div>
+  <section>
+    <dom-observer target-ref=":scope + details"></dom-observer>
+    <details id="do-watched">
+      <summary>Toggle me — mutates the "open" attribute</summary>
+      <p>Toggling this
+        fired <code>dom-observer-change</code>.</p>
+    </details>
+    <output class="tag-pre" style="white-space: pre;"></output>
+  </section>
+  <quark-sheet>
+    @use "/demo-utils" as *;
+
+    section {
+      @on dom-observer-change (handle: appendOutputFromDetail);
+    }
+  </quark-sheet>
+</div>

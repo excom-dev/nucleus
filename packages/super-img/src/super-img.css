@@ -1,0 +1,8 @@
+/* Aliases */
+@custom-selector :--super-img super-img, .tag-super-img;
+
+@define-mixin module-super-img {
+  :--super-img {
+    display: block;
+  }
+}

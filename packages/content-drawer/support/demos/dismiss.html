@@ -1,0 +1,16 @@
+<section>
+  <quark-sheet>
+    :scope {
+      content-drawer[is-open] dismiss-watcher { is-active: ""; }
+      content-drawer:not([is-open]) dismiss-watcher { is-active: none; }
+    }
+  </quark-sheet>
+  <button type="button" command="--open" commandfor="demo-drawer-dismiss">
+    Open drawer
+  </button>
+  <content-drawer id="demo-drawer-dismiss" class="absolute">
+    <dismiss-watcher watch-escape watch-outside-click command-name="--close"></dismiss-watcher>
+    <nav>Menu</nav>
+  </content-drawer>
+  <event-handler class="tag-backdrop" role="presentation" target-ref="content-drawer:has(+ :scope)" command-name="--close"></event-handler>
+</section>

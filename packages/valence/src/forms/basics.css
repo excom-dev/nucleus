@@ -1,0 +1,415 @@
+/**
+ * Basic form elements.
+ * Reboot from normalize.css v8.0.1 (MIT) and sanitize.css v13.0.0 (CC0).
+ */
+
+@define-mixin module-basics {
+  /* 1. Font styles (all browsers)
+     2. Drop Firefox / Safari margin */
+  input,
+  optgroup,
+  select,
+  textarea {
+    margin: 0; /* 2 */
+    font-size: var(--v-font-size); /* 1 */
+    line-height: var(--v-line-height); /* 1 */
+    font-family: inherit; /* 1 */
+    letter-spacing: inherit; /* 2 */
+  }
+
+  /* Show overflow in IE */
+  input {
+    overflow: visible;
+  }
+
+  /* Don't inherit `text-transform` in Edge, Firefox, IE */
+  select {
+    text-transform: none;
+  }
+
+  /* 1. Wrap text in Edge / IE
+     2. Inherit color from `fieldset` in IE
+     3. No padding, so zeroing `fieldset` isn't a surprise */
+  legend {
+    max-width: 100%; /* 1 */
+    padding: 0; /* 3 */
+    color: inherit; /* 2 */
+    white-space: normal; /* 1 */
+  }
+
+  /* 1. Drop IE's default vertical scrollbar */
+  textarea {
+    overflow: auto; /* 1 */
+  }
+
+  /* Drop IE 10 padding */
+  [type="checkbox"],
+  [type="radio"] {
+    padding: 0;
+  }
+
+  /* Safari spinner cursor */
+  ::-webkit-inner-spin-button,
+  ::-webkit-outer-spin-button {
+    height: auto;
+  }
+
+  /* 1. Chrome / Safari search appearance
+     2. Safari outline */
+  [type="search"] {
+    -webkit-appearance: textfield; /* 1 */
+    outline-offset: -2px; /* 2 */
+  }
+
+  /* Drop Chrome / Safari macOS inner padding */
+  [type="search"]::-webkit-search-decoration {
+    -webkit-appearance: none;
+  }
+
+  /* 1. Style clickable types in iOS / Safari
+     2. Inherit font in Safari */
+  ::-webkit-file-upload-button {
+    -webkit-appearance: button; /* 1 */
+    font: inherit; /* 2 */
+  }
+
+  /* Drop Firefox focus inner border / padding */
+  ::-moz-focus-inner {
+    padding: 0;
+    border-style: none;
+  }
+
+  /* Drop Firefox focus outline */
+  :-moz-focusring {
+    outline: none;
+  }
+
+  /* Drop Firefox extra `:invalid` styles */
+  :-moz-ui-invalid {
+    box-shadow: none;
+  }
+
+  /* Hide IE's inconsistent expand control (opinionated) */
+  ::-ms-expand {
+    display: none;
+  }
+
+  /* No border / padding (opinionated) */
+  [type="file"],
+  [type="range"] {
+    padding: 0;
+    border-width: 0;
+  }
+
+  /* Force height on non-checkbox / radio / range inputs */
+  input:not([type="checkbox"], [type="radio"], [type="range"]) {
+    height: calc(
+      (1rem * var(--v-line-height)) +
+        (var(--v-form-element-spacing-vertical) * 2) +
+        (var(--v-border-width) * 2)
+    );
+  }
+
+  /* Fieldset */
+  fieldset {
+    width: 100%;
+    margin: 0;
+    margin-bottom: var(--v-spacing);
+    padding: 0;
+    border: 0;
+  }
+
+  /* Label & legend */
+  :--label,
+  fieldset legend {
+    display: block;
+    margin-bottom: calc(var(--v-spacing) * 0.375);
+    color: var(--v-color);
+    font-weight: var(--v-form-label-font-weight, var(--v-font-weight));
+  }
+
+  fieldset legend {
+    margin-bottom: calc(var(--v-spacing) * 0.5);
+  }
+
+  /* Blocks, 100% */
+  input:not([type="checkbox"], [type="radio"]),
+  button[type="submit"],
+  select,
+  textarea {
+    width: 100%;
+  }
+
+  /* Reset appearance (not checkbox, radio, range, file) */
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]),
+  select,
+  textarea {
+    appearance: none;
+    padding: var(--v-form-element-spacing-vertical)
+      var(--v-form-element-spacing-horizontal);
+  }
+
+  /* Common styles */
+  input,
+  select,
+  textarea {
+    --v-background-color: var(--v-form-element-background-color);
+    --v-border-color: var(--v-form-element-border-color);
+    --v-color: var(--v-form-element-color);
+    --v-box-shadow: none;
+    border: var(--v-border-width) solid var(--v-border-color);
+    border-radius: var(--v-border-radius);
+    outline: none;
+    background-color: var(--v-background-color);
+    box-shadow: var(--v-box-shadow);
+    color: var(--v-color);
+    font-weight: var(--v-font-weight);
+
+    transition:
+      background-color var(--v-transition),
+      border-color var(--v-transition),
+      color var(--v-transition),
+      box-shadow var(--v-transition);
+  }
+
+  /* Active & Focus, background */
+  input:not(
+    [type="submit"],
+    [type="button"],
+    [type="reset"],
+    [type="checkbox"],
+    [type="radio"],
+    [readonly]
+  ),
+  :where(select, textarea):not([readonly]) {
+    &:is(:active, :focus) {
+      --v-background-color: var(--v-form-element-active-background-color);
+    }
+  }
+
+  /* Active & Focus, border */
+  input:not(
+    [type="submit"],
+    [type="button"],
+    [type="reset"],
+    [role="switch"],
+    [readonly]
+  ),
+  :where(select, textarea):not([readonly]) {
+    &:is(:active, :focus) {
+      --v-border-color: var(--v-form-element-active-border-color);
+    }
+  }
+
+  /* Focus, box-shadow */
+  input:not(
+    [type="submit"],
+    [type="button"],
+    [type="reset"],
+    [type="range"],
+    [type="file"],
+    [readonly]
+  ),
+  :where(select, textarea):not([readonly]) {
+    &:focus {
+      --v-box-shadow: 0 0 0 var(--v-outline-width)
+        var(--v-form-element-focus-color);
+    }
+  }
+
+  /* Disabled */
+  input:not([type="submit"], [type="button"], [type="reset"])[disabled],
+  select[disabled],
+  textarea[disabled],
+  :--label[aria-disabled="true"],
+  :where(fieldset[disabled])
+    :is(
+      input:not([type="submit"], [type="button"], [type="reset"]),
+      select,
+      textarea
+    ) {
+    opacity: var(--v-form-element-disabled-opacity);
+    pointer-events: none;
+  }
+
+  :--label[aria-disabled="true"] input[disabled] {
+    opacity: 1;
+  }
+
+  /* Aria-invalid */
+  :where(input, select, textarea) {
+    &:not(
+      [type="checkbox"],
+      [type="radio"],
+      [type="date"],
+      [type="datetime-local"],
+      [type="month"],
+      [type="time"],
+      [type="week"],
+      [type="range"]
+    ) {
+      &[aria-invalid] {
+        padding-right: calc(
+          var(--v-form-element-spacing-horizontal) + 1.5rem
+        ) !important;
+        padding-left: var(--v-form-element-spacing-horizontal);
+        padding-inline-start: var(
+          --v-form-element-spacing-horizontal
+        ) !important;
+        padding-inline-end: calc(
+          var(--v-form-element-spacing-horizontal) + 1.5rem
+        ) !important;
+        background-position: center right 0.75rem;
+        background-size: 1rem auto;
+        background-repeat: no-repeat;
+      }
+
+      &[aria-invalid="false"]:not(select) {
+        background-image: var(--v-icon-valid);
+      }
+
+      &[aria-invalid="true"]:not(select) {
+        background-image: var(--v-icon-invalid);
+      }
+    }
+
+    &[aria-invalid="false"] {
+      --v-border-color: var(--v-form-element-valid-border-color);
+
+      &:is(:active, :focus) {
+        --v-border-color: var(
+          --v-form-element-valid-active-border-color
+        ) !important;
+
+        &:not([type="checkbox"], [type="radio"]) {
+          --v-box-shadow: 0 0 0 var(--v-outline-width)
+            var(--v-form-element-valid-focus-color) !important;
+        }
+      }
+    }
+
+    &[aria-invalid="true"] {
+      --v-border-color: var(--v-form-element-invalid-border-color);
+
+      &:is(:active, :focus) {
+        --v-border-color: var(
+          --v-form-element-invalid-active-border-color
+        ) !important;
+
+        &:not([type="checkbox"], [type="radio"]) {
+          --v-box-shadow: 0 0 0 var(--v-outline-width)
+            var(--v-form-element-invalid-focus-color) !important;
+        }
+      }
+    }
+  }
+
+  [dir="rtl"] {
+    :where(input, select, textarea) {
+      &:not([type="checkbox"], [type="radio"]) {
+        &:is([aria-invalid], [aria-invalid="true"], [aria-invalid="false"]) {
+          background-position: center left 0.75rem;
+        }
+      }
+    }
+  }
+
+  /* Placeholder */
+  input::placeholder,
+  input::-webkit-input-placeholder,
+  textarea::placeholder,
+  textarea::-webkit-input-placeholder,
+  select:invalid {
+    color: var(--v-form-element-placeholder-color);
+    opacity: 1;
+  }
+
+  /* Margin bottom (Not Checkboxes and Radios) */
+  input:not([type="checkbox"], [type="radio"]),
+  select,
+  textarea {
+    margin-bottom: var(--v-spacing);
+  }
+
+  /* Select */
+  select {
+    /* Unstyle the IE10+ `<select>` caret */
+    &::-ms-expand {
+      border: 0;
+      background-color: transparent;
+    }
+
+    &:not([multiple], [size]) {
+      padding-right: calc(var(--v-form-element-spacing-horizontal) + 1.5rem);
+      padding-left: var(--v-form-element-spacing-horizontal);
+      padding-inline-start: var(--v-form-element-spacing-horizontal);
+      padding-inline-end: calc(
+        var(--v-form-element-spacing-horizontal) + 1.5rem
+      );
+      background-image: var(--v-icon-chevron);
+      background-position: center right 0.75rem;
+      background-size: 1rem auto;
+      background-repeat: no-repeat;
+    }
+
+    &[multiple] {
+      option {
+        &:checked {
+          background: var(--v-form-element-selected-background-color);
+          color: var(--v-form-element-color);
+        }
+      }
+    }
+  }
+
+  [dir="rtl"] {
+    select {
+      &:not([multiple], [size]) {
+        background-position: center left 0.75rem;
+      }
+    }
+  }
+
+  /* Textarea */
+  textarea {
+    display: block;
+    resize: vertical;
+
+    &[aria-invalid] {
+      --v-icon-height: calc(
+        (1rem * var(--v-line-height)) +
+          (var(--v-form-element-spacing-vertical) * 2) +
+          (var(--v-border-width) * 2)
+      );
+      background-position: top right 0.75rem !important;
+      background-size: 1rem var(--v-icon-height) !important;
+    }
+  }
+
+  /* Helper text under inputs (`small` siblings) */
+  :where(input, select, textarea, fieldset, .grid) {
+    + :--small {
+      @mixin util-small-note;
+      margin-top: calc(var(--v-spacing) * -0.75);
+    }
+    &[aria-invalid="false"] {
+      + :--small {
+        color: var(--v-ins-color);
+      }
+    }
+    &[aria-invalid="true"] {
+      + :--small {
+        color: var(--v-del-color);
+      }
+    }
+  }
+
+  /* Input inside a label */
+  :--label {
+    @mixin abstract-wrapper {
+      > :where(input, select, textarea) {
+        margin-top: calc(var(--v-spacing) * 0.25);
+      }
+    }
+  }
+}

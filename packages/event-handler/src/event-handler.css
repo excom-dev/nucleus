@@ -1,0 +1,19 @@
+@import "@excom/listenable-element/src/index.css";
+
+/**
+ * Styles for `<event-handler>`.
+ * @element event-handler
+ */
+
+/* Aliases */
+@custom-selector :--event-handler event-handler, .tag-event-handler;
+
+/**
+ * Skip the pointer cursor from the listenable mixin.
+ * @cssclass unstyled
+ */
+@define-mixin module-event-handler {
+  :--event-handler:not(.unstyled) {
+    @mixin listenable-element;
+  }
+}

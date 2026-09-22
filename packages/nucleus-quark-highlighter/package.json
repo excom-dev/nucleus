@@ -1,0 +1,127 @@
+{
+  "name": "@excom/nucleus-quark-highlighter",
+  "version": "0.1.0",
+  "displayName": "Nucleus & Quark Syntax Highlighter",
+  "description": "VS Code syntax highlighting for Quark sheets and Nucleus-style HTML",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24.13.0",
+    "vscode": "^1.74.0"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-extension.mjs",
+    "build:watch": "node -e \"console.log('nucleus-quark-highlighter: no build watch')",
+    "format": "node -e \"console.log('nucleus-quark-highlighter: no format')\"",
+    "test": "node -e \"console.log('nucleus-quark-highlighter: no tests')\"",
+    "coverage": "node -e \"console.log('nucleus-quark-highlighter: no tests')\"",
+    "retest": "node -e \"console.log('nucleus-quark-highlighter: no retests')\"",
+    "recoverage": "node -e \"console.log('nucleus-quark-highlighter: no recoverage')\"",
+    "reformat": "node -e \"console.log('nucleus-quark-highlighter: no reformat')\"",
+    "build:package-metas": "node node_modules/@excom/heft-rig/scripts/build-package-metas.mjs",
+    "package:vsix": "node scripts/package-vsix.mjs",
+    "publish:vsix": "node scripts/package-vsix.mjs --publish"
+  },
+  "dependencies": {},
+  "peerDependencies": {},
+  "devDependencies": {
+    "@excom/heft-rig": "workspace:^",
+    "@excom/quark-formatter": "workspace:^",
+    "@types/vscode": "^1.74.0",
+    "esbuild": "^0.28.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/excom-dev/nucleus.git",
+    "directory": "packages/nucleus-quark-highlighter"
+  },
+  "homepage": "https://github.com/excom-dev/nucleus/tree/main/packages/nucleus-quark-highlighter/support/docs/README.md",
+  "bugs": "https://github.com/excom-dev/nucleus/issues",
+  "keywords": [
+    "nucleus-quark-highlighter",
+    "tool",
+    "nucleus",
+    "quark",
+    "nucleus-syntax-highlighting",
+    "quark-syntax-highlighting",
+    "syntax-highlighting",
+    "vscode-extension"
+  ],
+  "excom": {
+    "packageType": "tool"
+  },
+  "activationEvents": [
+    "onLanguage:quark"
+  ],
+  "categories": [
+    "Programming Languages",
+    "Formatters"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "quark",
+        "aliases": [
+          "Quark",
+          "quark"
+        ],
+        "extensions": [
+          ".quark"
+        ],
+        "configuration": "./quark.configuration.json",
+        "icon": {
+          "light": "./icons/quark-file.svg",
+          "dark": "./icons/quark-file.svg"
+        }
+      }
+    ],
+    "commands": [
+      {
+        "command": "quark.formatSheets",
+        "title": "Quark: Format <quark-sheet> blocks"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "editor.action.commentLine",
+        "key": "ctrl+/",
+        "mac": "cmd+/",
+        "when": "editorTextFocus && editorLangId == 'quark'"
+      },
+      {
+        "command": "editor.action.blockComment",
+        "key": "shift+alt+a",
+        "mac": "shift+alt+a",
+        "when": "editorTextFocus && editorLangId == 'quark'"
+      },
+      {
+        "command": "editor.action.formatDocument",
+        "key": "shift+alt+f",
+        "mac": "shift+alt+f",
+        "when": "editorTextFocus && editorLangId == 'quark'"
+      }
+    ],
+    "grammars": [
+      {
+        "scopeName": "injection.html.custom-elements",
+        "path": "./syntaxes/html-custom-elements.tmLanguage.json",
+        "injectTo": [
+          "text.html.derivative",
+          "text.html.basic"
+        ]
+      },
+      {
+        "language": "quark",
+        "scopeName": "source.quark",
+        "path": "./syntaxes/quark.tmLanguage.json"
+      }
+    ]
+  },
+  "exports": {
+    "./shiki": "./shiki.mjs",
+    "./syntaxes/*": "./syntaxes/*"
+  },
+  "icon": "icons/marketplace-icon.png",
+  "main": "./dist/extension.cjs",
+  "publisher": "excom-dev"
+}

@@ -1,0 +1,163 @@
+/**
+ * Checkboxes, radios, and switches
+ */
+
+@define-mixin module-checkbox-radio-switch {
+  /* Labels. Firefox lacks `:has()`, so this misses there. */
+  :--label {
+    &:has([type="checkbox"], [type="radio"]) {
+      width: fit-content;
+      cursor: pointer;
+    }
+  }
+
+  [type="checkbox"],
+  [type="radio"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 1.25em;
+    height: 1.25em;
+    margin-top: -0.125em;
+    margin-inline-end: 0.5em;
+    border-width: var(--v-border-width);
+    vertical-align: middle;
+    cursor: pointer;
+
+    &::-ms-check {
+      display: none; /* Unstyle IE checkboxes */
+    }
+
+    &:checked,
+    &:checked:active,
+    &:checked:focus {
+      --v-background-color: var(--v-primary-background);
+      --v-border-color: var(--v-primary-border);
+      background-image: var(--v-icon-checkbox);
+      background-position: center;
+      background-size: 0.75em auto;
+      background-repeat: no-repeat;
+    }
+
+    & ~ :--label {
+      display: inline-block;
+      margin-bottom: 0;
+      cursor: pointer;
+
+      &:not(:last-of-type) {
+        margin-inline-end: 1em;
+      }
+    }
+  }
+
+  /* Checkboxes */
+  [type="checkbox"] {
+    &:indeterminate {
+      --v-background-color: var(--v-primary-background);
+      --v-border-color: var(--v-primary-border);
+      background-image: var(--v-icon-minus);
+      background-position: center;
+      background-size: 0.75em auto;
+      background-repeat: no-repeat;
+    }
+  }
+
+  /* Radios */
+  [type="radio"] {
+    border-radius: 50%;
+
+    &:checked,
+    &:checked:active,
+    &:checked:focus {
+      --v-background-color: var(--v-primary-inverse);
+      border-width: 0.35em;
+      background-image: none;
+    }
+  }
+
+  /* Switches */
+  [type="checkbox"][role="switch"] {
+    --v-background-color: var(--v-switch-background-color);
+    --v-color: var(--v-switch-color);
+
+    width: 2.25em;
+    height: 1.25em;
+    border: var(--v-border-width) solid var(--v-border-color);
+    border-radius: 1.25em;
+    background-color: var(--v-background-color);
+    line-height: 1.25em;
+
+    &:not([aria-invalid]) {
+      --v-border-color: var(--v-switch-background-color);
+    }
+
+    &::before {
+      display: block;
+      aspect-ratio: 1;
+      height: 100%;
+      border-radius: 50%;
+      background-color: var(--v-color);
+      box-shadow: var(--v-switch-thumb-box-shadow);
+      content: "";
+
+      transition: margin 0.1s ease-in-out;
+    }
+
+    &:focus {
+      --v-background-color: var(--v-switch-background-color);
+      --v-border-color: var(--v-switch-background-color);
+    }
+
+    &:checked {
+      --v-background-color: var(--v-switch-checked-background-color);
+      --v-border-color: var(--v-switch-checked-background-color);
+      background-image: none;
+
+      &::before {
+        margin-inline-start: calc(2.25em - 1.25em);
+      }
+    }
+
+    &[disabled] {
+      --v-background-color: var(--v-border-color);
+    }
+  }
+
+  /* Aria-invalid */
+  [type="checkbox"],
+  [type="checkbox"][role="switch"] {
+    &[aria-invalid="false"] {
+      &:checked,
+      &:checked:active,
+      &:checked:focus {
+        --v-background-color: var(--v-form-element-valid-border-color);
+      }
+    }
+    &:checked,
+    &:checked:active,
+    &:checked:focus {
+      &[aria-invalid="true"] {
+        --v-background-color: var(--v-form-element-invalid-border-color);
+      }
+    }
+  }
+
+  [type="checkbox"],
+  [type="radio"],
+  [type="checkbox"][role="switch"] {
+    &[aria-invalid="false"] {
+      &:checked,
+      &:checked:active,
+      &:checked:focus {
+        --v-border-color: var(--v-form-element-valid-border-color);
+      }
+    }
+    &:checked,
+    &:checked:active,
+    &:checked:focus {
+      &[aria-invalid="true"] {
+        --v-border-color: var(--v-form-element-invalid-border-color);
+      }
+    }
+  }
+}

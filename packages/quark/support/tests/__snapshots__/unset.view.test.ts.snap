@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`unset view > shadows $foo while open and falls back when closed > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 1,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 3,
+  "parentElement": 2,
+  "quarkRuns": 2,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 2,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 1,
+  "textContent": 1,
+  "variableRuns": 1,
+}
+`;

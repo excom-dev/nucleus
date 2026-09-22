@@ -1,0 +1,68 @@
+{
+  "name": "@excom/nucleus-kit",
+  "version": "0.1.0",
+  "description": "The whole Nucleus Stack in one package — elements, Quark, Valence.css",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24.13.0"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "node node_modules/@excom/heft-rig/scripts/vite-build.mjs",
+    "build:watch": "node node_modules/@excom/heft-rig/scripts/vite-build-watch.mjs",
+    "format": "node node_modules/@excom/heft-rig/scripts/format.mjs",
+    "test": "node node_modules/@excom/heft-rig/scripts/vitest.mjs",
+    "coverage": "node node_modules/@excom/heft-rig/scripts/coverage.mjs",
+    "dev": "node node_modules/@excom/heft-rig/scripts/vite-dev.mjs",
+    "preview": "node node_modules/@excom/heft-rig/scripts/vite-preview.mjs",
+    "build:package-metas": "node node_modules/@excom/heft-rig/scripts/build-package-metas.mjs",
+    "build:docs": "node node_modules/@excom/heft-rig/scripts/build-docs.mjs"
+  },
+  "dependencies": {
+    "@excom/content-carousel": "workspace:^",
+    "@excom/content-drawer": "workspace:^",
+    "@excom/content-tabs": "workspace:^",
+    "@excom/data-table": "workspace:^",
+    "@excom/detect-browser": "workspace:^",
+    "@excom/detect-features": "workspace:^",
+    "@excom/detect-media": "workspace:^",
+    "@excom/dialog-anchor": "workspace:^",
+    "@excom/dismiss-watcher": "workspace:^",
+    "@excom/dom-observer": "workspace:^",
+    "@excom/event-handler": "workspace:^",
+    "@excom/gesture-handler": "workspace:^",
+    "@excom/include-content": "workspace:^",
+    "@excom/network-status": "workspace:^",
+    "@excom/neutron": "workspace:^",
+    "@excom/provider-fetch": "workspace:^",
+    "@excom/provider-geolocation": "workspace:^",
+    "@excom/provider-orientation": "workspace:^",
+    "@excom/provider-storage": "workspace:^",
+    "@excom/quark": "workspace:^",
+    "@excom/quark-sheet": "workspace:^",
+    "@excom/scroll-into-view": "workspace:^",
+    "@excom/service-worker": "workspace:^",
+    "@excom/spa-route": "workspace:^",
+    "@excom/super-form": "workspace:^",
+    "@excom/super-input": "workspace:^",
+    "@excom/valence": "workspace:^",
+    "@excom/web-authn": "workspace:^"
+  },
+  "peerDependencies": {},
+  "devDependencies": {
+    "@excom/heft-rig": "workspace:^"
+  },
+  "repository": {
+    "url": "excom-dev/nucleus",
+    "directory": "packages/nucleus-kit"
+  },
+  "homepage": "https://github.com/excom-dev/nucleus/tree/main/packages/nucleus-kit/support/docs/README.md",
+  "bugs": "https://github.com/excom-dev/nucleus/issues",
+  "keywords": [
+    "nucleus-kit"
+  ],
+  "excom": {
+    "packageType": "library",
+    "sideEffectImport": true
+  }
+}

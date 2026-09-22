@@ -1,0 +1,8 @@
+/* Selector aliases. */
+@custom-selector :--quark-sheet quark-sheet, .tag-quark-sheet;
+
+@define-mixin module-quark-sheet {
+  :--quark-sheet {
+    display: none;
+  }
+}

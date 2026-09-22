@@ -1,0 +1,19 @@
+@import "@excom/listenable-element/src/index.css";
+
+/**
+ * Styles for `<dialog-anchor>`.
+ * @element dialog-anchor
+ */
+
+/* Aliases */
+@custom-selector :--dialog-anchor dialog-anchor, .tag-dialog-anchor;
+
+/**
+ * Skip the pointer cursor from the listenable mixin.
+ * @cssclass unstyled
+ */
+@layer {
+  :--dialog-anchor:not(.unstyled) {
+    @mixin listenable-element;
+  }
+}

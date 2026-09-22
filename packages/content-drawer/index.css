@@ -1,0 +1,5 @@
+@import "./src/content-drawer.css";
+
+@layer {
+  @mixin module-content-drawer;
+}

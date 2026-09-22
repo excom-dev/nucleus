@@ -1,0 +1,68 @@
+name: Deploy Docs Site
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-monorepo
+
+      # Build cache only on main: `build --to docs-site` walks the whole graph, so
+      # every unchanged package hits. PR runs (`--impacted-by`) never hit and no
+      # longer download or upload it. See .github/actions/setup-monorepo.
+      - name: Cache Rush build cache
+        uses: actions/cache@v5
+        with:
+          path: common/temp/build-cache
+          key: rush-build-cache-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            rush-build-cache-${{ runner.os }}-
+
+      # Fresh package-meta.json + CEMs for every documented package.
+      - run: node common/scripts/install-run-rush.js build:package-metas
+
+      # Build workspace deps, then the docs-site static app into packages/docs-site/dist.
+      - run: node common/scripts/install-run-rush.js build --to @excom/docs-site
+
+      # Markdown API docs + llms.txt / llms-full.txt; copies llms into site dist.
+      - run: node common/scripts/install-run-rush.js build:docs
+      - run: node common/scripts/install-run-rush.js build:docs-index
+
+      # Bundle-size baseline for PR comments: merge this build's size reports
+      # over the previous baseline and cache it for pr.yml.
+      - name: Restore bundle-size baseline
+        uses: actions/cache/restore@v5
+        with:
+          path: size-baseline
+          key: size-baseline-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            size-baseline-${{ runner.os }}-
+      - run: node .github/scripts/comment-size-report.mjs --write-baseline
+      - name: Save bundle-size baseline
+        uses: actions/cache/save@v5
+        with:
+          path: size-baseline
+          key: size-baseline-${{ runner.os }}-${{ github.sha }}
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy packages/docs-site/dist --project-name=excom-docs

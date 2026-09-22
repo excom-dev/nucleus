@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`simple view > labels the details panel open and closed > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 2,
+  "parentElement": 0,
+  "quarkRuns": 1,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 1,
+  "variableRuns": 0,
+}
+`;

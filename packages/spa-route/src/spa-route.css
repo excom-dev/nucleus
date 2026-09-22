@@ -1,0 +1,24 @@
+@import "@excom/listenable-element/src/index.css";
+@import "@excom/renderable-element/src/index.css";
+
+/**
+ * Styles for `<spa-route>` and `<spa-a>`.
+ * @element spa-route
+ */
+
+/* Aliases */
+@custom-selector :--spa-route spa-route, .tag-spa-route;
+@custom-selector :--spa-a spa-a, .tag-spa-a;
+
+@define-mixin module-spa-route {
+  :--spa-route {
+    display: block;
+    &:not([is-active][was-active]) {
+      /* Don't hide the route that's being re-activated */
+      @mixin renderable-element;
+    }
+  }
+  :--spa-a {
+    @mixin listenable-element;
+  }
+}

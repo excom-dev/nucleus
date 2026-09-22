@@ -1,0 +1,16 @@
+<article id="not-found">
+  <link rel="stylesheet" href="/views/not-found/not-found.css">
+  <quark-sheet src-url="/views/not-found/not-found.quark"></quark-sheet>
+  <header>
+    <p role="doc-subtitle">404</p>
+    <h1>Page not found</h1>
+    <p bind-path></p>
+  </header>
+  <p>That address doesn't match anything here — it may have moved, or been renamed.</p>
+  <nav aria-label="Elsewhere on this site">
+    <spa-a route-href="/nucleus" role="link" class="tag-button">Go home</spa-a>
+    <spa-a route-href="/nucleus/docs/quick_start" role="link" class="tag-button outline secondary">Quick Start</spa-a>
+    <dialog-anchor role="button" class="outline secondary" target-ref="#search-dialog" is-modal>Search the
+      docs</dialog-anchor>
+  </nav>
+</article>

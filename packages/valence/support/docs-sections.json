@@ -1,0 +1,45 @@
+{
+  "sections": [
+    {
+      "id": "getting-started",
+      "title": "Getting Started",
+      "docs": ["schemes", "aliases", "opt_outs"]
+    },
+    {
+      "id": "customization",
+      "title": "Customization",
+      "docs": ["css_variables", "themes"]
+    },
+    {
+      "id": "layout",
+      "title": "Layout",
+      "docs": ["container", "landmarks", "grid", "overflow_auto"]
+    },
+    {
+      "id": "content",
+      "title": "Content",
+      "docs": ["typography", "link", "button", "table", "code", "embedded"]
+    },
+    {
+      "id": "forms",
+      "title": "Forms",
+      "docs": ["forms", "input", "textarea", "select", "checkboxes", "range"]
+    },
+    {
+      "id": "components",
+      "title": "Components",
+      "docs": [
+        "accordion",
+        "card",
+        "dropdown",
+        "group",
+        "loading",
+        "modal",
+        "nav",
+        "popover",
+        "progress",
+        "tooltip"
+      ]
+    }
+  ]
+}

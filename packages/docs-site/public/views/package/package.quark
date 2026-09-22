@@ -1,0 +1,56 @@
+/* Fetches the package meta and renders the README skeleton. `$route` and
+   `$route-doc-name` are published by the shell sheet (index.html) from
+   `spa-route`; `$package-meta` / `$package-name` are published here for the
+   views the README includes (install-section, api-reference, live-demo),
+   which each carry their own sheet and read them from this ancestor. Four
+   routes share this view: `/nucleus` (the Introduction, named by the route's
+   `data-doc-name`), `/nucleus/docs/:name` (site guide),
+   `/nucleus/packages/:packageName` (README) and
+   `/nucleus/packages/:packageName/:docName` (one doc page). */
+@use "/shell" as *;
+
+provider-fetch.doc-page {
+  $doc-name: $route.params.docName or $route.params.name or $route-doc-name;
+  $package-name: $route.params.packageName;
+  api-url: docMetaUrl($doc-name, $package-name);
+  data-is-package-doc: $package-name and $doc-name;
+  &[is-success] {
+    $package-meta: prop("provision").body;
+    $neighbors: docNeighbors($package-meta, $doc-name);
+    data-package-type: $package-meta.package.excom.packageType;
+    data-has-prev: $neighbors.prev != null;
+    data-has-next: $neighbors.next != null;
+    .md-content {
+      content: dangerous-html(getDocHtml($package-meta, $doc-name));
+    }
+    [data-demo] {
+      template-ref: "/views/live-demo/live-demo.html";
+      lazy-load: "";
+    }
+    [bind-package-link] {
+      route-href: "/nucleus/packages/#{$package-name}";
+      content: $package-name;
+    }
+    [bind-doc-title] {
+      content: docTitle($package-meta, $doc-name);
+    }
+    [bind-prev-page] {
+      route-href: $neighbors.prev.href;
+      content: $neighbors.prev.title;
+    }
+    [bind-next-page] {
+      route-href: $neighbors.next.href;
+      content: $neighbors.next.title;
+    }
+  }
+}
+include-content[data-language] {
+  @on include-content-render (handle: upgradeTemplateCode);
+  /* this is a bit of a hack to ensure the event listener is added before element is-active */
+  &:not([lazy-load]) {
+    is-active: "";
+  }
+}
+[bind-copy-button] {
+  content: template("#copy-source-button");
+}

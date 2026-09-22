@@ -1,0 +1,49 @@
+/* Search dialog view. The provider fetches the corpus emitted by
+   collect-docs-metas (heft-rig build-search-docs.mjs). Results come from
+   filterSearchResults() (MiniSearch) driven by the query signal.
+   $package-indices is inherited from the index.json provider-fetch. */
+@use "/shell" as *;
+
+:scope {
+  $search-input: "";
+  @on search-query {
+    $search-input: event.detail.query;
+  }
+
+  &[is-success] {
+    $search-corpus: prop("provision").body;
+    $search-results: filterSearchResults($search-corpus, $search-input);
+
+    form {
+      @on submit (prevent-default);
+    }
+    [bind-result-length] {
+      data-has-query: $search-input.length >= 3;
+      content: "#{$search-results.length} results";
+    }
+    #search-results {
+      content: iterate($search-results, none, "id");
+    }
+    li spa-a {
+      route-href: searchResultHref(item);
+    }
+    [bind-result-type] {
+      content: mapPackageType($package-indices, item.kind, item.package);
+    }
+    [bind-result-package] {
+      content: dangerous-html(
+        highlightQuery(item.package, item.matches.package, $search-input)
+      );
+    }
+    [bind-result-title] {
+      content: dangerous-html(
+        highlightQuery(item.title, item.matches.title, $search-input)
+      );
+    }
+    [bind-result-text] {
+      content: dangerous-html(
+        highlightQuery(item.text, item.matches.text, $search-input)
+      );
+    }
+  }
+}

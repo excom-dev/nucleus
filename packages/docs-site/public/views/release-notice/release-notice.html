@@ -1,0 +1,22 @@
+<content-drawer id="release-notice" from-side="top" aria-label="Release notifications">
+  <link rel="stylesheet" href="/views/release-notice/release-notice.css">
+  <blockquote>
+    <p><strong>Beta.</strong> The Nucleus Stack is in beta for a few weeks until features are stabilized and
+      optimized.</p>
+  </blockquote>
+  <super-form>
+    <form action="/api/release-subscribers" method="post">
+      <fieldset role="group">
+        <input type="email" name="email" required autocomplete="email" placeholder="you@example.com">
+        <button type="submit">Notify me</button>
+      </fieldset>
+      <!-- honeypot: outside the group so the input row is untouched -->
+      <div aria-hidden="true" data-honeypot>
+        <label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+      </div>
+    </form>
+    <p bind-thanks role="status">Thanks — we'll email you when it ships.</p>
+    <p bind-error role="alert">Something went wrong. Please try again.</p>
+  </super-form>
+  <button type="button" class="close" command="--close" commandfor="release-notice" aria-label="Dismiss"></button>
+</content-drawer>

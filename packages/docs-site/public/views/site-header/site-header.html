@@ -1,0 +1,56 @@
+<header id="site-header">
+  <link rel="stylesheet" href="/views/site-header/site-header.css">
+  <nav>
+    <ul>
+      <li id="logos">
+        <spa-a route-href="/nucleus" role="link" data-tab="home">
+          <img src="/img/nucleus.svg" alt="Nucleus Stack" />
+          <span class="tab-label">Home</span>
+        </spa-a>
+        <!-- the company page, not the docs home -->
+        <spa-a route-href="/" role="link" class="desktop-only">
+          <span>Made by</span>
+          <img src="/img/excom.svg" alt="excom" />
+        </spa-a>
+      </li>
+    </ul>
+    <ul>
+      <li id="site-search">
+        <dialog-anchor class="tag-input" data-tab="search" target-ref="#search-dialog" is-modal>
+          <span class="tab-label">Search<span class="desktop-only"> docs…</span></span>
+          <dialog-anchor class="shortcut desktop-only" host-ref="window" listen-for="keydown" keycode-filter="meta+k ctrl+k"
+            target-ref="#search-dialog" is-modal>⌘K</dialog-anchor>
+        </dialog-anchor>
+      </li>
+      <li class="mobile-only">
+        <button type="button" data-tab="menu" command="--open" commandfor="site-menu">
+          <span class="tab-label">Menu</span>
+        </button>
+      </li>
+      <!-- Icon-only socials (shell.css maps `data-social` → `--ico`).
+           Discord / Threads / X have no destination yet: `<a>` without `href`. -->
+      <li class="desktop-only">
+        <a aria-label="Discord" title="Discord" data-social="discord" target="_blank" rel="noopener" href="https://discord.gg/s8hnujBrpn"></a>
+      </li>
+      <li class="desktop-only">
+        <a aria-label="Threads" title="Threads" data-social="threads" target="_blank" rel="noopener"></a>
+      </li>
+      <li class="desktop-only">
+        <a aria-label="X" title="X" data-social="x" target="_blank" rel="noopener"></a>
+      </li>
+      <li class="desktop-only">
+        <spa-a route-href="/contact" role="link" aria-label="Contact" title="Contact" data-social="contact"></spa-a>
+      </li>
+      <li class="desktop-only">
+        <a href="https://www.npmjs.com/~excom" aria-label="npm" title="npm" data-social="npm" target="_blank"
+          rel="noopener"></a>
+      </li>
+      <li>
+        <a href="https://github.com/excom-dev/nucleus" aria-label="GitHub" title="GitHub" data-social="github"
+          data-tab="github" target="_blank" rel="noopener">
+          <span class="tab-label">GitHub</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</header>

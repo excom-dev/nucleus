@@ -1,0 +1,14 @@
+<div>
+  <details>
+    <summary>Panel <span bind-status></span></summary>
+    <p>Panel body.</p>
+  </details>
+  <quark-sheet>
+    details[open] [bind-status] {
+      content: "Open";
+    }
+    details:not([open]) [bind-status] {
+      content: "Closed";
+    }
+  </quark-sheet>
+</div>

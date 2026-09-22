@@ -1,0 +1,116 @@
+<article role="region" aria-label="playground" class="live-app">
+    <link rel="stylesheet" href="/code-editor.css">
+    <link rel="stylesheet" href="/views/live-app/live-app.css">
+    <quark-sheet src-url="/views/live-app/live-app.quark"></quark-sheet>
+    <!-- Every save (PUT) or reset (DELETE) rebuilds the preview iframe: a new window, fresh module cache.
+         Not the mount-time `.fresh` DELETE: the first iframe already loads the fresh files. -->
+    <event-handler listen-for="provider-fetch-success"
+        selector-filter="[api-method='put'], [api-method='delete']:not(.fresh)"
+        target-ref=":scope [aria-label='preview'] > include-content" command-name="--reload">
+        <div class="left-pane">
+            <!-- App intro: /views/demo-headers/<data-app>.html (anything not needed to run the app) -->
+            <header class="imported-header">
+                <include-content></include-content>
+            </header>
+            <!-- activated by live-app.quark once the mount-time DELETE has settled: one load, fresh files -->
+            <section aria-label="preview">
+                <include-content>
+                    <template>
+                        <iframe title="App preview"></iframe>
+                    </template>
+                </include-content>
+                <!-- Narrow viewports (live-app.css): the editor is a bottom sheet, this button opens it -->
+                <button type="button" class="editor-toggle" command="--open"><span>Code</span></button>
+            </section>
+        </div>
+
+        <!-- touch / pen only: a mouse drag inside the editor must select text, not pull the sheet. -->
+        <gesture-handler gesture-types="pan-y swipe" pointer-types="touch pen"
+            from-ref=":scope > content-drawer > .grabber"
+            handoff-ref=":scope .code-editor, :scope content-tabs-body, :scope > content-drawer"
+            progress-axis="up" range-ref=":scope > content-drawer" snap-points="0 1">
+        <content-drawer aria-label="editor">
+            <dismiss-watcher command-name="--close"></dismiss-watcher>
+            <div class="grabber" aria-hidden="true"></div>
+            <button type="button" class="close" command="--close" aria-label="Close editor"></button>
+            <small>
+                <!-- shown only while <service-worker> is mounted but not yet controlling the page (live-app.css) -->
+                <p class="sw-error" role="alert">
+                    The playground needs this site's service worker, which is still installing.
+                    Reload the page to start editing.
+                </p>
+                <!-- Every mount drops this app's saved edits (DELETE /api/sandbox/views/<app>); the editors load once that succeeded. -->
+                <provider-fetch class="fresh" api-method="delete">
+                <content-tabs class="file-tabs">
+                    <div bind-file-headers role="tablist" aria-label="files">
+                        <template>
+                            <content-tabs-header>
+                                <span class="file-icon" aria-hidden="true"></span>
+                                <span bind-file-name></span>
+                            </content-tabs-header>
+                        </template>
+                    </div>
+                    <div bind-file-bodies>
+                        <template>
+                            <content-tabs-body class="show-scrollbar">
+                                <!-- Reloading the source (initial load, reset) rebuilds the editor block for a fresh <textarea>. -->
+                                <event-handler listen-for="provider-fetch-success" selector-filter=".source"
+                                    target-ref=":scope include-content" command-name="--reload">
+                                    <provider-fetch class="source">
+                                        <include-content is-active>
+                                            <template>
+                                                <!-- Reset: drop the override, then re-read the original into the editor. -->
+                                                <event-handler listen-for="provider-fetch-success"
+                                                    selector-filter="[api-method='delete']"
+                                                    target-ref="content-tabs-body:has(:scope) provider-fetch.source"
+                                                    command-name="--fetch">
+                                                    <div class="file-actions">
+                                                        <small role="status">Saving failed — is the service worker
+                                                            active?</small>
+                                                        <event-handler
+                                                            target-ref="content-tabs-body:has(:scope) textarea"
+                                                            fire-event="copy-source" role="button" aria-label="copy"
+                                                            aria-description="Copy source" class="icon-button">
+                                                            <span class="ico-copy" aria-hidden="true"></span>
+                                                        </event-handler>
+                                                        <event-handler target-ref=":scope > provider-fetch"
+                                                            command-name="--fetch" role="button"
+                                                            aria-label="reset" aria-description="Reset file"
+                                                            class="icon-button">
+                                                            <provider-fetch is-paused
+                                                                api-method="delete"></provider-fetch>
+                                                            <span class="ico-reload" aria-hidden="true"></span>
+                                                        </event-handler>
+                                                        <a target="_blank" rel="noopener" aria-label="github"
+                                                            aria-description="View on GitHub" class="icon-button">
+                                                            <span class="ico-github" aria-hidden="true"></span>
+                                                        </a>
+                                                    </div>
+                                                    <!-- Debounced typing saves the file (PUT); success bubbles to the preview reload above. -->
+                                                    <event-handler listen-for="input" delay-ms="600" is-debounced
+                                                        target-ref=":scope > provider-fetch"
+                                                        command-name="--fetch">
+                                                        <provider-fetch is-paused api-method="put"
+                                                            form-ref=":scope form">
+                                                            <form class="code-editor">
+                                                                <textarea name="content" spellcheck="false"
+                                                                    aria-label="source"></textarea>
+                                                                <div data-highlight aria-hidden="true"></div>
+                                                            </form>
+                                                        </provider-fetch>
+                                                    </event-handler>
+                                                </event-handler>
+                                            </template>
+                                        </include-content>
+                                    </provider-fetch>
+                                </event-handler>
+                            </content-tabs-body>
+                        </template>
+                    </div>
+                </content-tabs>
+                </provider-fetch>
+            </small>
+        </content-drawer>
+        </gesture-handler>
+    </event-handler>
+</article>

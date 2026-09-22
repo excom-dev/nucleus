@@ -1,0 +1,221 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Quark > activates many articles when data-active is set > complexity 1`] = `
+{
+  "attributeRuns": 50,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 50,
+  "parentElement": 0,
+  "quarkRuns": 1,
+  "queryScopeCost": 50,
+  "querySelectorAll": 50,
+  "removeAttribute": 0,
+  "ruleRuns": 50,
+  "schedulePaint": 50,
+  "setAttribute": 0,
+  "setVar": 0,
+  "textContent": 50,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark > calls registered module functions for attributes and listeners > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 1,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 2,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark > iterates an array into a template > complexity 1`] = `
+{
+  "attributeRuns": 51,
+  "closest": 50,
+  "getVar": 1,
+  "importNode": 51,
+  "listenerRuns": 0,
+  "matches": 3,
+  "parentElement": 54,
+  "quarkRuns": 2,
+  "queryScopeCost": 315,
+  "querySelectorAll": 7,
+  "removeAttribute": 1,
+  "ruleRuns": 6,
+  "schedulePaint": 51,
+  "setAttribute": 3,
+  "setVar": 1,
+  "textContent": 50,
+  "variableRuns": 1,
+}
+`;
+
+exports[`Quark > mutates elements rendered after register > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 0,
+  "parentElement": 0,
+  "quarkRuns": 1,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark > mutates matching bind targets on register > complexity 1`] = `
+{
+  "attributeRuns": 50,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 52,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 50,
+  "setAttribute": 51,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark > passes nested variables into child content > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 1,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 2,
+  "parentElement": 4,
+  "quarkRuns": 1,
+  "queryScopeCost": 6,
+  "querySelectorAll": 2,
+  "removeAttribute": 0,
+  "ruleRuns": 2,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 1,
+  "textContent": 1,
+  "variableRuns": 1,
+}
+`;
+
+exports[`Quark > re-runs when a watched attribute changes > complexity 1`] = `
+{
+  "attributeRuns": 50,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 2,
+  "parentElement": 0,
+  "quarkRuns": 1,
+  "queryScopeCost": 50,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 50,
+  "setAttribute": 0,
+  "setVar": 0,
+  "textContent": 50,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark > reads .provision via prop() and re-runs when it is assigned > complexity 1`] = `
+{
+  "attributeRuns": 2,
+  "closest": 0,
+  "getVar": 2,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 4,
+  "parentElement": 6,
+  "quarkRuns": 3,
+  "queryScopeCost": 7,
+  "querySelectorAll": 3,
+  "removeAttribute": 0,
+  "ruleRuns": 4,
+  "schedulePaint": 2,
+  "setAttribute": 1,
+  "setVar": 2,
+  "textContent": 2,
+  "variableRuns": 2,
+}
+`;
+
+exports[`Quark > removes an attribute with none > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 1,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark > sets text content from a string > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 1,
+  "variableRuns": 0,
+}
+`;

@@ -1,0 +1,33 @@
+/**
+ * Overflow utilities
+ */
+
+@define-mixin module-overflow-auto {
+  /**
+   * Scrollable overflow container.
+   * @cssclass overflow-auto
+   */
+  .overflow-auto {
+    overflow: auto;
+  }
+
+  /**
+   * Always show a styled vertical scrollbar.
+   * @cssclass show-scrollbar
+   */
+  .show-scrollbar {
+    overflow-y: scroll;
+    &::-webkit-scrollbar {
+      -webkit-appearance: none;
+      width: 8px;
+      height: 8px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: var(--v-muted-color);
+      border-radius: 4px;
+    }
+  }
+}

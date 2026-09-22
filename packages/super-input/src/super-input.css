@@ -1,0 +1,372 @@
+@import "@excom/valence/src/util.default.css";
+
+/**
+ * Styles for `<super-input>`.
+ * @element super-input
+ */
+
+/* Aliases */
+@custom-selector :--super-input super-input, .tag-super-input;
+@custom-selector :--super-input--has-reflect-value
+  [reflect-value],
+  [data-reflect-value];
+@custom-selector :--super-input--has-current-value
+  [current-value],
+  [data-current-value];
+
+@define-mixin slider-track {
+  height: var(--super-input-track-height);
+  line-height: normal;
+  background: linear-gradient(
+    to right,
+    var(--super-input-accent) 0%,
+    var(--super-input-accent) var(--super-input-progress, 50%),
+    transparent var(--super-input-progress, 50%),
+    transparent 100%
+  );
+}
+
+@define-mixin slider-thumb {
+  margin: calc(
+      calc(var(--super-input-thumb-size) * -0.5) +
+        var(--super-input-track-height)
+    )
+    0 0 0;
+  box-sizing: border-box;
+  cursor: grab;
+  width: var(--super-input-thumb-size);
+  height: var(--super-input-thumb-size);
+  background: var(--super-input-thumb-color);
+  border-radius: var(--super-input-thumb-radius, 100%);
+  border: var(
+    --super-input-thumb-border,
+    var(--super-input-border-width) solid var(--super-input-primary)
+  );
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+@define-mixin module-super-input {
+  :root {
+    /**
+     * Foreground / label color.
+     * @cssproperty
+     * @syntax <color>
+     */
+    --super-input-color: var(--v-color, inherit);
+    /**
+     * Surface background behind the control (and raised-label mask).
+     * @cssproperty
+     * @syntax <color>
+     */
+    --super-input-bg: var(--v-form-element-background-color, transparent);
+    /**
+     * Default border color for raised inputs.
+     * @cssproperty
+     * @syntax <color>
+     */
+    --super-input-border-color: var(
+      --v-form-element-border-color,
+      currentColor
+    );
+    /**
+     * Focus ring / focus border color.
+     * @cssproperty
+     * @syntax <color>
+     */
+    --super-input-focus-color: var(
+      --v-form-element-focus-color,
+      var(--super-input-border-color)
+    );
+    /**
+     * Corner radius for raised inputs.
+     * @cssproperty
+     * @syntax <length>
+     */
+    --super-input-border-radius: var(--v-border-radius, 4px);
+    /**
+     * Border width for raised inputs.
+     * @cssproperty
+     * @syntax <length>
+     */
+    --super-input-border-width: var(--v-border-width, 1px);
+    /**
+     * Duration for border / label transitions.
+     * @cssproperty
+     * @syntax <time>
+     */
+    --super-input-transition-duration: var(--v-transition-duration-fast, 0.15s);
+    /**
+     * Easing for border / label transitions.
+     * @cssproperty
+     * @syntax *
+     */
+    --super-input-transition-ease: var(--v-transition-ease-out, ease-out);
+    /**
+     * Accent color (range fill, thumb border, focus chrome).
+     * @cssproperty
+     * @syntax <color>
+     */
+    --super-input-primary: var(--v-primary, blue);
+    /**
+     * Gap between a floating label and the control.
+     * @cssproperty
+     * @syntax <length>
+     */
+    --super-input-label-margin-bottom: calc(21px * 0.375);
+    /**
+     * Base font size for the control and value readout.
+     * @cssproperty
+     * @syntax <length>
+     */
+    --super-input-font-size: 16px;
+    /**
+     * Computed label line box height (used when a `<label>` is present).
+     * @cssproperty
+     * @syntax <length>
+     */
+    --super-input-label-height: calc(
+      var(--v-line-height, 1.5) * var(--super-input-font-size)
+    );
+  }
+
+  :--super-input {
+    &:has(input[type="range"]) {
+      /**
+       * Host height for range layout (thumb + value readout).
+       * @cssproperty
+       * @syntax <length>
+       */
+      --super-input-height: calc(var(--super-input-thumb-size) + 36px);
+      /**
+       * Host width for range layout.
+       * @cssproperty
+       * @syntax <length> | <percentage>
+       */
+      --super-input-width: 100%;
+      /**
+       * Range minimum. Prefer setting on the host (or via CSS): CSS cannot
+       * read the child input's `min` attribute from the parent.
+       * @cssproperty
+       * @syntax <number>
+       */
+      --super-input-min: 0;
+      /**
+       * Range maximum. Prefer setting on the host (or via CSS).
+       * @cssproperty
+       * @syntax <number>
+       */
+      --super-input-max: 100;
+      /**
+       * Current range value used for fill / readout positioning. With
+       * `reflect-value`, may be driven from `attr(current-value)` where
+       * typed `attr()` is supported.
+       * @cssproperty
+       * @syntax <number>
+       */
+      --super-input-value: 50;
+      /* START this will not work in safari or firefox yet */
+      --super-input-value: attr(current-value type(<number>));
+      /* END */
+      /** @internal */
+      --super-input-zero: calc(
+        var(--super-input-value) - var(--super-input-min, 0)
+      );
+      /** @internal */
+      --super-input-range: calc(
+        var(--super-input-max, 100) - var(--super-input-min, 0)
+      );
+      /** @internal */
+      --super-input-number-raw: calc(
+        calc(var(--super-input-zero) / var(--super-input-range)) *
+          calc(var(--super-input-width) - var(--super-input-thumb-size))
+      );
+      /** @internal Fill / readout progress position along the track. */
+      --super-input-progress: calc(
+        var(--super-input-number-raw) + calc(var(--super-input-thumb-size) / 2)
+      );
+      /**
+       * Diameter of the range thumb.
+       * @cssproperty
+       * @syntax <length>
+       */
+      --super-input-thumb-size: 44px;
+      /**
+       * Range thumb fill color.
+       * @cssproperty
+       * @syntax <color>
+       */
+      --super-input-thumb-color: var(
+        --v-range-thumb-color,
+        var(--super-input-bg)
+      );
+      /**
+       * Active track / accent color for the range fill.
+       * @cssproperty
+       * @syntax <color>
+       */
+      --super-input-accent: var(--super-input-primary, blue);
+
+      /**
+       * Height of the range track.
+       * @cssproperty
+       * @syntax <length>
+       */
+      --super-input-track-height: 2px;
+
+      /** @internal */
+      --super-input-value-content: attr(current-value);
+      /** @internal */
+      --super-input-value-bottom: var(--super-input-thumb-size);
+      /** @internal */
+      --super-input-value-transform: translate(-50%, 0);
+
+      display: block;
+      position: relative;
+      box-sizing: border-box;
+      font-size: var(--super-input-font-size);
+      /**
+       * Font weight for the range value readout.
+       * @cssproperty --super-input-font-weight
+       * @syntax <number> | <integer>
+       * @default 700
+       */
+      font-weight: var(--super-input-font-weight, 700);
+      height: var(--super-input-height, 100%);
+      width: var(--super-input-width, 100%);
+      &:has(label) {
+        padding-top: calc(
+          var(--super-input-label-height) + var(--super-input-height, 100%)
+        );
+        label {
+          position: absolute;
+          margin: 0;
+          top: 0;
+          left: 0;
+        }
+      }
+
+      input,
+      &::before {
+        position: absolute;
+        bottom: calc(var(--super-input-thumb-size) / 2);
+      }
+      &::before {
+        position: absolute;
+        display: block;
+        box-sizing: border-box;
+        text-align: center;
+        padding-bottom: var(--super-input-label-margin-bottom);
+        bottom: var(--super-input-value-bottom);
+        left: var(--super-input-progress);
+        content: var(--super-input-value-content);
+        transform: var(--super-input-value-transform);
+      }
+      input {
+        box-sizing: border-box;
+        margin: 0;
+        width: 100%;
+        background: var(--super-input-bg);
+        height: var(--super-input-track-height);
+        outline: none;
+        z-index: 2;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        /* Don't combine webkit + moz selectors; identical blocks still break WebKit. */
+        &::-webkit-slider-runnable-track {
+          @mixin slider-track;
+        }
+        &::-moz-range-track {
+          @mixin slider-track;
+        }
+        &::-webkit-slider-thumb {
+          @mixin slider-thumb;
+        }
+        &::-moz-range-thumb {
+          @mixin slider-thumb;
+        }
+      }
+    }
+
+    /**
+     * Raised / floating-label text field appearance. Apply as
+     * `class="raised"` on `<super-input>` wrapping a text-like `<input>`.
+     * @cssclass
+     */
+    &.raised {
+      display: block;
+      position: relative;
+      margin-top: 8px;
+
+      input {
+        @mixin util-nested-card;
+        font-size: 1rem;
+        padding: 0 10px 0 10px;
+        outline: none;
+        border-radius: var(--super-input-border-radius);
+        color: var(--super-input-color);
+        border: var(--super-input-border-width) solid
+          var(--super-input-border-color);
+        transition: border-color var(--super-input-transition-duration)
+          var(--super-input-transition-ease);
+        &:focus {
+          border-color: var(--super-input-focus-color) !important;
+        }
+        &::placeholder {
+          transition: color var(--super-input-transition-duration)
+            var(--super-input-transition-ease);
+        }
+      }
+      label {
+        position: absolute;
+        margin: 0;
+        font-size: 0.9rem;
+        line-height: var(--v-line-height, 16px);
+        top: -14px;
+        left: 10px;
+        background: transparent;
+        color: var(--super-input-color);
+        padding: 0 3px;
+        pointer-events: none;
+        z-index: 1;
+        transition:
+          top var(--super-input-transition-duration)
+            var(--super-input-transition-ease),
+          font-size var(--super-input-transition-duration)
+            var(--super-input-transition-ease);
+        &::after {
+          /* a line to hide input border behind label */
+          content: "";
+          position: absolute;
+          top: 12px;
+          left: 0;
+          width: 100%;
+          height: 4px;
+          z-index: -1;
+          background-color: var(--super-input-bg);
+        }
+      }
+
+      /* `[reflect-value]`: raised label even with no placeholder */
+      &:--super-input--has-reflect-value:not(:--super-input--has-current-value):not(
+          :has(input:focus)
+        ),
+      /* Else fall back to `:placeholder-shown` */
+      &:not(:--super-input--has-reflect-value):has(input:placeholder-shown):not(
+          :has(input:focus)
+        ) {
+        label {
+          font-size: 1rem;
+          top: 16px;
+          &::after {
+            content: none;
+          }
+        }
+        input::placeholder {
+          color: transparent;
+        }
+      }
+    }
+  }
+}

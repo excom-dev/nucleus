@@ -1,0 +1,88 @@
+/* Registered so it interpolates; drives both the bar width and the readout
+   (which live on pseudo-elements, hence `inherits: true`). */
+@property --timer-progress {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+@keyframes timer-progress {
+  to {
+    --timer-progress: 1;
+  }
+}
+
+@scope {
+  /* data-driven css: the bar and the readout run on --timer-duration, which
+     Quark writes from data-duration; the start time survives a change, so
+     elapsed / duration rescales like a JS timer would */
+  .timer-bar {
+    --timer-elapsed: calc(var(--timer-progress) * var(--timer-duration));
+    --timer-tenths: round(down, var(--timer-elapsed) * 10, 1);
+    animation: timer-progress calc(var(--timer-duration) * 1s) linear forwards;
+    &::before {
+      inline-size: calc(var(--timer-progress) * 100%);
+    }
+  }
+  .timer-readout::after {
+    counter-reset: timer-secs round(down, var(--timer-tenths) / 10, 1)
+      timer-tenths mod(var(--timer-tenths), 10);
+    content: counter(timer-secs) "." counter(timer-tenths) "s";
+  }
+
+  /* styling */
+  :scope {
+    --timer-duration: 10;
+    max-width: 26rem;
+    margin: 0;
+    padding: calc(var(--v-spacing) * 0.75) 1.1rem 2.5rem;
+    background: var(--v-background-color);
+    color: var(--v-color);
+  }
+
+  event-handler:not([role="button"]),
+  form,
+  include-content {
+    display: contents;
+  }
+
+  label {
+    display: block;
+    margin: 0 0 var(--v-spacing);
+  }
+
+  input[type="range"] {
+    margin: 0;
+  }
+
+  [bind-duration] {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .timer-bar {
+    position: relative;
+    height: 0.6rem;
+    margin: 0.35rem 0 1.6rem;
+    border-radius: var(--v-border-radius);
+    background: var(--v-progress-background-color);
+    overflow: visible;
+
+    &::before {
+      content: "";
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--v-progress-color);
+    }
+  }
+
+  .timer-readout::after {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    margin-top: 0.3rem;
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--v-muted-color);
+  }
+}

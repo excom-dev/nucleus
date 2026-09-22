@@ -1,0 +1,35 @@
+<section>
+  <provider-fetch id="demo-refetch-provider" api-url="/api/todos/1" class="tag-article grid">
+    <ul></ul>
+    <ul></ul>
+    <template id="demo-refetch-item">
+      <li class="tag-code"></li>
+    </template>
+  </provider-fetch>
+  <button type="button" command="--fetch" commandfor="demo-refetch-provider">Refetch</button>
+  <style>
+    #demo-provider-fetch-refetch { max-width: none; }
+    #demo-provider-fetch-refetch provider-fetch {
+      &[is-loading] {
+        opacity: 0.5;
+        border: 1px dashed yellow;
+      }
+      &[is-success] { border: 1px solid green; }
+      &[is-error] {
+        border: 1px solid red;
+        &::before { content: "An error occurred."; }
+      }
+      ul:first-of-type::before { content: "Todo data:"; }
+      ul:last-of-type::before { content: "Response data:"; }
+      li { display: block; }
+    }
+  </style>
+  <quark-sheet>
+    provider-fetch[is-success] {
+      $res: prop("provision");
+      li { content: "#{index}: #{item}"; }
+      ul:first-of-type { content: iterate($res.body, "#demo-refetch-item"); }
+      ul:last-of-type { content: iterate($res, "#demo-refetch-item"); }
+    }
+  </quark-sheet>
+</section>

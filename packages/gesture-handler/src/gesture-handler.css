@@ -1,0 +1,207 @@
+/**
+ * Styles for `<gesture-handler>`.
+ * @element gesture-handler
+ */
+
+/* Aliases */
+@custom-selector :--gesture-handler gesture-handler, .tag-gesture-handler;
+@custom-selector :--gesture-handler--is-active [is-active], [data-active];
+
+@define-mixin module-gesture-handler {
+  /* Registered so it interpolates: the settle after release is a transition
+     on this property, not a script animating it frame by frame. */
+  @property --gesture-progress {
+    syntax: "<number>";
+    inherits: true;
+    initial-value: 0;
+  }
+
+  /**
+   * The gesture surface. `touch-action` follows `gesture-types` so the
+   * browser keeps the scrolling the element does not claim: `pan-x` leaves
+   * vertical scroll native, `pan-y` horizontal, free `pan` / `pinch` /
+   * `rotate` take everything. Override it in your own CSS when needed.
+   */
+  :--gesture-handler {
+    /**
+     * Pointer centroid inside the element (px), horizontal — spotlight / parallax effects. Written every frame of a gesture; this is the resting value.
+     * @cssproperty
+     * @syntax <length>
+     * @default 0px
+     */
+    --gesture-x: 0px;
+    /**
+     * Pointer centroid inside the element (px), vertical.
+     * @cssproperty
+     * @syntax <length>
+     * @default 0px
+     */
+    --gesture-y: 0px;
+    /**
+     * Horizontal travel since the gesture started (px) — drag-to-move, swipe-to-dismiss.
+     * @cssproperty
+     * @syntax <length>
+     * @default 0px
+     */
+    --gesture-dx: 0px;
+    /**
+     * Vertical travel since the gesture started (px).
+     * @cssproperty
+     * @syntax <length>
+     * @default 0px
+     */
+    --gesture-dy: 0px;
+    /**
+     * Horizontal velocity over the last ~100 ms (px/ms).
+     * @cssproperty
+     * @syntax <number>
+     * @default 0
+     */
+    --gesture-vx: 0;
+    /**
+     * Vertical velocity over the last ~100 ms (px/ms).
+     * @cssproperty
+     * @syntax <number>
+     * @default 0
+     */
+    --gesture-vy: 0;
+    /**
+     * Travel along `progress-axis` as a fraction of the range, clamped to `progress-min`..`progress-max` — the value a scrubbable sheet, carousel or slider follows. Persists after release until the next gesture.
+     * @cssproperty
+     * @syntax <number>
+     * @default 0
+     */
+    --gesture-progress: 0;
+    /**
+     * The measured range (`range-ref` size along the axis, or `range-px`). Written once, when the gesture starts.
+     * @cssproperty
+     * @syntax <length>
+     * @default 0px
+     */
+    --gesture-range-px: 0px;
+    /**
+     * The element's own width, measured when the gesture starts.
+     * @cssproperty
+     * @syntax <length>
+     * @default 0px
+     */
+    --gesture-width: 0px;
+    /**
+     * The element's own height, measured when the gesture starts.
+     * @cssproperty
+     * @syntax <length>
+     * @default 0px
+     */
+    --gesture-height: 0px;
+    /**
+     * Two-finger pinch ratio (`1` = unchanged) — pinch-to-zoom.
+     * @cssproperty
+     * @syntax <number>
+     * @default 1
+     */
+    --gesture-scale: 1;
+    /**
+     * Two-finger rotation — rotate-to-adjust.
+     * @cssproperty
+     * @syntax <angle>
+     * @default 0deg
+     */
+    --gesture-rotate: 0deg;
+    /**
+     * Pointers currently down.
+     * @cssproperty
+     * @syntax <integer>
+     * @default 0
+     */
+    --gesture-pointers: 0;
+
+    /**
+     * Length of the travel (px). Computed from `--gesture-dx` / `--gesture-dy`.
+     * @cssproperty
+     * @syntax <length>
+     * @default hypot(var(--gesture-dx), var(--gesture-dy))
+     */
+    --gesture-distance: hypot(var(--gesture-dx), var(--gesture-dy));
+    /**
+     * Direction of the travel: `0deg` right, `90deg` down. Computed from `--gesture-dx` / `--gesture-dy`.
+     * @cssproperty
+     * @syntax <angle>
+     * @default atan2(var(--gesture-dy), var(--gesture-dx))
+     */
+    --gesture-angle: atan2(var(--gesture-dy), var(--gesture-dx));
+    /**
+     * `--gesture-progress` in px. Computed from `--gesture-progress` and `--gesture-range-px`.
+     * @cssproperty
+     * @syntax <length>
+     * @default calc(var(--gesture-progress) * var(--gesture-range-px))
+     */
+    --gesture-progress-px: calc(
+      var(--gesture-progress) * var(--gesture-range-px)
+    );
+    /* `tan(atan2(a, b))` is `a / b`: dividing a length by a length is not
+       portable in `calc()`, the trig functions are. */
+    /**
+     * `--gesture-x` as a 0..1 fraction of the element's width. Computed from `--gesture-x` and `--gesture-width`.
+     * @cssproperty
+     * @syntax <number>
+     * @default tan(atan2(var(--gesture-x), var(--gesture-width)))
+     */
+    --gesture-x-ratio: tan(atan2(var(--gesture-x), var(--gesture-width)));
+    /**
+     * `--gesture-y` as a 0..1 fraction of the element's height. Computed from `--gesture-y` and `--gesture-height`.
+     * @cssproperty
+     * @syntax <number>
+     * @default tan(atan2(var(--gesture-y), var(--gesture-height)))
+     */
+    --gesture-y-ratio: tan(atan2(var(--gesture-y), var(--gesture-height)));
+
+    /**
+     * How long `--gesture-progress` takes to settle on its snap point after release.
+     * @cssproperty
+     * @syntax <time>
+     * @default 200ms
+     */
+    --gesture-snap-duration: 200ms;
+    /**
+     * Easing of that settle.
+     * @cssproperty
+     * @syntax <easing-function>
+     * @default ease-out
+     */
+    --gesture-snap-ease: ease-out;
+
+    display: block;
+    touch-action: pan-x pan-y pinch-zoom;
+    /* The release settles here, not in script; `gesture-handler-snap` fires
+       when this transition finishes. */
+    transition: --gesture-progress var(--gesture-snap-duration)
+      var(--gesture-snap-ease);
+
+    &[gesture-types~="pan-x"] {
+      touch-action: pan-y;
+    }
+    &[gesture-types~="pan-y"] {
+      touch-action: pan-x;
+    }
+    &:not([gesture-types]),
+    &[gesture-types~="pan"],
+    &[gesture-types~="pinch"],
+    &[gesture-types~="rotate"] {
+      touch-action: none;
+    }
+    /* `handoff-ref` needs its containers to scroll natively until they run
+       out — the element cancels the touch itself the moment the overscroll
+       hands over, so `touch-action` stays out of the way here. Give a
+       `from-ref` handle `touch-action: none` of its own. */
+    &[handoff-ref] {
+      touch-action: auto;
+    }
+    /* No text selection / image drag while a gesture is tracked, and never
+       ease the finger: the transition is only for the release. */
+    &:--gesture-handler--is-active {
+      user-select: none;
+      -webkit-user-drag: none;
+      transition: none;
+    }
+  }
+}

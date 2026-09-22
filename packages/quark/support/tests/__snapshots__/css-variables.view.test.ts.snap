@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`css-variables view > writes --border-color for open and closed details > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 0,
+  "querySelectorAll": 0,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 2,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;

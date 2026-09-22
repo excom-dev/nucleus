@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ "${CI:-}" = "true" ]; then
+  exit 0
+fi
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
+
+# Capture currently staged files (null-delimited) so we can re-stage only those.
+STAGED_FILES_PATH="$(mktemp)"
+git diff --cached --name-status -z > "$STAGED_FILES_PATH"
+
+node common/scripts/install-run-rush.js format --only git:HEAD
+node common/scripts/install-run-rush.js format-package-json --only git:HEAD
+node common/scripts/install-run-rush.js build:package-metas --only git:HEAD
+
+# Re-stage only previously staged files, handling renames/deletes.
+# Skip gitignored paths: hooks like build:package-metas may wipe+rewrite
+# generated trees (e.g. docs-site/public/package-metas); those must not be
+# force-added back into the index.
+if [ -s "$STAGED_FILES_PATH" ]; then
+  while IFS= read -r -d '' status && IFS= read -r -d '' path; do
+    case "$status" in
+      D)
+        # Deletions are already staged; nothing to re-add.
+        ;;
+      R*|C*)
+        # Rename/copy: next entry is the new path.
+        IFS= read -r -d '' new_path
+        if [ -e "$new_path" ] || [ -L "$new_path" ]; then
+          if git check-ignore -q --no-index -- "$new_path" 2>/dev/null; then
+            continue
+          fi
+          git add -- "$new_path"
+        fi
+        ;;
+      *)
+        if [ -e "$path" ] || [ -L "$path" ]; then
+          if git check-ignore -q --no-index -- "$path" 2>/dev/null; then
+            continue
+          fi
+          git add -- "$path"
+        fi
+        ;;
+    esac
+  done < "$STAGED_FILES_PATH"
+fi
+rm -f "$STAGED_FILES_PATH"

@@ -1,0 +1,53 @@
+/* The pre-load placeholder styling for include-content[data-demo] lives in
+   the package view's CSS. It must apply before this lazy view is fetched. */
+.live-demo {
+  border: 1px solid var(--v-muted-border-color);
+  box-shadow: none;
+  padding: 0px;
+  opacity: 0;
+  transition: opacity var(--v-transition-duration-standard)
+    var(--v-transition-ease-out);
+  background-color: var(--v-background-color);
+  --v-block-spacing-horizontal: 20px;
+  --v-block-spacing-vertical: 20px;
+  --vert-spacing: calc(var(--v-block-spacing-vertical) / 1.5);
+  --horz-spacing: calc(var(--v-block-spacing-horizontal) / 1.2);
+
+  [fire-event="copy-source"],
+  [aria-label="reset"] {
+    &:active {
+      background-color: var(--v-primary);
+    }
+  }
+  &:has([aria-label="preview"] include-content[is-active]) {
+    opacity: 1;
+  }
+
+  [aria-label="preview"] {
+    margin: 0;
+    background: var(--demo-gradient);
+    > * {
+      padding: var(--v-spacing);
+      min-height: 180px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+  }
+
+  /* Editor / live-document surfaces share /code-editor.css */
+  > footer {
+    margin: 0;
+    padding: var(--vert-spacing) var(--horz-spacing);
+    ul {
+      margin: 0 0;
+      gap: 12px;
+    }
+    li {
+      margin: 0;
+      padding: 0;
+    }
+    .code-editor {
+      margin-top: var(--vert-spacing);
+    }
+  }
+}

@@ -1,0 +1,20 @@
+<div>
+  <button type="button" data-action="ping">Ping the panel</button>
+  <section aria-label="panel">
+    <output></output>
+  </section>
+  <quark-sheet>
+    button[data-action="ping"] {
+      @on click {
+        @dispatch demo-ping (target: "[aria-label='panel']", detail: (at: event.timeStamp));
+      }
+    }
+    [aria-label="panel"] {
+      @on demo-ping {
+        $pings: (+attr("data-pings") or 0) + 1;
+        data-pings: $pings;
+        output { content: "pinged #{$pings}×"; }
+      }
+    }
+  </quark-sheet>
+</div>

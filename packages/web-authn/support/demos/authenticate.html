@@ -1,0 +1,24 @@
+<section>
+  <web-authn options-url="/api/webauthn/authenticate/options" verify-url="/api/webauthn/authenticate/verify"
+    start-method="authenticate">
+    <form>
+      <label>
+        Username
+        <input name="username" required autocomplete="username webauthn">
+      </label>
+      <button type="submit">Sign in with passkey</button>
+    </form>
+    <output></output>
+  </web-authn>
+  <quark-sheet>
+    web-authn[is-success] {
+      $res: prop("provision").body;
+      output {
+        content: "verified: #{$res.verified}";
+      }
+    }
+    web-authn[is-error] output {
+      content: "Ceremony failed (this mock needs an authenticator).";
+    }
+  </quark-sheet>
+</section>

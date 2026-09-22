@@ -1,0 +1,49 @@
+/* ============================================================
+ * Theme-agnostic component mixins.
+ *
+ * Listed explicitly, not `@import-glob`. Other packages (e.g. the
+ * docs site) import this transitively, and Vite's `postcss-import`
+ * runs before our glob plugin and would drop `@import-glob` inside
+ * packaged CSS.
+ * ============================================================ */
+
+@import "./aliases";
+
+@import "./layout/document";
+@import "./layout/landmarks";
+@import "./layout/section";
+@import "./layout/container";
+@import "./layout/grid";
+@import "./layout/overflow-auto";
+@import "./layout/abstract";
+
+@import "./content/typography";
+@import "./content/link";
+@import "./content/button";
+@import "./content/table";
+@import "./content/embedded";
+@import "./content/code";
+@import "./content/figure";
+@import "./content/misc";
+
+@import "./forms/basics";
+@import "./forms/checkbox-radio-switch";
+@import "./forms/input-color";
+@import "./forms/input-date";
+@import "./forms/input-file";
+@import "./forms/input-range";
+@import "./forms/input-search";
+
+@import "./components/accordion";
+@import "./components/card";
+@import "./components/dropdown";
+@import "./components/group";
+@import "./components/loading";
+@import "./components/modal";
+@import "./components/nav";
+@import "./components/popover";
+@import "./components/progress";
+@import "./components/tooltip";
+
+@import "./utilities/accessibility";
+@import "./utilities/opt-outs";

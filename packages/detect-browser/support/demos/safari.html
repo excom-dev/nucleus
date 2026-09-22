@@ -1,0 +1,11 @@
+<div>
+  <small role="note">Spoof an iOS Safari user agent in DevTools and reload.</small>
+  <detect-browser></detect-browser>
+  <quark-sheet>
+    @use "/demo-utils" as *;
+
+    detect-browser[browser-name="safari"] {
+      content: loadPolyfills(prop("provision"));
+    }
+  </quark-sheet>
+</div>

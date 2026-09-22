@@ -1,0 +1,73 @@
+<article role="region" aria-label="demo" class="live-demo">
+    <link rel="stylesheet" href="/code-editor.css">
+    <link rel="stylesheet" href="/views/live-demo/live-demo.css">
+    <quark-sheet src-url="/views/live-demo/live-demo.quark"></quark-sheet>
+    <section aria-label="preview">
+        <include-content template-ref=":scope + template"></include-content>
+        <template></template>
+    </section>
+
+    <footer>
+        <small>
+            <content-tabs tab-type="toggle">
+                <div class="tag-nav">
+                    <ul>
+                        <li>
+                            <content-tabs-header>
+                                <button type="button" class="outline secondary tag-small" data-action="show-code">
+                                    Edit code
+                                </button>
+                            </content-tabs-header>
+                        </li>
+                        <li>
+                            <content-tabs-header>
+                                <button type="button" class="outline secondary tag-small" data-action="show-code">
+                                    Live document
+                                </button>
+                            </content-tabs-header>
+                        </li>
+                    </ul>
+                    <ul>
+                        <li>
+                            <event-handler target-ref=".live-demo:has(:scope) [aria-label='preview'] template"
+                                fire-event="copy-source" role="tooltip" aria-description="Copy source" aria-label="copy"
+                                role="button" class="icon-button">
+                                <span class="ico-copy" aria-hidden="true"></span>
+                            </event-handler>
+                        </li>
+                        <li>
+                            <button type="button" role="tooltip" aria-description="Reset demo" aria-label="reset"
+                                class="icon-button">
+                                <span class="ico-reload" aria-hidden="true"></span>
+                            </button>
+                        </li>
+                        <li>
+                            <a target="_blank" rel="noopener" role="tooltip" aria-label="github"
+                                aria-description="View on GitHub" class="icon-button">
+                                <span class="ico-github" aria-hidden="true"></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <content-tabs-body>
+                    <div class="edit-code">
+                        <event-handler listen-for="input" delay-ms="400" is-debounced
+                            command-name="--reload"
+                            target-ref=".live-demo:has(:scope) [aria-label='preview'] > include-content"
+                            class="code-editor" data-language="html">
+                            <textarea spellcheck="false"></textarea>
+                            <div data-highlight aria-hidden="true"></div>
+                        </event-handler>
+                    </div>
+                </content-tabs-body>
+                <content-tabs-body>
+                    <div class="live-state code-editor" data-language="html">
+                        <dom-observer
+                            target-ref=".live-demo:has(:scope) [aria-label='preview'] > include-content"></dom-observer>
+                        <div data-highlight aria-hidden="true"></div>
+                    </div>
+                </content-tabs-body>
+            </content-tabs>
+        </small>
+    </footer>
+</article>

@@ -1,0 +1,83 @@
+<section id="install-section">
+    <link rel="stylesheet" href="/views/install-section/install-section.css">
+    <quark-sheet src-url="/views/install-section/install-section.quark"></quark-sheet>
+    <p>This package is available in the <spa-a role="link" route-href="/nucleus/packages/nucleus-kit">Nucleus Kit</spa-a>. Or it can
+        be used by
+        itself:</p>
+    <content-tabs class="underline">
+        <content-tabs-header is-open>
+            CDN
+        </content-tabs-header>
+        <content-tabs-header>
+            Package Manager
+        </content-tabs-header>
+        <content-tabs-body>
+            <div bind-cdn></div>
+        </content-tabs-body>
+        <content-tabs-body>
+            <div bind-install-npm></div>
+            <content-tabs>
+                <content-tabs-header is-open>HTML Imports</content-tabs-header>
+                <content-tabs-header>JS / CSS Imports</content-tabs-header>
+                <content-tabs-body>
+                    <div bind-import-html></div>
+                </content-tabs-body>
+                <content-tabs-body>
+                    <div bind-import-js></div>
+                    <div bind-import-css></div>
+                </content-tabs-body>
+            </content-tabs>
+        </content-tabs-body>
+    </content-tabs>
+    <details bind-peers>
+        <summary>Peer dependencies <span bind-peers-length></span></summary>
+        <p>Packages a consumer must install alongside this one. Workspace deps are bundled.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Package</th>
+                    <th>Version</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template>
+                    <tr>
+                        <td><code bind-name></code></td>
+                        <td><span bind-version></span></td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </details>
+    <include-content bind-dist-files is-active>
+        <template>
+            <dialog-anchor class="dist-files-trigger" target-ref=":scope + dialog" role="button" is-modal>
+                <small>View Dist Files</small>
+            </dialog-anchor>
+            <dialog class="compressed">
+                <article>
+                    <header>
+                        <dialog-anchor role="button" rel="prev"></dialog-anchor>
+                        <p>All exported dist files:</p>
+                    </header>
+                    <!-- to see this feature in dev site, run build then apply-exports. Make sure to clean it up afterwards. -->
+                    <div bind-export-files class="height-constrained show-scrollbar">
+                        <template>
+                            <details class="accordion">
+                                <summary><code bind-export-file-key></code></summary>
+                                <ul bind-export-file-values>
+                                    <template>
+                                        <li>
+                                            <span bind-export-file-value-type></span>
+                                            <code bind-export-file-value></code>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </details>
+                        </template>
+                    </div>
+                </article>
+            </dialog>
+        </template>
+    </include-content>
+</section>

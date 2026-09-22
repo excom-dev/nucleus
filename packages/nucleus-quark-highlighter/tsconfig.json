@@ -1,0 +1,8 @@
+{
+  "extends": "@excom/heft-rig/profiles/default/config/tsconfig.json",
+  "compilerOptions": {
+    "types": ["vscode"]
+  },
+  "include": ["./src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}

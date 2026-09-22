@@ -1,0 +1,23 @@
+<div>
+  <quark-sheet>
+    :scope {
+      @on change {
+        include-content { is-active: if(event.target.checked: ""; else: none); }
+      }
+    }
+  </quark-sheet>
+  <form>
+    <label>
+      <input type="checkbox" name="is-active" checked />
+      Active
+    </label>
+  </form>
+  <include-content is-active persist-content>
+    <template>
+      <label>
+        Type, then toggle Active —
+        <input type="text" placeholder="value is kept" />
+      </label>
+    </template>
+  </include-content>
+</div>

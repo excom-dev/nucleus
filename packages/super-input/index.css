@@ -1,0 +1,5 @@
+@import "./src/super-input.css";
+
+@layer {
+  @mixin module-super-input;
+}

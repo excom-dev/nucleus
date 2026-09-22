@@ -1,0 +1,111 @@
+/* Scoped to .live-app. The nearest [data-app] ancestor (a spa-route, or any
+   host such as the Introduction page's aside) carries the example app's view
+   name on [data-app] and its editable file extensions on [data-files].
+   Files are read / saved through the service worker's /api/sandbox overlay;
+   the preview iframe (/sandbox/<app>) is rebuilt by the `--reload` command
+   after every save or reset (wired in the HTML). */
+@use "/shell" as *;
+@use "quark:list" as list;
+
+:scope {
+  $app: closest("[data-app]").getAttribute("data-app");
+  $files: closest("[data-app]").getAttribute("data-files").split(" ");
+
+  .imported-header > include-content {
+    template-ref: "/views/demo-headers/#{$app}.html";
+    is-active: "";
+  }
+  /* preview renders once the mount-time DELETE settled (error too: no worker, still show the app) */
+  &:has(provider-fetch.fresh:is([is-success], [is-error])) [aria-label="preview"] include-content {
+    is-active: "";
+  }
+  [aria-label="preview"] iframe {
+    src: "/sandbox/#{$app}";
+  }
+
+  /* Every mount drops the app's saved edits; the editors render once that succeeded. */
+  provider-fetch.fresh {
+    api-url: "/api/sandbox/views/#{$app}";
+  }
+
+  [bind-file-headers] {
+    content: iterate($files);
+    content-tabs-header {
+      tab-name: item;
+      data-file-type: item;
+      [bind-file-name] {
+        content: "#{$app}.#{item}";
+      }
+    }
+  }
+  provider-fetch.fresh[is-success] [bind-file-bodies] {
+    content: iterate($files);
+    content-tabs-body {
+      tab-name: item;
+      provider-fetch {
+        api-url: "/api/sandbox/views/#{$app}/#{$app}.#{item}";
+      }
+      .code-editor {
+        data-language: item;
+      }
+      [aria-label="github"] {
+        href: buildAppFileLink($app, item);
+      }
+      provider-fetch.source[is-success] {
+        $src: prop("provision").body;
+        /* "override" | "original" — the service worker says whether an edit is stored (live-app.css marks the tab) */
+        data-file-source: list.find(
+          prop("provision").headers,
+          "0",
+          "x-sandbox-source"
+        )[1];
+        textarea {
+          content: $src;
+          @on input (handle: renderPre);
+        }
+        [data-highlight] {
+          content: dangerous-html(renderLang($src, item));
+        }
+      }
+    }
+  }
+  /* The Code button and ✕ address the editor sheet by id (native command API). */
+  [aria-label="editor"] {
+    id: "editor-#{$app}";
+    &[is-open] dismiss-watcher {
+      is-active: "";
+    }
+    &:not([is-open]) dismiss-watcher {
+      is-active: none;
+    }
+  }
+  .editor-toggle,
+  [aria-label="editor"] > .close {
+    commandfor: "editor-#{$app}";
+  }
+  /* grabber drag */
+  gesture-handler {
+    &:has(> [aria-label="editor"][is-open]) {
+      progress-offset: 1;
+    }
+    &:not(:has(> [aria-label="editor"][is-open])) {
+      progress-offset: 0;
+    }
+    @on gesture-handler-start {
+      [aria-label="editor"] {
+        is-scrubbing: "";
+      }
+    }
+    @on gesture-handler-end {
+      [aria-label="editor"] {
+        is-open: event.detail.snap == 1;
+        is-scrubbing: none;
+      }
+    }
+  }
+  /* First file opens by default; idempotent once any tab is open. */
+  content-tabs:not(:has(content-tabs-header[is-open])) content-tabs-header:first-of-type,
+  content-tabs:not(:has(content-tabs-body[is-open])) content-tabs-body:first-of-type {
+    is-open: "";
+  }
+}

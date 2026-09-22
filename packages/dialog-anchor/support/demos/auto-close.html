@@ -1,0 +1,11 @@
+<div>
+  <dialog-anchor role="button" target-ref="#da-auto" is-modal>Open form</dialog-anchor>
+  <dialog id="da-auto">
+    <dialog-anchor listen-for="super-form-success">
+      <p>Simulating a form submit…</p>
+      <event-handler role="button" fire-event="super-form-success">
+        Submit
+      </event-handler>
+    </dialog-anchor>
+  </dialog>
+</div>

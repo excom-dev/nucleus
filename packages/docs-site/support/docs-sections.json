@@ -1,0 +1,38 @@
+{
+  "sections": [
+    {
+      "id": "getting-started",
+      "title": "Getting Started",
+      "docs": ["introduction", "quick_start", "core_concepts"]
+    },
+    {
+      "id": "guides",
+      "title": "Guides",
+      "docs": [
+        "using_elements",
+        "orchestrating",
+        "styling",
+        "building_views",
+        "business_logic",
+        "creating_elements",
+        "best_practices",
+        "troubleshooting",
+        "debugging_with_agents",
+        "glossary"
+      ]
+    },
+    {
+      "id": "advanced",
+      "title": "Advanced",
+      "docs": [
+        "diving_deeper",
+        "origin_story",
+        "adapter_state_orchestrator",
+        "prior_art",
+        "limitations",
+        "roadmap",
+        "contributing"
+      ]
+    }
+  ]
+}

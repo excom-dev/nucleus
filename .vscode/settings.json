@@ -1,0 +1,76 @@
+{
+  "files.watcherExclude": {
+    "**/.git/**": true,
+    "**/.rush/**": true,
+    "**/rush-logs/**": true,
+
+    "**/node_modules/**": true,
+    "**/common/temp/**": true,
+    "**/common/temp/pnpm-store/**": true,
+    "**/.pnpm-store/**": true,
+
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/out/**": true,
+    "**/.next/**": true,
+    "**/coverage/**": true,
+    "**/.cache/**": true,
+    "**/CHANGELOG.json": true,
+    "**/packages/*/config": true,
+    "**/packages/*/tsconfig.json": true,
+    "**/packages/*/custom-elements.json": true,
+    "**/packages/*/package-meta.json": true,
+    "**/dist-docs": true,
+  },
+
+  "search.exclude": {
+    "**/.git/**": true,
+    "**/.rush/**": true,
+    "**/rush-logs/**": true,
+
+    "**/node_modules/**": true,
+    "**/common/temp/**": true,
+    "**/common/temp/pnpm-store/**": true,
+    "**/.pnpm-store/**": true,
+
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/out/**": true,
+    "**/.next/**": true,
+    "**/coverage/**": true,
+    "**/CHANGELOG.json": true,
+    "**/packages/*/config": true,
+    "**/packages/*/tsconfig.json": true,
+    "**/packages/**/custom-elements.json": true,
+    "**/packages/**/package-meta.json": true,
+    "**/dist-docs": true,
+  },
+
+  "files.exclude": {
+    "**/.rush": true,
+    "**/rush-logs": true,
+    "**/common/temp": true,
+    "**/.pnpm-store": true,
+
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/out": true,
+    "**/.next": true,
+    "**/coverage": true,
+    "**/CHANGELOG.json": true,
+    "**/packages/*/config": true,
+    "**/packages/*/tsconfig.json": true,
+    "**/packages/**/custom-elements.json": true,
+    "**/packages/**/package-meta.json": true,
+  },
+
+  "search.followSymlinks": false,
+  "diffEditor.ignoreTrimWhitespace": true,
+
+  "typescript.disableAutomaticTypeAcquisition": true,
+  "typescript.preferences.includePackageJsonAutoImports": "off",
+  "typescript.tsserver.maxTsServerMemory": 4096,
+
+  // "editor.inlineSuggest.enabled": false
+}

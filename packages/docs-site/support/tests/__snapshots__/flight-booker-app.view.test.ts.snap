@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`flight-booker-app view > disables return and book until dates are valid, then confirms > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 4,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 7,
+  "parentElement": 23,
+  "quarkRuns": 1,
+  "queryScopeCost": 15,
+  "querySelectorAll": 2,
+  "removeAttribute": 1,
+  "ruleRuns": 2,
+  "schedulePaint": 1,
+  "setAttribute": 3,
+  "setVar": 1,
+  "textContent": 1,
+  "variableRuns": 1,
+}
+`;

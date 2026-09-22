@@ -1,0 +1,11 @@
+{
+  "extends": "@excom/heft-rig/profiles/default/config/tsconfig.json",
+  "include": ["./*.ts"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"],
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
+    "emitDeclarationOnly": false,
+    "noEmit": true
+  }
+}

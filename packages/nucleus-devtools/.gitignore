@@ -1,0 +1,6 @@
+.output
+.wxt
+node_modules
+web-ext.config.ts
+*.log
+.DS_Store

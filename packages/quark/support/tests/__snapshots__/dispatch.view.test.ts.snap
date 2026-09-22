@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`dispatch view > relays a click to the panel as a custom event the panel's own block turns into State > complexity 1`] = `
+{
+  "attributeRuns": 2,
+  "closest": 0,
+  "getVar": 2,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 0,
+  "parentElement": 1,
+  "quarkRuns": 0,
+  "queryScopeCost": 0,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 0,
+  "schedulePaint": 2,
+  "setAttribute": 1,
+  "setVar": 1,
+  "textContent": 1,
+  "variableRuns": 1,
+}
+`;

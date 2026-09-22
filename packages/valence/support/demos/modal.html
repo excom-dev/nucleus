@@ -1,0 +1,18 @@
+<div>
+  <event-handler target-ref=":scope ~ dialog" command-name="show-modal" class="tag-button">Open modal</event-handler>
+  <dialog>
+    <article>
+      <header>
+        <event-handler target-ref=":scope ~ dialog, dialog:has(:scope)" command-name="close" class="tag-button" rel="prev" aria-label="Close"></event-handler>
+        <h5>Confirm</h5>
+      </header>
+      <p>A <code>dialog</code> centers its <code>article</code>; the header close control and the footer buttons are styled for you.</p>
+      <footer>
+        <form method="dialog">
+          <button class="secondary">Cancel</button>
+          <button>Confirm</button>
+        </form>
+      </footer>
+    </article>
+  </dialog>
+</div>

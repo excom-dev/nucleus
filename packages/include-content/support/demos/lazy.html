@@ -1,0 +1,19 @@
+<section>
+  <p>Scroll down…</p>
+  <include-content lazy-load lazy-unload observer-root="section:has(> :scope)"
+    observer-root-margin="0px" observer-threshold="0.5">
+    <template>
+      <p>Rendered at 50% visibility. Scroll away to remove
+        (<code>lazy-unload</code>).</p>
+    </template>
+  </include-content>
+  <p>Keep scrolling…</p>
+  <style>
+    #demo-include-content-lazy > :first-child {
+      include-content {
+        /* Prevent size collapse → render/unrender loop */
+        min-height: 108px;
+      }
+    }
+  </style>
+</section>

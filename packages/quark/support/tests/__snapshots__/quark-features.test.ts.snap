@@ -1,0 +1,1079 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Quark features > attributes and special fields > applies ariaset from an object > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 3,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > attributes and special fields > applies dataset from an object > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 3,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > attributes and special fields > sets boolean-ish empty attributes > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 2,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > attributes and special fields > sets class from a string > complexity 1`] = `
+{
+  "attributeRuns": 2,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 2,
+  "setAttribute": 3,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > content > clears text with content: none > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 1,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > content > injects markup via dangerous-html() > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 2,
+  "queryScopeCost": 4,
+  "querySelectorAll": 2,
+  "removeAttribute": 0,
+  "ruleRuns": 2,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > content > rendering into a <template> host > clones template() onto a template host without requeueing rules > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 2,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 3,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > content > rendering into a <template> host > injects dangerous-html() into the fragment without requeueing rules > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > content > rendering into a <template> host > paints a Node into a template host without requeueing rules > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > content > rendering into a <template> host > paints a NodeList into a template host without requeueing rules > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > content > rendering into a <template> host > writes a settled string into the template's document fragment > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > content > rendering into a <template> host > writes a string into the template's document fragment > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > content > renders a DOM template via template(#id) > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 2,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 2,
+  "queryScopeCost": 5,
+  "querySelectorAll": 2,
+  "removeAttribute": 0,
+  "ruleRuns": 2,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > content > renders a fetched template via template(url) > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 2,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 2,
+  "queryScopeCost": 4,
+  "querySelectorAll": 2,
+  "removeAttribute": 0,
+  "ruleRuns": 2,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > content > toggles content from open state (details) > complexity 1`] = `
+{
+  "attributeRuns": 2,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 4,
+  "parentElement": 0,
+  "quarkRuns": 2,
+  "queryScopeCost": 2,
+  "querySelectorAll": 2,
+  "removeAttribute": 1,
+  "ruleRuns": 2,
+  "schedulePaint": 2,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 2,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > dynamics > chains rules: a quark-set attribute triggers another rule > complexity 1`] = `
+{
+  "attributeRuns": 2,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 3,
+  "parentElement": 2,
+  "quarkRuns": 2,
+  "queryScopeCost": 4,
+  "querySelectorAll": 2,
+  "removeAttribute": 0,
+  "ruleRuns": 3,
+  "schedulePaint": 2,
+  "setAttribute": 2,
+  "setVar": 0,
+  "textContent": 1,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > dynamics > does not fan out a def to readers the same run already reached > complexity 1`] = `
+{
+  "attributeRuns": 5,
+  "closest": 4,
+  "getVar": 5,
+  "importNode": 5,
+  "listenerRuns": 0,
+  "matches": 4,
+  "parentElement": 23,
+  "quarkRuns": 2,
+  "queryScopeCost": 60,
+  "querySelectorAll": 6,
+  "removeAttribute": 1,
+  "ruleRuns": 9,
+  "schedulePaint": 5,
+  "setAttribute": 3,
+  "setVar": 5,
+  "textContent": 4,
+  "variableRuns": 5,
+}
+`;
+
+exports[`Quark features > dynamics > propagates async variable updates to consumers in sibling rules > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 1,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 2,
+  "parentElement": 2,
+  "quarkRuns": 2,
+  "queryScopeCost": 1,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 2,
+  "schedulePaint": 1,
+  "setAttribute": 0,
+  "setVar": 1,
+  "textContent": 1,
+  "variableRuns": 1,
+}
+`;
+
+exports[`Quark features > dynamics > re-runs another sheet's consumers when a binding changes > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 1,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 2,
+  "parentElement": 2,
+  "quarkRuns": 1,
+  "queryScopeCost": 1,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 0,
+  "setVar": 1,
+  "textContent": 1,
+  "variableRuns": 1,
+}
+`;
+
+exports[`Quark features > dynamics > re-runs chained variables when the source provision changes > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 2,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 3,
+  "parentElement": 2,
+  "quarkRuns": 3,
+  "queryScopeCost": 1,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 3,
+  "schedulePaint": 1,
+  "setAttribute": 0,
+  "setVar": 2,
+  "textContent": 1,
+  "variableRuns": 2,
+}
+`;
+
+exports[`Quark features > dynamics > reacts when a custom element toggles its own state attribute > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 1,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 3,
+  "parentElement": 8,
+  "quarkRuns": 1,
+  "queryScopeCost": 1,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 2,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 1,
+  "textContent": 1,
+  "variableRuns": 1,
+}
+`;
+
+exports[`Quark features > dynamics > skips dependent re-runs when a provision carries the same value > complexity 1`] = `
+{
+  "attributeRuns": 0,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 0,
+  "querySelectorAll": 0,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 0,
+  "setAttribute": 0,
+  "setVar": 1,
+  "textContent": 0,
+  "variableRuns": 1,
+}
+`;
+
+exports[`Quark features > dynamics > skips re-runs when a farther (shadowed) binding owner changes > complexity 1`] = `
+{
+  "attributeRuns": 0,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 3,
+  "parentElement": 1,
+  "quarkRuns": 2,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 2,
+  "schedulePaint": 0,
+  "setAttribute": 0,
+  "setVar": 1,
+  "textContent": 0,
+  "variableRuns": 1,
+}
+`;
+
+exports[`Quark features > iterate > binds both index and item for array rows > complexity 1`] = `
+{
+  "attributeRuns": 3,
+  "closest": 4,
+  "getVar": 1,
+  "importNode": 3,
+  "listenerRuns": 0,
+  "matches": 3,
+  "parentElement": 6,
+  "quarkRuns": 2,
+  "queryScopeCost": 27,
+  "querySelectorAll": 7,
+  "removeAttribute": 1,
+  "ruleRuns": 6,
+  "schedulePaint": 3,
+  "setAttribute": 3,
+  "setVar": 1,
+  "textContent": 2,
+  "variableRuns": 1,
+}
+`;
+
+exports[`Quark features > iterate > clears iterated children when the list becomes empty > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 1,
+  "importNode": 1,
+  "listenerRuns": 0,
+  "matches": 2,
+  "parentElement": 2,
+  "quarkRuns": 2,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 1,
+  "ruleRuns": 2,
+  "schedulePaint": 1,
+  "setAttribute": 2,
+  "setVar": 1,
+  "textContent": 0,
+  "variableRuns": 1,
+}
+`;
+
+exports[`Quark features > iterate > iterates a plain object (index=key, item=value) > complexity 1`] = `
+{
+  "attributeRuns": 3,
+  "closest": 4,
+  "getVar": 1,
+  "importNode": 3,
+  "listenerRuns": 0,
+  "matches": 3,
+  "parentElement": 6,
+  "quarkRuns": 2,
+  "queryScopeCost": 27,
+  "querySelectorAll": 7,
+  "removeAttribute": 1,
+  "ruleRuns": 6,
+  "schedulePaint": 3,
+  "setAttribute": 3,
+  "setVar": 1,
+  "textContent": 2,
+  "variableRuns": 1,
+}
+`;
+
+exports[`Quark features > iterate > reuses rows across provisions when a key property is provided > complexity 1`] = `
+{
+  "attributeRuns": 3,
+  "closest": 2,
+  "getVar": 1,
+  "importNode": 1,
+  "listenerRuns": 0,
+  "matches": 2,
+  "parentElement": 6,
+  "quarkRuns": 3,
+  "queryScopeCost": 13,
+  "querySelectorAll": 5,
+  "removeAttribute": 1,
+  "ruleRuns": 5,
+  "schedulePaint": 3,
+  "setAttribute": 2,
+  "setVar": 1,
+  "textContent": 2,
+  "variableRuns": 1,
+}
+`;
+
+exports[`Quark features > lifecycle > stops reacting after unregister > complexity 1`] = `
+{
+  "attributeRuns": 0,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 0,
+  "parentElement": 0,
+  "quarkRuns": 0,
+  "queryScopeCost": 0,
+  "querySelectorAll": 0,
+  "removeAttribute": 0,
+  "ruleRuns": 0,
+  "schedulePaint": 0,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > lifecycle > supports two sheets on the same host > complexity 1`] = `
+{
+  "attributeRuns": 2,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 2,
+  "parentElement": 2,
+  "quarkRuns": 1,
+  "queryScopeCost": 4,
+  "querySelectorAll": 2,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 2,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 2,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > lifecycle > supports two sheets on the same host > complexity 2`] = `
+{
+  "attributeRuns": 2,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 2,
+  "parentElement": 2,
+  "quarkRuns": 1,
+  "queryScopeCost": 4,
+  "querySelectorAll": 2,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 2,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 2,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > listeners > calls the handle function, and a handle list in order, with the event and the element as \`this\` > complexity 1`] = `
+{
+  "attributeRuns": 0,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 2,
+  "matches": 2,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 6,
+  "querySelectorAll": 2,
+  "removeAttribute": 0,
+  "ruleRuns": 2,
+  "schedulePaint": 0,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > listeners > prevent-default: the flag and the handle built-in both cancel the event > complexity 1`] = `
+{
+  "attributeRuns": 0,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 2,
+  "matches": 2,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 6,
+  "querySelectorAll": 2,
+  "removeAttribute": 0,
+  "ruleRuns": 2,
+  "schedulePaint": 0,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > listeners > stop-propagation / stop-immediate-propagation flags act before any timing > complexity 1`] = `
+{
+  "attributeRuns": 0,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 2,
+  "matches": 2,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 8,
+  "querySelectorAll": 2,
+  "removeAttribute": 0,
+  "ruleRuns": 2,
+  "schedulePaint": 0,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > prop() > reads a provision through a binding defined on the provider > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 1,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 2,
+  "parentElement": 6,
+  "quarkRuns": 1,
+  "queryScopeCost": 8,
+  "querySelectorAll": 2,
+  "removeAttribute": 0,
+  "ruleRuns": 2,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 1,
+  "textContent": 1,
+  "variableRuns": 1,
+}
+`;
+
+exports[`Quark features > selectors and nesting > applies autofocus only while dialog is open > complexity 1`] = `
+{
+  "attributeRuns": 2,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 4,
+  "parentElement": 0,
+  "quarkRuns": 2,
+  "queryScopeCost": 2,
+  "querySelectorAll": 2,
+  "removeAttribute": 2,
+  "ruleRuns": 2,
+  "schedulePaint": 2,
+  "setAttribute": 2,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > selectors and nesting > inherits a parent variable through nested rules > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 1,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 2,
+  "parentElement": 6,
+  "quarkRuns": 1,
+  "queryScopeCost": 8,
+  "querySelectorAll": 2,
+  "removeAttribute": 0,
+  "ruleRuns": 2,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 1,
+  "textContent": 1,
+  "variableRuns": 1,
+}
+`;
+
+exports[`Quark features > selectors and nesting > targets by id > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 1,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > variables and expressions > concatenates simple string expressions > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 1,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > variables and expressions > falls back to the else arm in if() > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 1,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > variables and expressions > propagates null silently through accessors > complexity 1`] = `
+{
+  "attributeRuns": 3,
+  "closest": 0,
+  "getVar": 3,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 4,
+  "quarkRuns": 1,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 3,
+  "setAttribute": 3,
+  "setVar": 1,
+  "textContent": 1,
+  "variableRuns": 1,
+}
+`;
+
+exports[`Quark features > variables and expressions > re-runs when an attr() attribute changes without a selector gate > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 1,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 2,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 2,
+  "schedulePaint": 1,
+  "setAttribute": 0,
+  "setVar": 1,
+  "textContent": 1,
+  "variableRuns": 1,
+}
+`;
+
+exports[`Quark features > variables and expressions > reads attributes via attr() > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 1,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > variables and expressions > reads nested object fields from a JS module value > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 1,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 2,
+  "parentElement": 4,
+  "quarkRuns": 1,
+  "queryScopeCost": 6,
+  "querySelectorAll": 2,
+  "removeAttribute": 0,
+  "ruleRuns": 2,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 1,
+  "textContent": 1,
+  "variableRuns": 1,
+}
+`;
+
+exports[`Quark features > variables and expressions > resolves CSS-style if() to the first truthy arm > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 2,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 2,
+  "quarkRuns": 1,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 1,
+  "textContent": 1,
+  "variableRuns": 1,
+}
+`;
+
+exports[`Quark features > variables and expressions > resolves a variable from a DOM ancestor set by a sibling rule > complexity 1`] = `
+{
+  "attributeRuns": 2,
+  "closest": 0,
+  "getVar": 1,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 2,
+  "parentElement": 4,
+  "quarkRuns": 1,
+  "queryScopeCost": 6,
+  "querySelectorAll": 2,
+  "removeAttribute": 0,
+  "ruleRuns": 2,
+  "schedulePaint": 2,
+  "setAttribute": 2,
+  "setVar": 1,
+  "textContent": 1,
+  "variableRuns": 1,
+}
+`;
+
+exports[`Quark features > variables and expressions > resolves closest() to an ancestor element > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 1,
+  "getVar": 1,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 4,
+  "quarkRuns": 1,
+  "queryScopeCost": 3,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 1,
+  "textContent": 1,
+  "variableRuns": 1,
+}
+`;
+
+exports[`Quark features > variables and expressions > resolves ternary() > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 1,
+  "parentElement": 1,
+  "quarkRuns": 1,
+  "queryScopeCost": 2,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 1,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 1,
+  "variableRuns": 0,
+}
+`;
+
+exports[`Quark features > variables and expressions > uses list.find() to pick a record from an array > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 1,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 2,
+  "parentElement": 4,
+  "quarkRuns": 1,
+  "queryScopeCost": 6,
+  "querySelectorAll": 2,
+  "removeAttribute": 0,
+  "ruleRuns": 2,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 1,
+  "textContent": 1,
+  "variableRuns": 1,
+}
+`;
+
+exports[`Quark features > variables and expressions > uses list.reverse() on an array before iterate > complexity 1`] = `
+{
+  "attributeRuns": 4,
+  "closest": 3,
+  "getVar": 1,
+  "importNode": 4,
+  "listenerRuns": 0,
+  "matches": 3,
+  "parentElement": 7,
+  "quarkRuns": 2,
+  "queryScopeCost": 33,
+  "querySelectorAll": 7,
+  "removeAttribute": 1,
+  "ruleRuns": 6,
+  "schedulePaint": 4,
+  "setAttribute": 3,
+  "setVar": 1,
+  "textContent": 3,
+  "variableRuns": 1,
+}
+`;

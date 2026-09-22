@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`temperature-app view > writes each field onto the host and converts the other side > complexity 1`] = `
+{
+  "attributeRuns": 4,
+  "closest": 0,
+  "getVar": 1,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 5,
+  "parentElement": 10,
+  "quarkRuns": 1,
+  "queryScopeCost": 8,
+  "querySelectorAll": 1,
+  "removeAttribute": 0,
+  "ruleRuns": 3,
+  "schedulePaint": 3,
+  "setAttribute": 4,
+  "setVar": 1,
+  "textContent": 0,
+  "variableRuns": 1,
+}
+`;

@@ -1,0 +1,6 @@
+/* `$route` is published by the shell sheet (index.html) from `spa-route`. The
+   fallback matches `.*`, so its match is the path that matched nothing.
+   (`$route.active.url` is the history state's url, stale on a cold load.) */
+[bind-path] {
+  content: $route.match[0];
+}

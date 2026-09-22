@@ -1,0 +1,5 @@
+@import "./src/quark-sheet.css";
+
+@layer {
+  @mixin module-quark-sheet;
+}

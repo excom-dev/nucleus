@@ -1,0 +1,131 @@
+@scope {
+  /* data-driven css: a formula cell (data-formula starts with "=") shows its
+     result until it is edited; every other cell simply shows its input */
+  td[data-formula^="="]:not(:focus-within) input {
+    opacity: 0;
+  }
+  td:not([data-formula^="="]) output,
+  td:focus-within output {
+    visibility: hidden;
+  }
+
+  /* styling */
+  :scope {
+    --cells-row-height: 1.8rem;
+    --cells-col-width: 5.5rem;
+    max-width: none;
+    margin: 0;
+    padding: calc(var(--v-spacing) * 0.75) 1.1rem 2.5rem;
+    background: var(--v-background-color);
+    color: var(--v-color);
+  }
+
+  form {
+    display: contents;
+  }
+
+  .cells-scroll {
+    /* the only app that genuinely cannot shrink: the sheet keeps its column
+       width and scrolls sideways inside the frame instead of overrunning it */
+    overflow: auto;
+    max-width: 100%;
+    max-height: 70vh;
+    border: 1px solid var(--v-muted-border-color);
+    border-radius: var(--v-border-radius);
+  }
+
+  table {
+    margin: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: fixed;
+    font-size: 0.875rem;
+  }
+
+  th,
+  td,
+  tbody tr::before {
+    box-sizing: border-box;
+    min-width: var(--cells-col-width);
+    width: var(--cells-col-width);
+    height: var(--cells-row-height);
+    padding: 0;
+    border: 0;
+    border-right: 1px solid var(--v-muted-border-color);
+    border-bottom: 1px solid var(--v-muted-border-color);
+  }
+
+  /* column letters / row numbers */
+  thead th,
+  tbody tr::before {
+    background: var(--v-card-sectioning-background-color);
+    color: var(--v-muted-color);
+    font-weight: 600;
+    text-align: center;
+    line-height: var(--cells-row-height);
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+
+  thead th:first-child,
+  tbody tr::before {
+    min-width: 2.75rem;
+    width: 2.75rem;
+  }
+
+  /* the row header is a CSS counter, iterate() owns the row's children */
+  tbody {
+    counter-reset: cells-row -1;
+  }
+
+  tbody tr {
+    counter-increment: cells-row;
+  }
+
+  tbody tr::before {
+    content: counter(cells-row);
+    display: table-cell;
+  }
+
+  td {
+    position: relative;
+    cursor: cell;
+  }
+
+  output {
+    display: block;
+    padding: 0 0.4rem;
+    line-height: var(--cells-row-height);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* the input is the cell: it holds the raw text and fills the cell */
+  input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0 0.4rem;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: inherit;
+    font: inherit;
+  }
+
+  td:focus-within input {
+    z-index: 1;
+    background: var(--v-background-color);
+    outline: 2px solid var(--v-primary);
+    outline-offset: -2px;
+  }
+}

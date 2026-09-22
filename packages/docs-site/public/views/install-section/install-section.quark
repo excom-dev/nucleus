@@ -1,0 +1,55 @@
+/* Scoped to #install-section. Rules match its descendants directly.
+   `$package-meta` is a binding published by the package view on the
+   ancestor `provider-fetch.doc-page`. */
+@use "/shell" as *;
+
+:scope {
+  $install: $package-meta.installation;
+
+  [bind-cdn] {
+    content: dangerous-html(renderLangCopy($install.cdn, "html"));
+  }
+  [bind-install-npm] {
+    content: dangerous-html(renderLangCopy($install.install.npm, "bash"));
+  }
+  [bind-import-js] {
+    content: dangerous-html(renderLangCopy($install.imports.js, "js"));
+  }
+  [bind-import-css] {
+    data-length: $install.imports.css.length or 0;
+    content: dangerous-html(renderLangCopy($install.imports.css, "css"));
+  }
+  [bind-import-html] {
+    content: dangerous-html(renderLangCopy($install.imports.html, "html"));
+  }
+  [bind-peers-length] {
+    content: " (#{$install.peerDependencies.length or 0})";
+  }
+  [bind-peers] {
+    data-length: $install.peerDependencies.length or 0;
+    tbody {
+      content: iterate($install.peerDependencies);
+      [bind-name] {
+        content: item.name;
+      }
+      [bind-version] {
+        content: item.version;
+      }
+    }
+  }
+  [bind-export-files] {
+    content: iterate($package-meta.exportedFiles);
+    [bind-export-file-key] {
+      content: index;
+    }
+    [bind-export-file-values] {
+      content: iterate(item);
+    }
+    [bind-export-file-value-type] {
+      content: "#{index}: ";
+    }
+    [bind-export-file-value] {
+      content: item;
+    }
+  }
+}

@@ -1,0 +1,55 @@
+/* ============================================================
+ * Theme-agnostic util mixins. No theme tokens: custom elements
+ * import this file on their own.
+ * ============================================================ */
+
+@define-mixin util-nested-card {
+  &:not(.reset-colors) {
+    background-color: var(--v-multiply-color-0);
+    border-color: var(--v-multiply-color-1);
+    background-clip: padding-box;
+  }
+}
+
+@define-mixin util-elevated {
+  background-color: var(--v-background-0);
+  box-shadow: var(--v-shadow-1);
+}
+
+@define-mixin util-focus-ring {
+  outline-style: solid;
+  outline-color: var(--v-cta-0);
+  outline-width: var(--v-border-width-1);
+  outline-offset: 2px;
+}
+
+@define-mixin util-press-feedback {
+  transition-property: transform, filter, background-color;
+  transition-duration: var(--v-transition-duration-fast);
+  transition-timing-function: var(--v-transition-ease-out);
+  &:active {
+    transform: var(--v-scale-active-0);
+    filter: var(--v-filter-brightness-0);
+  }
+  @media (hover: hover) {
+    &:hover,
+    &:focus-visible {
+      filter: var(--v-filter-brightness-0);
+    }
+  }
+}
+
+@define-mixin util-small-note {
+  display: block;
+  width: 100%;
+  margin: var(--v-spacing) 0;
+  color: var(--v-muted-color);
+}
+
+@define-mixin abstract-wrapper {
+  /* Best donut-scoping option after trying the rest. */
+  :where(&, & > .abstract, & > .abstract > .abstract) {
+    /* `:where` keeps nested `.abstract` from winning on specificity */
+    @mixin-content;
+  }
+}

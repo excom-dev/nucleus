@@ -1,0 +1,21 @@
+<div>
+  <dialog-anchor role="button" target-ref="#da-modal" is-modal>
+    Open as modal
+  </dialog-anchor>
+  <dialog-anchor role="button" target-ref="#da-modal">
+    Open as non-modal
+  </dialog-anchor>
+  <dialog id="da-modal">
+    <article>
+      <header>
+        <dialog-anchor role="button" rel="prev"></dialog-anchor>
+        <h4>Modal dialogs block interaction with the rest of the page.</h4>
+        <p>This dialog is shown with Valence.css styling</p>
+      </header>
+      <p>Dialog content</p>
+      <footer>
+        Footer content
+      </footer>
+    </article>
+  </dialog>
+</div>

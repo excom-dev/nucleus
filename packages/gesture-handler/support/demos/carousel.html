@@ -1,0 +1,44 @@
+<gesture-handler gesture-types="pan-x swipe" pointer-types="touch pen mouse" progress-axis="left"
+  range-ref=":scope > content-carousel" progress-min="-1" progress-max="1" snap-points="-1 0 1"
+  overshoot-resistance="0.2">
+  <quark-sheet>
+    :scope {
+      /* no wrap-around while dragging: clamp the ends */
+      &:has(content-carousel-slide[is-active]:first-of-type) { progress-min: 0; }
+      &:not(:has(content-carousel-slide[is-active]:first-of-type)) { progress-min: -1; }
+      &:has(content-carousel-slide[is-active]:last-of-type) { progress-max: 0; }
+      &:not(:has(content-carousel-slide[is-active]:last-of-type)) { progress-max: 1; }
+      @on gesture-handler-start {
+        content-carousel { is-scrubbing: ""; }
+      }
+      /* commit once the glide lands: the slide swap and the un-scrub paint together */
+      @on gesture-handler-snap {
+        /* snap-points "-1 0 1" → index 0 = previous, 1 = stay, 2 = next */
+        $snap: event.detail.index;
+        content-carousel {
+          is-scrubbing: none;
+          content-carousel-slide[is-active] + content-carousel-slide {
+            is-active: $snap == 2 or preserve;
+          }
+          content-carousel-slide:has(+ content-carousel-slide[is-active]) {
+            is-active: $snap == 0 or preserve;
+          }
+          content-carousel-slide[is-active] {
+            is-active: $snap == 1 or none;
+          }
+        }
+      }
+    }
+  </quark-sheet>
+  <content-carousel slide-animation="track">
+    <content-carousel-slide is-active>
+      <h2>One</h2>
+    </content-carousel-slide>
+    <content-carousel-slide>
+      <h2>Two</h2>
+    </content-carousel-slide>
+    <content-carousel-slide>
+      <h2>Three</h2>
+    </content-carousel-slide>
+  </content-carousel>
+</gesture-handler>

@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`live-app view > renders one editor per file, saves edits, reloads the preview, and resets > complexity 1`] = `
+{
+  "attributeRuns": 4,
+  "closest": 0,
+  "getVar": 1,
+  "importNode": 2,
+  "listenerRuns": 0,
+  "matches": 176,
+  "parentElement": 171,
+  "quarkRuns": 2,
+  "queryScopeCost": 318,
+  "querySelectorAll": 51,
+  "removeAttribute": 6,
+  "ruleRuns": 53,
+  "schedulePaint": 4,
+  "setAttribute": 9,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;

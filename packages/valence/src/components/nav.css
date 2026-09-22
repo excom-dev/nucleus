@@ -1,0 +1,198 @@
+/**
+ * Nav. Reboot from sanitize.css v13.0.0 (CC0).
+ */
+
+@define-mixin module-nav {
+  /* Keep VoiceOver list semantics in Safari (opinionated) */
+  :where(:--nav :--li)::before {
+    float: left;
+    content: "\200B";
+  }
+
+  :--nav {
+    justify-content: space-between;
+    overflow: visible;
+    &,
+    :--list {
+      display: flex;
+    }
+    :--list {
+      align-items: center;
+      margin-bottom: 0;
+      padding: 0;
+      list-style: none;
+
+      &:first-of-type {
+        margin-left: calc(var(--v-nav-element-spacing-horizontal) * -1);
+      }
+      &:last-of-type {
+        margin-right: calc(var(--v-nav-element-spacing-horizontal) * -1);
+      }
+    }
+
+    :--li {
+      display: inline-block;
+      margin: 0;
+      padding: var(--v-nav-element-spacing-vertical)
+        var(--v-nav-element-spacing-horizontal);
+
+      :where(:--link) {
+        display: inline-block;
+        margin: calc(var(--v-nav-link-spacing-vertical) * -1)
+          calc(var(--v-nav-link-spacing-horizontal) * -1);
+        padding: var(--v-nav-link-spacing-vertical)
+          var(--v-nav-link-spacing-horizontal);
+        border-radius: var(--v-border-radius);
+
+        &:not(:hover) {
+          text-decoration: none;
+        }
+      }
+
+      /* Minimal support for buttons and form elements */
+      :--button,
+      input:not(
+        [type="checkbox"],
+        [type="radio"],
+        [type="range"],
+        [type="file"]
+      ),
+      select {
+        height: auto;
+        margin-right: inherit;
+        margin-bottom: 0;
+        margin-left: inherit;
+        padding: calc(
+            var(--v-nav-link-spacing-vertical) - (var(--v-border-width) * 2)
+          )
+          var(--v-nav-link-spacing-horizontal);
+      }
+    }
+
+    /* Breadcrumb */
+    &[aria-label="breadcrumb"] {
+      align-items: center;
+      justify-content: start;
+
+      & :--list :--li {
+        &:not(:first-child) {
+          margin-inline-start: var(--v-nav-link-spacing-horizontal);
+        }
+
+        :--link {
+          margin: calc(var(--v-nav-link-spacing-vertical) * -1) 0;
+          margin-inline-start: calc(var(--v-nav-link-spacing-horizontal) * -1);
+        }
+
+        &:not(:last-child) {
+          &::after {
+            display: inline-block;
+            position: absolute;
+            width: calc(var(--v-nav-link-spacing-horizontal) * 4);
+            margin: 0 calc(var(--v-nav-link-spacing-horizontal) * -1);
+            content: var(--v-nav-breadcrumb-divider);
+            color: var(--v-muted-color);
+            text-align: center;
+            text-decoration: none;
+            white-space: nowrap;
+          }
+        }
+      }
+
+      /* Minimal support for aria-current */
+      & :--link[aria-current]:not([aria-current="false"]) {
+        background-color: transparent;
+        color: inherit;
+        text-decoration: none;
+        pointer-events: none;
+      }
+    }
+  }
+
+  /* Vertical Nav */
+  :--aside {
+    display: block;
+
+    :--nav,
+    :--list,
+    :--li {
+      display: block;
+    }
+
+    :--li {
+      padding: calc(var(--v-nav-element-spacing-vertical) * 0.5)
+        var(--v-nav-element-spacing-horizontal);
+
+      :--link {
+        display: block;
+      }
+
+      /* Minimal support for links as buttons */
+      :--button {
+        margin: inherit;
+      }
+    }
+  }
+
+  /* Tree. Should be placed on list elements. */
+  :--list:--tree {
+    border-left: var(--v-border-width) solid var(--v-muted-border-color);
+    margin: 0 !important;
+    padding: 0 !important;
+    :--li {
+      margin: 0 !important;
+      padding: calc(var(--v-nav-element-spacing-vertical) * 0.25) 0 !important;
+      :--list:--tree {
+        /* sub-tree margin */
+        margin-left: calc(
+          var(--v-nav-element-spacing-horizontal) * 1.5
+        ) !important;
+      }
+    }
+    :--link,
+    :--details :--summary {
+      margin: 0;
+      padding: 0;
+      margin-left: calc(var(--v-border-width) * -1);
+      padding-left: calc(var(--v-nav-element-spacing-horizontal) * 1.5);
+    }
+    :--link {
+      border-left: var(--v-border-width) solid transparent;
+      border-radius: 0;
+      font-weight: 400;
+      transition:
+        background-color var(--v-transition),
+        color var(--v-transition),
+        box-shadow var(--v-transition),
+        border-color var(--v-transition),
+        font-weight var(--v-transition),
+        -webkit-text-decoration var(--v-transition);
+      &:hover {
+        border-color: var(--v-secondary-underline);
+      }
+      &[aria-current] {
+        border-color: var(--v-primary);
+        color: var(--v-primary-hover);
+        font-weight: 600;
+        &:hover {
+          text-decoration: none;
+        }
+      }
+    }
+  }
+
+  /* Breadcrumb RTL */
+  [dir="rtl"] {
+    :--nav {
+      &[aria-label="breadcrumb"] {
+        & :--list :--li {
+          &:not(:last-child) {
+            ::after {
+              content: "\\";
+            }
+          }
+        }
+      }
+    }
+  }
+}

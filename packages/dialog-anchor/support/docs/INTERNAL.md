@@ -1,0 +1,1 @@
+Will probably deprecate this element now that `<button command commandfor>` and `event-handler[command-name]` cover invoking dialogs and popovers.

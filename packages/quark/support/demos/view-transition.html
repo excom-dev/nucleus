@@ -1,0 +1,36 @@
+<div data-count="2">
+  <button type="button" data-add>Add planet</button>
+  <button type="button" data-remove>Remove planet</button>
+  <ul>
+    <template>
+      <li bind-name></li>
+    </template>
+  </ul>
+  <quark-sheet>
+    @use "/demo-utils" as *;
+
+    :scope {
+      $count: +attr("data-count");
+      @on click (target: "[data-add]") { data-count: $count + 1; }
+      @on click (target: "[data-remove]") { data-count: $count - 1; }
+    }
+    [data-add] { disabled: $count == 4; }
+    [data-remove] { disabled: $count == 0; }
+    ul {
+      @view-transition (types: "planets") {
+        content: iterate(getPlanets().slice(0, $count));
+      }
+    }
+    [bind-name] { content: item; }
+  </quark-sheet>
+  <style>
+    #demo-quark-view-transition > :first-child {
+      ul { view-transition-name: demo-planets; }
+      li {
+        view-transition-name: match-element;
+        view-transition-class: demo-planet;
+      }
+    }
+    ::view-transition-group(.demo-planet) { animation-duration: 250ms; }
+  </style>
+</div>

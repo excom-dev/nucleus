@@ -1,0 +1,10 @@
+<gesture-handler gesture-types="pan pinch rotate" pointer-types="touch pen mouse">
+  <figure>Drag, pinch, twist</figure>
+  <style>
+    #demo-gesture-handler-pinch > :first-child figure {
+      translate: var(--gesture-dx, 0px) var(--gesture-dy, 0px);
+      scale: var(--gesture-scale, 1);
+      rotate: var(--gesture-rotate, 0deg);
+    }
+  </style>
+</gesture-handler>

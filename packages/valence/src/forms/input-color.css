@@ -1,0 +1,27 @@
+/**
+ * `input[type="color"]`
+ */
+
+@define-mixin module-input-color {
+  [type="color"] {
+    /* Wrapper */
+    &::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    &::-moz-focus-inner {
+      padding: 0;
+    }
+
+    /* Swatch */
+    &::-webkit-color-swatch {
+      border: 0;
+      border-radius: calc(var(--v-border-radius) * 0.5);
+    }
+
+    &::-moz-color-swatch {
+      border: 0;
+      border-radius: calc(var(--v-border-radius) * 0.5);
+    }
+  }
+}

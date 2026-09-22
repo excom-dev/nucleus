@@ -1,0 +1,1 @@
+- `mutate-target` is deprecated (2026-09-11): Quark's `@on <event> { … }` block covers event → attribute writes without one element mutating another. Still functional and tested; every in-repo usage was migrated. Remove in the next major.

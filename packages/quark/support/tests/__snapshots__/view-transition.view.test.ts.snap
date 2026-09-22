@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`view-transition view > adds and removes planets without the API, within the complexity budget > complexity 1`] = `
+{
+  "attributeRuns": 7,
+  "closest": 6,
+  "getVar": 4,
+  "importNode": 2,
+  "listenerRuns": 2,
+  "matches": 7,
+  "parentElement": 14,
+  "quarkRuns": 3,
+  "queryScopeCost": 43,
+  "querySelectorAll": 7,
+  "removeAttribute": 1,
+  "ruleRuns": 10,
+  "schedulePaint": 7,
+  "setAttribute": 3,
+  "setVar": 1,
+  "textContent": 1,
+  "variableRuns": 1,
+}
+`;

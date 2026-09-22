@@ -1,0 +1,16 @@
+<div>
+  <provider-fetch api-url="/api/todos?_limit=4">
+    <ul>
+      <template>
+        <li bind-title></li>
+      </template>
+    </ul>
+  </provider-fetch>
+  <quark-sheet>
+    provider-fetch[is-success] {
+      $todos: prop("provision").body;
+      ul { content: iterate($todos); }
+      [bind-title] { content: item.title; }
+    }
+  </quark-sheet>
+</div>

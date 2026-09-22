@@ -1,0 +1,16 @@
+<div>
+  <detect-browser>
+    <span lang="en">Hello</span>
+    <span lang="es">Hola</span>
+  </detect-browser>
+  <style>
+    #demo-detect-browser-language > :first-child {
+      detect-browser {
+        [lang="en"],
+        [lang="es"] { display: none; }
+        &[language-id^="es"] [lang="es"],
+        &:not([language-id^="es"]) [lang="en"] { display: inline; }
+      }
+    }
+  </style>
+</div>

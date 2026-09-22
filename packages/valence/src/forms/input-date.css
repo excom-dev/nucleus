@@ -1,0 +1,66 @@
+/**
+ * Datetime inputs
+ */
+
+@define-mixin module-input-date {
+  /* `:not()` for specificity, so padding needs no `!important` */
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]) {
+    &:is(
+      [type="date"],
+      [type="datetime-local"],
+      [type="month"],
+      [type="time"],
+      [type="week"]
+    ) {
+      --v-icon-position: 0.75rem;
+      --v-icon-width: 1rem;
+      padding-right: calc(var(--v-icon-width) + var(--v-icon-position));
+      background-image: var(--v-icon-date);
+      background-position: center right var(--v-icon-position);
+      background-size: var(--v-icon-width) auto;
+      background-repeat: no-repeat;
+    }
+
+    /* Time */
+    &[type="time"] {
+      background-image: var(--v-icon-time);
+    }
+  }
+
+  /* Calendar picker */
+  [type="date"],
+  [type="datetime-local"],
+  [type="month"],
+  [type="time"],
+  [type="week"] {
+    &::-webkit-calendar-picker-indicator {
+      width: var(--v-icon-width);
+      margin-right: calc(var(--v-icon-width) * -1);
+      margin-left: var(--v-icon-position);
+      opacity: 0;
+    }
+  }
+
+  /* Firefox hides calendar icons */
+  @-moz-document url-prefix() {
+    [type="date"],
+    [type="datetime-local"],
+    [type="month"],
+    [type="time"],
+    [type="week"] {
+      padding-right: var(--v-form-element-spacing-horizontal) !important;
+      background-image: none !important;
+    }
+  }
+
+  [dir="rtl"]
+    :is(
+      [type="date"],
+      [type="datetime-local"],
+      [type="month"],
+      [type="time"],
+      [type="week"]
+    ) {
+    text-align: right;
+  }
+}

@@ -1,0 +1,29 @@
+<article>
+  <link rel="stylesheet" href="/views/todo-app/todo-app.css">
+  <quark-sheet src-url="/views/todo-app/todo-app.quark"></quark-sheet>
+  <provider-fetch api-url="/api/todos">
+    <ul>
+      <template>
+        <li>
+          <super-form>
+            <form method="patch">
+              <input type="checkbox" name="completed">
+              <input name="title" required autocomplete="off">
+            </form>
+          </super-form>
+          <super-form>
+            <form method="delete">
+              <button type="submit"></button>
+            </form>
+          </super-form>
+        </li>
+      </template>
+    </ul>
+    <super-form>
+      <form action="/api/todos" method="post">
+        <input name="title" required autocomplete="off" placeholder="New Reminder">
+        <button type="submit"></button>
+      </form>
+    </super-form>
+  </provider-fetch>
+</article>

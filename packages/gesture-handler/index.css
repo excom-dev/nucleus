@@ -1,0 +1,5 @@
+@import "./src/gesture-handler.css";
+
+@layer {
+  @mixin module-gesture-handler;
+}

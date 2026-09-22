@@ -1,0 +1,14 @@
+<div>
+  <output>Waiting…</output>
+  <event-handler target-ref="output:has(+ :scope)" fire-event="demo-ping"
+    detail-label="pong">
+    Ping previous output
+  </event-handler>
+  <quark-sheet>
+    @use "/demo-utils" as *;
+
+    output {
+      @on demo-ping (handle: setOutputFromDetail);
+    }
+  </quark-sheet>
+</div>

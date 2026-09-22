@@ -1,0 +1,31 @@
+<section>
+  <super-form>
+    <form action="/api/echo" method="post">
+      <input type="text" name="name" placeholder="Your name" required>
+      <button type="submit">Submit</button>
+    </form>
+    <h4></h4>
+    <span></span>
+  </super-form>
+  <quark-sheet>
+    super-form[is-success] {
+      $res: prop("provision");
+      h4 { content: "Echoed name: #{$res.body.json.name}"; }
+    }
+    super-form {
+      $res: prop("provision");
+      span { content: "HTTP status code: #{$res.status or ""}"; }
+    }
+  </quark-sheet>
+  <style>
+    #demo-super-form-simple super-form[is-loading] {
+      animation: pulse 1s linear infinite;
+      pointer-events: none;
+    }
+    @keyframes pulse {
+      0% { opacity: 0.2; }
+      50% { opacity: 0.6; }
+      100% { opacity: 0.2; }
+    }
+  </style>
+</section>

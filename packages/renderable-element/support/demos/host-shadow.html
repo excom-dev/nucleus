@@ -1,0 +1,31 @@
+<p>Two <code>&lt;include-content&gt;</code> elements rendering the same template into different hosts. The shadow-root version is style-isolated.</p>
+
+<style>
+  .host-demo include-content {
+    display: block;
+    border: 1px dashed currentColor;
+    padding: 8px;
+    margin: 8px 0;
+  }
+  /* this rule cannot reach into a shadow root */
+  .host-demo h4 { color: rebeccapurple; }
+</style>
+
+<div class="host-demo">
+  <strong>Light DOM (default):</strong>
+  <include-content is-active>
+    <template>
+      <h4>I'm rebeccapurple</h4>
+      <p>Light-DOM children inherit the host page's CSS.</p>
+    </template>
+  </include-content>
+
+  <strong>Shadow DOM (<code>host-ref="shadow"</code>):</strong>
+  <include-content is-active host-ref="shadow">
+    <template>
+      <style>h4 { color: tomato; }</style>
+      <h4>I'm tomato — outer styles can't touch me</h4>
+      <p>Encapsulated inside an attached shadow root.</p>
+    </template>
+  </include-content>
+</div>

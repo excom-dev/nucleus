@@ -1,0 +1,13 @@
+<section>
+  <provider-fetch api-url="/api/todos/1">
+    <p>Title: <span bind-title></span></p>
+  </provider-fetch>
+  <quark-sheet>
+    provider-fetch[is-success] {
+      $todo: prop("provision").body;
+      [bind-title] {
+        content: $todo.title;
+      }
+    }
+  </quark-sheet>
+</section>

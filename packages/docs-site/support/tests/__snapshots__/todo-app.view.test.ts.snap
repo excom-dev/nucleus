@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`todo-app view > lists todos, posts a new one, and stays within the complexity budget > complexity 1`] = `
+{
+  "attributeRuns": 9,
+  "closest": 5,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 3,
+  "matches": 19,
+  "parentElement": 43,
+  "quarkRuns": 3,
+  "queryScopeCost": 110,
+  "querySelectorAll": 6,
+  "removeAttribute": 3,
+  "ruleRuns": 7,
+  "schedulePaint": 9,
+  "setAttribute": 6,
+  "setVar": 1,
+  "textContent": 0,
+  "variableRuns": 1,
+}
+`;

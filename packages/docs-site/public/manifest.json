@@ -1,0 +1,24 @@
+{
+  "name": "Nucleus · docs",
+  "short_name": "Nucleus",
+  "description": "Live demos and API docs for the Nucleus Stack",
+  "start_url": "/nucleus",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#10173a",
+  "theme_color": "#10173a",
+  "icons": [
+    {
+      "src": "/img/excom.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/img/nucleus.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+<div>
+  <scroll-into-view role="button" target-ref="#section-3" listen-for="click"
+    scroll-offset="0 -50" scroll-behavior="smooth">
+    Jump to Section 3
+  </scroll-into-view>
+  <div class="scroll-area">
+    <header>Sticky header</header>
+    <section id="section-1">
+      <h4>Section 1</h4>
+      <p>The target section is further down.</p>
+    </section>
+    <section id="section-2">
+      <h4>Section 2</h4>
+      <p>Keep scrolling…</p>
+    </section>
+    <section id="section-3">
+      <h4>Section 3</h4>
+      <p>The sticky header would normally cover this —
+        <code>scroll-offset="0 -50"</code> leaves room for it.</p>
+    </section>
+  </div>
+</div>

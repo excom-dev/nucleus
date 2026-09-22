@@ -1,0 +1,344 @@
+@import "@excom/valence/src/aliases.css";
+@import "@excom/valence/src/util.default.css";
+@import "@excom/valence/src/components/modal.css";
+
+/**
+ * Styles for `<content-drawer>`.
+ * @element content-drawer
+ */
+
+/* Aliases */
+@custom-selector :--content-drawer content-drawer, .tag-content-drawer;
+@custom-selector :--content-drawer--is-open [is-open], [aria-expanded="true"];
+/* Doubled so a scrub outranks the `is-open` + `open-stage` rules */
+@custom-selector :--content-drawer--is-scrubbing
+  [is-scrubbing][is-scrubbing],
+  [data-scrubbing][data-scrubbing];
+@custom-selector :--content-drawer--open-stage-1
+  [open-stage="1"],
+  [data-open="1"];
+@custom-selector :--content-drawer--open-stage-2
+  [open-stage="2"],
+  [data-open="2"];
+@custom-selector :--content-drawer--from-side [from-side], [data-placement];
+@custom-selector :--content-drawer--from-side-bottom
+  [from-side="bottom"],
+  [data-placement="bottom"];
+@custom-selector :--content-drawer--from-side-top
+  [from-side="top"],
+  [data-placement="top"];
+@custom-selector :--content-drawer--from-side-left
+  [from-side="left"],
+  [data-placement="left"];
+@custom-selector :--content-drawer--from-side-right
+  [from-side="right"],
+  [data-placement="right"];
+
+@define-mixin module-content-drawer {
+  :root {
+    /**
+     * Slide transition duration.
+     * @cssproperty
+     * @syntax <time>
+     * @default 0.25s
+     */
+    --content-drawer-transition-duration: var(
+      --v-transition-duration-standard,
+      0.25s
+    );
+    /**
+     * Slide transition easing.
+     * @cssproperty
+     * @syntax <easing-function>
+     * @default ease-out
+     */
+    --content-drawer-transition-ease: var(--v-transition-ease-out, ease-out);
+    /**
+     * Off-screen translate amount (closed).
+     * @cssproperty
+     * @syntax <percentage>
+     * @default 101%
+     */
+    --content-drawer-closed: 101%;
+    /**
+     * Full-open translate (`open-stage` unset or `0`).
+     * @cssproperty
+     * @syntax <percentage>
+     * @default 0%
+     */
+    --content-drawer-open-full: 0%;
+    /**
+     * Half-open translate (`open-stage="1"`).
+     * @cssproperty
+     * @syntax <percentage>
+     * @default 50%
+     */
+    --content-drawer-open-half: 50%;
+    /**
+     * Peek translate (`open-stage="2"`).
+     * @cssproperty
+     * @syntax <percentage>
+     * @default 75%
+     */
+    --content-drawer-open-peek: 75%;
+    /**
+     * Max width when open in `.relative` mode, used unless
+     * `--content-drawer-max-width` is set.
+     * @cssproperty
+     * @syntax <length>
+     * @default 200px
+     */
+    --content-drawer-relative-max-width: 200px;
+    /**
+     * Stack order for the drawer panel.
+     * @cssproperty
+     * @syntax <integer>
+     * @default 3
+     */
+    --content-drawer-z-index: 3;
+    /**
+     * Stack order for the sibling backdrop (`:--dialog-backdrop-aliases`).
+     * @cssproperty
+     * @syntax <integer>
+     * @default 2
+     */
+    --content-drawer-overlay-z-index: 2;
+  }
+
+  *:has(> :--content-drawer) {
+    position: relative;
+    overflow: hidden;
+  }
+
+  :--content-drawer {
+    /**
+     * How far open the drawer is while `is-scrubbing`: `0` closed, `1`
+     * full. Declared on the drawer (not `:root`) so it follows a wrapping
+     * `<gesture-handler>`'s inherited `--gesture-progress` unless set
+     * explicitly — a swipe-to-open / drag-to-close bottom sheet.
+     * @cssproperty
+     * @syntax <number>
+     * @default var(--gesture-progress, 0)
+     */
+    --content-drawer-open-progress: var(--gesture-progress, 0);
+  }
+
+  :--content-drawer:not(.relative) {
+    /* Not `display: none` when closed. Child intersection observers must
+       keep working, and a discrete display transition would animate a
+       drawer that starts `[is-open]` on first paint. */
+    display: block;
+    position: fixed;
+    z-index: var(--content-drawer-z-index);
+    /* Needed for an accurate height */
+    box-sizing: border-box;
+    background-color: var(--v-card-background-color, #f7f7f7);
+    box-shadow: 2px 0 16px rgba(0, 0, 0, 0.08);
+    overscroll-behavior-y: contain;
+    transition: transform var(--content-drawer-transition-duration)
+      var(--content-drawer-transition-ease);
+    /* A finger drives the position: no easing between frames */
+    &:--content-drawer--is-scrubbing {
+      transition: none;
+    }
+
+    /**
+     * Close control — empty `.close` / `[rel="prev"]`
+     * button or link (theme close icon).
+     * @cssclass close
+     */
+    @mixin modal-inner;
+    overflow-y: scroll;
+    margin: 0;
+    padding: var(--v-spacing);
+
+    /**
+     * `position: sticky` instead of the default `absolute` placement.
+     * @cssclass
+     */
+    &.sticky {
+      position: sticky;
+    }
+    /**
+     * `position: absolute` instead of the default `fixed` placement —
+     * a sheet inside its (`position: relative`) parent.
+     * @cssclass
+     */
+    &.absolute {
+      position: absolute;
+    }
+
+    /* bottom (default) */
+    &:not(:--content-drawer--from-side),
+    &:--content-drawer--from-side-bottom {
+      border-radius: var(--v-border-radius, 10px) var(--v-border-radius, 10px)
+        0px 0px;
+      transform: translateY(var(--content-drawer-closed));
+      left: 0;
+      right: 0;
+      bottom: 0;
+      &:--content-drawer--is-open {
+        transform: translateY(var(--content-drawer-open-full));
+      }
+      &:--content-drawer--is-open:--content-drawer--open-stage-1 {
+        transform: translateY(var(--content-drawer-open-half));
+      }
+      &:--content-drawer--is-open:--content-drawer--open-stage-2 {
+        transform: translateY(var(--content-drawer-open-peek));
+      }
+      &:--content-drawer--is-scrubbing {
+        transform: translateY(
+          calc(
+            var(--content-drawer-closed) *
+              (1 - var(--content-drawer-open-progress))
+          )
+        );
+      }
+    }
+
+    /* top */
+    &:--content-drawer--from-side-top {
+      border-radius: 0px 0px var(--v-border-radius, 10px)
+        var(--v-border-radius, 10px);
+      transform: translateY(calc(var(--content-drawer-closed) * -1));
+      left: 0;
+      right: 0;
+      top: 0;
+      &:--content-drawer--is-open {
+        transform: translateY(calc(var(--content-drawer-open-full) * -1));
+      }
+      &:--content-drawer--is-open:--content-drawer--open-stage-1 {
+        transform: translateY(calc(var(--content-drawer-open-half) * -1));
+      }
+      &:--content-drawer--is-open:--content-drawer--open-stage-2 {
+        transform: translateY(calc(var(--content-drawer-open-peek) * -1));
+      }
+      &:--content-drawer--is-scrubbing {
+        transform: translateY(
+          calc(
+            var(--content-drawer-closed) *
+              (var(--content-drawer-open-progress) - 1)
+          )
+        );
+      }
+    }
+
+    /* left */
+    &:--content-drawer--from-side-left {
+      border-radius: 0px var(--v-border-radius, 10px)
+        var(--v-border-radius, 10px) 0px;
+      transform: translateX(calc(var(--content-drawer-closed) * -1));
+      top: 0;
+      bottom: 0;
+      left: 0;
+      &:--content-drawer--is-open {
+        transform: translateX(calc(var(--content-drawer-open-full) * -1));
+      }
+      &:--content-drawer--is-open:--content-drawer--open-stage-1 {
+        transform: translateX(calc(var(--content-drawer-open-half) * -1));
+      }
+      &:--content-drawer--is-open:--content-drawer--open-stage-2 {
+        transform: translateX(calc(var(--content-drawer-open-peek) * -1));
+      }
+      &:--content-drawer--is-scrubbing {
+        transform: translateX(
+          calc(
+            var(--content-drawer-closed) *
+              (var(--content-drawer-open-progress) - 1)
+          )
+        );
+      }
+    }
+
+    /* right */
+    &:--content-drawer--from-side-right {
+      border-radius: var(--v-border-radius, 10px) 0px 0px
+        var(--v-border-radius, 10px);
+      transform: translateX(var(--content-drawer-closed));
+      top: 0;
+      bottom: 0;
+      right: 0;
+      &:--content-drawer--is-open {
+        transform: translateX(var(--content-drawer-open-full));
+      }
+      &:--content-drawer--is-open:--content-drawer--open-stage-1 {
+        transform: translateX(var(--content-drawer-open-half));
+      }
+      &:--content-drawer--is-open:--content-drawer--open-stage-2 {
+        transform: translateX(var(--content-drawer-open-peek));
+      }
+      &:--content-drawer--is-scrubbing {
+        transform: translateX(
+          calc(
+            var(--content-drawer-closed) *
+              (1 - var(--content-drawer-open-progress))
+          )
+        );
+      }
+    }
+
+    /**
+     * Sibling dimmer: Valence.css `:--dialog-backdrop-aliases`
+     * (`[role="presentation"]` / `.tag-backdrop`). Place as the immediate
+     * next sibling; click-to-close is `<event-handler>` / `<dismiss-watcher>`.
+     */
+    & + :--dialog-backdrop-aliases {
+      @mixin modal-backdrop;
+      display: none;
+      position: fixed;
+      z-index: var(--content-drawer-overlay-z-index);
+      opacity: 0;
+      transition:
+        opacity var(--content-drawer-transition-duration)
+          var(--content-drawer-transition-ease),
+        display var(--content-drawer-transition-duration) allow-discrete;
+      &.sticky {
+        position: sticky;
+      }
+      &.absolute {
+        position: absolute;
+      }
+    }
+
+    &:--content-drawer--is-open + :--dialog-backdrop-aliases {
+      display: block;
+      opacity: 1;
+      @starting-style {
+        opacity: 0;
+      }
+    }
+  }
+
+  /**
+   * In-flow mode: the drawer participates in layout and animates
+   * `max-width` instead of overlaying via `position`, pushing sibling
+   * content aside as it opens. Currently only affects
+   * `from-side="left"`.
+   * @cssclass
+   */
+  :--content-drawer.relative {
+    display: block;
+    position: relative;
+    overflow: hidden;
+
+    &:--content-drawer--from-side-left {
+      height: 100%;
+      max-width: 0;
+      width: 100%;
+      transition: max-width var(--content-drawer-transition-duration)
+        var(--content-drawer-transition-ease);
+      &:--content-drawer--is-open {
+        /**
+         * Overrides `--content-drawer-relative-max-width` for this
+         * drawer only.
+         * @cssproperty --content-drawer-max-width
+         * @syntax <length>
+         */
+        max-width: var(
+          --content-drawer-max-width,
+          var(--content-drawer-relative-max-width)
+        );
+      }
+    }
+  }
+}

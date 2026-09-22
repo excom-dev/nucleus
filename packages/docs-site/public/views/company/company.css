@@ -1,0 +1,125 @@
+/* Site root (`/`): one centred column, chromeless, phone-first. */
+.company {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--v-spacing) * 2.5);
+  max-width: 34rem;
+  margin-inline: auto;
+  padding: calc(var(--v-spacing) * 3) var(--v-spacing)
+    calc(var(--v-spacing) * 4);
+  text-align: center;
+
+  /* Valence lays `nav` out as a space-between row; one link, so centre it */
+  > nav {
+    justify-content: center;
+  }
+
+  > header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: calc(var(--v-spacing) * 1.25);
+    margin: 0;
+    /* Valence paints `article > header` as a card header; this page is flat */
+    padding: 0;
+    background: none;
+    border-radius: 0;
+
+    /* height-sized, like the shell's logos */
+    > img {
+      height: 3rem;
+      width: auto;
+      max-width: 100%;
+      display: block;
+    }
+
+    > h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: var(--v-blockquote-footer-color);
+      text-wrap: balance;
+    }
+  }
+
+  > section {
+    margin: 0;
+
+    > h2 {
+      margin: 0 0 calc(var(--v-spacing) * 1.5);
+      color: var(--v-muted-color);
+      font-size: clamp(1.05rem, 4.5vw, 1.3rem);
+      font-weight: 400;
+      text-wrap: balance;
+    }
+  }
+
+  /* Fields read left-to-right under the centred headings */
+  form {
+    margin: 0;
+    text-align: left;
+  }
+
+  label {
+    margin-bottom: var(--v-spacing);
+  }
+
+  /* 1rem ≥ 16px at every breakpoint, so iOS never zooms on focus */
+  input,
+  textarea {
+    font-size: 1rem;
+  }
+
+  textarea {
+    min-height: 8rem;
+    resize: vertical;
+  }
+
+  button[type="submit"] {
+    margin: 0;
+  }
+
+  /* honeypot: clipped off-screen and out of the tab order, but still a real,
+     fillable field — `display: none` / `hidden` are what bots skip */
+  [data-honeypot] {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* lifecycle: state attributes drive the whole thing, no script */
+  super-form {
+    display: block;
+  }
+
+  super-form[is-loading] {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  [bind-thanks],
+  [bind-error] {
+    display: none;
+    margin: 0;
+    text-align: left;
+  }
+
+  super-form[is-success] {
+    form {
+      display: none;
+    }
+    [bind-thanks] {
+      display: block;
+      color: var(--v-form-element-valid-border-color);
+    }
+  }
+
+  super-form[is-error]:not([is-success]) [bind-error] {
+    display: block;
+    margin-top: calc(var(--v-spacing) * 0.5);
+    color: var(--v-del-color);
+  }
+}

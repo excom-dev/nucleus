@@ -1,0 +1,172 @@
+/**
+ * Modal (<dialog>)
+ */
+
+@custom-selector :--dialog-close .close, :is(:--link, :--button)[rel="prev"];
+
+/**
+ * Close control — `.close` or `:--button` / `:--link` with `rel="prev"`
+ * Renders the theme close icon (empty content).
+ * @cssclass close
+ */
+@define-mixin modal-close-control {
+  --v-modal-close-icon-size: calc(1rem * var(--v-line-height));
+  display: block;
+  float: right;
+  width: var(--v-modal-close-icon-size);
+  height: var(--v-modal-close-icon-size);
+  margin: calc(var(--v-spacing) * -1) 0 var(--v-spacing) auto;
+  padding: 0;
+  border: none;
+  background-image: var(--v-icon-close);
+  background-position: center;
+  /* Scale icon to line-height, cap at 1.25rem */
+  background-size: auto min(var(--v-modal-close-icon-size), 1.25rem);
+  background-repeat: no-repeat;
+  background-color: transparent;
+  opacity: 0.5;
+
+  transition: opacity var(--v-transition);
+
+  &:is([aria-current]:not([aria-current="false"]), :hover, :active, :focus) {
+    opacity: 1;
+  }
+}
+
+/**
+ * Dimmer for `dialog::backdrop` and `:--dialog-backdrop-aliases`
+ * (`[role="presentation"]` / `.tag-backdrop`): dialog child or drawer sibling.
+ */
+@define-mixin modal-backdrop {
+  display: block;
+  backdrop-filter: var(--v-modal-overlay-backdrop-filter);
+  background-color: var(--v-modal-overlay-background-color);
+  pointer-events: auto;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+  position: fixed;
+  overscroll-behavior: contain;
+}
+
+@define-mixin modal-inner {
+  width: 100%;
+  max-height: calc(100vh - var(--v-spacing) * 2);
+  /* mobile browsers: the visible viewport, not the one under the URL bar */
+  max-height: calc(100dvh - var(--v-spacing) * 2);
+  margin: var(--v-spacing);
+  overflow: auto;
+
+  @media (min-width: 576px) {
+    max-width: 510px;
+  }
+
+  @media (min-width: 768px) {
+    max-width: 700px;
+  }
+
+  @mixin abstract-wrapper {
+    > :--header {
+      > * {
+        margin-bottom: 0;
+      }
+
+      > :--dialog-close {
+        @mixin modal-close-control;
+        margin: 0;
+        margin-left: var(--v-spacing);
+        padding: 0;
+        float: right;
+      }
+    }
+
+    > :--footer {
+      text-align: right;
+
+      :--button {
+        margin-bottom: 0;
+
+        &:not(:first-of-type) {
+          margin-left: calc(var(--v-spacing) * 0.5);
+        }
+      }
+    }
+  }
+
+  @mixin abstract-wrapper {
+    > :--dialog-close {
+      @mixin modal-close-control;
+    }
+  }
+}
+
+@define-mixin module-modal {
+  :root,
+  :host {
+    --v-scrollbar-width: 0px;
+  }
+
+  :where(:has(> :--dialog.absolute)) {
+    /* Lowest specificity */
+    position: relative;
+    height: 600px;
+    width: 600px;
+    background-color: red;
+  }
+  :--dialog.absolute {
+    position: absolute;
+  }
+
+  :is(dialog)::backdrop,
+  :--dialog > :--dialog-backdrop-aliases {
+    @mixin modal-backdrop;
+    &:is(.absolute::backdrop),
+    &:is(.absolute > :--dialog-backdrop-aliases) {
+      position: absolute;
+    }
+  }
+  :is(dialog:modal),
+  :--dialog:has(> :--dialog-backdrop-aliases) {
+    /* Dialog scroll stays in the dialog, not the page behind it */
+    overscroll-behavior: contain;
+  }
+
+  :--dialog {
+    display: flex;
+    z-index: 999;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    align-items: center;
+    justify-content: center;
+    width: inherit;
+    min-width: 100%;
+    height: inherit;
+    min-height: 100%;
+    padding: 0;
+    border: 0;
+    color: var(--v-color);
+    background-color: transparent;
+    pointer-events: none;
+    > * {
+      pointer-events: auto;
+    }
+
+    /* Content */
+    @mixin abstract-wrapper {
+      > :--article {
+        @mixin modal-inner;
+      }
+    }
+
+    /* Closed state */
+    &:not(:--dialog--open) {
+      display: none;
+    }
+  }
+  /* TODO: modal animations */
+}

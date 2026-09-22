@@ -1,0 +1,10 @@
+/* Aliases */
+@custom-selector :--mapbox-view mapbox-view, .tag-mapbox-view;
+
+@define-mixin module-mapbox-view {
+  :--mapbox-view {
+    display: block;
+    height: 100%;
+    width: 100%;
+  }
+}

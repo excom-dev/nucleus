@@ -1,0 +1,317 @@
+<div>
+    <link rel="stylesheet" href="/views/api-reference/api-reference.css">
+    <quark-sheet src-url="/views/api-reference/api-reference.quark"></quark-sheet>
+    <div id="api-reference">
+        <template>
+            <article class="nested">
+                <header>
+                    <hgroup>
+                        <h4 bind-tag class="html-tag"></h4>
+                    </hgroup>
+                </header>
+
+                <details bind-attributes class="accordion">
+                    <summary>Attributes <small role="note" bind-attributes-length></small></summary>
+                    <small role="note">Role — <code>option</code> is configurable, <code>state</code>
+                        is managed by the element (read-only), or <code>hybrid</code> which is both.</small>
+                    <data-table>
+                        <data-thead class="sticky">
+                            <data-tr>
+                                <data-th>Role</data-th>
+                                <data-th>Attribute</data-th>
+                                <data-th>Type</data-th>
+                                <data-th>Values</data-th>
+                                <data-th>Prop Default</data-th>
+                            </data-tr>
+                        </data-thead>
+                        <data-tbody>
+                            <template>
+                                <data-tr>
+                                    <data-td><span bind-role></span></data-td>
+                                    <data-td>
+                                        <code bind-name></code>
+                                        <include-content template-ref="#description-popover" is-active
+                                            class="unstyled"></include-content>
+                                    </data-td>
+                                    <data-td>
+                                        <code bind-type></code>
+                                        <span bind-type-popover></span>
+                                    </data-td>
+                                    <data-td><code bind-values></code></data-td>
+                                    <data-td><code bind-default></code></data-td>
+                                </data-tr>
+                            </template>
+                        </data-tbody>
+                    </data-table>
+                </details>
+
+                <details bind-provisions class="accordion">
+                    <summary>Provision <small role="note" bind-provisions-length></small></summary>
+                    <small role="note">This <code>provision</code> property lives on the DOM node.
+                        Read / watch it with Quark’s <code>prop("provision")</code>, or listen
+                        for the <code>neutron-provision</code> event from app JS.</small>
+                    <data-table>
+                        <data-thead class="sticky">
+                            <data-tr>
+                                <data-th>Property</data-th>
+                                <data-th>Type</data-th>
+                            </data-tr>
+                        </data-thead>
+                        <data-tbody>
+                            <template>
+                                <data-tr>
+                                    <data-td>
+                                        <code bind-name></code>
+                                        <include-content template-ref="#description-popover" is-active
+                                            class="unstyled"></include-content>
+                                    </data-td>
+                                    <data-td>
+                                        <code bind-type></code>
+                                        <span bind-type-popover></span>
+                                    </data-td>
+                                </data-tr>
+                            </template>
+                        </data-tbody>
+                    </data-table>
+                </details>
+
+                <details bind-events class="accordion">
+                    <summary>Events <small role="note" bind-events-length></small></summary>
+                    <section bind-dispatches>
+                        <small role="note">Dispatches — events that <span bind-tag class="html-tag"></span> fires and their default
+                            actions.</small>
+                        <data-table>
+                            <data-thead class="sticky">
+                                <data-tr>
+                                    <data-th>Dispatch</data-th>
+                                    <data-th>
+                                        <span>Default Action</span>
+                                        <include-content template-ref="#defaultaction-popover" is-active
+                                            class="unstyled"></include-content>
+                                    </data-th>
+                                </data-tr>
+                            </data-thead>
+                            <data-tbody>
+                                <template>
+                                    <data-tr>
+                                        <data-td>
+                                            <small role="note">Name</small>
+                                            <code bind-name></code>
+                                            <include-content template-ref="#description-popover" is-active
+                                                class="unstyled"></include-content>
+                                                <br>
+                                            <small role="note">Type</small>
+                                            <code bind-type></code>
+                                            <span bind-type-popover></span>
+                                        </data-td>
+                                        <data-td><span bind-defaultaction></span></data-td>
+                                    </data-tr>
+                                </template>
+                            </data-tbody>
+                        </data-table>
+                    </section>
+                    <section bind-listens>
+                        <small role="note">Listeners — events that <span bind-tag class="html-tag"></span> listens for which will trigger
+                            subsequent
+                            actions.</small>
+                        <data-table>
+                            <data-thead class="sticky">
+                                <data-tr>
+                                    <data-th>Listener</data-th>
+                                    <data-th>Type</data-th>
+                                    <data-th>Action</data-th>
+                                </data-tr>
+                            </data-thead>
+                            <data-tbody>
+                                <template>
+                                    <data-tr>
+                                        <data-td><code bind-name></code></data-td>
+                                        <data-td>
+                                            <code bind-type></code>
+                                            <span bind-type-popover></span>
+                                        </data-td>
+                                        <data-td><span bind-description></span>
+                                            <small bind-inherited-from role="note"></small></data-td>
+                                    </data-tr>
+                                </template>
+                            </data-tbody>
+                        </data-table>
+                    </section>
+                    <section bind-commands>
+                        <small role="note">Commands — verbs <span bind-tag class="html-tag"></span> accepts as a
+                            <code>command</code> event (HTML Command API): from a
+                            <code>&lt;button command commandfor&gt;</code>, an <code>&lt;event-handler
+                            command-name&gt;</code>, or a <code>CommandEvent</code>.</small>
+                        <data-table>
+                            <data-thead class="sticky">
+                                <data-tr>
+                                    <data-th>Command</data-th>
+                                    <data-th>Action</data-th>
+                                </data-tr>
+                            </data-thead>
+                            <data-tbody>
+                                <template>
+                                    <data-tr>
+                                        <data-td><code bind-name></code></data-td>
+                                        <data-td><span bind-description></span>
+                                            <small bind-inherited-from role="note"></small></data-td>
+                                    </data-tr>
+                                </template>
+                            </data-tbody>
+                        </data-table>
+                    </section>
+                </details>
+
+                <details bind-children class="accordion">
+                    <summary>Recognized Elements <small role="note" bind-children-length></small></summary>
+                    <small role="note">Child or descendant elements are recognized by <span bind-tag class="html-tag"></span> and
+                        relevant to
+                        its
+                        functionality.
+                    </small>
+                    <data-table>
+                        <data-thead class="sticky">
+                            <data-tr>
+                                <data-th>Element</data-th>
+                                <data-th>Relationship</data-th>
+                                <data-th>Required</data-th>
+                            </data-tr>
+                        </data-thead>
+                        <data-tbody>
+                            <template>
+                                <data-tr>
+                                    <data-td>
+                                        <span bind-name></span>
+                                        <include-content template-ref="#description-popover" is-active
+                                            class="unstyled"></include-content>
+                                    </data-td>
+                                    <data-td><span bind-relationship></span></data-td>
+                                    <data-td><span bind-required></span></data-td>
+                                </data-tr>
+                            </template>
+                        </data-tbody>
+                    </data-table>
+                </details>
+
+                <details bind-styles class="accordion">
+                    <summary>Styles <small role="note" bind-styles-length></small></summary>
+                    <section bind-css-classes>
+                        <small role="note">Classes — optional classes that change the appearance of <span
+                                bind-tag class="html-tag"></span>.</small>
+                        <data-table>
+                            <data-thead class="sticky">
+                                <data-tr>
+                                    <data-th>Class</data-th>
+                                    <data-th>Description</data-th>
+                                </data-tr>
+                            </data-thead>
+                            <data-tbody>
+                                <template>
+                                    <data-tr>
+                                        <data-td><code bind-name></code></data-td>
+                                        <data-td><span bind-description></span><small bind-inherited-from role="note"></small></span></data-td>
+                                    </data-tr>
+                                </template>
+                            </data-tbody>
+                        </data-table>
+                    </section>
+                    <section bind-css-properties>
+                        <small role="note">Variables — public CSS variables for theming <span bind-tag class="html-tag"></span>. Opt-out:
+                            <include-content template-ref="#optout-popover" is-active
+                                class="unstyled"></include-content></small>
+                        <data-table>
+                            <data-thead class="sticky">
+                                <data-tr>
+                                    <data-th>Variable</data-th>
+                                    <data-th>Syntax</data-th>
+                                    <data-th>Default</data-th>
+                                </data-tr>
+                            </data-thead>
+                            <data-tbody>
+                                <template>
+                                    <data-tr>
+                                        <data-td><code bind-name></code></data-td>
+                                        <data-td><code bind-syntax></code></data-td>
+                                        <data-td><code bind-default></code><small bind-inherited-from role="note"></small></span></data-td>
+                                    </data-tr>
+                                </template>
+                            </data-tbody>
+                        </data-table>
+                    </section>
+                    <section bind-css-aliases>
+                        <small role="note">Aliases — <code>@custom-selector</code> synonyms so custom elements can share
+                            semantic styles. Element aliases match the host tag / <code>.tag-*</code> class; state
+                            aliases match attributes (nested under the element alias).</small>
+                        <data-table>
+                            <data-thead class="sticky">
+                                <data-tr>
+                                    <data-th>Alias</data-th>
+                                    <data-th>Kind</data-th>
+                                    <data-th>Matches</data-th>
+                                </data-tr>
+                            </data-thead>
+                            <data-tbody>
+                                <template>
+                                    <data-tr>
+                                        <data-td><code bind-name></code></data-td>
+                                        <data-td><span bind-kind></span></data-td>
+                                        <data-td><code bind-selectors></code></data-td>
+                                    </data-tr>
+                                </template>
+                            </data-tbody>
+                        </data-table>
+                    </section>
+                </details>
+            </article>
+        </template>
+    </div>
+    <small role="note" id="api-github-link">
+        View Source <a bind-src-link target="_blank" class="icon-button"><span class="ico-github"></span></a>
+    </small>
+    <template id="description-popover">
+        <span>
+            <event-handler target-ref=":scope + [popover]" command-name="toggle-popover" role="button"
+                class="icon-button-round"><div class="ico-question"></div></event-handler>
+            <div popover data-placement="top">
+                <span bind-description></span>
+                <small role="note"><code bind-property></code></small>
+                <small bind-inherited-from role="note"></small></span>
+            </div>
+        </span>
+    </template>
+    <template id="defaultaction-popover">
+        <span>
+            <event-handler target-ref=":scope + [popover]" command-name="toggle-popover" role="button"
+                class="icon-button-round"><div class="ico-question"></div></event-handler>
+            <div popover data-placement="top">
+                A "default action" is subsequent logic executed by the element if <code>e.preventDefault()</code> is not
+                synchronously called on the event.
+            </div>
+        </span>
+    </template>
+    <template id="optout-popover">
+        <span>
+            <event-handler target-ref=":scope + [popover]" command-name="toggle-popover" role="button"
+                class="icon-button-round"><div class="ico-question"></div></event-handler>
+            <div popover data-placement="top">
+                If you wish to opt-out of these styles on a case-to-case basis, use property
+                <code>all: revert-layer</code>.
+                Valence.css ships this as <code>.unstyled</code> and <code>.unstyled-all</code> for the entire tree.
+            </div>
+        </span>
+    </template>
+    <template id="inherited-from-link">
+        <spa-a class="tag-link"></spa-a>
+    </template>
+    <template id="type-popover">
+        <span>
+            <event-handler target-ref=":scope + [popover]" command-name="toggle-popover" role="button"
+                class="icon-button-round"><div class="ico-question"></div></event-handler>
+            <div popover data-placement="top">
+                <include-content data-language="ts" lazy-load>
+                    <template bind-type-expanded></template>
+                </include-content>
+            </div>
+        </span>
+    </template>
+</div>

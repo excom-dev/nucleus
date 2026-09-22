@@ -1,0 +1,49 @@
+/**
+ * Embedded content
+ *
+ * Reboot from normalize.css v8.0.1 (MIT) and sanitize.css v13.0.0 (CC0).
+ */
+
+@define-mixin module-embedded {
+  /* Middle-align media (opinionated) */
+  :where(audio, canvas, iframe, :--img, svg, video) {
+    vertical-align: middle;
+  }
+
+  /* IE 9- display */
+  audio,
+  video {
+    display: inline-block;
+  }
+
+  /* iOS 4-7 display */
+  audio:not([controls]) {
+    display: none;
+    height: 0;
+  }
+
+  /* No iframe border (opinionated) */
+  :where(iframe) {
+    border-style: none;
+  }
+
+  /* 1. No border on linked images in IE 10
+     2. Responsive by default */
+  :--img {
+    display: inline;
+    max-width: 100%; /* 2 */
+    height: auto; /* 2 */
+    border-style: none; /* 1 */
+  }
+
+  /* SVG fill matches text color (opinionated) */
+  :where(svg:not([fill])) {
+    fill: currentColor;
+  }
+
+  /* Hide overflow in IE */
+  svg:not(:root),
+  svg:not(:host) {
+    overflow: hidden;
+  }
+}

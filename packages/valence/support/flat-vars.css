@@ -1,0 +1,197 @@
+/* ============================================================
+ * Theme: flat. Apple / iOS look (pre-Liquid-Glass).
+ * Only these tokens differ from `paper` and `basic`.
+ * ============================================================ */
+
+@define-mixin global-vars {
+  /* === Motion === */
+  --v-transition-ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --v-transition-ease-in: cubic-bezier(0.55, 0.05, 0.7, 0.6);
+  --v-transition-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --v-transition-duration-fast: 0.15s;
+  --v-transition-duration-standard: 0.25s;
+  --v-transition-duration-slow: 0.8s;
+
+  /* === Z-index scale === */
+  --v-z-base: 1;
+  --v-z-elevated: 10;
+  --v-z-overlay: 100;
+  --v-z-modal: 1000;
+  --v-z-toast: 10000;
+
+  /* === Typography === */
+  --v-font-family-base:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+    "Helvetica Neue", system-ui, sans-serif;
+  --v-font-family-heading:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    "Helvetica Neue", system-ui, sans-serif;
+  --v-font-family-monospace:
+    ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  --v-font-size-xs: 12px;
+  --v-font-size-sm: 14px;
+  --v-font-size-md: 16px;
+  --v-font-size-lg: 18px;
+  --v-font-size-xl: 24px;
+  --v-font-size-2xl: 32px;
+  --v-font-size-3xl: 48px;
+
+  --v-font-weight-normal: 400;
+  --v-font-weight-medium: 500;
+  --v-font-weight-bold: 700;
+  --v-font-weight-heavy: 900;
+
+  --v-line-height-tight: 1.2;
+  --v-line-height-base: 1.5;
+  --v-line-height-loose: 1.75;
+
+  /* === Spacing === */
+  --v-space-xs: 4px;
+  --v-space-sm: 8px;
+  --v-space-md: 16px;
+  --v-space-lg: 24px;
+  --v-space-xl: 32px;
+  --v-space-2xl: 48px;
+  --v-space-3xl: 64px;
+
+  /* === Radii, softer, iOS-style === */
+  --v-radius-sm: 6px;
+  --v-radius-md: 10px;
+  --v-radius-lg: 14px;
+  --v-radius-pill: 99999px;
+
+  /* === Borders === */
+  --v-border-width-0: 1px;
+  --v-border-width-1: 2px;
+}
+
+@define-mixin global-vars-light {
+  /* Surfaces */
+  --v-background-0: #ffffff;
+  --v-background-1: #f2f2f7;
+  --v-background-2: #e5e5ea;
+
+  --v-stroke-0: #e5e5ea;
+  --v-stroke-1: #c7c7cc;
+
+  --v-overlay-0: rgba(0, 0, 0, 0.4);
+
+  --v-multiply-color-0: rgba(0, 0, 0, 0.02);
+  --v-multiply-color-1: rgba(0, 0, 0, 0.04);
+
+  /* Foreground */
+  --v-color-0: #000000;
+  --v-color-1: #3c3c43;
+  --v-color-2: #6c6c70;
+
+  --v-disabled-0: #c7c7cc;
+
+  /* Brand & semantic, iOS palette */
+  --v-cta-0: rgb(0, 122, 255);
+  --v-cta-1: #d6e8ff;
+
+  --v-red-0: #ff3b30;
+  --v-green-0: #34c759;
+  --v-blue-0: var(--v-cta-0);
+  --v-yellow-0: #ffcc00;
+  --v-orange-0: #ff9500;
+  --v-purple-0: #af52de;
+  --v-pink-0: #ff2d55;
+  --v-brown-0: #a2845e;
+
+  /* Shadows, subtle, low blur */
+  --v-shadow-0: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --v-shadow-1: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --v-shadow-2: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --v-shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.12);
+
+  /* Interaction */
+  --v-scale-active-0: scale(0.97);
+  --v-scale-active-1: scale(0.95);
+  --v-filter-brightness-0: brightness(0.92);
+  --v-filter-brightness-1: brightness(0.85);
+}
+
+@define-mixin global-vars-dark {
+  /* Surfaces */
+  --v-background-0: #000000;
+  --v-background-1: #1c1c1e;
+  --v-background-2: #2c2c2e;
+
+  --v-stroke-0: #38383a;
+  --v-stroke-1: #545458;
+
+  --v-overlay-0: rgba(0, 0, 0, 0.6);
+
+  --v-multiply-color-0: rgba(255, 255, 255, 0.02);
+  --v-multiply-color-1: rgba(255, 255, 255, 0.04);
+
+  /* Foreground */
+  --v-color-0: #ffffff;
+  --v-color-1: #ebebf5;
+  --v-color-2: #8e8e93;
+
+  --v-disabled-0: #48484a;
+
+  /* Brand & semantic, iOS dark palette */
+  --v-cta-0: rgb(10, 132, 255);
+  --v-cta-1: #1a3552;
+
+  --v-red-0: #ff453a;
+  --v-green-0: #30d158;
+  --v-blue-0: var(--v-cta-0);
+  --v-yellow-0: #ffd60a;
+  --v-orange-0: #ff9f0a;
+  --v-purple-0: #bf5af2;
+  --v-pink-0: #ff375f;
+  --v-brown-0: #ac8e68;
+
+  /* Shadows, slightly more visible against dark surfaces */
+  --v-shadow-0: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --v-shadow-1: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --v-shadow-2: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --v-shadow-elevated: 0 8px 32px rgba(0, 0, 0, 0.6);
+
+  /* Interaction */
+  --v-filter-brightness-0: brightness(0.85);
+  --v-filter-brightness-1: brightness(0.75);
+}
+
+@define-mixin global-vars-breakpoints {
+  @media (hover: none) {
+    :root {
+      --v-scale-active-0: scale(0.95);
+      --v-scale-active-1: scale(0.93);
+    }
+  }
+  @media (hover: hover) {
+    :root {
+      --v-scale-active-0: scale(0.97);
+      --v-scale-active-1: scale(0.95);
+    }
+  }
+  @media (min-width: 576px) and (hover: none) {
+    :root {
+      --v-scale-active-0: scale(0.96);
+      --v-scale-active-1: scale(0.94);
+    }
+  }
+}
+
+:root {
+  @mixin global-vars;
+  &:not([data-palette="dark"]) {
+    @mixin global-vars-light;
+  }
+  &[data-palette="dark"] {
+    @mixin global-vars-dark;
+  }
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-palette="light"]) {
+    @mixin global-vars-dark;
+  }
+}
+
+@mixin global-vars-breakpoints;

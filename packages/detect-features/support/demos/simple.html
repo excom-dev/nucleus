@@ -1,0 +1,16 @@
+<div>
+  <detect-features></detect-features>
+  <p>Geolocation supported in this browser.</p>
+  <p role="alert">Geolocation is not supported in this browser.</p>
+  <small role="note">See "Live document" tab below to see the <code>full-support</code> and <code>no-support</code> attributes populated with all of your browser's features.</small>
+  <style>
+    #demo-detect-features-simple {
+      &:has(detect-features[full-support~="geolocation"]) p[role="alert"] {
+        display: none;
+      }
+      &:has(detect-features:not([full-support~="geolocation"])) p:not([role="alert"]) {
+        display: none;
+      }
+    }
+  </style>
+</div>

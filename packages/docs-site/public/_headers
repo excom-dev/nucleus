@@ -1,0 +1,44 @@
+# Cloudflare Pages negotiates Brotli (br) then gzip from Accept-Encoding.
+# Vary keeps the two encodings in separate cache entries.
+/*
+  Vary: Accept-Encoding
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/sandbox.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/code-editor.css
+  Cache-Control: public, max-age=0, must-revalidate
+
+/views/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/fragments/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/shell.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/demo-utils.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/service-worker/*
+  Cache-Control: no-store
+  Service-Worker-Allowed: /
+
+/manifest.json
+  Cache-Control: public, max-age=0, must-revalidate
+
+/package-metas/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/llms.txt
+  Cache-Control: public, max-age=0, must-revalidate
+
+/llms-full.txt
+  Cache-Control: public, max-age=0, must-revalidate

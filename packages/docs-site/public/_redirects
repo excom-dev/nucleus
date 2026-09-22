@@ -1,0 +1,11 @@
+# Quark loads @use modules via extensionless dynamic import() URLs.
+/shell                      /shell.js                      200
+/demo-utils                 /demo-utils.js                 200
+/views/cells-app/cells-app  /views/cells-app/cells-app.js  200
+/views/temperature-app/temperature-app  /views/temperature-app/temperature-app.js  200
+
+# Example-app playground preview documents (see sandbox.html).
+/sandbox/*     /sandbox.html     200
+
+# SPA fallback for /nucleus/packages/:name deep links.
+/*             /index.html       200

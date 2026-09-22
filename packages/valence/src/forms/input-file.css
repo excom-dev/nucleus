@@ -1,0 +1,37 @@
+/**
+ * `input[type="file"]`
+ */
+
+@define-mixin module-input-file {
+  /* 1. Show the focused file-button outline despite overflow: hidden */
+  [type="file"] {
+    --v-color: var(--v-muted-color);
+    margin-left: calc(var(--v-outline-width) * -1); /* 1 */
+    padding: calc(var(--v-form-element-spacing-vertical) * 0.5) 0;
+    padding-left: var(--v-outline-width); /* 1 */
+    border: 0;
+    border-radius: 0;
+    background: none;
+
+    &::file-selector-button {
+      margin-right: calc(var(--v-spacing) / 2);
+      padding: calc(var(--v-form-element-spacing-vertical) * 0.5)
+        var(--v-form-element-spacing-horizontal);
+    }
+
+    &:is(:hover, :active, :focus) {
+      &::file-selector-button {
+        --v-background-color: var(--v-secondary-hover-background);
+        --v-border-color: var(--v-secondary-hover-border);
+      }
+    }
+
+    &:focus {
+      &::file-selector-button {
+        --v-box-shadow:
+          var(--v-button-hover-box-shadow, 0 0 0 rgba(0, 0, 0, 0)),
+          0 0 0 var(--v-outline-width) var(--v-secondary-focus);
+      }
+    }
+  }
+}

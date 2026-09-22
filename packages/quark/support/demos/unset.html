@@ -1,0 +1,12 @@
+<div>
+  <details>
+    <summary bind-foo></summary>
+    <p>Open me to shadow the host's binding.</p>
+  </details>
+  <quark-sheet>
+    :scope { $foo: 1; }
+    details[open] { $foo: 2; }
+    details:not([open]) { $foo: unset; }
+    [bind-foo] { content: "$foo resolves to #{$foo}"; }
+  </quark-sheet>
+</div>

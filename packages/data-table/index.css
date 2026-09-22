@@ -1,0 +1,5 @@
+@import "./src/data-table.css";
+
+@layer {
+  @mixin module-data-table;
+}

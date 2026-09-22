@@ -1,0 +1,13 @@
+<div>
+  <section>
+    <event-handler fire-event="cart-add" detail-sku="sku-1">
+      Add to cart
+    </event-handler>
+    <output>Waiting…</output>
+  </section>
+  <quark-sheet>
+    @use "/demo-utils" as *;
+
+    section { @on cart-add (handle: setOutputFromDetail); }
+  </quark-sheet>
+</div>
