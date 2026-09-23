@@ -14,6 +14,8 @@ Your HTML __*is*__ the app! Drop-in custom elements that each have a single resp
 
 [Live demo](https://excom.dev/nucleus/examples/todos): fully RESTful Todo app - under 50 lines of code, zero app JS, no build process.
 
+[![The Todo demo: the running app beside its HTML, Quark and CSS](packages/docs-site/public/img/todo-demo.png)](https://excom.dev/nucleus/examples/todos)
+
 ## How it's different from existing UI solutions
 
 - **Back to the future** Welcome back to building static HTML5 apps. A break from complex JavaScript apps that compile to HTML.

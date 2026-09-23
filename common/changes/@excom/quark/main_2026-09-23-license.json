@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/quark",
+      "comment": "Declare the MIT license in package.json (was ISC), matching the repo LICENSE and every other package",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/quark",
+  "email": "133191653+excom-dev@users.noreply.github.com"
+}
