@@ -93,3 +93,6 @@ CHANGELOG.md
 .notes
 # VS Code extension packages (built by package:vsix)
 *.vsix
+
+# wrangler local cache (account/project lookups)
+.wrangler/

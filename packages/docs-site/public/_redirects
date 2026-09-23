@@ -5,7 +5,7 @@
 /views/temperature-app/temperature-app  /views/temperature-app/temperature-app.js  200
 
 # Example-app playground preview documents (see sandbox.html).
-/sandbox/*     /sandbox.html     200
+/sandbox/*     /sandbox          200
 
 # SPA fallback for /nucleus/packages/:name deep links.
 /*             /index.html       200
