@@ -1,8 +1,9 @@
-# Quark loads @use modules via extensionless dynamic import() URLs.
+# Quark loads the two site TypeScript modules via extensionless import() URLs.
+# Never add a `/views/<app>/<app>` line: Pages strips `.html` (308 to the clean
+# URL), so it would also capture `/views/<app>/<app>.html`. Example-app modules
+# are imported with their `.js` extension instead.
 /shell                      /shell.js                      200
 /demo-utils                 /demo-utils.js                 200
-/views/cells-app/cells-app  /views/cells-app/cells-app.js  200
-/views/temperature-app/temperature-app  /views/temperature-app/temperature-app.js  200
 
 # Example-app playground preview documents (see sandbox.html).
 /sandbox/*     /sandbox          200

@@ -67,8 +67,11 @@ const slash = (p) => p.replace(/\\/g, "/");
 /**
  * Quark `@use` TypeScript modules: transform in dev, emit stable `[name].js`
  * at build. Plain JS under `public/` (`views/<app>/<app>.js`) needs no entry
- * — static files; extensionless Quark URLs resolve to `<path>.js`
- * (`quarkModuleRewritePlugin`; `_redirects` in production).
+ * — static files, imported with their `.js` extension. Extensionless Quark
+ * URLs resolve to `<path>.js` here (`quarkModuleRewritePlugin`), but
+ * production only rewrites the two modules above (`_redirects`): a
+ * `/views/<app>/<app>` line would also capture `/views/<app>/<app>.html`,
+ * which Cloudflare Pages 308s to that clean URL.
  */
 const SITE_QUARK_MODULES = {
   shell: "shell.ts",

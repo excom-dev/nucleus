@@ -1,7 +1,7 @@
 /* State: each <td data-formula> holds its cell's committed text; the form's
    data-revision counts commits. Only formula cells derive a value, and only
    when the revision changes. */
-@use "/views/cells-app/cells-app" as *;
+@use "/views/cells-app/cells-app.js" as *;
 
 :scope {
   $columns: " ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
