@@ -1,24 +1,39 @@
 {
-  "name": "Nucleus · docs",
+  "id": "/nucleus",
+  "name": "Nucleus Stack",
   "short_name": "Nucleus",
   "description": "Live demos and API docs for the Nucleus Stack",
+  "lang": "en",
   "start_url": "/nucleus",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#10173a",
-  "theme_color": "#10173a",
+  "background_color": "#13171f",
+  "theme_color": "#1a1f28",
+  "categories": ["education", "productivity"],
   "icons": [
-    {
-      "src": "/img/excom.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
     {
       "src": "/img/nucleus.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

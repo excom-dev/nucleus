@@ -5,6 +5,69 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
   <title>Nucleus · docs</title>
+  <meta name="description" content="Documentation for the Nucleus Stack — Quark, Neutron, Nucleus Kit, Valence.css. This site is a JavaScript application; plain-text docs for agents and non-JS clients start at /llms.txt." />
+  <meta name="application-name" content="Nucleus Stack" />
+  <meta name="robots" content="index,follow" />
+  <!-- Valence follows prefers-color-scheme; theme-color is the site header
+       (--v-card-sectioning-background-color) in each scheme. -->
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fbfcfc" />
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1a1f28" />
+  <!-- `sizes` on the .ico keeps Chromium on the SVG; the .ico is for everything else. -->
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" type="image/svg+xml" href="/img/nucleus.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <!-- One shell serves every route and the SPA sets no per-route meta, so there is
+       no canonical and no og:url: a fixed URL would fold every page into one. -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Nucleus Stack" />
+  <meta property="og:title" content="Nucleus Stack" />
+  <meta property="og:description" content="Rich HTML apps with drop-in custom elements and Quark, CSS-derived rules that observe the page and react. No components, no virtual DOM, no build process." />
+  <meta property="og:image" content="https://excom.dev/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="The Nucleus Stack logo and wordmark: Quark, Neutron, Nucleus Kit, Valence.css" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Nucleus Stack" />
+  <meta name="twitter:description" content="Rich HTML apps with drop-in custom elements and Quark, CSS-derived rules that observe the page and react. No components, no virtual DOM, no build process." />
+  <meta name="twitter:image" content="https://excom.dev/og-image.png" />
+  <meta name="twitter:image:alt" content="The Nucleus Stack logo and wordmark: Quark, Neutron, Nucleus Kit, Valence.css" />
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://excom.dev/#organization",
+          "name": "Excom",
+          "url": "https://excom.dev",
+          "logo": "https://excom.dev/img/excom.svg"
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://excom.dev/#website",
+          "name": "Nucleus Stack",
+          "url": "https://excom.dev/",
+          "description": "Documentation, live examples and API reference for the Nucleus Stack: Quark, Neutron, Nucleus Kit and Valence.css.",
+          "inLanguage": "en",
+          "publisher": { "@id": "https://excom.dev/#organization" }
+        },
+        {
+          "@type": "SoftwareSourceCode",
+          "name": "Nucleus Stack",
+          "description": "Rich HTML apps with drop-in custom elements and Quark, CSS-derived rules that observe the page and react.",
+          "url": "https://excom.dev/nucleus",
+          "codeRepository": "https://github.com/excom-dev/nucleus",
+          "programmingLanguage": ["TypeScript", "CSS", "HTML"],
+          "license": "https://opensource.org/license/mit",
+          "publisher": { "@id": "https://excom.dev/#organization" }
+        }
+      ]
+    }
+  </script>
+  <!-- Plain-text mirrors of these docs, for agents and other non-JS fetchers. -->
+  <link rel="alternate" type="text/markdown" href="/llms.txt" title="Documentation index for LLMs">
+  <link rel="alternate" type="text/markdown" href="/llms-full.txt" title="Full documentation for LLMs">
   <script type="module">
     import "@excom/nucleus-kit/index";
     // deprecated, no longer in Nucleus Kit; its docs page still demos it
@@ -21,6 +84,19 @@
 </head>
 
 <body>
+  <!-- Raw fetches (agents, crawlers, no-JS clients) get this shell and nothing else.
+       Ordinary markup on purpose: `<noscript>` and `aria-hidden` are both dropped by
+       common text extractors. shell.css takes it down once the kit upgrades. -->
+  <aside class="agent-notice">
+    <p>
+      This site is a JavaScript application. Plain-text documentation:
+      <a href="/llms.txt">/llms.txt</a> (index),
+      <a href="/llms-full.txt">/llms-full.txt</a> (all docs, one file),
+      per page at <code>/docs/&lt;page&gt;.md</code> and <code>/&lt;package&gt;.md</code>.
+      Source: <a href="https://github.com/excom-dev/nucleus">github.com/excom-dev/nucleus</a>.
+    </p>
+  </aside>
+
   <!-- Observes the worker registered above; views branch on [is-mounted] / [is-ready] -->
   <service-worker></service-worker>
   <detect-browser></detect-browser>
@@ -289,16 +365,16 @@
                   <a aria-label="Discord" title="Discord" data-social="discord" target="_blank" rel="noopener" href="https://discord.gg/s8hnujBrpn"></a>
                 </li>
                 <li>
-                  <a aria-label="Threads" title="Threads" data-social="threads" target="_blank" rel="noopener"></a>
+                  <a aria-label="Threads" title="Threads" data-social="threads" target="_blank" rel="noopener" href="https://www.threads.com/@excom.dev"></a>
                 </li>
                 <li>
                   <a aria-label="X" title="X" data-social="x" target="_blank" rel="noopener" href="https://x.com/excomdev"></a>
                 </li>
                 <li>
-                  <spa-a route-href="/contact" role="link" aria-label="Contact" title="Contact" data-social="contact"></spa-a>
+                  <spa-a route-href="/" role="link" aria-label="Contact" title="Contact" data-social="contact"></spa-a>
                 </li>
                 <li>
-                  <a href="https://www.npmjs.com/org/excom" aria-label="npm" title="npm" data-social="npm"
+                  <a href="https://www.npmjs.com/~excom" aria-label="npm" title="npm" data-social="npm"
                     target="_blank" rel="noopener"></a>
                 </li>
                 <li>

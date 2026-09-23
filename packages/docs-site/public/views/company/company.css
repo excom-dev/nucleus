@@ -12,6 +12,9 @@
   /* Valence lays `nav` out as a space-between row; one link, so centre it */
   > nav {
     justify-content: center;
+    spa-a {
+      font-size: 1.4rem;
+    }
   }
 
   > header {
@@ -35,7 +38,7 @@
 
     > h1 {
       margin: 0;
-      font-size: 1.5rem;
+      font-size: 1.2rem;
       color: var(--v-blockquote-footer-color);
       text-wrap: balance;
     }

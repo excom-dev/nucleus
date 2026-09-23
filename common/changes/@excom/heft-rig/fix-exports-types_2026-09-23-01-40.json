@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/heft-rig",
+      "comment": "Derive each export's `types` condition from the declaration files present in `dist/` (`<name>.progressive.min.js` → `<name>.progressive.d.ts`) and omit it when no matching `.d.ts` exists",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/heft-rig",
+  "email": "133191653+excom-dev@users.noreply.github.com"
+}

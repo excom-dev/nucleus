@@ -28,6 +28,7 @@ import {
 import { renderMarkdown, renderMarkdownInline } from "./render-markdown.mjs";
 import { titleFromDocHtml, titleCaseKey } from "./build-search-docs.mjs";
 import { SITE_BASE, SITE_HOME_DOC } from "./site-base.mjs";
+import { umdExternals } from "./vite-config.mjs";
 
 export async function buildPackageMetas(packageRoot = process.cwd()) {
   await buildCem(packageRoot);
@@ -68,7 +69,8 @@ export async function buildPackageMetas(packageRoot = process.cwd()) {
   const cem = await readJsonIfExists(
     path.resolve(packageRoot, "support/custom-elements.json"),
   );
-  const cssFiles = await listRootCss(packageRoot);
+  const rootFiles = await listRootFiles(packageRoot);
+  const cssFiles = rootFiles.filter((name) => name.endsWith(".css"));
   const demos = await readDemos(packageRoot);
 
   const elementApis = htmlifyApiDescriptions(
@@ -84,7 +86,10 @@ export async function buildPackageMetas(packageRoot = process.cwd()) {
     ...(docs.readme !== undefined ? { readme: docs.readme } : {}),
     ...(Object.keys(docs).length ? { docs } : {}),
     ...(docSections ? { docSections } : {}),
-    installation: buildInstallation(pkg, cssFiles),
+    installation: buildInstallation(pkg, cssFiles, {
+      packageRoot,
+      hasUmdEntry: rootFiles.includes(UMD_ENTRY_SOURCE),
+    }),
     elementApis,
     exportedFiles: buildExportedFiles(pkg.exports),
   });
@@ -221,7 +226,64 @@ function htmlifyApiDescriptions(apis) {
   return apis;
 }
 
-function buildInstallation(pkgJson, cssFiles) {
+/**
+ * Root source file `vite-build.mjs` turns into `dist/index.umd.min.js`. Root
+ * entries are discovered from the package folder, never from `dist/` — metas
+ * are often generated in dev before anything has been built.
+ */
+const UMD_ENTRY_SOURCE = "index.ts";
+
+/** `https://unpkg.com/<name>[@<version>]/dist/<file>`. */
+function unpkgUrl(name, version, file) {
+  return `https://unpkg.com/${name}${version ? `@${version}` : ""}/dist/${file}`;
+}
+
+/**
+ * Packages whose UMD a CDN page must load before this package's own, in load
+ * order, each with the workspace version to pin it to.
+ *
+ * `vite-config.mjs` owns the rule and stays its single source of truth:
+ * `umdExternals()` lists the module ids a UMD build leaves external — the
+ * `UMD_SHARED_GLOBALS` (read back off `NucleusStack.<camelCase>`) minus the
+ * package itself, and nothing at all for a self-contained UMD
+ * (`nucleus-kit`). Of those, a package needs the ones its dependency graph
+ * actually reaches, so the graph is walked through the workspace
+ * (`<root>/node_modules/<dep>/package.json` — what pnpm links to the sibling
+ * package): `content-tabs` names only `@excom/neutron`, and `neutron`'s own
+ * `@excom/kit-utils` comes along with it, listed first because the walk is
+ * post-order and pushes a dependency before its dependent.
+ *
+ * package.json only, and forgiving: a dependency missing from
+ * `node_modules` (no install yet) is still listed, unpinned and without
+ * whatever it would have pulled in, rather than failing the meta build.
+ */
+function umdPrerequisites(packageRoot, pkgJson) {
+  const candidates = new Set(umdExternals(pkgJson.name));
+  const scope = pkgJson.name.slice(0, pkgJson.name.indexOf("/") + 1);
+  if (!candidates.size || !scope) return [];
+
+  const ordered = [];
+  const seen = new Set([pkgJson.name]);
+
+  const walk = (depRoot, depPkg) => {
+    const names = [
+      ...Object.keys(depPkg.dependencies ?? {}),
+      ...Object.keys(depPkg.peerDependencies ?? {}),
+    ];
+    for (const name of names) {
+      if (seen.has(name) || !name.startsWith(scope)) continue;
+      seen.add(name);
+      const nextRoot = path.resolve(depRoot, "node_modules", name);
+      const nextPkg = readJsonSyncIfExists(path.join(nextRoot, "package.json"));
+      if (nextPkg) walk(nextRoot, nextPkg);
+      if (candidates.has(name)) ordered.push({ name, version: nextPkg?.version });
+    }
+  };
+  walk(packageRoot, pkgJson);
+  return ordered;
+}
+
+function buildInstallation(pkgJson, cssFiles, { packageRoot, hasUmdEntry } = {}) {
   const { name, version, description } = pkgJson;
   const shortName = name.replace(/^@[^/]+\//, "");
   const packageType = pkgJson.excom?.packageType;
@@ -243,24 +305,37 @@ function buildInstallation(pkgJson, cssFiles) {
       : packageType === "library" && cssImport
         ? undefined
         : `import { /* … */ } from "${name}";`;
+  // Every published package that ships a UMD and / or a stylesheet gets a
+  // CDN snippet, not only the elements: the prerequisite UMDs its own reads
+  // off `NucleusStack` (derived, see `umdPrerequisites`), then itself, then
+  // its stylesheet. A CSS-only package (`valence`) is just the `<link>`.
+  const cdnLines = hasUmdEntry
+    ? umdPrerequisites(packageRoot ?? ".", pkgJson).map(
+        (dep) =>
+          `<script src="${unpkgUrl(dep.name, dep.version, "index.umd.min.js")}"></script>`,
+      )
+    : [];
+  if (hasUmdEntry) {
+    cdnLines.push(
+      `<script src="${unpkgUrl(name, version, "index.umd.min.js")}"></script>`,
+    );
+  }
+  if (cssEntry || cssFiles.includes("index.css")) {
+    cdnLines.push(
+      `<link rel="stylesheet" href="${unpkgUrl(name, version, cssEntry ?? "index.css")}">`,
+    );
+  }
+
   return {
     name,
     shortName,
     version,
     description,
     packageType,
-    // Element UMDs read `neutron` / `kit-utils` from `NucleusStack`
-    // (`UMD_SHARED_GLOBALS`); a CDN page loads those two UMDs first.
-    cdn: isElement
-      ? [
-          `<script src="https://unpkg.com/@excom/kit-utils/dist/index.umd.min.js"></script>`,
-          `<script src="https://unpkg.com/@excom/neutron/dist/index.umd.min.js"></script>`,
-          `<script src="https://unpkg.com/${name}@${version}/dist/index.umd.min.js"></script>`,
-          ...(cssEntry || cssFiles.includes("index.css")
-            ? [`<link rel="stylesheet" href="https://unpkg.com/${name}@${version}/dist/${cssEntry ?? "index.css"}">`]
-            : []),
-        ].join("\n")
-      : undefined,
+    cdn:
+      pkgJson.private === true || !cdnLines.length
+        ? undefined
+        : cdnLines.join("\n"),
     install: { npm: `npm install ${name}` },
     imports: {
       js: jsImport,
@@ -297,11 +372,10 @@ async function readDemos(packageRoot) {
   return demos;
 }
 
-async function listRootCss(packageRoot) {
+/** File names directly in the package folder — the build's entry candidates. */
+async function listRootFiles(packageRoot) {
   const entries = await readdir(packageRoot, { withFileTypes: true });
-  return entries
-    .filter((e) => e.isFile() && e.name.endsWith(".css"))
-    .map((e) => e.name);
+  return entries.filter((e) => e.isFile()).map((e) => e.name);
 }
 
 /**

@@ -1,5 +1,7 @@
 # TypeScript
 
+Beta disclaimer: Neutron automatically defines your element's Typescript types based upon your element config. This is done via complicated internal typing that has a few known issues. These issues will be resolved in the first stable release.
+
 Expose an element's inferred type the way the DOM exposes its own elements, so queries and `createElement` need no casts.
 
 ## Global element types

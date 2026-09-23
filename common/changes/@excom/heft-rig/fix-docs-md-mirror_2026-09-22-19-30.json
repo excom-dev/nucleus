@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/heft-rig",
+      "comment": "Copy the markdown docs mirror into the docs-site build so `llms.txt` links resolve",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/heft-rig"
+}

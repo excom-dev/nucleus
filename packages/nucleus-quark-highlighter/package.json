@@ -9,6 +9,14 @@
     "vscode": "^1.74.0"
   },
   "type": "module",
+  "files": [
+    "dist",
+    "LICENSE.md",
+    "icons",
+    "quark.configuration.json",
+    "shiki.mjs",
+    "syntaxes"
+  ],
   "scripts": {
     "build": "node scripts/build-extension.mjs",
     "build:watch": "node -e \"console.log('nucleus-quark-highlighter: no build watch')",
@@ -123,5 +131,5 @@
   },
   "icon": "icons/marketplace-icon.png",
   "main": "./dist/extension.cjs",
-  "publisher": "excom-dev"
+  "publisher": "excom"
 }

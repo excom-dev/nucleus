@@ -42,3 +42,24 @@
 
 /llms-full.txt
   Cache-Control: public, max-age=0, must-revalidate
+
+/*.md
+  Cache-Control: public, max-age=0, must-revalidate
+
+/docs/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Icons and the social card have stable, unhashed names: a day's cache, not immutable.
+# Named rather than `/*.png`, which would also match hashed `/assets/*.png` and
+# append a second, conflicting Cache-Control to its immutable one.
+/favicon.ico
+  Cache-Control: public, max-age=86400
+
+/apple-touch-icon.png
+  Cache-Control: public, max-age=86400
+
+/icon-*.png
+  Cache-Control: public, max-age=86400
+
+/og-image.png
+  Cache-Control: public, max-age=86400

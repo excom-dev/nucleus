@@ -240,12 +240,21 @@ include-content[data-demo] {
     }
   }
 
+  /* The four pieces of the stack: 1, 2 or 4 columns, never a lone fourth
+     card. Phones get one column; the docs aside (320px) takes its share from
+     769px, so four columns wait for 1280px (~930px of article). */
   #md-what-39-s-in-the-stack + ul {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: 0.75rem;
     padding: 0;
     list-style: none;
+    @media (min-width: 576px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    @media (min-width: 1280px) {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
 
     > li {
       list-style: none;
@@ -256,6 +265,29 @@ include-content[data-demo] {
       background: var(--v-card-sectioning-background-color);
       font-size: 0.9rem;
       color: var(--v-muted-color);
+
+      /* Each piece's logo; the list order in INTRODUCTION.md is fixed.
+         Multi-colour marks as a background, like the site header's <img>. */
+      &::before {
+        content: "";
+        display: block;
+        width: 2rem;
+        height: 2rem;
+        margin-bottom: 0.6rem;
+        background: var(--stack-logo) center / contain no-repeat;
+      }
+      &:nth-child(1) {
+        --stack-logo: url("/img/nucleus.svg");
+      }
+      &:nth-child(2) {
+        --stack-logo: url("/img/quark.svg");
+      }
+      &:nth-child(3) {
+        --stack-logo: url("/img/css.svg");
+      }
+      &:nth-child(4) {
+        --stack-logo: url("/img/javascript.svg");
+      }
 
       strong:first-of-type {
         display: block;

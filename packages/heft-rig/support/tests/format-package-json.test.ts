@@ -257,6 +257,97 @@ describe("formatPackageJson", () => {
     expect(keys.indexOf("excom")).toBeLessThan(keys.indexOf("aa"));
   });
 
+  describe("published files allowlist", () => {
+    it("ships dist only, for every published package type", async () => {
+      for (const packageType of [
+        "kit-element",
+        "element-base",
+        "library",
+        "tool",
+        "site",
+      ]) {
+        const { json } = await run({
+          name: "@excom/thing",
+          version: "1.0.0",
+          excom: { packageType },
+        });
+        expect(json.files).toEqual(["dist"]);
+      }
+    });
+
+    it("ships dist only when excom declares no package type", async () => {
+      const { json } = await run({
+        name: "@excom/misc",
+        version: "1.0.0",
+        excom: {},
+      });
+      expect(json.files).toEqual(["dist"]);
+    });
+
+    it("keeps the extras a package declares, without duplicating dist", async () => {
+      const { json } = await run({
+        name: "@excom/nucleus-quark-highlighter",
+        version: "1.0.0",
+        excom: { packageType: "tool" },
+        files: [
+          "dist",
+          "icons",
+          "quark.configuration.json",
+          "shiki.mjs",
+          "syntaxes",
+        ],
+      });
+      expect(json.files).toEqual([
+        "dist",
+        "icons",
+        "quark.configuration.json",
+        "shiki.mjs",
+        "syntaxes",
+      ]);
+    });
+
+    it("adds dist to a package that declares extras only", async () => {
+      const { json } = await run({
+        name: "@excom/nucleus-quark-highlighter",
+        version: "1.0.0",
+        excom: { packageType: "tool" },
+        files: ["syntaxes"],
+      });
+      expect(json.files).toEqual(["dist", "syntaxes"]);
+    });
+
+    it("leaves a private package without an allowlist alone", async () => {
+      const { json } = await run({
+        name: "@excom/docs-site",
+        private: true,
+        version: "1.0.0",
+        excom: { packageType: "site" },
+      });
+      expect("files" in json).toBe(false);
+    });
+
+    it("never overrides a private package's own allowlist", async () => {
+      const { json } = await run({
+        name: "@excom/docs-site",
+        private: true,
+        version: "1.0.0",
+        excom: { packageType: "site" },
+        files: ["public/**"],
+      });
+      expect(json.files).toEqual(["public/**"]);
+    });
+
+    it("declares the allowlist before the scripts", async () => {
+      const { json } = await run({
+        name: "@excom/quark",
+        version: "1.0.0",
+        excom: { packageType: "library" },
+      });
+      const keys = Object.keys(json);
+      expect(keys.indexOf("files")).toBeLessThan(keys.indexOf("scripts"));
+    });
+  });
+
   it("defaults the package root to the current working directory", async () => {
     const dir = path.join(root, "cwd");
     await mkdir(dir, { recursive: true });

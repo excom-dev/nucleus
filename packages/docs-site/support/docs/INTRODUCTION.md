@@ -20,14 +20,14 @@ Your HTML __*is*__ the app! Drop-in custom elements that each have a single resp
 - **Fully composable** Templates, templating, behavior, and custom logic are all decoupled & robust.
 - **Reactive State Machine** A simple, reliable, declarative syntax for your business logic - Quark.
 - **No reconciliation tax** No large memory copies of state/DOM to be rebuilt, diffed against the DOM, recompiled with every state change.
-- **Lightweight** Neutron + Quark + all Nucleus Kit elements have a smaller footprint (just over ~50kb compressed) than some UI framework cores alone.
+- **Lightweight** All Nucleus Kit elements + Quark + Neutron have a smaller footprint (just over ~50kb compressed) than some UI framework cores alone.
 
 ## What's in the stack
 
-- **🧩 Nucleus Kit elements** A growing catalog of drop-in custom elements, including: drawers, tabs, tables, lazy views, forms, routing, passkeys, data fetching, and more.
-- **⚡ Quark** Like CSS, for document mutation. Select elements, bind data, stamp lists, wire events, and drive state transitions with simple rules instead of imperative code.
-- **⚛️ Neutron** The small JS factory used to author the elements above. Reach for it only when the Nucleus Kit catalog lacks what you need. Optional.
-- **🎨 Valence.css** Semantic, classless CSS that caters to both native and custom elements, with themes, light/dark schemes, and design tokens. Designed for easy drop-in. Optional.
+- **Nucleus Kit elements** A growing catalog of drop-in custom elements, including: drawers, tabs, tables, lazy views, forms, routing, passkeys, data fetching, and more.
+- **Quark** Like CSS, for document mutation. Select elements, bind data, stamp lists, wire events, and drive state transitions with simple rules instead of imperative code.
+- **Valence.css** Semantic, classless CSS that caters to both native and custom elements, with themes, light/dark schemes, and design tokens. Designed for easy drop-in. Optional.
+- **Neutron** The small JS factory used to author the elements above. Reach for it only when the Nucleus Kit catalog lacks what you need. Optional.
 
 Every piece stands alone. Use one element on an existing site, or compose the whole stack into a full single-page app. `nucleus-kit` bundles it all behind one import; if you find you only use a handful of elements, install those packages à la carte instead (`@excom/content-drawer`, `@excom/quark-sheet`, …) and skip the rest.
 
@@ -36,7 +36,7 @@ Every piece stands alone. Use one element on an existing site, or compose the wh
 - **Significantly less app code** This is possible for two primary reasons. First, because Nucleus Kit elements are fully composable, configurable, and controllable, they will likely be compatible with the desired experience of most applications that use them; there is a low likelihood you will need to build your own. Secondly, Quark enables the majority of customization without needing to invite JavaScript.
 - **No components** There is no "component" concept in this architecture. This allows application pieces to be maximally reusable and composable, as there is no home to entrap logic with a tightly coupled view.
 - **One source of truth** Live markup _is_ the primary application state, so an entire family of bugs ("the UI disagrees with the model") cannot exist.
-- **Fully inspectable** Open devtools and the entire application is in front of you: every value, every binding, and every transition. The state serializes to the document/DOM, so all is plainly transparent to see and debug.
+- **Fully inspectable** Open devtools and the entire application is in front of you: every value, every binding, and every transition. The state is the document/DOM, so all is plainly transparent to see, alter, and debug in your inspector.
 - **Accessible by default** Declarative & ARIA state is the state... not a mirror someone forgot to update.
 - **Human and machine friendly** Inspect this site to see its declarativeness. No more `<div>` soups bound to untraceable JavaScript. Custom elements make for a beautifully declarative document. A page that is legible, addressable, and serializable is an ideal target for code generation, AI-assisted editing, and confident human auditing. Tools reason about the screen's exact state instead of inferring a component tree. Likewise, writing and debugging UI code by hand has never felt simpler.
 - **Declarative business behavior** The vast majority of your proprietary behaviors exist as a simple configurations, rather than buried inside imperative spaghetti code.
@@ -65,6 +65,8 @@ The Nucleus Stack is MIT licensed and will remain free and open source. This is 
     </li>
   </ul>
 </section>
+
+[Code contribution is welcome](/nucleus/docs/contributing).
 
 ## Start here
 

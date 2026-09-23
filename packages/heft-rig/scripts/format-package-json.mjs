@@ -20,8 +20,24 @@ const dashToPascal = (str) => {
     .join("");
 };
 
+/*
+ * Every published tarball ships `dist/` and nothing else by default:
+ * `apply-exports` only ever points at `./dist/*` (it copies
+ * `dist/exports.generated.json` verbatim), and npm always adds
+ * `package.json`, `README*` and `LICENSE*` on top of the allowlist.
+ * Build logs (`.rush/`, `rush-logs/`), `src/`, `support/`, `config/`
+ * and `tsconfig.json` therefore stay out of the tarball.
+ *
+ * A package that genuinely ships more — the VS Code extension's
+ * grammars, icons and Shiki bundle — declares those extras in its own
+ * `files`; the formatter keeps them and only guarantees the per-type
+ * defaults are present. Private packages own their `files` outright.
+ */
+const PUBLISHED_FILES = ["dist"];
+
 const PACKAGE_TYPE_DEFAULTS = {
   "kit-element": ({ _name }) => ({
+    files: PUBLISHED_FILES,
     description: `<${_name}> custom element`,
     engines: { node: ">=24.13.0" },
     type: "module",
@@ -45,6 +61,7 @@ const PACKAGE_TYPE_DEFAULTS = {
     keywords: [`${_name}`, "neutron", "custom-elements"],
   }),
   "element-base": ({ _name }) => ({
+    files: PUBLISHED_FILES,
     description: `${dashToPascal(_name)} base for Neutron elements`,
     engines: { node: ">=24.13.0" },
     type: "module",
@@ -74,6 +91,7 @@ const PACKAGE_TYPE_DEFAULTS = {
     ],
   }),
   library: ({ _name }) => ({
+    files: PUBLISHED_FILES,
     description: `${_name} library`,
     engines: { node: ">=24.13.0" },
     type: "module",
@@ -93,6 +111,7 @@ const PACKAGE_TYPE_DEFAULTS = {
     keywords: [`${_name}`],
   }),
   "heft-rig": ({ _name }) => ({
+    files: [],
     description: `Heft Rig for Monorepo`,
     engines: { node: ">=24.13.0" },
     type: "module",
@@ -110,6 +129,7 @@ const PACKAGE_TYPE_DEFAULTS = {
     keywords: [],
   }),
   other: ({ _name, engines }) => ({
+    files: PUBLISHED_FILES,
     description: `Package ${_name}`,
     engines: { ...engines },
     type: undefined,
@@ -128,6 +148,7 @@ const PACKAGE_TYPE_DEFAULTS = {
     keywords: [`${_name}`],
   }),
   tool: ({ _name }) => ({
+    files: PUBLISHED_FILES,
     description: `${_name} tool`,
     engines: { node: ">=24.13.0" },
     type: "module",
@@ -147,6 +168,7 @@ const PACKAGE_TYPE_DEFAULTS = {
     keywords: [_name, "tool"],
   }),
   site: ({ _name }) => ({
+    files: PUBLISHED_FILES,
     description: `${_name} site`,
     engines: { node: ">=24.13.0" },
     type: "module",
@@ -192,6 +214,7 @@ export async function formatPackageJson(packageRoot = process.cwd()) {
     license,
     engines,
     type,
+    files,
     scripts,
     dependencies,
     peerDependencies,
@@ -235,6 +258,11 @@ export async function formatPackageJson(packageRoot = process.cwd()) {
         ...(engines || {}),
       }),
       type: type || defaults.type,
+      // Published packages always get an allowlist (`dist` plus whatever
+      // extras the package declares); private ones keep their own.
+      files: isPrivate
+        ? files
+        : uniqueArray([...(defaults.files || []), ...(files || [])]),
       scripts: {
         ...defaults.scripts,
         ...(scripts || {}),

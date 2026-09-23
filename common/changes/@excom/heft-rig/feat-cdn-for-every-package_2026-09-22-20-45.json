@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/heft-rig",
+      "comment": "Emit the docs-site CDN snippet for every published package with a UMD and / or a stylesheet, not just the elements: the prerequisite UMDs are derived from the package's dependency graph against `vite-config.mjs`'s `umdExternals()` (walked through the workspace so a dependency loads before its dependent) and every URL is pinned to its own workspace version",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@excom/heft-rig",
+  "email": "133191653+excom-dev@users.noreply.github.com"
+}

@@ -14,9 +14,13 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 20
     permissions:
       contents: write
+    env:
+      # Extension registry tokens; the extension step is skipped while both are unset.
+      VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      OVSX_PAT: ${{ secrets.OVSX_PAT }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -38,16 +42,49 @@ jobs:
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
         run: node common/scripts/install-run-rush.js publish
-      - run: node .github/scripts/run-rush-for-changes.mjs build --verbose
+      # Full build, not a change-file selection: `publish --publish
+      # --include-all` below ships every package, so every package needs its
+      # dist/ (and the exports map generated from it). The build cache
+      # restored above makes the unchanged ones cheap.
+      - run: node common/scripts/install-run-rush.js build --verbose
       - run: node common/scripts/install-run-rush.js build:package-metas
       - run: node common/scripts/install-run-rush.js build:docs
       - run: node common/scripts/install-run-rush.js build:docs-index
+      # npm renders only a package-root README.md; ours live in support/docs.
+      # Generated (gitignored) from the docs built above, just before publish.
+      - run: node packages/heft-rig/scripts/build-npm-readmes.mjs
       - name: Apply versions and commit
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
         run: node common/scripts/install-run-rush.js publish --apply --target-branch main
       - run: node common/scripts/install-run-rush.js apply-exports
+      # Last gate: no dist/, no exports map, or a dangling export target and
+      # the job stops here instead of publishing broken tarballs.
+      - run: node packages/heft-rig/scripts/verify-publish-outputs.mjs
       - name: Publish Packages
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
         run: node common/scripts/install-run-rush.js publish --publish --include-all --set-access-level public --registry "https://registry.npmjs.org"
+      # The VS Code extension rides the same version bump: the script
+      # publishes to each registry whose token is set and only when that
+      # registry lacks this version, so an unrelated push to main is a no-op
+      # here. `VSCE_PAT` = Visual Studio Marketplace; `OVSX_PAT` = Open VSX
+      # (unused for now — Cursor users install the vsix from the release).
+      - name: Publish VS Code extension
+        id: vsix
+        if: env.VSCE_PAT != '' || env.OVSX_PAT != ''
+        working-directory: packages/nucleus-quark-highlighter
+        run: npm run publish:vsix
+      # The README's manual-install path: the .vsix on a GitHub release
+      # tagged like Rush's own package tags.
+      - name: Attach the .vsix to a GitHub release
+        if: steps.vsix.outputs.published == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        working-directory: packages/nucleus-quark-highlighter
+        run: |
+          tag="@excom/nucleus-quark-highlighter_v${{ steps.vsix.outputs.version }}"
+          gh release create "$tag" "${{ steps.vsix.outputs.vsix }}" \
+            --title "nucleus-quark-highlighter ${{ steps.vsix.outputs.version }}" \
+            --notes "VS Code / Cursor extension build. Install with \`code --install-extension ${{ steps.vsix.outputs.vsix }}\`." \
+            --target "$(git rev-parse HEAD)"

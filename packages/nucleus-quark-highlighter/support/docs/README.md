@@ -31,8 +31,8 @@ The **Nucleus & Quark Syntax Highlighter** extension adds a Quark language for `
 
 Install **Nucleus & Quark Syntax Highlighter** from the editor's Extensions view, or from the registries directly:
 
-- **VS Code** — [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=excom-dev.nucleus-quark-highlighter), or `ext install excom-dev.nucleus-quark-highlighter` in Quick Open
-- **Cursor / VSCodium / Windsurf** — [Open VSX](https://open-vsx.org/extension/excom-dev/nucleus-quark-highlighter)
+- **VS Code** — [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=excom.nucleus-quark-highlighter), or `ext install excom.nucleus-quark-highlighter` in Quick Open
+- **Cursor / VSCodium / Windsurf** — these editors do not read the Marketplace; install the `.vsix` by hand (below)
 
 To install a build by hand, download `nucleus-quark-highlighter-<version>.vsix` from the [GitHub releases](https://github.com/excom-dev/nucleus/releases) and run `code --install-extension <file>` (`cursor --install-extension` in Cursor).
 

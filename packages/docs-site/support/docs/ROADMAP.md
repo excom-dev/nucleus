@@ -20,10 +20,11 @@ Until then: **pin your versions**, and read the change notes before you upgrade.
 
 Work that is done or nearly done, landing in the next releases.
 
+- **SSR** Will involve reusing happy-dom test setup for SSR.
 - **More elements in the catalog.** May include some of the following elements. Interaction: `content-sortable`, `content-splitter`, `content-popover`, `super-file-input`. Actions: `clipboard-copy`, `web-share`, `file-download`. Sensors: `detect-visibility`, `detect-size`, `detect-scroll`, `detect-document`, `detect-permission`. Providers: `provider-url-params`, `provider-event-source`, `provider-websocket`, `provider-worker`.
+- **Polyfills** Some features will be broken for certain browsers whose versions are older than a year (mainly Firefox & Safari, mid-2025). This will be remedied in the first stable release.
 - **The small-bug backlog.** A coverage sweep across every package surfaced a list of minor defects. They are being triaged and fixed ahead of a stable release.
 - **More themes for Valence.css.** Broader theme and scheme coverage, so a view's `--v-*` tokens carry further without custom CSS.
-- **SSR** Will involve reusing happy-dom test setup for SSR.
 
 ## Later
 
@@ -47,6 +48,6 @@ When two good ideas compete, these break the tie.
 Priorities here are set by what people actually hit, so the most useful thing you can send is a concrete case.
 
 - **Report what broke.** [Open an issue](https://github.com/excom-dev/nucleus/issues) with the smallest HTML, CSS and Quark that reproduces it. A reduced case moves faster than anything else. Check [Troubleshooting](/nucleus/docs/troubleshooting) and [Limitations](/nucleus/docs/limitations) first — some surprises are documented trade-offs with a stated workaround.
-- **Propose an element** by describing the protocol it bridges and why existing elements plus a rule cannot already do it. [Contributing](/nucleus/docs/contributing) has the questions a proposal should answer.
+- **Propose an element** by describing the protocol it bridges and why existing elements plus a Quark rule cannot already do it. [Contributing](/nucleus/docs/contributing) has the questions a proposal should answer.
 - **Tell us what you had to write JavaScript for.** That is the single most valuable signal on this page. Every gap between "I could express this as a rule" and "I had to write a function" is a candidate for the language or the catalog, and the examples come from real applications, not from guessing.
 - **Send a pull request.** Setup, conventions and what a reviewable change looks like are in [Contributing](/nucleus/docs/contributing).

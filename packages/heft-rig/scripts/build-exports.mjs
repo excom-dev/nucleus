@@ -7,10 +7,15 @@ const isUmd = (file) => file.includes(".umd.");
 const isMap = (file) => file.endsWith(".map");
 const isDts = (file) => file.endsWith(".d.ts");
 
-/** `index.min.js` / `super-input.umd.min.js` → `./dist/index.d.ts` / `./dist/super-input.d.ts` */
-const typesPathForJs = (file) => {
-  const entry = file.replace(/\.js$/, "").split(".")[0];
-  return `./dist/${entry}.d.ts`;
+/**
+ * Declaration file for a JS entry: strip `.js`, then the `.min` / `.umd`
+ * output modifiers (`index.umd.min.js` → `index`,
+ * `nucleus-kit.progressive.min.js` → `nucleus-kit.progressive`).
+ * No matching `<base>.d.ts` in `dist/` → `undefined` (no `types` condition).
+ */
+const typesPathForJs = (file, dtsFiles) => {
+  const base = file.replace(/(?:\.umd)?(?:\.min)?\.js$/, "");
+  return dtsFiles.has(`${base}.d.ts`) ? `./dist/${base}.d.ts` : undefined;
 };
 
 /**
@@ -18,20 +23,22 @@ const typesPathForJs = (file) => {
  * - ESM `.js`: `types` → `import` → `default` (all ESM; no UMD on these keys)
  * - UMD `.js`: `types` → `default` (not an ESM module; no `import`)
  * - `.css`: `default` only (not an ES module)
+ * `types` is emitted only when its declaration exists, and always first.
  */
-const conditionsFor = (file) => {
+const conditionsFor = (file, dtsFiles) => {
   const target = `./dist/${file}`;
   if (isCss(file)) {
     return { default: target };
   }
+  const types = typesPathForJs(file, dtsFiles);
   if (isUmd(file)) {
     return {
-      types: typesPathForJs(file),
+      ...(types && { types }),
       default: target,
     };
   }
   return {
-    types: typesPathForJs(file),
+    ...(types && { types }),
     import: target,
     default: target,
   };
@@ -42,8 +49,10 @@ export async function buildExports(packageRoot = process.cwd()) {
   const out = path.resolve(packageRoot, "dist/exports.generated.json");
 
   const exportsMap = {};
+  const files = await readdir(dist);
+  const dtsFiles = new Set(files.filter(isDts));
 
-  for (const file of await readdir(dist)) {
+  for (const file of files) {
     /*
      * Source maps are discovered via sourceMappingURL; declaration files
      * attach through the `types` condition on JS entries, neither needs
@@ -52,7 +61,7 @@ export async function buildExports(packageRoot = process.cwd()) {
     if (isMap(file) || isDts(file)) continue;
     if (!isJs(file) && !isCss(file)) continue;
 
-    const conditions = conditionsFor(file);
+    const conditions = conditionsFor(file, dtsFiles);
     // JS: strip `.js` for the bare key (`./index.min`). CSS keeps the
     // full filename (`./index.css`).
     const baseName = isJs(file) ? file.replace(/\.js$/, "") : file;
@@ -68,11 +77,7 @@ export async function buildExports(packageRoot = process.cwd()) {
 
     // Root export is the unminified ESM entry only, never UMD / *.min.js.
     if (file === "index.js") {
-      exportsMap["."] = {
-        types: typesPathForJs(file),
-        import: `./dist/${file}`,
-        default: `./dist/${file}`,
-      };
+      exportsMap["."] = { ...conditions };
     }
   }
 

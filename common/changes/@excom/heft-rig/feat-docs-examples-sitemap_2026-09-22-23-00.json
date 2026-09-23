@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/heft-rig",
+      "comment": "`build:docs-index` copies every example app's sources into the markdown mirror (`docs/examples/<app>/`), replaces example-app playgrounds in guides with links to them, and writes the docs-site `sitemap.xml`",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@excom/heft-rig"
+}

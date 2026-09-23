@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { access, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -18,6 +18,10 @@ beforeAll(async () => {
     "index.js.map",
     "index.min.js.map",
     "index.d.ts",
+    "nucleus-kit.progressive.min.js",
+    "nucleus-kit.progressive.min.js.map",
+    "nucleus-kit.progressive.d.ts",
+    "nucleus-kit.progressive.d.ts.map",
     "other.js",
     "notes.txt",
   ]) {
@@ -29,12 +33,18 @@ afterAll(async () => {
   await rm(root, { recursive: true, force: true });
 });
 
+type Conditions = Record<string, string>;
+
+const buildMap = async (): Promise<Record<string, Conditions>> => {
+  await buildExports(root);
+  return JSON.parse(
+    await readFile(path.join(root, "dist/exports.generated.json"), "utf8"),
+  );
+};
+
 describe("buildExports", () => {
   it("writes a sorted exports map for JS and CSS dist files", async () => {
-    await buildExports(root);
-    const map = JSON.parse(
-      await readFile(path.join(root, "dist/exports.generated.json"), "utf8"),
-    );
+    const map = await buildMap();
     const keys = Object.keys(map);
     expect(keys).toEqual([...keys].sort((a, b) => a.localeCompare(b)));
 
@@ -59,7 +69,6 @@ describe("buildExports", () => {
       default: "./dist/index.min.js",
     });
     expect(map["./other"]).toEqual({
-      types: "./dist/other.d.ts",
       import: "./dist/other.js",
       default: "./dist/other.js",
     });
@@ -82,6 +91,41 @@ describe("buildExports", () => {
     expect(keys.some((k) => k.includes(".map"))).toBe(false);
     expect(keys.some((k) => k.includes(".d.ts"))).toBe(false);
     expect(keys.some((k) => k.includes("notes"))).toBe(false);
+  });
+
+  it("maps a <name>.progressive.min.js entry to its own declaration file", async () => {
+    const map = await buildMap();
+    for (const key of [
+      "./nucleus-kit.progressive.min",
+      "./dist/nucleus-kit.progressive.min",
+      "./nucleus-kit.progressive.min.js",
+      "./dist/nucleus-kit.progressive.min.js",
+    ]) {
+      expect(map[key]).toEqual({
+        types: "./dist/nucleus-kit.progressive.d.ts",
+        import: "./dist/nucleus-kit.progressive.min.js",
+        default: "./dist/nucleus-kit.progressive.min.js",
+      });
+      expect(Object.keys(map[key])[0]).toBe("types");
+    }
+  });
+
+  it("omits the types condition when no matching declaration exists", async () => {
+    const map = await buildMap();
+    expect(map["./other"]).toEqual({
+      import: "./dist/other.js",
+      default: "./dist/other.js",
+    });
+    expect("types" in map["./other"]).toBe(false);
+  });
+
+  it("only emits types conditions that point at files on disk", async () => {
+    const map = await buildMap();
+    const typed = Object.values(map).filter((c) => "types" in c);
+    expect(typed.length).toBeGreaterThan(0);
+    for (const { types } of typed) {
+      await expect(access(path.join(root, types))).resolves.toBeUndefined();
+    }
   });
 
   it("defaults the package root to the current working directory", async () => {

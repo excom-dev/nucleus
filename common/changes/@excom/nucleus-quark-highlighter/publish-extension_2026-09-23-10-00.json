@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix vsix packaging (the npm files allowlist replaces .vscodeignore), ship the MIT license text, and publish the extension to the Visual Studio Marketplace and Open VSX from CI with the vsix attached to a GitHub release",
+      "type": "patch",
+      "packageName": "@excom/nucleus-quark-highlighter"
+    }
+  ],
+  "packageName": "@excom/nucleus-quark-highlighter",
+  "email": "133191653+excom-dev@users.noreply.github.com"
+}

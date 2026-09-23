@@ -113,6 +113,8 @@ describe("buildPackageMetas", () => {
     writeFiles(root, {
       "package.json": packageJson("@excom/fx-el", {
         excom: { documented: true, packageType: "kit-element" },
+        // Only `neutron` is named; `kit-utils` is reached through it.
+        dependencies: { "@excom/neutron": "workspace:^", "@excom/base-el": "workspace:^" },
         peerDependencies: { "@excom/neutron": "^1.0.0" },
         exports: {
           ".": "./index.js",
@@ -120,6 +122,7 @@ describe("buildPackageMetas", () => {
           "./dist/internal": "./dist/internal.js",
         },
       }),
+      "index.ts": 'export * from "./fx-el.ts";',
       "fx-el.ts": ELEMENT_SRC,
       "fx-el.css": ":host {}",
       "support/docs/README.md": "# fx-el\n\nIntro.",
@@ -134,6 +137,14 @@ describe("buildPackageMetas", () => {
       "node_modules/@excom/lib/package.json": packageJson("@excom/lib", {
         excom: { packageType: "library" },
       }),
+      "node_modules/@excom/neutron/package.json": packageJson("@excom/neutron", {
+        version: "2.0.0",
+        dependencies: { "@excom/kit-utils": "workspace:^" },
+      }),
+      "node_modules/@excom/neutron/node_modules/@excom/kit-utils/package.json": packageJson(
+        "@excom/kit-utils",
+        { version: "3.4.5" },
+      ),
     });
     await buildPackageMetas(root);
     expect(existsSync(path.join(root, "support/custom-elements.json"))).toBe(true);
@@ -154,8 +165,8 @@ describe("buildPackageMetas", () => {
       description: "@excom/fx-el description",
       packageType: "kit-element",
       cdn: [
-        '<script src="https://unpkg.com/@excom/kit-utils/dist/index.umd.min.js"></script>',
-        '<script src="https://unpkg.com/@excom/neutron/dist/index.umd.min.js"></script>',
+        '<script src="https://unpkg.com/@excom/kit-utils@3.4.5/dist/index.umd.min.js"></script>',
+        '<script src="https://unpkg.com/@excom/neutron@2.0.0/dist/index.umd.min.js"></script>',
         '<script src="https://unpkg.com/@excom/fx-el@1.2.3/dist/index.umd.min.js"></script>',
         '<link rel="stylesheet" href="https://unpkg.com/@excom/fx-el@1.2.3/dist/fx-el.css">',
       ].join("\n"),
@@ -219,7 +230,10 @@ describe("buildPackageMetas", () => {
       css: '@import "@excom/themes";',
       html: undefined,
     });
-    expect(meta.installation.cdn).toBeUndefined();
+    // No `index.ts`, so no UMD — the CDN snippet is the stylesheet alone.
+    expect(meta.installation.cdn).toBe(
+      '<link rel="stylesheet" href="https://unpkg.com/@excom/themes@1.2.3/dist/index.css">',
+    );
     const [api] = meta.elementApis;
     expect(api.tag).toBe("themes");
     expect(api.cssProperties).toEqual([
@@ -278,6 +292,120 @@ describe("buildPackageMetas", () => {
       css: undefined,
       html: undefined,
     });
+  });
+
+  it("gives a library the prerequisite UMDs its own dependencies reach", async () => {
+    const root = path.join(tmp, "tiny-lib");
+    writeFiles(root, {
+      "package.json": packageJson("@excom/tiny-lib", {
+        excom: { documented: true, packageType: "library" },
+        dependencies: {
+          "@excom/kit-utils": "workspace:^",
+          "@excom/quark-parser": "workspace:^",
+          pathval: "^2.0.0",
+        },
+      }),
+      "index.ts": "export const x = 1;",
+      "node_modules/@excom/kit-utils/package.json": packageJson("@excom/kit-utils", {
+        version: "3.4.5",
+      }),
+      // Bundled into the UMD, so never a CDN prerequisite.
+      "node_modules/@excom/quark-parser/package.json": packageJson("@excom/quark-parser"),
+    });
+    await buildPackageMetas(root);
+    expect(readMeta(root).installation.cdn).toBe(
+      [
+        '<script src="https://unpkg.com/@excom/kit-utils@3.4.5/dist/index.umd.min.js"></script>',
+        '<script src="https://unpkg.com/@excom/tiny-lib@1.2.3/dist/index.umd.min.js"></script>',
+      ].join("\n"),
+    );
+  });
+
+  it("orders a prerequisite before the dependency that pulls it in", async () => {
+    const root = path.join(tmp, "ordered-el");
+    writeFiles(root, {
+      "package.json": packageJson("@excom/ordered-el", {
+        excom: { documented: true, packageType: "kit-element" },
+        // Declared neutron-first; kit-utils must still load first.
+        dependencies: {
+          "@excom/neutron": "workspace:^",
+          "@excom/kit-utils": "workspace:^",
+        },
+      }),
+      "index.ts": "export const x = 1;",
+      "node_modules/@excom/neutron/package.json": packageJson("@excom/neutron", {
+        version: "2.0.0",
+        dependencies: { "@excom/kit-utils": "workspace:^" },
+      }),
+      "node_modules/@excom/neutron/node_modules/@excom/kit-utils/package.json": packageJson(
+        "@excom/kit-utils",
+        { version: "3.4.5" },
+      ),
+      "node_modules/@excom/kit-utils/package.json": packageJson("@excom/kit-utils", {
+        version: "3.4.5",
+      }),
+    });
+    await buildPackageMetas(root);
+    expect(readMeta(root).installation.cdn).toBe(
+      [
+        '<script src="https://unpkg.com/@excom/kit-utils@3.4.5/dist/index.umd.min.js"></script>',
+        '<script src="https://unpkg.com/@excom/neutron@2.0.0/dist/index.umd.min.js"></script>',
+        '<script src="https://unpkg.com/@excom/ordered-el@1.2.3/dist/index.umd.min.js"></script>',
+      ].join("\n"),
+    );
+  });
+
+  it("gives a self-contained UMD no prerequisites", async () => {
+    const root = path.join(tmp, "nucleus-kit");
+    writeFiles(root, {
+      "package.json": packageJson("@excom/nucleus-kit", {
+        excom: { documented: true, packageType: "library" },
+        dependencies: { "@excom/neutron": "workspace:^" },
+      }),
+      "index.ts": "export const x = 1;",
+      "basic.css": ".b {}",
+      "custom-elements.css": ".c {}",
+      "node_modules/@excom/neutron/package.json": packageJson("@excom/neutron", {
+        version: "2.0.0",
+        dependencies: { "@excom/kit-utils": "workspace:^" },
+      }),
+    });
+    await buildPackageMetas(root);
+    expect(readMeta(root).installation.cdn).toBe(
+      [
+        '<script src="https://unpkg.com/@excom/nucleus-kit@1.2.3/dist/index.umd.min.js"></script>',
+        '<link rel="stylesheet" href="https://unpkg.com/@excom/nucleus-kit@1.2.3/dist/basic.css">',
+      ].join("\n"),
+    );
+  });
+
+  it("leaves an uninstalled prerequisite unpinned and skips CDN for private packages", async () => {
+    const root = path.join(tmp, "uninstalled");
+    writeFiles(root, {
+      "package.json": packageJson("@excom/uninstalled", {
+        excom: { documented: true, packageType: "library" },
+        dependencies: { "@excom/neutron": "workspace:^" },
+      }),
+      "index.ts": "export const x = 1;",
+    });
+    await buildPackageMetas(root);
+    expect(readMeta(root).installation.cdn).toBe(
+      [
+        '<script src="https://unpkg.com/@excom/neutron/dist/index.umd.min.js"></script>',
+        '<script src="https://unpkg.com/@excom/uninstalled@1.2.3/dist/index.umd.min.js"></script>',
+      ].join("\n"),
+    );
+
+    const secret = path.join(tmp, "secret");
+    writeFiles(secret, {
+      "package.json": packageJson("@excom/secret", {
+        private: true,
+        excom: { documented: true, packageType: "library" },
+      }),
+      "index.ts": "export const x = 1;",
+    });
+    await buildPackageMetas(secret);
+    expect(readMeta(secret).installation.cdn).toBeUndefined();
   });
 
   it("groups doc pages by docs-sections.json, rewrites page links to spa-a routes, skips INTERNAL.md", async () => {

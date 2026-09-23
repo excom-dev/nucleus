@@ -35,17 +35,28 @@ beforeEach(() => {
   mocks.prepareSiteDocs.mockReset();
   // Pretend the build produced its outputs so buildExports has a dist to scan
   // and writeMinifiedCss has a stylesheet to read.
-  mocks.build.mockImplementation(async (config: { root: string; build: BuildConfig }) => {
+  mocks.build.mockImplementation(async (config: ViteConfig) => {
     const dist = path.join(config.root, "dist");
     await mkdir(dist, { recursive: true });
     for (const name of outputNames(config.build)) {
       await writeFile(path.join(dist, name), name.endsWith(".css") ? ".a { color: red; }" : "");
     }
+    // Like vite-plugin-dts on the ESM pair build: `<entry>.d.ts` next to the JS.
+    const entry = config.build.lib?.entry;
+    if (entry && config.plugins?.some((p) => p?.name === "vite:dts")) {
+      await writeFile(path.join(dist, `${path.basename(entry, ".ts")}.d.ts`), "");
+    }
   });
 });
 
+type ViteConfig = {
+  root: string;
+  plugins?: ({ name?: string } | null | undefined)[];
+  build: BuildConfig;
+};
+
 type BuildConfig = {
-  lib?: object;
+  lib?: { entry?: string };
   rolldownOptions: {
     input?: unknown;
     output: { entryFileNames?: string; assetFileNames?: string } | { entryFileNames: string }[];
@@ -143,8 +154,8 @@ describe("runFullBuild", () => {
     const progressive = mocks.build.mock.calls.find(([c]) => outputNames(c.build).includes("kit.progressive.min.js"))![0];
     expect(progressive.build.rolldownOptions.output[0].chunkFileNames).toBe("progressive/[name].min.js");
     const map = JSON.parse(await readFile(path.join(ws.lib, "dist/exports.generated.json"), "utf8"));
+    // The progressive mode runs no dts plugin, so no `kit.progressive.d.ts` → no `types`.
     expect(map["./kit.progressive.min"]).toEqual({
-      types: "./dist/kit.d.ts",
       import: "./dist/kit.progressive.min.js",
       default: "./dist/kit.progressive.min.js",
     });

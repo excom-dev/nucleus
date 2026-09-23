@@ -63,6 +63,7 @@
     "**/packages/*/tsconfig.json": true,
     "**/packages/**/custom-elements.json": true,
     "**/packages/**/package-meta.json": true,
+    "**/dist-docs": true,
   },
 
   "search.followSymlinks": false,

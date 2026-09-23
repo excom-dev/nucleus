@@ -86,6 +86,10 @@ packages/*/support/custom-elements.json
 packages/*/support/dist-docs/
 dist-docs/
 
+# npm-facing package READMEs (heft-rig build-npm-readmes.mjs writes these at
+# publish time from support/dist-docs / support/docs/README.md; do not commit)
+packages/*/README.md
+
 CHANGELOG.md
 
 .cursor

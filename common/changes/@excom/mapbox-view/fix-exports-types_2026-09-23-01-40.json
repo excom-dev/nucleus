@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/mapbox-view",
+      "comment": "Fix `exports` to omit `types` conditions; the package emits no declaration files, so every condition pointed at a missing `.d.ts`",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/mapbox-view",
+  "email": "133191653+excom-dev@users.noreply.github.com"
+}

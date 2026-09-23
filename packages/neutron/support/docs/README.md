@@ -23,6 +23,8 @@ Neutron is the element factory of the Nucleus Stack: `Neutron({ tag, props })` r
 
 ## Usage
 
+Beta disclaimer: Neutron automatically defines your element's Typescript types based upon your element config. This is done via complicated internal typing that has a few known issues. These issues will be resolved in the first stable release.
+
 An element owns its own state (attributes) and announces changes (events). It never renders children or reaches into siblings — coordination belongs to Quark. The rules these examples follow are collected in [Best Practices](/nucleus/docs/best_practices) and [Creating Elements](/nucleus/docs/creating_elements).
 
 ```ts

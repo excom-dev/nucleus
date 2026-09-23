@@ -8,13 +8,13 @@ Works very well with all Custom Elements that follow the [Adapter](/nucleus/docs
 
 Nucleus Stack apps can always render other UI frameworks, not always the other way around:
 
-Nucleus Stack apps are not flatly compatible with certain other UI frameworks that lock the DOM to their own internal state, such as React. These frameworks treat the DOM as a compilation target, not the source of truth as Nucleus Stack apps do. Therefore, any changes the stack's elements or Quark make to the DOM will be seen as "unreconciled" by the other framework and will be obliterated. If you seek to integrate the Nucleus Stack into an app of another UI framework, that framework MUST either allow untracked DOM changes, or you must use a Shadow DOM as a boundary between it and the stack.
+Nucleus is not out-of-the-box compatible with certain other UI frameworks/libraries that lock the DOM to their own internal state, such as React. Many of these frameworks treat the DOM as a compilation target, not the source of truth as Nucleus does. Therefore, any changes Nucleus elements or Quark make to the DOM will be seen as "unreconciled" by the other framework and will be obliterated. If you seek to integrate the Nucleus Stack into an app of another UI framework, that framework MUST either allow untracked DOM changes, or you must use a Shadow DOM as a boundary between it and the Nucleus stack.
 
 ## Quark rules don't revert
 
-The instant a CSS selector stops matching, that declaration unapplies. Quark never does this. Attributes, content, listeners, variables, and CSS variables remain until some later rule overwrites them.
+The instant a CSS selector stops matching, the rule unapplies. Quark never does this. Attributes, content, listeners, variables, and CSS variables remain until some later rule overwrites them.
 
-*Why.* The Orchestrator is not the owner of the document. An element, a script, or the user can write an attribute Quark never saw. Claiming a rule can be cleanly "unapplied" would overstate what Quark can promise. There is a real technical cost as well, but architectural honesty is what decided it.
+*Why.* The Orchestrator is not the owner of the document. An element, a script, or the user can write an attribute Quark doesn't own. Claiming a rule can be cleanly "unapplied" would overstate what Quark can promise. There is a real technical cost as well, but architectural honesty is what decided it.
 
 *What to do.* For every state you leave, write the inverse rule. A future version may add reversion; do not build on that possibility.
 
@@ -24,7 +24,7 @@ Writes from the Orchestrator are gathered and flushed as a batch, so rules alway
 
 *Consequence.* Per-frame values are not a Quark job. Name the destination state and let CSS transitions, view transitions, or the Web Animations API own the motion. An animation describes change over time; State describes only the present, so animation has no place there.
 
-`@view-transition` is the one place a write waits for the renderer: its writes land a rendering opportunity later, inside `document.startViewTransition()`. A document runs one view transition at a time — a route transition and a Quark one in the same moment cannot both animate, and Quark commits unanimated by default while another is active. `until` keeps the old state frozen on screen and delays the new capture, so use it for short waits, never for a fetch. Two elements sharing a `view-transition-name` abort the animation (the writes still land). Scoped, per-element transitions are not available yet.
+`@view-transition` is the one place a write waits for the renderer: its writes land a rendering opportunity later, inside `document.startViewTransition()`. A document runs one view transition at a time — a route transition and a Quark one in the same moment cannot both animate, and Quark commits unanimated by default while another is active. `until` keeps the old state frozen on screen and delays the new capture, so use it for short waits, never for a fetch. Two elements sharing a `view-transition-name` abort the animation (the writes still land). Scoped, per-element transitions are not available yet in browsers, but this feature will likely utilize it in the future.
 
 Element insertions under a sheet's host are observed whoever makes them, so a widget that rebuilds its DOM every frame inside a host costs a rule pass per frame. Give such a widget a shadow root or an iframe, which Quark never enters.
 
@@ -32,7 +32,7 @@ Element insertions under a sheet's host are observed whoever makes them, so a wi
 
 Any item that takes part in orchestration has to exist as an addressable node. Pairing `iterate()` with `include-content lazy-load` keeps each row's *cost* near zero until it enters the viewport, which is comfortable into the thousands. True virtualization — a recycled pool of rows windowed over a dataset — keeps node count proportional to the *viewport*; the out-of-the-box implementation does not do that. At six figures of rows, node count itself is the wall.
 
-*What to do.* Page or filter at the data layer before anything reaches the document.
+*What to do.* Page or filter within Quark before the iteration hits the document.
 
 ## No replay of past events
 
@@ -52,7 +52,7 @@ Quark selectors do not observe state the DOM does not reflect: interaction and v
 
 `:has()` also costs a native subtree scan per candidate on every fan-out that includes the rule, so keep its arguments shallow and devoid of selectors that match many elements.
 
-Classes and ids are observed, but setting attributes is recommended over toggling / mutating classes and ids, since the latter has a heavier impact on Quark's performance: a sheet that names any class wakes on every class change under its host, styling churn included, and compares class lists to find the ones it uses (`[class~="x"]` and `attr("class")` skip that filter and re-run on every change).
+Classes and ids are observed, but setting attributes is recommended over toggling / mutating classes and ids, since the latter has a heavier impact on Quark's performance: a sheet that names any class wakes on every class change under its host and compares class lists to find the ones it uses (`[class~="x"]` and `attr("class")` skip that filter and re-run on every change).
 
 ## Boundaries are absolute
 
@@ -76,7 +76,9 @@ Elements accept their imperatives as native `command` events (`<button command="
 
 ## Beta maturity
 
-Quark is in beta. One item above (reversion) may change. Element APIs are stable in shape — attributes in, events out — but individual packages evolve. Pin versions.
+Quark is in beta. One item above (reversion) may change. Element APIs are stable in shape — attributes & commands in, events out — but individual packages evolve. Pin versions.
+
+Some features will be broken for certain browsers whose versions are older than a year (mainly Firefox & Safari, mid-2025). This will be remedied in the first stable release.
 
 ## When not to use it
 

@@ -10,7 +10,7 @@ Node 24.13 or newer. Rush is invoked through the checked-in bootstrap script, so
 
 ```bash
 git clone https://github.com/excom-dev/nucleus.git
-cd monorepo
+cd nucleus
 node common/scripts/install-run-rush.js install
 node common/scripts/install-run-rush.js build
 ```
@@ -25,7 +25,7 @@ Rush's per-package selection is the fast path. From inside `packages/<name>`, th
 | --- | --- |
 | `pnpm run build` | Build that package's entry points |
 | `pnpm run test` | Vitest, in happy-dom |
-| `pnpm run coverage` | Tests plus a coverage report — fails below 90% on any metric |
+| `pnpm run coverage` | Tests plus a coverage report — fails below 90% on any metric. Only the package's own files count; a file no test loads counts as 0% |
 | `pnpm run format` | Prettier over the package |
 | `pnpm run dev` | Dev server, where the package has one |
 
@@ -45,11 +45,13 @@ packages/my-element/
   support/
     docs/               # README.md and any further pages
     demos/              # one .html per demo, no JS
-    tests/              # one <name>.test.ts per source file
+    tests/              # one <name>.test.ts per source file, one <demo>.view.test.ts per demo
   package.json          # needs to contain config common to other packages, such as `excom` object
 ```
 
-Files in the package root become build entry points; files under `src/` do not. `dist/`, `coverage/`, `CHANGELOG.md` and the generated docs metadata are all produced by the tooling and are not committed.
+Files in the package root become build entry points; files under `src/` do not. `dist/`, `coverage/`, `CHANGELOG.md` and the generated docs metadata are all produced by the tooling and are not committed. `CHANGELOG.json` is written by Rush on publish; never edit it by hand.
+
+The checked-in `.vscode/settings.json` hides the per-package boilerplate (`config/`, `tsconfig.json`, `CHANGELOG.json`, generated metas) from the VS Code explorer and search.
 
 ## Conventions
 
@@ -64,7 +66,7 @@ These are the rules reviewers apply. [Best Practices](/nucleus/docs/best_practic
 - **Imperatives are commands.** Accept "do this" as a native `command` event with a short `--verb`, so a plain `<button command="--open" commandfor="id">` can drive it. Never a bubbling `my-element-trigger` event.
 - **Underscore private members**, and keep the imperative surface small.
 - **No Shadow DOM** unless isolation is genuinely the point. It walls off the very rules that make the stack composable.
-- **Own your region.** An element writes its own attributes and its any other elements in its family. Nothing else.
+- **Own your region.** An element writes its own attributes and those of the other elements in its family. Nothing else.
 
 **Neutron lifecycles**
 
@@ -88,6 +90,8 @@ Every published package documents itself under `support/docs/`. The API referenc
 - **Further pages** when the reference outgrows one screen. A `support/docs-sections.json` groups them into sidebar sections.
 - **Links between pages** are plain relative markdown (`[Props](./PROPS.md)`, `[Styling](/nucleus/docs/styling)`). They work on GitHub, and the pipeline rewrites them for the site. Never hand-write `<spa-a>` in markdown.
 - **`INTERNAL.md`** is a contributor file. It is never rendered or published.
+
+How these pages become package metas, the custom elements manifest, `dist-docs/` and `llms.txt`: [the docs pipeline](https://github.com/excom-dev/nucleus/blob/main/support/docs/DOCS_PIPELINE.md). All of it is generated and none of it is committed.
 
 Demos live in `support/demos/<name>.html`: one root element, no embedded JavaScript, the smallest markup that shows the point. Anything a demo needs but a reader does not (layout padding, colours) goes in the docs site's `demo-utils.css`. Four demos is plenty for a small package, eight for a large one.
 
@@ -121,7 +125,15 @@ Pick the bump honestly:
 | `patch` | A fix or internal improvement with the same public contract |
 | `none` | Docs, demos or tests only |
 
-The comment is published documentation, so write it for someone who has never seen the implementation. Imperative mood, starting with a verb — Add, Remove, Fix an issue where, Improve, Upgrade. Describe the outcome ("Searching now supports wildcards"), not the diff. Backticks around public names. No trailing period on a single sentence, and prefer "issue #123" over "bug".
+The comment is published documentation, so write it for an app author who has never seen the implementation. Ask what it means to them: does it break them, fix something that annoyed them, give them something new to try?
+
+- Imperative mood, starting with a verb — Add, Remove, Fix an issue where, Improve, Update, Upgrade, Initial release of.
+- The outcome ("Searching now supports wildcards"), not the diff ("Add regex support to `SearchHelper`").
+- Backticks around public names; `name()` for functions.
+- Upgrades name both versions: Upgrade `happy-dom` from 15 to 20.
+- "Issue", never "bug"; link the GitHub issue in parentheses when there is one.
+- No acronyms or shorthand beyond the widely known (HTTP, CSS), and nothing private.
+- No trailing period on a single sentence.
 
 Removals are removals. The stack does not currently ship deprecation windows or compatibility shims; a dropped feature has its code, grammar, tests and docs deleted, and the API rejects it with a clear error. Record it as `major` and that is the migration story.
 

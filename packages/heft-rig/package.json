@@ -8,6 +8,10 @@
     "node": ">=24.13.0"
   },
   "type": "module",
+  "files": [
+    "profiles/**",
+    "scripts/**"
+  ],
   "scripts": {
     "build": "node -e \"console.log('heft-rig: no build output')\"",
     "build:watch": "node -e \"console.log('heft-rig: no build watch')",
@@ -54,9 +58,5 @@
   "excom": {
     "documented": false,
     "packageType": "heft-rig"
-  },
-  "files": [
-    "profiles/**",
-    "scripts/**"
-  ]
+  }
 }

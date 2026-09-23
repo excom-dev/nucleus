@@ -54,7 +54,7 @@ describe("company view", () => {
 
     expect(page.querySelector("h1")?.textContent).toBe("Experimental · Company");
     expect(page.querySelector("h2")?.textContent).toBe(
-      "Available for consulting and questions",
+      "Available for consulting and questions.",
     );
     const logo = page.querySelector("header img")!;
     expect(logo.getAttribute("src")).toBe("/img/excom.svg");

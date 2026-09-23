@@ -38,6 +38,23 @@ body {
   --release-notice-height: 4.5rem;
 }
 
+/* The static pointer to the plain-text docs (index.html, first child of `<body>`).
+   Styled for the CSS-loads-but-JS-fails path; `detect-browser` upgrades the moment
+   Nucleus Kit is imported, so `:defined` is the "JavaScript ran" signal and the
+   notice comes down without a line of script. */
+.agent-notice {
+  padding: var(--v-spacing, 1rem);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--v-muted-color, #6c757d);
+  > p {
+    margin: 0;
+  }
+}
+body:has(detect-browser:defined) .agent-notice {
+  display: none;
+}
+
 /* wait until loaded so no FOUC */
 #site-header {
   visibility: hidden;
@@ -364,7 +381,7 @@ main
     color: var(--v-muted-color);
     font-size: 0.75rem;
     position: sticky;
-    bottom: 0;
+    bottom: var(--site-nav-footer-bottom);
     background: var(--v-background-color);
     box-shadow: 0px -12px 14px -4px rgba(60, 60, 60, 0.3);
     margin: 0 calc(-1 * var(--v-spacing));
@@ -567,12 +584,17 @@ details.accordion {
   overflow: hidden;
 }
 
+body {
+  --site-nav-footer-bottom: 0;
+}
+
 /* ---- Mobile (≤ 768px): bottom tab bar (views/site-header), in-flow beta banner
    (views/release-notice), nav in a bottom sheet. Last so it wins ties. ---- */
 @media (max-width: 768px) {
   body {
     --site-header-height: 56px;
     --release-notice-height: calc(9.25rem + env(safe-area-inset-top));
+    --site-nav-footer-bottom: var(--site-header-height);
     /* the tab bar (views/site-header) is fixed to the bottom edge */
     padding-bottom: calc(
       var(--site-header-height) + env(safe-area-inset-bottom)
@@ -587,6 +609,13 @@ details.accordion {
     /* the sheet scrolls, not the page behind it */
     &:has(#site-menu[is-open]) {
       overflow: hidden;
+    }
+  }
+  .site-nav-footer {
+    /* fade in delay because nav items load and it's jerky */
+    transition: opacity 0.4s ease-out 1s;
+    @starting-style {
+      opacity: 0;
     }
   }
   #site-header {
