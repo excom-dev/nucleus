@@ -119,6 +119,29 @@ describe("@delay", () => {
     expect(quark.delayTimers.size).toBe(0);
   });
 
+  // Fake timers: the re-check at fire time runs against the host compound.
+  // A bare `:scope` leaves it empty, which must count as a match, not an
+  // empty selector handed to `matches()`.
+  it("fires from a bare `:scope` rule and from `:scope > x`; `:scope[attr]` still drops when the host changes", async () => {
+    vi.useFakeTimers();
+    const { root } = mount(
+      `<p id="p"></p>`,
+      `:scope { @delay 20 { data-host: "late"; } }
+       :scope > p { @delay 20 { data-child: "late"; } }
+       :scope[is-on] { @delay 20 { data-gated: "late"; } }`
+    );
+    await tick();
+    const p = root.querySelector("#p")!;
+    root.setAttribute("is-on", "");
+    await tick();
+    root.removeAttribute("is-on");
+    await tick();
+    await tick(30);
+    expect(root.getAttribute("data-host")).toBe("late");
+    expect(p.getAttribute("data-child")).toBe("late");
+    expect(root.hasAttribute("data-gated")).toBe(false);
+  });
+
   // Fake timers: `data-copied` is asserted while the 50ms pause is still
   // running, both for the single click and between the rapid pair.
   it("inside an @on block: fires per event with event data; rapid events restart", async () => {

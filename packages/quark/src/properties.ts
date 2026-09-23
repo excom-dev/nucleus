@@ -422,14 +422,22 @@ export class Delay extends Property {
   }
 }
 
-/** Whether `rule` (its host compound included) still matches `element`. */
+/**
+ * Whether `rule` (its host compound included) still matches `element`.
+ * A bare `:scope` prefix leaves an empty compound (`""`), which is a
+ * match by itself... never handed to `matches()`, which rejects an empty
+ * selector. Guarded like `Rule.run`, a throwing selector counts as unmatched.
+ */
 const stillMatches = (
   rule: Rule,
   element: HTMLElement,
   host: HTMLElement
 ): boolean =>
-  (rule.hostCompound === null || host.matches(rule.hostCompound)) &&
-  rule.matchesElement(element, host);
+  tc(
+    () =>
+      (!rule.hostCompound || host.matches(rule.hostCompound)) &&
+      rule.matchesElement(element, host)
+  ) === true;
 
 /**
  * `@on` options that configure the registration or act on the event

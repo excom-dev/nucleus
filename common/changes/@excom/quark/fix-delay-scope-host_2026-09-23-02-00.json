@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/quark",
+      "comment": "Fix `@delay` blocks inside a bare `:scope` rule (or a `:scope > …` rule) never firing: the re-check at fire time handed the empty host compound to `matches()`, which throws on an empty selector",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/quark",
+  "email": "133191653+excom-dev@users.noreply.github.com"
+}

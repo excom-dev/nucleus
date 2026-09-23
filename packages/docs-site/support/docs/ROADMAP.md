@@ -25,6 +25,7 @@ Work that is done or nearly done, landing in the next releases.
 - **Polyfills** Some features will be broken for certain browsers whose versions are older than a year (mainly Firefox & Safari, mid-2025). This will be remedied in the first stable release.
 - **The small-bug backlog.** A coverage sweep across every package surfaced a list of minor defects. They are being triaged and fixed ahead of a stable release.
 - **More themes for Valence.css.** Broader theme and scheme coverage, so a view's `--v-*` tokens carry further without custom CSS.
+- **HTML/Quark "type checking"** Editor integration and optional build tool to raise warnings about unknown elements/attributes/provisions.
 
 ## Later
 
