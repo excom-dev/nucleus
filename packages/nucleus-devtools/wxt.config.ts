@@ -12,6 +12,9 @@ export default defineConfig({
     // `browser.storage.session` holds the global heatmap toggle.
     permissions: ["storage"],
   },
+  // The npm name is scoped; WXT would otherwise emit
+  // `excomnucleus-devtools-<version>-chrome.zip`.
+  zip: { name: "nucleus-devtools" },
   webExt: {
     startUrls: ["http://localhost:3001/"],
   },

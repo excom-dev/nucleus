@@ -32,6 +32,15 @@ pane shows *who* changed it and *how*.
 
 ## Installation
 
+> **Pending review.** The extension has been submitted to the Chrome Web Store and is awaiting Google's approval. Until it is listed, install it from the release zip:
+>
+> 1. Download `nucleus-devtools-<version>-chrome.zip` from the [latest GitHub release](https://github.com/excom-dev/nucleus/releases) and unzip it.
+> 2. Open `chrome://extensions` and switch on **Developer mode** (top right).
+> 3. Click **Load unpacked** and pick the unzipped folder.
+> 4. Reload any Nucleus Stack page that was already open, then open DevTools → Elements → **Element** pane.
+>
+> A build installed this way does not update itself; grab the next release zip to update. This note goes away once the store listing is live.
+
 Install from the [Chrome Web Store](https://chromewebstore.google.com/detail/nucleus-devtools)
 (also loads in Edge, Brave and other Chromium browsers).
 
@@ -39,6 +48,9 @@ To run a local build instead, download `nucleus-devtools-<version>-chrome.zip`
 from the [GitHub releases](https://github.com/excom-dev/nucleus/releases),
 unzip it, open `chrome://extensions`, enable *Developer mode* and choose
 *Load unpacked*.
+
+The extension collects no data and makes no network requests — see the
+[privacy policy](./PRIVACY.md).
 
 ## Usage
 

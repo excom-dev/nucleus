@@ -380,7 +380,7 @@ async function callFetch(
         : await response.text(),
     };
     if (responseData.status >= 400) {
-      throw new Error("Reponse error code: " + responseData.status);
+      throw new Error("Response error code: " + responseData.status);
     }
     return responseData;
   } catch (error) {
