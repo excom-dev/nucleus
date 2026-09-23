@@ -2,7 +2,7 @@
   "name": "@excom/quark",
   "version": "0.1.2",
   "description": "CSS-like DOM orchestration language for binding, rendering, and events",
-  "license": "ISC",
+  "license": "MIT",
   "engines": {
     "node": ">=24.13.0"
   },

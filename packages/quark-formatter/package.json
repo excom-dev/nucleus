@@ -2,7 +2,7 @@
   "name": "@excom/quark-formatter",
   "version": "0.1.1",
   "description": "Opinionated SCSS-style formatter for the Quark language, built on the quark-parser AST",
-  "license": "ISC",
+  "license": "MIT",
   "engines": {
     "node": ">=24.13.0"
   },
