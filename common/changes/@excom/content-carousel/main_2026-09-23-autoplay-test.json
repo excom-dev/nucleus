@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/content-carousel",
+      "comment": "Auto-play tests poll for the advanced slide instead of sleeping a fixed 80 ms (flaked on loaded CI runners); no runtime change",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/content-carousel",
+  "email": "133191653+excom-dev@users.noreply.github.com"
+}
