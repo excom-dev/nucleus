@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/data-table",
+      "comment": "test-pr",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/data-table"
+}
