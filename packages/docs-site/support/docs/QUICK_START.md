@@ -14,8 +14,8 @@ What follows is our [Todo App example](/nucleus/examples/todos), verbatim, with 
   <head>
     <meta charset="utf-8">
     <title>My first Nucleus app</title>
-    <link rel="stylesheet" href="https://unpkg.com/@excom/nucleus-kit/basic.css">
-    <script type="module" src="https://unpkg.com/@excom/nucleus-kit"></script>
+    <link rel="stylesheet" href="https://unpkg.com/@excom/nucleus-kit/dist/basic.min.css">
+    <script src="https://unpkg.com/@excom/nucleus-kit/dist/index.umd.min.js"></script>
   </head>
   <body>
     <main></main>

@@ -1,0 +1,3 @@
+# Every pull request needs a review from the repository owner
+# (ruleset: "Require review from Code Owners").
+* @excom-dev

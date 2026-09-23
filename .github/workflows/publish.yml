@@ -43,9 +43,14 @@ jobs:
       VSCE_PAT: ${{ secrets.VSCE_PAT }}
       OVSX_PAT: ${{ secrets.OVSX_PAT }}
     steps:
+      # The deploy key (write access, listed in the `main` ruleset's bypass
+      # list) is what lets step 5 push the bump commit past branch protection;
+      # GITHUB_TOKEN cannot bypass rulesets. Until the RELEASE_DEPLOY_KEY
+      # secret exists the input is empty and checkout falls back to the token.
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          ssh-key: ${{ secrets.RELEASE_DEPLOY_KEY }}
       - uses: ./.github/actions/setup-monorepo
       # Build cache only on main (see .github/actions/setup-monorepo).
       - name: Cache Rush build cache
