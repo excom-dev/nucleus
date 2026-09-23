@@ -2,6 +2,33 @@
   "name": "@excom/nucleus-kit",
   "entries": [
     {
+      "version": "0.1.2",
+      "tag": "@excom/nucleus-kit_v0.1.2",
+      "date": "Wed, 23 Sep 2026 07:45:12 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/detect-media\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/dismiss-watcher\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/gesture-handler\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/quark\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/quark-sheet\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/super-form\" to `^0.1.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@excom/nucleus-kit_v0.1.1",
       "date": "Wed, 23 Sep 2026 06:16:11 GMT",

@@ -2,6 +2,18 @@
   "name": "@excom/quark-sheet",
   "entries": [
     {
+      "version": "0.1.2",
+      "tag": "@excom/quark-sheet_v0.1.2",
+      "date": "Wed, 23 Sep 2026 07:45:12 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/quark\" to `^0.1.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@excom/quark-sheet_v0.1.1",
       "date": "Wed, 23 Sep 2026 06:16:11 GMT",

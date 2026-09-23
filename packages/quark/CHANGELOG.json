@@ -2,6 +2,18 @@
   "name": "@excom/quark",
   "entries": [
     {
+      "version": "0.1.2",
+      "tag": "@excom/quark_v0.1.2",
+      "date": "Wed, 23 Sep 2026 07:45:12 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix `@delay` blocks inside a bare `:scope` rule (or a `:scope > …` rule) never firing: the re-check at fire time handed the empty host compound to `matches()`, which throws on an empty selector"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@excom/quark_v0.1.1",
       "date": "Wed, 23 Sep 2026 06:16:11 GMT",

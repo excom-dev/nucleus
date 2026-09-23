@@ -1,6 +1,6 @@
 {
   "name": "@excom/nucleus-kit",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "The whole Nucleus Stack in one package — elements, Quark, Valence.css",
   "license": "MIT",
   "engines": {
