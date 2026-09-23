@@ -10,6 +10,13 @@ import {
 import "../../index";
 import { invokeCommand } from "@excom/neutron";
 
+/**
+ * Auto-play ticks are real timers; on a loaded runner a 40–50 ms interval can
+ * fire after a fixed `wait(80)`, so poll for the final state instead.
+ */
+const expectActiveSlide = (carousel: HTMLContentCarouselElement, slide: Element) =>
+  vi.waitFor(() => expect(carousel.getActiveSlide()).toBe(slide), { timeout: 2000 });
+
 /** Invoke a command and let the handler's microtask run. */
 const command = async (el: Element, name: string) => {
   invokeCommand(el, name);
@@ -337,8 +344,7 @@ describe("content-carousel (auto-play lifecycle)", () => {
     expect(secondId).not.toBe(null);
     expect(secondId).not.toBe(firstId);
     const slides = carousel.querySelectorAll("content-carousel-slide");
-    await wait(80);
-    expect(carousel.getActiveSlide()).toBe(slides[1]);
+    await expectActiveSlide(carousel, slides[1]);
 
     carousel.autoPlay = null;
     expect(clearSpy).toHaveBeenCalledWith(secondId);
@@ -377,8 +383,7 @@ describe("content-carousel (auto-play lifecycle)", () => {
     expect(carousel.autoPlayIntervalId).toBe(null);
     carousel.autoPlay = 0.04;
     expect(carousel.autoPlayIntervalId).not.toBe(null);
-    await wait(80);
-    expect(carousel.getActiveSlide()).toBe(slides[1]);
+    await expectActiveSlide(carousel, slides[1]);
   });
 
   it("tolerates auto-play-stopped without an interval", async () => {
@@ -445,8 +450,7 @@ describe("content-carousel (auto-play lifecycle)", () => {
     expect(carousel.autoPlayStopped).toBe(false);
     expect(carousel.autoPlayIntervalId).toBe(intervalId);
     expect(clearSpy).not.toHaveBeenCalled();
-    await wait(80);
-    expect(carousel.getActiveSlide()).toBe(slides[1]);
+    await expectActiveSlide(carousel, slides[1]);
   });
 });
 

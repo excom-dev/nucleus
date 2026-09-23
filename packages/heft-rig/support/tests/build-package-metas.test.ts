@@ -220,11 +220,27 @@ describe("buildPackageMetas", () => {
       "dist/x.css": "/**\n * @cssclass\n */\n.no {}",
       "support/x.css": "/**\n * @cssclass\n */\n.no {}",
       "coverage/x.css": "/**\n * @cssclass\n */\n.no {}",
+      // No `exports` in package.json (applied only at publish time): the
+      // build's generated map is the fallback, `./dist/*` aliases dropped.
+      "dist/exports.generated.json": JSON.stringify({
+        ".": "./dist/index.css",
+        "./index.css": { default: "./dist/index.css" },
+        "./dist/index.css": { default: "./dist/index.css" },
+      }),
     });
     await buildPackageMetas(root);
     const meta = readMeta(root);
     expect(meta.readme).toBeUndefined();
     expect(meta.docs).toBeUndefined();
+    expect(meta.exportedFiles).toEqual({
+      ".": { default: "./dist/index.css" },
+      "./index.css": { default: "./dist/index.css" },
+    });
+    expect(meta.package.exports).toEqual({
+      ".": "./dist/index.css",
+      "./index.css": { default: "./dist/index.css" },
+      "./dist/index.css": { default: "./dist/index.css" },
+    });
     expect(meta.installation.imports).toEqual({
       js: undefined,
       css: '@import "@excom/themes";',
