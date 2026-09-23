@@ -1,6 +1,6 @@
 {
   "name": "@excom/dom-observer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "<dom-observer> custom element that resolves a target via a CSS selector and fires events on its mutations.",
   "license": "MIT",
   "engines": {

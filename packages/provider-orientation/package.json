@@ -1,6 +1,6 @@
 {
   "name": "@excom/provider-orientation",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "<provider-orientation> custom element",
   "license": "MIT",
   "engines": {

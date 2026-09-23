@@ -1,0 +1,34 @@
+{
+  "name": "@excom/super-form",
+  "entries": [
+    {
+      "version": "0.1.1",
+      "tag": "@excom/super-form_v0.1.1",
+      "date": "Wed, 23 Sep 2026 06:16:11 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Ship only dist (and declared extras) in the npm tarball; drop build logs, tests and sources"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/fetchable-element\" to `^0.1.1`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.1.1`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-logger\" to `^0.1.1`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/quark\" to `^0.1.1`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/quark-sheet\" to `^0.1.1`"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "name": "@excom/detect-browser",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "<detect-browser> custom element",
   "license": "MIT",
   "engines": {

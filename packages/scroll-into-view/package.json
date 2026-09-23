@@ -1,6 +1,6 @@
 {
   "name": "@excom/scroll-into-view",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "<scroll-into-view> custom element",
   "license": "MIT",
   "engines": {

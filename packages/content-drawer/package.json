@@ -1,6 +1,6 @@
 {
   "name": "@excom/content-drawer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "<content-drawer> custom element",
   "license": "MIT",
   "engines": {

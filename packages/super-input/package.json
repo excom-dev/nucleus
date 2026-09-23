@@ -1,6 +1,6 @@
 {
   "name": "@excom/super-input",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "<super-input> custom element",
   "license": "MIT",
   "engines": {

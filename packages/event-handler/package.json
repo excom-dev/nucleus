@@ -1,6 +1,6 @@
 {
   "name": "@excom/event-handler",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "<event-handler> custom element",
   "license": "MIT",
   "engines": {

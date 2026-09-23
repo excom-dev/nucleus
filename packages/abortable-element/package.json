@@ -1,6 +1,6 @@
 {
   "name": "@excom/abortable-element",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "AbortableElement base for Neutron elements",
   "license": "MIT",
   "engines": {

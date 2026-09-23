@@ -1,0 +1,25 @@
+{
+  "name": "@excom/nucleus-quark-highlighter",
+  "entries": [
+    {
+      "version": "0.1.1",
+      "tag": "@excom/nucleus-quark-highlighter_v0.1.1",
+      "date": "Wed, 23 Sep 2026 06:16:11 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Ship only dist (and declared extras) in the npm tarball; drop build logs, tests and sources"
+          },
+          {
+            "comment": "Fix vsix packaging (the npm files allowlist replaces .vscodeignore), ship the MIT license text, and publish the extension to the Visual Studio Marketplace and Open VSX from CI with the vsix attached to a GitHub release"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/quark-formatter\" to `^0.1.1`"
+          }
+        ]
+      }
+    }
+  ]
+}

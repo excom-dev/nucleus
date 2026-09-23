@@ -1,0 +1,31 @@
+{
+  "name": "@excom/scroll-into-view",
+  "entries": [
+    {
+      "version": "0.1.1",
+      "tag": "@excom/scroll-into-view_v0.1.1",
+      "date": "Wed, 23 Sep 2026 06:16:11 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Ship only dist (and declared extras) in the npm tarball; drop build logs, tests and sources"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/kit-scroller\" to `^0.1.1`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-utils\" to `^0.1.1`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/listenable-element\" to `^0.1.1`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.1.1`"
+          }
+        ]
+      }
+    }
+  ]
+}

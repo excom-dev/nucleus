@@ -1,6 +1,6 @@
 {
   "name": "@excom/dialog-anchor",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "<dialog-anchor> custom element",
   "license": "MIT",
   "engines": {

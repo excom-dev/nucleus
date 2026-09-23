@@ -1,0 +1,17 @@
+{
+  "name": "@excom/kit-scroller",
+  "entries": [
+    {
+      "version": "0.1.1",
+      "tag": "@excom/kit-scroller_v0.1.1",
+      "date": "Wed, 23 Sep 2026 06:16:11 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Ship only dist (and declared extras) in the npm tarball; drop build logs, tests and sources"
+          }
+        ]
+      }
+    }
+  ]
+}

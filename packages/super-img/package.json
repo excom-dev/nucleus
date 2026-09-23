@@ -1,6 +1,6 @@
 {
   "name": "@excom/super-img",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "<super-img> custom element",
   "license": "MIT",
   "engines": {
