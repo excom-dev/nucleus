@@ -101,7 +101,7 @@
        */
       display: var(--data-tr-display, grid);
       grid-column: 1 / -1;
-      grid-template-columns: subgrid;
+      grid-template-columns: subgrid !important;
       :--data-th,
       :--data-td,
       :--data-tf {
