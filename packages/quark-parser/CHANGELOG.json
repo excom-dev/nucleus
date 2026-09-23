@@ -2,6 +2,18 @@
   "name": "@excom/quark-parser",
   "entries": [
     {
+      "version": "0.1.2",
+      "tag": "@excom/quark-parser_v0.1.2",
+      "date": "Wed, 23 Sep 2026 11:22:24 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Declare the MIT license in package.json (was ISC), matching the repo LICENSE and every other package"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@excom/quark-parser_v0.1.1",
       "date": "Wed, 23 Sep 2026 06:16:11 GMT",

@@ -1,6 +1,6 @@
 {
   "name": "@excom/quark-parser",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Fast tokenizer and AST parser for the Quark language (a derivative of CSS with member accessors)",
   "license": "MIT",
   "engines": {

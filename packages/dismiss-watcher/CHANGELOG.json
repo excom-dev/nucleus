@@ -2,6 +2,21 @@
   "name": "@excom/dismiss-watcher",
   "entries": [
     {
+      "version": "0.1.3",
+      "tag": "@excom/dismiss-watcher_v0.1.3",
+      "date": "Wed, 23 Sep 2026 11:22:24 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/quark\" to `^0.1.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/quark-sheet\" to `^0.1.3`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.2",
       "tag": "@excom/dismiss-watcher_v0.1.2",
       "date": "Wed, 23 Sep 2026 07:45:12 GMT",

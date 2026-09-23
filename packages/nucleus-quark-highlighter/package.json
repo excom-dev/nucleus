@@ -1,6 +1,6 @@
 {
   "name": "@excom/nucleus-quark-highlighter",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "displayName": "Nucleus & Quark Syntax Highlighter",
   "description": "VS Code syntax highlighting for Quark sheets and Nucleus-style HTML",
   "license": "MIT",
