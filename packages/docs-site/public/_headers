@@ -2,6 +2,9 @@
 # Vary keeps the two encodings in separate cache entries.
 /*
   Vary: Accept-Encoding
+  Strict-Transport-Security: max-age=15552000
+  X-Frame-Options: SAMEORIGIN
+  Permissions-Policy: camera=(), microphone=(), geolocation=(self), payment=()
 
 /assets/*
   Cache-Control: public, max-age=31536000, immutable

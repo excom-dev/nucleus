@@ -8,6 +8,12 @@
   "nodeSupportedVersionRange": ">=18.15.0",
   "ensureConsistentVersions": true,
 
+  "repository": {
+    "url": "https://github.com/excom-dev/nucleus",
+    "defaultBranch": "main",
+    "defaultRemote": "origin"
+  },
+
   "projects": [
     {
       "packageName": "@excom/neutron",

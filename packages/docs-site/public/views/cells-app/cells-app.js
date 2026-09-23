@@ -1,4 +1,4 @@
-/** Cells example helpers (`@use "/views/cells-app/cells-app"`). */
+/** Cells example helpers (`@use "/views/cells-app/cells-app.js"`). */
 
 /** `[0, 1, …, n - 1]`: Quark has no range literal (`iterate(range(100))`). */
 export const range = (n) => Array.from({ length: n }, (_, i) => i);
