@@ -38,7 +38,7 @@
  * Only Markdown link/image targets (`](…)`) are touched, so HTML `src` /
  * `href` inside fenced demo source is left alone.
  *
- * Runs in `publish.yml` after `build:docs-index`, before `publish --apply`.
+ * Runs in `publish.yml` (Release) after `build:docs-index`, once the version bump is applied.
  * Repo-level only, like `build-docs-index.mjs` — a per-package Rush phase
  * would not know the sibling packages. Idempotent.
  */

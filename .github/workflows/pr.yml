@@ -45,7 +45,7 @@ jobs:
       - run: node common/scripts/install-run-rush.js change --verify
       - run: node .github/scripts/run-rush-for-changes.mjs build --verbose
       # Bundle sizes of the packages just built, with gzip deltas against the
-      # baseline the docs deploy saves from main (see deploy-docs.yml).
+      # baseline the docs deploy saves from main (see publish.yml, the Release workflow).
       - name: Restore bundle-size baseline
         if: github.event_name == 'pull_request'
         uses: actions/cache/restore@v5

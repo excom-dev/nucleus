@@ -39,7 +39,7 @@
  *     the site root, the docs home, every guide, package, package doc page
  *     and example route
  *
- * CI (`deploy-docs.yml`) runs this after the site build. Repo-level only —
+ * CI (`publish.yml`, the Release workflow) runs this after the site build. Repo-level only —
  * sibling aggregation doesn't fit a per-package Rush phase. Per-package
  * output is source of truth; this mirrors and indexes.
  */

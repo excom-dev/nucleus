@@ -1,4 +1,22 @@
-name: Publish Packages
+# Release: the one pipeline behind every push to `main`.
+#
+# Order: bump -> build -> publish -> deploy -> push.
+#   1. Bump. `rush publish --apply` consumes the change files and writes the
+#      new versions into package.json / CHANGELOG.json, locally only. The
+#      bump is committed at once (not pushed) so nothing later in the job
+#      (`apply-exports`) can leak into it.
+#   2. Build everything from the bumped tree, so package metas, CDN
+#      snippets, npm READMEs and the docs site carry the new versions.
+#   3. Publish to npm (and the VS Code extension).
+#   4. Deploy the docs site, on every push: a docs-only change has nothing
+#      to publish but still needs a deploy.
+#   5. Push the bump commit last, so `main` only records versions that
+#      reached npm.
+# Why one pipeline: a site deployed in parallel is built from the pre-bump
+# commit and shows the old versions, and the bump commit never starts a run
+# to correct it (`[skip ci]`; GITHUB_TOKEN pushes start no workflows).
+# deploy-docs.yml is for manual redeploys only.
+name: Release
 
 on:
   push:
@@ -12,9 +30,12 @@ concurrency:
 
 
 jobs:
-  publish:
+  release:
+    # The job pushes HEAD to `main`; a manual run from another branch must
+    # not get that far.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     permissions:
       contents: write
     env:
@@ -34,34 +55,52 @@ jobs:
           key: rush-build-cache-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             rush-build-cache-${{ runner.os }}-
+
+      # 1. Bump. Without a target branch (`-b`), `--apply` only edits files: it
+      # never commits, pushes or publishes, and it logs the plan, so no
+      # separate dry run. No change files (docs-only push) = no edits.
+      - name: Apply version bumps
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+        run: node common/scripts/install-run-rush.js publish --apply
       - name: Configure git author
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-      - name: Publish (dry run)
-        env:
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-        run: node common/scripts/install-run-rush.js publish
-      # Full build, not a change-file selection: `publish --publish
+      # Stage exactly what `--apply` touches: consumed change files (deleted
+      # from disk), package.json versions and dependency ranges,
+      # CHANGELOG.json (CHANGELOG.md is gitignored). `git add` fails on a
+      # pathspec that matches nothing, so list the touched paths first.
+      - name: Commit version bump (local)
+        run: |
+          git ls-files -z --modified --deleted --others --exclude-standard -- \
+            common/changes 'packages/*/package.json' 'packages/*/CHANGELOG.json' \
+            | xargs -0 -r git add -A --
+          git diff --cached --quiet || git commit -m "Bump versions [skip ci]"
+
+      # 2. Build. Full build, not a change-file selection: `publish --publish
       # --include-all` below ships every package, so every package needs its
-      # dist/ (and the exports map generated from it). The build cache
-      # restored above makes the unchanged ones cheap.
+      # dist/ (and the exports map generated from it), and the site needs
+      # all of them. The build cache restored above makes the unchanged
+      # ones cheap.
       - run: node common/scripts/install-run-rush.js build --verbose
       - run: node common/scripts/install-run-rush.js build:package-metas
       - run: node common/scripts/install-run-rush.js build:docs
+      # Also copies llms.txt / llms-full.txt into packages/docs-site/dist.
       - run: node common/scripts/install-run-rush.js build:docs-index
       # npm renders only a package-root README.md; ours live in support/docs.
       # Generated (gitignored) from the docs built above, just before publish.
       - run: node packages/heft-rig/scripts/build-npm-readmes.mjs
-      - name: Apply versions and commit
-        env:
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
-        run: node common/scripts/install-run-rush.js publish --apply --target-branch main
+      # Writes `exports` into package.json. Runs after the bump commit so
+      # these edits are never committed.
       - run: node common/scripts/install-run-rush.js apply-exports
       # Last gate: no dist/, no exports map, or a dangling export target and
       # the job stops here instead of publishing broken tarballs.
       - run: node packages/heft-rig/scripts/verify-publish-outputs.mjs
+
+      # 3. Publish. Every package whose version npm lacks; the rest skip.
       - name: Publish Packages
+        id: npm-publish
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
         run: node common/scripts/install-run-rush.js publish --publish --include-all --set-access-level public --registry "https://registry.npmjs.org"
@@ -75,8 +114,51 @@ jobs:
         if: env.VSCE_PAT != '' || env.OVSX_PAT != ''
         working-directory: packages/nucleus-quark-highlighter
         run: npm run publish:vsix
+
+      # 4. Deploy. Bundle-size baseline for PR comments: merge this build's
+      # size reports over the previous baseline and cache it for pr.yml.
+      - name: Restore bundle-size baseline
+        uses: actions/cache/restore@v5
+        with:
+          path: size-baseline
+          key: size-baseline-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            size-baseline-${{ runner.os }}-
+      - run: node .github/scripts/comment-size-report.mjs --write-baseline
+      - name: Save bundle-size baseline
+        uses: actions/cache/save@v5
+        with:
+          path: size-baseline
+          key: size-baseline-${{ runner.os }}-${{ github.sha }}
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy packages/docs-site/dist --project-name=excom-docs
+
+      # 5. Push the bump, if one was committed (HEAD moved off the checked-out
+      # commit). Runs whenever npm publish succeeded, even if the extension or
+      # the deploy failed after it: npm has the versions now, so `main` must
+      # record them.
+      # No `pull --rebase` first: the bump was generated against, and the
+      # tarballs built from, exactly this tree. If `main` moved meanwhile the
+      # push is rejected (non-fast-forward) and the job fails loudly. The
+      # Release run queued by that newer push re-applies the change files
+      # (still on `main`), skips the versions npm already has, deploys and
+      # pushes the bump.
+      - name: Push version bump
+        if: ${{ !cancelled() && steps.npm-publish.outcome == 'success' }}
+        run: |
+          if [ "$(git rev-parse HEAD)" = "$GITHUB_SHA" ]; then
+            echo "No version bump to push."
+          else
+            git push origin HEAD:main
+          fi
+
       # The README's manual-install path: the .vsix on a GitHub release
-      # tagged like Rush's own package tags.
+      # tagged like Rush's own package tags. After the push: `--target` must
+      # be a commit GitHub already has.
       - name: Attach the .vsix to a GitHub release
         if: steps.vsix.outputs.published == 'true'
         env:

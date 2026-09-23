@@ -1,9 +1,9 @@
+# Manual redeploy of the docs site from `main`. Pushes to `main` deploy
+# through the Release workflow (publish.yml), after the version bump, so the
+# site always shows the versions on npm.
 name: Deploy Docs Site
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 concurrency:
