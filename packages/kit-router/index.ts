@@ -283,6 +283,14 @@ export class KitRouter {
     return null;
   }
 
+  public get previousStates() {
+    return this.states.slice(0, this.getStateIndex(history.state?.id));
+  }
+
+  public get nextStates() {
+    return this.states.slice(this.getStateIndex(history.state?.id) + 1);
+  }
+
   private beforePushState() {
     const index = this.getStateIndex(history.state?.id);
     const currentState = this.getActiveState(index);

@@ -209,11 +209,32 @@ describe("observer", () => {
     host.setAttribute("data-x", "1");
     host.setAttribute("data-other", "1");
     host.appendChild(document.createTextNode("t"));
-    host.appendChild(document.createElement("span"));
+    const span = document.createElement("span");
+    host.append(document.createTextNode("u"), span);
     await wait(0);
     expect(cb.mock.calls.map(([arg]) => arg.attribute)).toEqual([
       "data-x",
       "content",
+    ]);
+    // the inserted elements ride along, text nodes do not
+    expect(cb.mock.calls[1][0].added).toEqual([span]);
+    observer.disconnect();
+    host.remove();
+  });
+
+  it("reports element removals only when asked, text-only ones never", async () => {
+    const host = document.createElement("div");
+    host.innerHTML = "t<span></span>";
+    document.body.appendChild(host);
+    const cb = vi.fn();
+    const observer = observe(host, [], cb, { childRemovals: true })!;
+    host.firstChild!.remove();
+    await wait(0);
+    expect(cb).not.toHaveBeenCalled();
+    host.querySelector("span")!.remove();
+    await wait(0);
+    expect(cb.mock.calls.map(([arg]) => arg.attribute)).toEqual([
+      "CHILD_REMOVED",
     ]);
     observer.disconnect();
     host.remove();

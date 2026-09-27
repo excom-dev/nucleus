@@ -18,5 +18,7 @@ describe("comprehensive view", () => {
     expect(host.hasAttribute("auto-label")).toBe(true);
     expect(host.getAttribute("text-format")).toBe("(xxx) xxx-xxxx");
     expect(host.getAttribute("invalid-message")).toMatch(/US phone/);
+    // digits-only keypad on touch devices
+    expect(host.querySelector("input")?.inputMode).toBe("numeric");
   });
 });

@@ -1,7 +1,12 @@
 import { CHILD_REMOVED } from "./constants";
 import type { QuarkListenerConfig } from "./rule";
 import { deref, QuarkLogger } from "./utils";
-type CB = (arg: { element: HTMLElement; attribute: string }) => any;
+type CB = (arg: {
+  element: HTMLElement;
+  attribute: string;
+  /** `content` records: the inserted elements. */
+  added?: Element[];
+}) => any;
 
 /** Attach the sheet's root event listeners (prop changes, binding changes). */
 export const listen = (listenerConfig: QuarkListenerConfig) => {
@@ -10,13 +15,8 @@ export const listen = (listenerConfig: QuarkListenerConfig) => {
   });
 };
 
-/** True when `nodes` holds at least one element. */
-const hasElement = (nodes: NodeList) => {
-  for (const node of nodes) {
-    if (node.nodeType === Node.ELEMENT_NODE) return true;
-  }
-  return false;
-};
+const isElement = (node: Node): node is Element =>
+  node.nodeType === Node.ELEMENT_NODE;
 
 const classTokens = (value: string | null) =>
   new Set(value ? value.split(/\s+/) : []);
@@ -44,12 +44,10 @@ const classNamesFlipped = (
  * rules reference; with `classNames`, a `class` record counts only when
  * one of those tokens was added or removed (styling churn on other
  * classes is dropped here). childList records queue on the *parent*:
- * insertions as `content` (matching rules run; `content` rules below
- * the insert re-run); when `childRemovals` is set (a rule depends on
- * children or sibling position: `:has()`, `:nth-child()`, `a + b`),
- * element-only removals as `CHILD_REMOVED`. Text-only records have
- * nothing to match. Who changed the nodes (Quark, an element, app JS)
- * does not matter; no render-event contract.
+ * insertions as `content` with the inserted elements, element-only
+ * removals as `CHILD_REMOVED` when `childRemovals` is set (a rule depends
+ * on children / sibling position). Text-only records have nothing to
+ * match; who changed the nodes does not matter, no render-event contract.
  */
 export const observe = (
   host: HTMLElement | WeakRef<HTMLElement>,
@@ -77,9 +75,10 @@ export const observe = (
         }
         cb({ element: target as HTMLElement, attribute: attributeName });
       } else if (type === "childList") {
-        if (hasElement(record.addedNodes)) {
-          cb({ element: target as HTMLElement, attribute: "content" });
-        } else if (childRemovals && hasElement(record.removedNodes)) {
+        const added = [...record.addedNodes].filter(isElement);
+        if (added.length) {
+          cb({ element: target as HTMLElement, attribute: "content", added });
+        } else if (childRemovals && [...record.removedNodes].some(isElement)) {
           cb({ element: target as HTMLElement, attribute: CHILD_REMOVED });
         }
       }

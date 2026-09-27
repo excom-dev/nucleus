@@ -149,3 +149,14 @@ Everything above works on a server-rendered or CMS page. Start with one element 
 ## Load order
 
 Put `<quark-sheet>` first inside its host so it registers before sibling elements connect. Prefer reacting to state attributes (`is-success`, `is-active`) over one-shot events for anything that can happen during boot. See [Orchestrating](/nucleus/docs/orchestrating).
+
+## Next steps
+
+- [Quick Start - A working page, in five minutes.](/nucleus/docs/quick_start)
+- [Core Concepts - The mental model, in one sitting.](/nucleus/docs/core_concepts)
+- [Using Elements - The Nucleus Kit catalog and how elements behave.](/nucleus/docs/using_elements)
+- [Orchestrating - Get familiar with Quark.](/nucleus/docs/orchestrating)
+- [Styling - Valence.css themes, tokens, and state-driven CSS.](/nucleus/docs/styling)
+- [Building Views - Structure a real app: routes, views, lazy loading.](/nucleus/docs/building_views)
+- Other Guides - [Business Logic](/nucleus/docs/business_logic), [Creating Elements](/nucleus/docs/creating_elements), [Best Practices](/nucleus/docs/best_practices), [Troubleshooting](/nucleus/docs/troubleshooting), [Debugging with Agents](/nucleus/docs/debugging_with_agents)
+- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](/nucleus/docs/diving_deeper)

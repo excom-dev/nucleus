@@ -88,3 +88,14 @@ Quark writes are batched and not frame-aligned, so it is the wrong tool for per-
 ## Views
 
 Each view owns its stylesheet, loaded by a `<link>` at the top of the fragment. Scope view CSS to the view's root element and keep shared layout in one site-wide stylesheet. See [Building Views](/nucleus/docs/building_views).
+
+## Next steps
+
+- [Quick Start - A working page, in five minutes.](/nucleus/docs/quick_start)
+- [Core Concepts - The mental model, in one sitting.](/nucleus/docs/core_concepts)
+- [Using Elements - The Nucleus Kit catalog and how elements behave.](/nucleus/docs/using_elements)
+- [Orchestrating - Get familiar with Quark.](/nucleus/docs/orchestrating)
+- [Styling - Valence.css themes, tokens, and state-driven CSS.](/nucleus/docs/styling)
+- [Building Views - Structure a real app: routes, views, lazy loading.](/nucleus/docs/building_views)
+- Other Guides - [Business Logic](/nucleus/docs/business_logic), [Creating Elements](/nucleus/docs/creating_elements), [Best Practices](/nucleus/docs/best_practices), [Troubleshooting](/nucleus/docs/troubleshooting), [Debugging with Agents](/nucleus/docs/debugging_with_agents)
+- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](/nucleus/docs/diving_deeper)

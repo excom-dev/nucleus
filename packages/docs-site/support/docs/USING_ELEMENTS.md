@@ -103,3 +103,14 @@ The Nucleus Kit catalog exists to give the *same* contract to protocols the plat
 
 - **Select on state, not on classes.** Setting attributes is recommended over toggling / mutating classes and ids, since the latter has a heavier impact on Quark's performance. Keep classes for static styling.
 - **Set attributes, not properties, before upgrade.** If script runs before an element's definition has loaded, `setAttribute()` is honored on upgrade; a property assignment is not.
+
+## Next steps
+
+- [Quick Start - A working page, in five minutes.](/nucleus/docs/quick_start)
+- [Core Concepts - The mental model, in one sitting.](/nucleus/docs/core_concepts)
+- [Using Elements - The Nucleus Kit catalog and how elements behave.](/nucleus/docs/using_elements)
+- [Orchestrating - Get familiar with Quark.](/nucleus/docs/orchestrating)
+- [Styling - Valence.css themes, tokens, and state-driven CSS.](/nucleus/docs/styling)
+- [Building Views - Structure a real app: routes, views, lazy loading.](/nucleus/docs/building_views)
+- Other Guides - [Business Logic](/nucleus/docs/business_logic), [Creating Elements](/nucleus/docs/creating_elements), [Best Practices](/nucleus/docs/best_practices), [Troubleshooting](/nucleus/docs/troubleshooting), [Debugging with Agents](/nucleus/docs/debugging_with_agents)
+- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](/nucleus/docs/diving_deeper)

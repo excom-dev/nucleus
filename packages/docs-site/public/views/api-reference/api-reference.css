@@ -40,6 +40,8 @@
     data-table {
       --v-table-sticky-top: var(--site-header-height);
       --v-spacing: 0.8rem;
+      /* small screens + unbreakable code tokens (event tables) */
+      overflow-x: scroll;
       code {
         word-break: keep-all; /* keep hyphenated tokens whole */
         overflow-wrap: normal; /* break only at spaces */

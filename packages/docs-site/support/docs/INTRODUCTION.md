@@ -70,7 +70,11 @@ The Nucleus Stack is MIT licensed and will remain free and open source. This is 
 
 ## Start here
 
-1. [Quick Start](/nucleus/docs/quick_start) A working page, in five minutes.
-2. [Core Concepts](/nucleus/docs/core_concepts) The mental model, in one sitting.
-3. [Using Elements](/nucleus/docs/using_elements) and [Orchestrating](/nucleus/docs/orchestrating) The two skills you'll use daily.
-4. [Diving Deeper](/nucleus/docs/diving_deeper) The architecture behind it all, for the curious and the skeptical.
+- [Quick Start - A working page, in five minutes.](/nucleus/docs/quick_start)
+- [Core Concepts - The mental model, in one sitting.](/nucleus/docs/core_concepts)
+- [Using Elements - The Nucleus Kit catalog and how elements behave.](/nucleus/docs/using_elements)
+- [Orchestrating - Get familiar with Quark.](/nucleus/docs/orchestrating)
+- [Styling - Valence.css themes, tokens, and state-driven CSS.](/nucleus/docs/styling)
+- [Building Views - Structure a real app: routes, views, lazy loading.](/nucleus/docs/building_views)
+- Other Guides - [Business Logic](/nucleus/docs/business_logic), [Creating Elements](/nucleus/docs/creating_elements), [Best Practices](/nucleus/docs/best_practices), [Troubleshooting](/nucleus/docs/troubleshooting), [Debugging with Agents](/nucleus/docs/debugging_with_agents)
+- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](/nucleus/docs/diving_deeper)

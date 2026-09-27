@@ -5,7 +5,8 @@
  * under `dist/progressive/` and load once.
  *
  * Vs the all-in `index.umd.min.js`: one extra round-trip before upgrade
- * (style the pre-upgrade state yourself), and ESM only.
+ * (style the pre-upgrade state yourself), and ESM only. Opt into idle loading
+ * (prefetch the rest after page load) with `<body nucleus-kit-idle>`.
  */
 type Loader = () => Promise<unknown>;
 
@@ -94,7 +95,7 @@ const scan = (node: Node) => {
  * on `document` at import time; call it yourself for a shadow root.
  */
 export const observeElements = (
-  root: Document | Element | ShadowRoot
+  root: Document | Element | ShadowRoot,
 ): (() => void) => {
   scan(root);
   const observer = new MutationObserver((records) => {
@@ -104,4 +105,56 @@ export const observeElements = (
   return () => observer.disconnect();
 };
 
+const loaded = new Promise((resolve) =>
+  document.readyState == "complete"
+    ? resolve(0)
+    : window.addEventListener("load", resolve, { once: true }),
+);
+
+/** Next idle period (≤ 3 s away); a 100 ms timer without `requestIdleCallback` (Safari). */
+const idle = () =>
+  new Promise((resolve) =>
+    typeof requestIdleCallback == "function"
+      ? requestIdleCallback(resolve, { timeout: 3000 })
+      : setTimeout(resolve, 100),
+  );
+
+/** Data-saver mode (Chromium; `prefers-reduced-data` ships nowhere yet). */
+const saveData = () =>
+  (navigator as { connection?: { saveData?: boolean } }).connection?.saveData;
+
+/**
+ * After `load`, prefetch the packages behind `tags` (default all) one per idle
+ * period, skipping loaded ones, unknown tags (warned) and Save-Data mode.
+ * The entry calls this itself on `<script data-idle>` / `<body nucleus-kit-idle>`.
+ */
+export const idleLoadElements = async (
+  tags: readonly string[] = PROGRESSIVE_TAGS,
+): Promise<void> => {
+  const known = tags.filter(
+    (tag) =>
+      PROGRESSIVE_TAGS.includes(tag) ||
+      console.warn(`[nucleus-kit] unknown idle tag <${tag}>`),
+  );
+  await loaded;
+  if (saveData()) return;
+  // one tag per package, so a family is one idle slot
+  const queue = new Map(known.map((tag) => [PROGRESSIVE_LOADERS[tag], tag]));
+  for (const tag of queue.values()) {
+    if (pending.has(PROGRESSIVE_LOADERS[tag])) continue;
+    await idle();
+    await loadElement(tag)?.catch(() => {});
+  }
+};
+
 observeElements(document);
+
+// opt-in: `data-idle` on this entry's own <script> (module scripts have no
+// `currentScript`), else <body nucleus-kit-idle>; empty = every package
+loaded.then(() => {
+  const spec =
+    [...document.querySelectorAll<HTMLScriptElement>("script[data-idle]")].find(
+      (script) => script.src == import.meta.url,
+    )?.dataset.idle ?? document.body.getAttribute("nucleus-kit-idle");
+  if (spec != null) idleLoadElements(spec.match(/\S+/g) ?? PROGRESSIVE_TAGS);
+});

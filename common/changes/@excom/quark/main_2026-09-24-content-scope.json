@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/quark",
+      "comment": "Improve element insertions so they run rules only for the inserted elements, plus rules that depend on children or sibling position, instead of re-running every rule over the parent's whole subtree. A dialog or popover opening under a sheet's host no longer re-applies its rules (or restarts their `@delay` timers).",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/quark",
+  "email": "133191653+excom-dev@users.noreply.github.com"
+}

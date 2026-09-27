@@ -1,5 +1,7 @@
 import "@excom/content-drawer";
+import "@excom/quark-sheet";
 import "@excom/super-form";
+import { invokeCommand } from "@excom/neutron";
 import {
   afterEach,
   describe,
@@ -12,6 +14,7 @@ import {
 } from "@excom/heft-rig/profiles/default/config/test-utils";
 import {
   flush,
+  mountView as mountWithSheet,
   readViewFile,
 } from "@excom/quark/support/tests/view-helpers";
 
@@ -22,12 +25,31 @@ const html = readViewFile(
 
 const stripAssets = (s: string) => s.replace(/<link[\s\S]*?>/g, "");
 
+/** The `#release-notice { … }` rule of the shell sheet in `index.html`. */
+const shellRule = () => {
+  const shell = readViewFile(import.meta.url, "../../index.html");
+  const start = shell.indexOf("#release-notice {");
+  let depth = 0;
+  for (let i = shell.indexOf("{", start); i < shell.length; i++) {
+    depth += shell[i] === "{" ? 1 : shell[i] === "}" ? -1 : 0;
+    if (!depth) return shell.slice(start, i + 1);
+  }
+  throw new Error("index.html has no #release-notice rule");
+};
+
 /** The banner is static: no sheet, no provision — CSS drives the lifecycle. */
 const mountView = () => fixture<HTMLElement>(stripAssets(html));
+
+/** Fake-timer `flush()`: advance `ms`, then drain what the due timers queued. */
+const tick = async (ms = 0) => {
+  await vi.advanceTimersByTimeAsync(ms);
+  for (let i = 0; i < 8; i++) await vi.advanceTimersByTimeAsync(0);
+};
 
 describe("release notice view", () => {
   afterEach(() => {
     document.body.innerHTML = "";
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -114,5 +136,55 @@ describe("release notice view", () => {
       website: "",
     });
     expect(superForm.hasAttribute("is-success")).toBe(true);
+  });
+
+  it("keeps its clicks from bubbling past the banner (shell sheet)", async () => {
+    const { root } = await mountWithSheet(
+      `<quark-sheet>${shellRule()}</quark-sheet>${html}`,
+    );
+    const outside = vi.fn();
+    document.addEventListener("click", outside);
+    document.addEventListener("mouseup", outside);
+    try {
+      const inner = root.querySelector("#release-notice blockquote p")!;
+      for (const type of ["mouseup", "click"]) {
+        inner.dispatchEvent(new MouseEvent(type, { bubbles: true }));
+      }
+      expect(outside).not.toHaveBeenCalled();
+
+      // the rest of the page still bubbles
+      root.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      expect(outside).toHaveBeenCalledTimes(1);
+    } finally {
+      document.removeEventListener("click", outside);
+      document.removeEventListener("mouseup", outside);
+    }
+  });
+
+  // a popover toggle appends a proxy button under <body>, which re-runs the
+  // whole shell sheet; an ungated `@delay` restarted and reopened the banner
+  it("opens once after 3s; a sheet re-run never reopens it (shell sheet)", async () => {
+    vi.useFakeTimers();
+    const mounted = mountWithSheet(
+      `<quark-sheet>${shellRule()}</quark-sheet>${html}`,
+    );
+    await tick(50);
+    const { root } = await mounted;
+    const notice = root.querySelector<HTMLElement>("#release-notice")!;
+
+    await tick(2850);
+    expect(notice.hasAttribute("is-open")).toBe(false);
+    await tick(150);
+    expect(notice.hasAttribute("is-open")).toBe(true);
+    expect(notice.hasAttribute("data-did-open")).toBe(true);
+
+    invokeCommand(notice, "--close", notice.querySelector("button.close"));
+    await tick();
+    expect(notice.hasAttribute("is-open")).toBe(false);
+
+    root.append(document.createElement("button"));
+    await tick(3500);
+    expect(notice.hasAttribute("is-open")).toBe(false);
+    expect(notice.hasAttribute("data-did-open")).toBe(true);
   });
 });

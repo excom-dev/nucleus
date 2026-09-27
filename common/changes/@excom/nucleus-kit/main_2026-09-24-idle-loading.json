@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Add idle loading to the progressive entry: opt in with `<body nucleus-kit-idle>` or `data-idle` on its `<script>` (empty = every package, a space-separated tag list = those packages) to prefetch packages one per idle period after page load; tags already on the page load first and are never fetched twice, data-saver mode is respected, and `idleLoadElements(tags?)` does the same from JS",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@excom/nucleus-kit",
+  "email": "133191653+excom-dev@users.noreply.github.com"
+}

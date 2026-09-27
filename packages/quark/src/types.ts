@@ -141,6 +141,9 @@ export interface ContextField extends ContextSheet {
 
 export type MutationMap = Map<HTMLElement, Set<string>>;
 
+/** `content` parent -> its inserted elements still below it; no entry = whole-subtree fan-out */
+export type InsertedNodes = Map<HTMLElement, Element[]>;
+
 export type ExpressionResult =
   | {
       type: "html";

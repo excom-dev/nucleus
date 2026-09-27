@@ -75,7 +75,11 @@ The Nucleus Stack is MIT licensed and will remain free and open source. This is 
 
 ## Start here
 
-1. [Quick Start](https://excom.dev/nucleus/docs/quick_start) A working page, in five minutes.
-2. [Core Concepts](https://excom.dev/nucleus/docs/core_concepts) The mental model, in one sitting.
-3. [Using Elements](https://excom.dev/nucleus/docs/using_elements) and [Orchestrating](https://excom.dev/nucleus/docs/orchestrating) The two skills you'll use daily.
-4. [Diving Deeper](https://excom.dev/nucleus/docs/diving_deeper) The architecture behind it all, for the curious and the skeptical.
+- [Quick Start - A working page, in five minutes.](https://excom.dev/nucleus/docs/quick_start)
+- [Core Concepts - The mental model, in one sitting.](https://excom.dev/nucleus/docs/core_concepts)
+- [Using Elements - The Nucleus Kit catalog and how elements behave.](https://excom.dev/nucleus/docs/using_elements)
+- [Orchestrating - Get familiar with Quark.](https://excom.dev/nucleus/docs/orchestrating)
+- [Styling - Valence.css themes, tokens, and state-driven CSS.](https://excom.dev/nucleus/docs/styling)
+- [Building Views - Structure a real app: routes, views, lazy loading.](https://excom.dev/nucleus/docs/building_views)
+- Other Guides - [Business Logic](https://excom.dev/nucleus/docs/business_logic), [Creating Elements](https://excom.dev/nucleus/docs/creating_elements), [Best Practices](https://excom.dev/nucleus/docs/best_practices), [Troubleshooting](https://excom.dev/nucleus/docs/troubleshooting), [Debugging with Agents](https://excom.dev/nucleus/docs/debugging_with_agents)
+- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](https://excom.dev/nucleus/docs/diving_deeper)

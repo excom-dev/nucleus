@@ -180,6 +180,41 @@ describe("KitRouter history", () => {
     expect(router.canGoForward()).toBe(false);
   });
 
+  it("previousStates / nextStates split the states around the active entry", () => {
+    router = new KitRouter();
+    router.on(new KitRoute(/.*/, () => {}));
+    const urls = (states: Array<{ url: string }>) => states.map((s) => s.url);
+    expect(router.previousStates).toEqual([]);
+    expect(router.nextStates).toEqual([]);
+
+    router.pushState({ url: "/a" });
+    router.pushState({ url: "/b" });
+    expect(urls(router.previousStates)).toEqual(["/", "/a"]);
+    expect(router.nextStates).toEqual([]);
+
+    const states = statesOf(router);
+    popstate(states[1].id);
+    expect(urls(router.previousStates)).toEqual(["/"]);
+    expect(urls(router.nextStates)).toEqual(["/b"]);
+
+    popstate(states[0].id);
+    expect(router.previousStates).toEqual([]);
+    expect(urls(router.nextStates)).toEqual(["/a", "/b"]);
+
+    // copies: mutating them does not touch the router
+    router.nextStates.pop();
+    expect(statesOf(router)).toHaveLength(3);
+  });
+
+  it("previousStates / nextStates treat an unknown history id as the first state", () => {
+    router = new KitRouter();
+    router.on(new KitRoute(/.*/, () => {}));
+    router.pushState({ url: "/a" });
+    history.replaceState({ id: "unknown" }, "");
+    expect(router.previousStates).toEqual([]);
+    expect(router.nextStates.map((s) => s.url)).toEqual(["/a"]);
+  });
+
   it("keeps state metadata (title, scroll, transition types)", () => {
     router = new KitRouter();
     const handler = vi.fn();

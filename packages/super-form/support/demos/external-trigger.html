@@ -15,9 +15,20 @@
   <button type="button" command="--submit" commandfor="demo-super-form-external">
     Save (outside the form)
   </button>
+  <quark-sheet>
+    @use "quark:util" as *;
+
+    super-form[is-success] {
+      $res: prop("provision");
+      li { content: "#{index}: #{to-json(item)}"; }
+      ul:first-of-type { content: iterate($res.body.json, "#demo-super-form-item"); }
+      ul:last-of-type { content: iterate($res, "#demo-super-form-item"); }
+    }
+  </quark-sheet>
   <style>
     #demo-super-form-external-trigger { max-width: none; }
     #demo-super-form-external-trigger super-form {
+      width: 100%;
       &[is-loading] {
         opacity: 0.5;
         border: 1px dashed yellow;
@@ -32,12 +43,4 @@
       li { display: block; }
     }
   </style>
-  <quark-sheet>
-    super-form[is-success] {
-      $res: prop("provision");
-      li { content: "#{index}: #{item}"; }
-      ul:first-of-type { content: iterate($res.body.json, "#demo-super-form-item"); }
-      ul:last-of-type { content: iterate($res, "#demo-super-form-item"); }
-    }
-  </quark-sheet>
 </section>

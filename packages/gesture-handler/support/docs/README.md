@@ -55,7 +55,7 @@ Give a drag handle `touch-action: none` when using `from-ref`, so the browser do
 
 ### Scroll handoff
 
-`handoff-ref` names the scroll container(s) inside the surface whose *overscroll* starts a gesture (a `:scope`-relative selector; a comma list matches several). A pointer that goes down in one of them scrolls natively as usual. Only when its **first** move runs along `progress-axis`, the container is at its scroll limit that way, and `progress-offset` still has room to travel in that direction does the element cancel the native scroll for the rest of the touch and take the drag over — the same gesture, the same `--gesture-*` values and the same `-start` / `-end` / `-snap` events as a drag from a handle:
+`handoff-ref` names the scroll container(s) inside the surface whose *overscroll* starts a gesture (a `:scope`-relative selector; a comma list matches several). A pointer that goes down in one of them scrolls natively as usual. Only when its **first** move runs along `progress-axis`, nothing between the pointer and the element can still scroll that way (the named containers and any scroll container nested in or around them, so a scrolled editor inside a sheet scrolls back first), and `progress-offset` still has room to travel in that direction does the element cancel the native scroll for the rest of the touch and take the drag over — the same gesture, the same `--gesture-*` values and the same `-start` / `-end` / `-snap` events as a drag from a handle:
 
 ```html
 <gesture-handler gesture-types="pan-y swipe" progress-axis="up" snap-points="0 1"
@@ -65,7 +65,7 @@ Give a drag handle `touch-action: none` when using `from-ref`, so the browser do
 
 An open sheet (`progress-offset: 1`) closes either from its header or by pulling its text down once the text is back at the top; pulling up, or pulling down mid-scroll, keeps scrolling. `handoff-ref` is additive — `from-ref` and `from-edge` starts are unchanged, and a `from-ref` handle inside a handoff container still starts on pointerdown. The element keeps `touch-action` out of the way while `handoff-ref` is set (the containers must be able to scroll), so give handles their own `touch-action: none`.
 
-Mouse drags (`pointer-types="… mouse"`) take the same route with no native scroll to cancel: the first `pointermove` inside the container starts the gesture when the container is at its limit.
+Mouse drags (`pointer-types="… mouse"`) take the same route with no native scroll to cancel: the first `pointermove` inside the container starts the gesture when nothing below the pointer can still scroll that way.
 
 ### API Reference
 

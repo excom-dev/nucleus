@@ -79,4 +79,13 @@ Functions should be pure: take values, return values. Side effects are allowed w
 | Style something | **CSS / Valence.css**, keyed to state attributes |
 | Package a chunk of UI | A **view** (HTML + CSS + Quark) |
 
-Continue with [Using Elements](/nucleus/docs/using_elements) and [Orchestrating](/nucleus/docs/orchestrating). For the full architectural treatment, see [Adapter, State, Orchestrator](/nucleus/docs/adapter_state_orchestrator).
+## Next steps
+
+- [Quick Start - A working page, in five minutes.](/nucleus/docs/quick_start)
+- [Core Concepts - The mental model, in one sitting.](/nucleus/docs/core_concepts)
+- [Using Elements - The Nucleus Kit catalog and how elements behave.](/nucleus/docs/using_elements)
+- [Orchestrating - Get familiar with Quark.](/nucleus/docs/orchestrating)
+- [Styling - Valence.css themes, tokens, and state-driven CSS.](/nucleus/docs/styling)
+- [Building Views - Structure a real app: routes, views, lazy loading.](/nucleus/docs/building_views)
+- Other Guides - [Business Logic](/nucleus/docs/business_logic), [Creating Elements](/nucleus/docs/creating_elements), [Best Practices](/nucleus/docs/best_practices), [Troubleshooting](/nucleus/docs/troubleshooting), [Debugging with Agents](/nucleus/docs/debugging_with_agents)
+- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](/nucleus/docs/diving_deeper)

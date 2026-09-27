@@ -39,10 +39,9 @@ body {
 }
 
 /* The static pointer to the plain-text docs (index.html, first child of `<body>`).
-   Styled for the CSS-loads-but-JS-fails path; `detect-browser` upgrades the moment
-   Nucleus Kit is imported, so `:defined` is the "JavaScript ran" signal and the
-   notice comes down without a line of script. */
+   Styled for the CSS-loads-but-JS-fails path */
 .agent-notice {
+  display: none;
   padding: var(--v-spacing, 1rem);
   font-size: 0.75rem;
   line-height: 1.5;
@@ -51,8 +50,10 @@ body {
     margin: 0;
   }
 }
-body:has(detect-browser:defined) .agent-notice {
-  display: none;
+@media (scripting: none) {
+  .agent-notice {
+    display: block !important;
+  }
 }
 
 /* wait until loaded so no FOUC */
@@ -273,26 +274,29 @@ main
   display: contents;
 }
 
-.package-links hgroup {
-  margin-top: calc(var(--v-spacing));
-  margin-bottom: calc(var(--v-spacing) * 0.25);
-  text-align: center;
-  position: relative;
-  &::before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 0;
-    width: 100%;
-    height: 1px;
-    background-color: var(--v-muted-border-color);
-    z-index: -1;
-  }
-  h5 {
-    width: fit-content;
-    background-color: var(--v-background-color);
-    padding: 0 8px;
-    margin: 0 auto;
+.package-links {
+  padding-bottom: var(--v-spacing);
+  hgroup {
+    margin-top: calc(var(--v-spacing));
+    margin-bottom: calc(var(--v-spacing) * 0.25);
+    text-align: center;
+    position: relative;
+    &::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background-color: var(--v-muted-border-color);
+      z-index: -1;
+    }
+    h5 {
+      width: fit-content;
+      background-color: var(--v-background-color);
+      padding: 0 8px;
+      margin: 0 auto;
+    }
   }
 }
 
@@ -612,6 +616,9 @@ body {
     }
   }
   .site-nav-footer {
+    /* to push package links up a bit */
+    margin-top: var(--site-header-height) !important;
+    padding-inline: calc(var(--v-spacing) * 0.5) !important;
     /* fade in delay because nav items load and it's jerky */
     transition: opacity 0.4s ease-out 1s;
     @starting-style {
@@ -691,20 +698,32 @@ body {
     > .desktop-only {
       display: none;
     }
-    /* logos row */
-    > p.mobile-only {
+    /* socials row */
+    > ul.mobile-only {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: var(--v-spacing);
-      margin: 0 0 calc(var(--v-spacing) * 0.75);
+      gap: calc(var(--v-spacing) * 1.1);
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      border: 0;
       font-size: inherit;
-      spa-a {
-        display: inline-flex;
+      > li {
+        margin: 0;
+        padding: 0;
+      }
+      spa-a:has(img[src*="excom"]) {
+        display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: calc(var(--v-spacing) * 0.4);
+        gap: calc(var(--v-spacing) * 0.2);
         color: inherit;
         text-decoration: none;
+        padding-right: 36px;
+        small {
+          margin: 0;
+        }
       }
       img {
         width: auto;
@@ -714,22 +733,7 @@ body {
         height: 2rem;
       }
       img[src*="excom"] {
-        height: 0.85rem;
-      }
-    }
-    /* socials row */
-    > ul.mobile-only {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: calc(var(--v-spacing) * 1.1);
-      list-style: none;
-      margin: 0 0 calc(var(--v-spacing) * 0.75);
-      padding: 0;
-      border: 0;
-      > li {
-        margin: 0;
-        padding: 0;
+        height: 0.9rem;
       }
     }
     [data-social] {

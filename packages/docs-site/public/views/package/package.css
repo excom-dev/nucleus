@@ -265,17 +265,6 @@ include-content[data-demo] {
       background: var(--v-card-sectioning-background-color);
       font-size: 0.9rem;
       color: var(--v-muted-color);
-
-      /* Each piece's logo; the list order in INTRODUCTION.md is fixed.
-         Multi-colour marks as a background, like the site header's <img>. */
-      &::before {
-        content: "";
-        display: block;
-        width: 2rem;
-        height: 2rem;
-        margin-bottom: 0.6rem;
-        background: var(--stack-logo) center / contain no-repeat;
-      }
       &:nth-child(1) {
         --stack-logo: url("/img/nucleus.svg");
       }
@@ -291,10 +280,21 @@ include-content[data-demo] {
 
       strong:first-of-type {
         display: block;
-        margin-bottom: 0.35em;
+        margin-bottom: 0.5em;
         font-size: 1.05rem;
         font-weight: 600;
         color: var(--v-color);
+        display: flex;
+        /* Each piece's logo; the list order in INTRODUCTION.md is fixed.
+         Multi-colour marks as a background, like the site header's <img>. */
+        &::before {
+          content: "";
+          display: inline-block;
+          width: 1.5rem;
+          height: 1.5rem;
+          background: var(--stack-logo) center / contain no-repeat;
+          margin-right: 0.6rem;
+        }
       }
     }
   }
@@ -361,21 +361,39 @@ include-content[data-demo] {
 }
 
 #md-next-steps + ul,
-#md-start-here + ol {
+#md-start-here + ul {
   list-style: none;
   padding: 0;
   counter-reset: start-here;
 
   > li {
     counter-increment: start-here;
-    display: flex;
-    align-items: center;
-    gap: 0.85rem;
     margin: 0 0 0.55rem;
     padding: 0.85rem 1rem;
     border: 1px solid var(--v-muted-border-color);
     border-radius: var(--v-border-radius);
     background: var(--v-card-background-color);
+    transition: background 0.2s ease-out;
+    &:not(:has(spa-a ~ spa-a)) {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      &:has(spa-a[data-completed], spa-a[is-active], spa-a[was-active]) {
+        background: var(--v-contrast-inverse);
+        &::before {
+          background: var(--v-icon-valid);
+          color: transparent;
+        }
+      }
+      spa-a {
+        text-decoration: none;
+        --v-color: revert;
+      }
+    }
+    &:has(spa-a ~ spa-a)::before {
+      float: left;
+      margin-right: 0.85rem;
+    }
 
     &::before {
       content: counter(start-here);
@@ -390,6 +408,9 @@ include-content[data-demo] {
       font-size: 0.85rem;
       font-weight: 600;
       line-height: 1;
+      transition:
+        background 0.2s ease-out,
+        color 0.2s ease-out;
     }
   }
 }

@@ -1,10 +1,5 @@
 import { selectAll, selectOne } from "@excom/kit-utils";
-import {
-  ConstructorType,
-  Neutron,
-  TEvent,
-  TokenList,
-} from "@excom/neutron";
+import { ConstructorType, Neutron, TEvent, TokenList } from "@excom/neutron";
 
 export type GestureType =
   | "pan"
@@ -136,7 +131,8 @@ interface Handoff {
   pointerType: string;
   x: number;
   y: number;
-  container: Element;
+  /** Where the pointer went down. The first move walks up from here */
+  target: Element;
 }
 
 type Handle = ReturnType<typeof setTimeout>;
@@ -198,6 +194,8 @@ const VELOCITY_WINDOW_MS = 100;
 const HANDOFF_MIN_PX = 3;
 /** Slack (px) still counted as at scroll limit */
 const LIMIT_EPSILON = 1;
+/** Computed `overflow-*` of an element the user can scroll */
+const SCROLLS = /auto|scroll|overlay/;
 /** Extra travel time (ms) when projecting snap target */
 const PROJECTION_MS = 120;
 const WINDOW_EVENTS = ["pointermove", "pointerup", "pointercancel"];
@@ -359,10 +357,10 @@ export const GestureHandler = Neutron({
      * selector, comma list matches several) — e.g. a sheet closed by pulling
      * its own content down.
      *
-     * Pointerdown inside one scrolls natively; gesture takes over only when
-     * first move runs along `progress-axis`, container is at that scroll
-     * limit, and `progress-offset` still has room that way. Additive to
-     * `from-ref` / `from-edge`.
+     * Pointerdown inside one scrolls natively; the gesture takes over only when
+     * the first move runs along `progress-axis`, every scroller between pointer
+     * and this element is at its limit that way, and `progress-offset` has room.
+     * Additive to `from-ref` / `from-edge`.
      * @values <CSS Selector>
      */
     handoffRef: String,
@@ -812,36 +810,32 @@ function originAllowed(element: El, e: PointerEvent): boolean {
     };
     if (fromEdge.some((edge) => insets[edge] <= edgePx)) return true;
   }
-  if (handoffContainer(element, e.target)) return false;
+  if (inHandoff(element, e.target)) return false;
   return !fromRef && !fromEdge?.length;
 }
 
-/** Innermost `handoff-ref` container this node sits in, if any (matches
- *  in document order; last containing match is nearest — a scrolling editor
- *  inside a non-scrolling sheet must be judged by its own scroll, not the sheet's). */
-function handoffContainer(element: El, node: EventTarget | null) {
-  const { handoffRef } = element;
-  if (!handoffRef || !node) return null;
-  const containers = (selectAll(handoffRef, { scope: element }) || []).filter(
-    (container) => container.contains(node as Node)
-  );
-  return containers[containers.length - 1] || null;
-}
+/** `handoff-ref` matches */
+const handoffContainers = (element: El): Element[] =>
+  element.handoffRef
+    ? selectAll(element.handoffRef, { scope: element }) || []
+    : [];
+
+/** Does this node sit in a `handoff-ref` container? */
+const inHandoff = (element: El, node: EventTarget | null) =>
+  !!node && handoffContainers(element).some((c) => c.contains(node as Node));
 
 function pendingHandoff(element: El, e: PointerEvent): Handoff | null {
   const { isDisabled, pointerTypes, _session } = element;
   if (_session || isDisabled || e.button > 0) return null;
   if (!pointerTypes.includes(e.pointerType)) return null;
-  const container = handoffContainer(element, e.target);
-  return (
-    container && {
-      pointerId: e.pointerId,
-      pointerType: e.pointerType,
-      x: e.clientX,
-      y: e.clientY,
-      container,
-    }
-  );
+  if (!inHandoff(element, e.target)) return null;
+  return {
+    pointerId: e.pointerId,
+    pointerType: e.pointerType,
+    x: e.clientX,
+    y: e.clientY,
+    target: e.target as Element,
+  };
 }
 
 /** Direction `--gesture-progress` grows, as `createSession` reads it. */
@@ -872,11 +866,28 @@ function atScrollLimit(container: Element, direction: GestureDirection) {
   }
 }
 
+/* Checks if any intermediate nodes between `target` and `element` are scrollable. */
+function canScroll(element: El, target: Element, direction: GestureDirection) {
+  const containers = handoffContainers(element);
+  const overflow = AXES[direction][0] ? "overflowX" : "overflowY";
+  for (
+    let n: Element | null = target;
+    n && n !== element;
+    n = n.parentElement
+  ) {
+    if (atScrollLimit(n, direction)) continue;
+    if (containers.includes(n) || SCROLLS.test(getComputedStyle(n)[overflow])) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /**
- * Does this first move hand over? Must run along `progress-axis`, find
- * container at its limit that way, and have progress left to travel.
+ * First move hands over: along `progress-axis`, no scroller below the pointer
+ * with room that way, progress left to travel.
  */
-function handsOver(element: El, container: Element, dx: number, dy: number) {
+function handsOver(element: El, target: Element, dx: number, dy: number) {
   const forward = progressDirection(element);
   const [ax, ay] = AXES[forward];
   const along = dx * ax + dy * ay;
@@ -889,7 +900,7 @@ function handsOver(element: El, container: Element, dx: number, dy: number) {
     along > 0 ? progressOffset < progressMax : progressOffset > progressMin;
   return (
     headroom &&
-    atScrollLimit(container, along > 0 ? forward : OPPOSITE[forward])
+    !canScroll(element, target, along > 0 ? forward : OPPOSITE[forward])
   );
 }
 
@@ -909,7 +920,7 @@ function handoffEffects(element: El, event: Event): unknown[] | undefined {
   const dx = pointer.clientX - h.x;
   const dy = pointer.clientY - h.y;
   if (Math.hypot(dx, dy) < HANDOFF_MIN_PX) return; // too early to tell
-  if (!handsOver(element, h.container, dx, dy)) {
+  if (!handsOver(element, h.target, dx, dy)) {
     return [{ _handoff: null }]; // container scrolls; leave it
   }
   if (touch) event.preventDefault(); // no native scroll for this sequence

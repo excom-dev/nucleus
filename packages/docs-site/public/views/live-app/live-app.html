@@ -24,10 +24,10 @@
             </section>
         </div>
 
-        <!-- touch / pen only: a mouse drag inside the editor must select text, not pull the sheet. -->
+        <!-- touch / pen only: a mouse drag must select text. A pull-down closes the sheet
+             only once every scroller under the finger is at its top. -->
         <gesture-handler gesture-types="pan-y swipe" pointer-types="touch pen"
-            from-ref=":scope > content-drawer > .grabber"
-            handoff-ref=":scope .code-editor, :scope content-tabs-body, :scope > content-drawer"
+            from-ref=":scope > content-drawer > .grabber" handoff-ref=":scope > content-drawer"
             progress-axis="up" range-ref=":scope > content-drawer" snap-points="0 1">
         <content-drawer aria-label="editor">
             <dismiss-watcher command-name="--close"></dismiss-watcher>
