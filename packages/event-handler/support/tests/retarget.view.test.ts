@@ -2,7 +2,6 @@ import "@excom/quark-sheet";
 import "../../index";
 import {
   afterEach,
-  beforeEach,
   describe,
   expect,
   it,
@@ -11,18 +10,14 @@ import {
   click,
   expectComplexity,
   flush,
-  installDemoModules,
   measureComplexity,
   mountView,
   readDemo,
-  restoreDemoModules,
 } from "@excom/quark/support/tests/view-helpers";
 
 describe("retarget view", () => {
-  beforeEach(() => installDemoModules());
   afterEach(() => {
     document.body.innerHTML = "";
-    restoreDemoModules();
   });
 
   it("pings the previous output", async () => {
@@ -32,7 +27,7 @@ describe("retarget view", () => {
     await flush();
     const budget = meter.take();
     meter.stop();
-    expect(root.querySelector("output")?.textContent).toMatch(/pong/);
+    expect(root.querySelector("output")?.textContent).toBe("pong");
     expectComplexity(budget);
   });
 });

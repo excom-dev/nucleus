@@ -1,12 +1,15 @@
-<div id="geo-request-demo">
+<div>
   <button type="button" command="--request" commandfor="geo-request">
     Request my location
   </button>
-  <provider-geolocation id="geo-request" is-paused></provider-geolocation>
-  <output>Click above — your browser will prompt for permission.</output>
+  <provider-geolocation id="geo-request" is-paused>
+    <output>Click above — your browser will prompt for permission.</output>
+  </provider-geolocation>
   <quark-sheet>
-    @use "/demo-utils" as *;
-
-    #geo-request-demo { @on neutron-provision (handle: setOutputFromElementData); }
+    provider-geolocation {
+      $result: prop("provision");
+      &[is-success] output { content: "#{$result.coords.latitude}, #{$result.coords.longitude}"; }
+      &[is-error] output { content: $result.message; }
+    }
   </quark-sheet>
 </div>

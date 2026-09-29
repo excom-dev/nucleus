@@ -1,8 +1,8 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`debounce view > emits search-query after the debounce window > complexity 1`] = `
+exports[`debounce view > coalesces a burst of input into one search-query > complexity 1`] = `
 {
-  "attributeRuns": 0,
+  "attributeRuns": 1,
   "closest": 0,
   "getVar": 0,
   "importNode": 0,
@@ -11,10 +11,10 @@ exports[`debounce view > emits search-query after the debounce window > complexi
   "parentElement": 0,
   "quarkRuns": 0,
   "queryScopeCost": 0,
-  "querySelectorAll": 1,
+  "querySelectorAll": 2,
   "removeAttribute": 1,
   "ruleRuns": 0,
-  "schedulePaint": 0,
+  "schedulePaint": 1,
   "setAttribute": 1,
   "setVar": 0,
   "textContent": 1,

@@ -26,13 +26,13 @@ and a parent listener can defer or skip the render entirely.</p>
   }
 </style>
 
-<div class="render-event-demo" id="render-event-host">
+<div class="render-event-demo">
   <label>
-    <input type="checkbox" id="toggle-active" />
+    <input type="checkbox" />
     Active
   </label>
 
-  <include-content id="render-target">
+  <include-content>
     <template>
       <article>
         <h4>Just rendered (with a view transition)</h4>
@@ -40,27 +40,15 @@ and a parent listener can defer or skip the render entirely.</p>
       </article>
     </template>
   </include-content>
+
+  <quark-sheet>
+    @use "/demo-utils" as *;
+
+    label {
+      @on change { + include-content { is-active: event.target.checked; } }
+    }
+    include-content {
+      @on include-content-render, include-content-unrender (handle: renderInTransition);
+    }
+  </quark-sheet>
 </div>
-
-<script>
-  (() => {
-    const host = document.querySelector("#render-event-host");
-    const target = host.querySelector("#render-target");
-    const toggle = host.querySelector("#toggle-active");
-
-    target.addEventListener("include-content-render", (e) => {
-      if (!document.startViewTransition) return;
-      e.preventDefault();
-      document.startViewTransition(() => e.detail());
-    });
-    target.addEventListener("include-content-unrender", (e) => {
-      if (!document.startViewTransition) return;
-      e.preventDefault();
-      document.startViewTransition(() => e.detail());
-    });
-
-    toggle.addEventListener("change", () => {
-      target.toggleAttribute("is-active", toggle.checked);
-    });
-  })();
-</script>

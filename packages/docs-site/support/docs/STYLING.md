@@ -58,7 +58,7 @@ The payoff: one attribute drives CSS, Quark, and assistive technology together, 
 
 Every element ships its styles next to its script and documents its CSS hooks on its package page: exposed variables, style classes (`content-tabs.underline`, `content-tabs.file-tabs`), and aliases. Override with your own selectors; nothing is locked behind a shadow root.
 
-Write modern CSS in your stylesheets. Nesting, `@scope`, `:has()`, `color-mix()`, container queries, and view transitions are all fair game there; a Quark sheet is a different language and takes only Quark's own at-rules. Quark observes `:has()` too; interaction pseudo-classes (`:hover`, `:focus`) stay CSS-only (first run in a sheet).
+Write modern CSS in your stylesheets. Nesting, `@scope`, `:has()`, `color-mix()`, container queries, and view transitions are all fair game there. A Quark sheet is a derivative of CSS with a different runtime, so media queries, keyframes and the rest of the style engine stay in the stylesheet. Quark observes `:has()` too; interaction pseudo-classes (`:hover`, `:focus`) stay CSS-only (first run in a sheet).
 
 ## Quark and CSS together
 

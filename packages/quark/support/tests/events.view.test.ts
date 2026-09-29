@@ -1,27 +1,21 @@
 import "@excom/quark-sheet";
 import {
   afterEach,
-  beforeEach,
   describe,
   expect,
   it,
 } from "@excom/heft-rig/profiles/default/config/test-utils";
 import {
-  click,
   expectComplexity,
   flush,
-  installDemoModules,
   measureComplexity,
   mountView,
   readDemo,
-  restoreDemoModules,
 } from "./view-helpers";
 
 describe("events view", () => {
-  beforeEach(() => installDemoModules());
   afterEach(() => {
     document.body.innerHTML = "";
-    restoreDemoModules();
   });
 
   it("prevents navigation and notes the event", async () => {
@@ -34,7 +28,9 @@ describe("events view", () => {
     const budget = meter.take();
     meter.stop();
     expect(ev.defaultPrevented).toBe(true);
-    expect(root.querySelector("output")?.textContent).toMatch(/handled/);
+    expect(root.querySelector("output")?.textContent).toBe(
+      "click handled — navigation prevented",
+    );
     expectComplexity(budget);
   });
 });

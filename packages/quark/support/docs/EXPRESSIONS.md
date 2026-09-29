@@ -12,7 +12,7 @@ A value is an expression: names resolve through keywords, modules, built-ins and
 - **Operators**: `and` / `or` short-circuit and return an operand (JS semantics, so `$title or preserve` works); `not` returns a boolean; `==` / `!=` are loose; `+` concatenates when either side is a string (prefer `#{$x}` interpolation for building strings); `-` `*` `/` `%` and comparisons follow JS.
 - **`if()`** returns the value of the first arm whose condition is truthy; with no match and no `else` it is `undefined` (a wipe). `ternary()` is the two-arm function form.
 - **Lists** (space or comma separated) evaluate to arrays; **maps** to objects, with bare identifier keys taken literally (`(name: "Ada")` → `{ name: "Ada" }`) and other keys stringified.
-- **Results**: listeners and `$variables` apply synchronously; attributes, CSS variables, and content are painted in a batch. A `content` result that is a promise is awaited.
+- **Results**: listeners and `$variables` apply synchronously; attributes, CSS variables, and content are painted in a batch. Module functions are called synchronously and what they return is not awaited: `content` refuses a promise (see [Asynchronous work](./USE.md#md-asynchronous-work)).
 
 ## Example
 

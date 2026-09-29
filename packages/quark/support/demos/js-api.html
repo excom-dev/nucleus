@@ -1,17 +1,13 @@
-<div data-demo-counter>
-  <button>+1</button>
-  <output></output>
+<div>
+  <p data-flag="new-checkout" hidden>New checkout</p>
+  <p data-flag="gift-cards" hidden>Gift cards</p>
+  <button type="button">Hand the flags over</button>
+  <small role="note">The button stands in for app JS, which already holds
+    the flags.</small>
   <quark-sheet>
     @use "/demo-utils" as *;
 
-    :scope {
-      $count: 0;
-    }
-    button {
-      @on click (handle: incrementFromJs(closest("[data-demo-counter]")));
-    }
-    output {
-      content: "Clicked #{$count} times";
-    }
+    :scope { @on click (target: "button", handle: handFlagsOver); }
+    [data-flag] { hidden: not $app-flags[attr("data-flag")]; }
   </quark-sheet>
 </div>

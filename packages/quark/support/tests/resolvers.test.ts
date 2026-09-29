@@ -1,21 +1,27 @@
 /**
  * Field resolvers: value semantics (wipe / preserve) per declaration kind,
- * content rendering of raw nodes and promises, and the DevTools result
- * presentation of each shape.
+ * content rendering of raw nodes and render promises, refused outside
+ * promises, and the DevTools result presentation of each shape.
  */
 import { Quark } from "../../index";
 import { SYMBOL_NOOP } from "../../src/constants";
 import { FIELD_RESOLVERS, resolveField } from "../../src/resolvers";
+import { QuarkLogger } from "../../src/utils";
 import { NUCLEUS_DEVTOOLS_HOOK_KEY } from "@excom/kit-devtools";
 import {
   afterEach,
   describe,
   expect,
   it,
+  spyFetch,
   vi,
   wait,
 } from "@excom/heft-rig/profiles/default/config/test-utils";
-import { flush, mount, unregisterAll } from "./helpers";
+import { clearFetchCaches } from "@excom/kit-utils";
+import { createSheet, flush, mount, unregisterAll } from "./helpers";
+
+const REFUSED =
+  "Quark: content does not await a promise from a module function — return a value or a node";
 
 describe("resolvers", () => {
   afterEach(() => {
@@ -66,33 +72,59 @@ describe("resolvers", () => {
       );
     });
 
-    it("settles promises: strings paint, wipes clear, preserve keeps", async () => {
-      const { root } = mount(
-        `<p bind-s>stale</p><p bind-w>stale</p><p bind-p>stale</p>`,
-        `[bind-s] { content: later("done"); }
-         [bind-w] { content: later(null); }
-         [bind-p] { content: later(keep); }`,
-        {
-          later: (v: unknown) => Promise.resolve(v),
-          keep: SYMBOL_NOOP,
-        }
+    it("refuses any promise but a render built-in's: logged, content untouched", async () => {
+      const error = vi.spyOn(QuarkLogger, "error").mockImplementation(() => {});
+      const later = (value: unknown) => Promise.resolve(value);
+      const { root, register } = createSheet(
+        `<p bind-call>stale</p><p bind-var>stale</p><p bind-prop>stale</p>
+         <ul bind-rows><template><li></li></template><li>old</li></ul>
+         <p bind-html>stale</p>`,
+        `:scope { $pending: later("var"); }
+         [bind-call] { content: later("done"); }
+         [bind-var] { content: $pending; }
+         [bind-prop] { content: prop("pending"); }
+         [bind-rows] { content: iterate(later(["a"])); }
+         [bind-html] { content: dangerous-html(later("<b>x</b>")); }`,
+        { later }
       );
+      (
+        root.querySelector("[bind-prop]") as HTMLElement & {
+          pending?: Promise<unknown>;
+        }
+      ).pending = later("prop");
+      register();
       await flush();
-      expect(root.querySelector("[bind-s]")?.textContent).toBe("done");
-      expect(root.querySelector("[bind-w]")?.textContent).toBe("");
-      expect(root.querySelector("[bind-p]")?.textContent).toBe("stale");
+      const texts = ["call", "var", "prop", "html"].map(
+        (name) => root.querySelector(`[bind-${name}]`)!.innerHTML
+      );
+      expect(texts).toEqual(["stale", "stale", "stale", "stale"]);
+      expect(root.querySelector("[bind-rows] li")?.textContent).toBe("old");
+      const refusals = error.mock.calls.filter(
+        ([arg]) => (arg as { message?: string }).message === REFUSED
+      );
+      expect(refusals).toHaveLength(5);
     });
 
-    it("logs a rejected content promise without touching the element", async () => {
-      const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    it("awaits the render built-ins: a remote template() and iterate() render once fetched", async () => {
+      const url = "/tpls/resolvers-row.html";
+      spyFetch({
+        status: 200,
+        body: `<li bind-label></li>`,
+        headers: new Headers({ "content-type": "text/html" }),
+      });
       const { root } = mount(
-        `<p bind-x>stale</p>`,
-        `[bind-x] { content: failing(); }`,
-        { failing: () => Promise.reject(new Error("nope")) }
+        `<ul bind-rows></ul><ul bind-one></ul>`,
+        `[bind-rows] { content: iterate(letters, "${url}"); }
+         [bind-rows] [bind-label] { content: item; }
+         [bind-one] { content: template("${url}"); }`,
+        { letters: ["a", "b"] }
       );
       await flush();
-      expect(root.querySelector("[bind-x]")?.textContent).toBe("stale");
-      expect(error).toHaveBeenCalled();
+      expect(
+        [...root.querySelectorAll("[bind-rows] li")].map((li) => li.textContent)
+      ).toEqual(["a", "b"]);
+      expect(root.querySelectorAll("[bind-one] li")).toHaveLength(1);
+      clearFetchCaches(url);
     });
 
     it("re-paints only when the text differs from the sole text node", async () => {
@@ -303,16 +335,15 @@ describe("resolvers", () => {
       fragment.appendChild(document.createElement("b"));
       const error = vi.spyOn(console, "error").mockImplementation(() => {});
       mount(
-        `<p bind-list></p><p bind-frag></p><p bind-arr></p><p bind-fail></p>`,
+        `<p bind-list></p><p bind-frag></p><p bind-arr></p><ul bind-fail></ul>`,
         `[bind-list] { content: getList(); }
          [bind-frag] { content: getFragment(); }
          [bind-arr] { data-x: getArray(); }
-         [bind-fail] { content: failing(); }`,
+         [bind-fail] { content: iterate(getArray(), "#missing"); }`,
         {
           getList: () => wrap.childNodes,
           getFragment: () => fragment,
           getArray: () => ["a", 1],
-          failing: () => Promise.reject(new Error("nope")),
         }
       );
       await flush();
@@ -333,14 +364,20 @@ describe("resolvers", () => {
       expect(error).toHaveBeenCalled();
     });
 
-    it("publishes a settled promise that resolves to preserve as a no-op", async () => {
+    it("publishes a refused promise as a no-op, never as a pending value", async () => {
       installHook();
-      mount(`<p bind-x>stale</p>`, `[bind-x] { content: later(keep); }`, {
+      vi.spyOn(QuarkLogger, "error").mockImplementation(() => {});
+      mount(`<p bind-x>stale</p>`, `[bind-x] { content: later("x"); }`, {
         later: (v: unknown) => Promise.resolve(v),
-        keep: SYMBOL_NOOP,
       });
       await flush();
-      expect(applyFor("[bind-x]").meta.isNoop).toBe(true);
+      const applies = publications.filter(
+        (p) =>
+          p.path.join("/") === "quark/apply" && p.meta.selector === "[bind-x]"
+      );
+      expect(applies).toHaveLength(1);
+      expect(applies[0].meta.isNoop).toBe(true);
+      expect(applies[0].meta.result).toBeUndefined();
     });
   });
 });

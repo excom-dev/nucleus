@@ -13,19 +13,24 @@ Every element carries `element.quark`, shaped like `element.style`: the sanction
 
 `name` may be written with or without the `$`. Change detection is by value (a new object is a change, an in-place mutation is not), the same rule a declaration follows. It is State, not an event: a value written before a sheet registers is read on the sheet's first run.
 
-```quark
-:scope { $count: 0; }
-button { @on click (handle: incrementFromJs(closest("[data-demo-counter]"))); }
-output { content: "Clicked #{$count} times"; }
-```
+## Handing a value to the document
+
+`element.quark` is for rich values app JS already holds, such as feature flags or a messages dictionary. App JS writes them on a shared ancestor, and every rule reading them below it picks them up:
 
 ```js
-// JS module
-export const incrementFromJs = (owner) => () => {
-  const current = Number(owner.quark.getPropertyValue("$count") ?? 0);
-  owner.quark.setProperty("$count", current + 1);
-};
+// app JS, holding `flags` and `messages`
+document.querySelector("main").quark.setProperties({
+  "$app-flags": flags,
+  "$app-messages": messages,
+});
 ```
+
+```quark
+[data-flag] { hidden: not $app-flags[attr("data-flag")]; }
+[data-message] { content: $app-messages[attr("data-message")]; }
+```
+
+An event that becomes State is an `@on` block (see [`@on`](./ON.md)), and a value computed from State is a pure module function (see [`@use`](./USE.md)); neither needs `element.quark`.
 
 <include-content data-demo="js-api"></include-content>
 

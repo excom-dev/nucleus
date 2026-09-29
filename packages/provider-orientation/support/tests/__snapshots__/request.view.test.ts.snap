@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`request view > listens on request, then prints the heading > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 2,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 3,
+  "parentElement": 3,
+  "quarkRuns": 2,
+  "queryScopeCost": 2,
+  "querySelectorAll": 2,
+  "removeAttribute": 0,
+  "ruleRuns": 3,
+  "schedulePaint": 1,
+  "setAttribute": 1,
+  "setVar": 1,
+  "textContent": 1,
+  "variableRuns": 1,
+}
+`;

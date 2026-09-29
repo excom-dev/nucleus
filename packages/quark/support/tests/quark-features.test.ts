@@ -176,11 +176,15 @@ describe("Quark features", () => {
         quark.unregister();
       });
 
-      it("writes a settled string into the template's document fragment", async () => {
+      it("renders a fetched template() into the template's document fragment", async () => {
+        spyFetch({
+          status: 200,
+          body: `<p>from-url</p>`,
+          headers: new Headers({ "content-type": "text/html" }),
+        });
         const { root, quark, register } = createSheet(
           `<template id="host"></template>`,
-          `#host { content: getText(); }`,
-          { getText: () => Promise.resolve("async-hello") }
+          `#host { content: template("/tpls/fragment.html"); }`
         );
         const host = root.querySelector("#host") as HTMLTemplateElement;
         const meter = measureComplexity(quark);
@@ -189,7 +193,7 @@ describe("Quark features", () => {
         const budget = meter.take();
         meter.stop();
 
-        expect(host.content.textContent).toBe("async-hello");
+        expect(host.content.querySelector("p")?.textContent).toBe("from-url");
         expect(host.childNodes).toHaveLength(0);
         expectComplexity(budget);
         quark.unregister();
@@ -1288,12 +1292,12 @@ describe("Quark features", () => {
         );
       const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-      it("target: delegates to a matching descendant and exposes it as `target` in the block and in handle", async () => {
+      it("target: delegates to a matching descendant and exposes it as `target` in the block; handle gets the event", async () => {
         const pick = vi.fn();
         const { root, quark, register } = createSheet(
           `<ul id="list"><li data-id="1"><span>one</span></li><li data-id="2"><span>two</span></li><li><span>none</span></li></ul>`,
           `#list {
-            @on click (target: "li[data-id]", handle: pick(target.getAttribute("data-id"))) {
+            @on click (target: "li[data-id]", handle: pick) {
               data-picked: target.getAttribute("data-id");
               data-origin: event.target.localName;
             }
@@ -1307,7 +1311,8 @@ describe("Quark features", () => {
         spans[1].dispatchEvent(new MouseEvent("click", { bubbles: true }));
         await flush();
         expect(pick).toHaveBeenCalledTimes(1);
-        expect(pick).toHaveBeenCalledWith("2");
+        expect(pick.mock.calls[0][0].target).toBe(spans[1]);
+        expect(pick.mock.contexts[0]).toBe(list);
         expect(list.getAttribute("data-picked")).toBe("2");
         expect(list.getAttribute("data-origin")).toBe("span");
         // a row without data-id and the list itself do not pass the filter
@@ -1582,14 +1587,16 @@ describe("Quark features", () => {
         quark.unregister();
       });
 
-      it("hands the event to a handle call and accepts expression values", async () => {
+      it("accepts expression values; the handle listener gets the debounced event with `this` = the element", async () => {
         const calls: unknown[] = [];
-        const note = (e: Event, where: string) => calls.push([e.type, where]);
+        const note = function (this: Element, e: Event) {
+          calls.push([e.type, (e.target as Element).localName, this.id]);
+        };
         const { root, quark, register } = createSheet(
           `<div id="host" data-row="li"><ul><li><span>a</span></li></ul><output></output></div>`,
           `#host {
             $sel: attr("data-row");
-            @on click (target: $sel, debounce: 10 * 2, handle: note(event, target.localName)) {
+            @on click (target: $sel, debounce: 10 * 2, handle: note) {
               output { content: "clicked " + target.localName; }
             }
           }`,
@@ -1603,8 +1610,93 @@ describe("Quark features", () => {
         expect(calls).toEqual([]);
         await sleep(40);
         await flush();
-        expect(calls).toEqual([["click", "li"]]);
+        expect(calls).toEqual([["click", "span", "host"]]);
         expect(root.querySelector("output")!.textContent).toBe("clicked li");
+        quark.unregister();
+      });
+
+      it("handle: `event` and `target` are not in its scope; target, key and throttle keep them", async () => {
+        const probe = vi.fn(() => () => {});
+        const { root, quark, register } = createSheet(
+          `<div id="f"><input name="q"></div>`,
+          `#f {
+            @on keydown (target: event.target.localName, key: event.key, throttle: if(event: 1000; else: none), handle: probe(event, target)) {
+              data-hit: target.localName;
+            }
+          }`,
+          { probe }
+        );
+        register();
+        await flush();
+        const input = root.querySelector("input")!;
+        keydown(input, "Enter");
+        keydown(input, "Enter");
+        await flush();
+        expect(probe).toHaveBeenCalledTimes(1);
+        expect(probe).toHaveBeenCalledWith(undefined, undefined);
+        expect(root.querySelector("#f")!.getAttribute("data-hit")).toBe(
+          "input"
+        );
+        quark.unregister();
+      });
+
+      it("handle: a factory call runs on every event with current bindings; its listener gets the event, `this` = the element", async () => {
+        const calls: unknown[] = [];
+        const make = vi.fn(
+          (label: string) =>
+            function (this: Element, e: Event) {
+              calls.push([label, e.type, this.id]);
+            }
+        );
+        const { root, quark, register } = createSheet(
+          `<button type="button" id="b" data-label="one">x</button>`,
+          `#b {
+            $label: attr("data-label");
+            @on click (handle: make($label));
+          }`,
+          { make }
+        );
+        register();
+        await flush();
+        const b = root.querySelector("#b") as HTMLButtonElement;
+        b.click();
+        b.click();
+        b.setAttribute("data-label", "two");
+        await flush();
+        b.click();
+        expect(make).toHaveBeenCalledTimes(3);
+        expect(calls).toEqual([
+          ["one", "click", "b"],
+          ["one", "click", "b"],
+          ["two", "click", "b"],
+        ]);
+        quark.unregister();
+      });
+
+      it("handle: warns once when the result is not a function or a list of functions", async () => {
+        const warn = vi.spyOn(QuarkLogger, "warn").mockImplementation(() => {});
+        const ok = vi.fn();
+        const { root, quark, register } = createSheet(
+          `<button type="button" id="a">a</button><button type="button" id="b">b</button><button type="button" id="c">c</button>`,
+          `#a { @on click (handle: settings()); }
+           #b { @on click (handle: (ok, 5)); }
+           #c { @on click (handle: if(attr("data-on"): ok; else: none)); }`,
+          { settings: () => ({ theme: "dark" }), ok }
+        );
+        register();
+        await flush();
+        for (const id of ["a", "b", "c", "a", "b", "c"]) {
+          (root.querySelector(`#${id}`) as HTMLButtonElement).click();
+        }
+        const messages = warn.mock.calls
+          .map(([arg]) => (arg as { message: string }).message)
+          .filter((m) => m.includes("needs a function"));
+        expect(messages).toEqual([
+          "Quark: @on click (handle: settings()) — handle: needs a function or a list of functions, got object",
+          "Quark: @on click (handle: (ok, 5)) — handle: needs a function or a list of functions, got number",
+        ]);
+        expect(ok).toHaveBeenCalledTimes(2);
+        warn.mockRestore();
         quark.unregister();
       });
 
@@ -1649,6 +1741,72 @@ describe("Quark features", () => {
         await sleep(20);
         expect(hit).not.toHaveBeenCalled();
         warn.mockRestore();
+        quark.unregister();
+      });
+
+      it("drops the event when an option is preserve, has no value or finds no usable delegate", async () => {
+        const warn = vi.spyOn(QuarkLogger, "warn").mockImplementation(() => {});
+        const hit = vi.fn();
+        const { root, quark, register } = createSheet(
+          `<div class="row"><div id="box"><span>x</span></div></div>`,
+          `#box {
+            @on click (target: preserve, handle: hit);
+            @on click (target: 5, handle: hit);
+            @on click (target: ".row", handle: hit);
+            @on click (key: preserve, handle: hit);
+            @on click (handle);
+            @on keydown (host: window, target: "#box", handle: hit);
+            @on dblclick (debounce: preserve) { data-hit: ""; }
+          }`,
+          { hit }
+        );
+        register();
+        await flush();
+        const box = root.querySelector("#box")!;
+        // `.row` is an ancestor of the element, not inside it
+        root
+          .querySelector("span")!
+          .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+        // on the window itself there is nothing to delegate from
+        window.dispatchEvent(new KeyboardEvent("keydown", { key: "a" }));
+        box.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+        await flush();
+        expect(hit).not.toHaveBeenCalled();
+        // `debounce: preserve` means no debounce
+        expect(box.hasAttribute("data-hit")).toBe(true);
+        const messages = warn.mock.calls.map(([arg]) => (arg as any).message);
+        expect(
+          messages.filter((m) => /"target" needs a string value/.test(m))
+        ).toHaveLength(1);
+        expect(
+          messages.filter((m) => /option "handle" needs a value/.test(m))
+        ).toHaveLength(1);
+        warn.mockRestore();
+        quark.unregister();
+      });
+
+      it("key: modifier aliases, modifier-only chords, and tokens that never match", async () => {
+        const hit = vi.fn();
+        const { root, quark, register } = createSheet(
+          `<input id="field">`,
+          `#field { @on keydown (key: "+ alt+a control+b meta+c control ctrl cmd shift Escape", handle: hit); }`,
+          { hit }
+        );
+        register();
+        await flush();
+        const field = root.querySelector("#field")!;
+        keydown(field, "a", { altKey: true });
+        keydown(field, "b", { ctrlKey: true });
+        keydown(field, "c", { metaKey: true });
+        // a modifier-only token matches that modifier's own key
+        keydown(field, "Control", { ctrlKey: true });
+        keydown(field, "Meta", { metaKey: true });
+        keydown(field, "Shift", { shiftKey: true });
+        expect(hit).toHaveBeenCalledTimes(6);
+        // held Ctrl with another key; a bare `+`; an event without a key
+        keydown(field, "x", { ctrlKey: true });
+        keydown(field, "");
+        expect(hit).toHaveBeenCalledTimes(6);
         quark.unregister();
       });
     });

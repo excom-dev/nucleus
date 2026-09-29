@@ -31,7 +31,7 @@ Short rules with rationale. They exist because the document *is* the state — k
 
 - **Little to none for simple apps.** Elements and Quark rules cover most needs; when they don't, that is usually a missing element or rule, not missing script.
 - **Built-in modules first.** `@use "quark:list"`, `quark:math`, `quark:string`, `quark:map`, `quark:date`, `quark:url`, `quark:util` cover the derivations views need (sorting, counting, plurals, clamping, dates, query strings); write a module function only for what they lack.
-- **Keep functions pure** Side effects are permitted when unavoidable; in practice they are rarely needed because the document already holds what a side effect would manage.
+- **Keep functions pure.** Values in, a value out. A module holds business logic; bridging the network, storage or the clock is an Adapter's job, and Quark does not await what a function returns. A function may build and return a node it owns without touching the document around it; imperative DOM work Quark cannot yet declare, such as moving focus, is a `handle:` listener.
 - **No build step required.** Serve files as-is. Add a bundler only when you have a reason.
 - **TypeScript is optional.** For a few dozen or hundred lines of pure functions, it usually isn't worth the build process.
 
@@ -39,14 +39,14 @@ Short rules with rationale. They exist because the document *is* the state — k
 
 - **Use the proper listeners.** Use Quark `@on` or custom elements like `<event-handler>` to listen to events, since they have a safe teardown procedure. Avoid using raw JS, which does not.
 - **Invoke elements with commands.** A plain `<button type="button" command="--open" commandfor="id">` drives an element with nothing in between; `<event-handler command-name target-ref>` or a `@command` in an `@on` block does the same from any event or relative selector. Put `type="button"` on command buttons inside forms so they never submit.
-- **Wire glue in the sheet.** Retargeting, keyboard shortcuts, debouncing and custom payloads are `@on` options, and `@dispatch` / `@command` inside an `@on` block relay the event onward — `<event-handler>` offers the same as attributes for markup without a sheet.
+- **Wire glue in the Quark sheet.** Retargeting, keyboard shortcuts, debouncing and custom payloads are `@on` options, and `@dispatch` / `@command` inside an `@on` block relay the event onward — `<event-handler>` offers the same as attributes for markup without a sheet.
 - **Delegate.** Events bubble; one rule on a common ancestor beats a listener per element — `@on click (target: "li[data-id]")` names the row and exposes it as `target`.
 - **Cancel default actions with `preventDefault()`,** don't fork the element.
 - **Don't expect changing attributes to fire events.** State describes; events announce. Keep them distinct.
 
 ## Building Elements
 
-- **Avoid Shadow DOM** ASO applications are heavily data-driven. Shadow DOMs are a hard boundary and severely blunt the power of Quark and CSS. Instead, consider using `@scope`.
+- **Avoid Shadow DOM** ASO applications are heavily data-driven. Shadow DOMs are a hard boundary and severely blunt the power of Quark and CSS. Instead, consider using `@scope`. The exception is a region handed to a rendering framework that must own its DOM alone ([Handing rendering to a framework](/nucleus/packages/quark/use#md-handing-rendering-to-a-framework)).
 - **Single responsibility.** One job, configurable, observable. See [Creating Elements](/nucleus/docs/creating_elements).
 - **Generic** `<content-drawer>` is good, `<add-to-cart>` is bad. Business logic belongs to Quark and its modules.
 - **Never render children.** Composition is the design. The only caveat: an element may render fully author-controlled chilren, such as `<include-content>` does because this does not hinder composition.

@@ -220,12 +220,12 @@ exports[`Quark features > content > rendering into a <template> host > paints a 
 }
 `;
 
-exports[`Quark features > content > rendering into a <template> host > writes a settled string into the template's document fragment > complexity 1`] = `
+exports[`Quark features > content > rendering into a <template> host > renders a fetched template() into the template's document fragment > complexity 1`] = `
 {
   "attributeRuns": 1,
   "closest": 0,
   "getVar": 0,
-  "importNode": 0,
+  "importNode": 2,
   "listenerRuns": 0,
   "matches": 1,
   "parentElement": 1,

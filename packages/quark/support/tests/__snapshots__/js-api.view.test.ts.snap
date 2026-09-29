@@ -1,8 +1,8 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`js-api view > increments the click count through element.quark > complexity 1`] = `
+exports[`js-api view > re-runs the rules reading $app-flags when JS hands the flags over > complexity 1`] = `
 {
-  "attributeRuns": 1,
+  "attributeRuns": 2,
   "closest": 1,
   "getVar": 2,
   "importNode": 0,
@@ -10,14 +10,14 @@ exports[`js-api view > increments the click count through element.quark > comple
   "matches": 1,
   "parentElement": 2,
   "quarkRuns": 1,
-  "queryScopeCost": 3,
+  "queryScopeCost": 5,
   "querySelectorAll": 1,
-  "removeAttribute": 0,
+  "removeAttribute": 1,
   "ruleRuns": 1,
-  "schedulePaint": 1,
+  "schedulePaint": 2,
   "setAttribute": 0,
   "setVar": 1,
-  "textContent": 1,
+  "textContent": 0,
   "variableRuns": 0,
 }
 `;

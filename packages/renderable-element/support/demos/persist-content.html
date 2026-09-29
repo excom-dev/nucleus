@@ -16,14 +16,14 @@ template node instead of cloning a fresh copy each render.</p>
   }
 </style>
 
-<div class="persist-demo" id="persist-host">
+<div class="persist-demo">
   <div>
     <strong>Default (cloned each render):</strong>
     <label>
-      <input type="checkbox" data-target="#cloned" checked />
+      <input type="checkbox" checked />
       Active
     </label>
-    <include-content id="cloned" is-active>
+    <include-content is-active>
       <template>
         <input type="text" placeholder="Type, then toggle off + on" />
       </template>
@@ -33,25 +33,19 @@ template node instead of cloning a fresh copy each render.</p>
   <div>
     <strong><code>persist-content</code>:</strong>
     <label>
-      <input type="checkbox" data-target="#persisted" checked />
+      <input type="checkbox" checked />
       Active
     </label>
-    <include-content id="persisted" is-active persist-content>
+    <include-content is-active persist-content>
       <template>
         <input type="text" placeholder="Type, then toggle off + on" />
       </template>
     </include-content>
   </div>
-</div>
 
-<script>
-  (() => {
-    document.querySelectorAll("#persist-host input[type=checkbox]").forEach((cb) => {
-      cb.addEventListener("change", () => {
-        document
-          .querySelector(cb.dataset.target)
-          .toggleAttribute("is-active", cb.checked);
-      });
-    });
-  })();
-</script>
+  <quark-sheet>
+    label {
+      @on change { + include-content { is-active: event.target.checked; } }
+    }
+  </quark-sheet>
+</div>

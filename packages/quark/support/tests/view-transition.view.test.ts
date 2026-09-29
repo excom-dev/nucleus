@@ -2,7 +2,6 @@ import "@excom/quark-sheet";
 import { Quark } from "../../index";
 import {
   afterEach,
-  beforeEach,
   describe,
   expect,
   it,
@@ -12,11 +11,9 @@ import {
   click,
   expectComplexity,
   flush,
-  installDemoModules,
   measureComplexity,
   mountView,
   readDemo,
-  restoreDemoModules,
 } from "./view-helpers";
 
 const names = (root: Element) =>
@@ -29,12 +26,10 @@ const settle = async () => {
 
 describe("view-transition view", () => {
   let restoreStub: (() => void) | undefined;
-  beforeEach(() => installDemoModules());
   afterEach(() => {
     restoreStub?.();
     restoreStub = undefined;
     document.body.innerHTML = "";
-    restoreDemoModules();
   });
 
   it("adds and removes planets without the API, within the complexity budget", async () => {

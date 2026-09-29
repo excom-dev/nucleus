@@ -20,7 +20,7 @@ Your HTML __*is*__ the app! Drop-in custom elements that each have a single resp
 
 - **Back to the future** Welcome back to building static HTML5 apps. A break from complex JavaScript apps that compile to HTML.
 - **Little to no JavaScript** You no longer need to write JS for the vast majority of UI cases. You may still call-out to your own pure functions for complex cases.
-- **Native++** Just HTML with a derivative of CSS, named Quark, sprinkled on top.
+- **Native++** It's real HTML. With a separate, synergistic guest: Quark.
 - **No magic** No special frameworks, build processes, rendering wizardry, or "HTML-in-my-JS" / "JS-in-my-HTML" DSLs.
 - **Progressively enhanced** Drop into existing static/server-side-rendered sites. Neutron and Quark can also be used independently.
 - **Fully composable** Templates, templating, behavior, and custom logic are all decoupled & robust.

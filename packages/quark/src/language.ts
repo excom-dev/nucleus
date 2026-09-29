@@ -4,9 +4,8 @@
  * module. Prose-free tables live in `language-tables.ts`
  * (`METHOD_ALLOWLIST`, `PSEUDO_CLASS_SUPPORT`) so docs stay out of
  * production. Tests check `variables.ts` / `constants.ts` against it;
- * `support/scripts/build-language-docs.mjs` renders the README language
- * reference. Published as `@excom/quark/language`. No deps, so plain
- * Node can import it.
+ * `support/scripts/build-language-docs.mjs` renders the generated regions
+ * of the doc pages. Published as `@excom/quark/language`.
  */
 import {
   ALLOWED_METHOD_NAMES,
@@ -92,12 +91,13 @@ export const DECLARATION_KINDS: readonly DeclarationKindDoc[] = [
     key: "content",
     description:
       "Replaces the element's rendered children (a source `<template>` " +
-      "child is kept). Promises are awaited. Writing into a `<template>` " +
-      "targets its `.content`. On a `<textarea>` a text result is also " +
-      "mirrored to the live `.value` (the text is only the default value).",
+      "child is kept). Writing into a `<template>` targets its " +
+      "`.content`. On a `<textarea>` a text result is also mirrored to " +
+      "the live `.value` (the text is only the default value).",
     accepts:
       "A string (text), a `Node` / `NodeList`, or the result of " +
-      "`template()` / `iterate()` / `dangerous-html()`. Wipe values clear.",
+      "`template()` / `iterate()` / `dangerous-html()`. Wipe values clear. " +
+      "A promise is refused: logged, the content left untouched.",
   },
   {
     key: "class",
@@ -145,16 +145,16 @@ export interface AtRuleDoc {
 
 /**
  * Quark's at-rules — the whole set the language has. Any other name
- * (`@media`, `@if`, `@keyframes`, …) is a parse error.
+ * (`@media`, `@keyframes`, `@supports`, …) is a parse error.
  */
 export const AT_RULES: readonly AtRuleDoc[] = [
   {
     syntax: '@use "url" [as name | as *];',
     description:
-      "Imports a JS module anywhere in the sheet. The namespace defaults to " +
-      "the URL's last path segment without its extension; `as *` merges " +
-      "exports into the bare scope, last import winning. A `with (…)` " +
-      "clause is a parse error.",
+      "Imports a JS module of pure functions anywhere in the sheet. The " +
+      "namespace defaults to the URL's last path segment without its " +
+      "extension; `as *` merges exports into the bare scope, last import " +
+      "winning. The first rule run waits for the imports.",
   },
   {
     syntax: "@scope { … }",
@@ -174,8 +174,9 @@ export const AT_RULES: readonly AtRuleDoc[] = [
       "or its siblings when the nested selector starts with `+` / `~`, " +
       "`@dispatch` / `@command` statements fire after those writes are " +
       "queued. `event` names the DOM event and `target` the delegate (or " +
-      "`event.target`) inside the block and in its per-event options. " +
-      "`@on` inside a block is not supported.",
+      "`event.target`) inside the block and in its `target` / `key` / " +
+      "`debounce` / `throttle` options. `@on` inside a block is not " +
+      "supported.",
   },
   {
     syntax: "@on <event> (option, option: value) …",
@@ -190,15 +191,17 @@ export const AT_RULES: readonly AtRuleDoc[] = [
       "space-separated alternatives). Event flags: `prevent-default`, " +
       "`stop-propagation`, `stop-immediate-propagation`. Timing: " +
       "`debounce: <ms>`, `throttle: <ms>`. JS: `handle: fn` — a function " +
-      "(or a call returning one, or a list `(a, b)`) called with the event " +
-      "before the block, `this` being the element. Registration: `once` " +
-      "(removed after the first event that passes the filters), `passive`, " +
-      "`capture`, `host: window` / `host: document` (listen there while the " +
-      "element is connected; `target` then resolves against the whole " +
-      "document). `target`, `key`, `debounce`, `throttle` and `handle` are " +
-      "evaluated when the event fires, in the block's scope; the rest once " +
-      "per match. Two `@on`s for one event may coexist when their options " +
-      "differ.",
+      "reference, a list `(a, b)`, or a call that returns the listener; " +
+      "each listener is called with the event before the block, `this` " +
+      "being the element. Registration: `once` (removed after the first " +
+      "event that passes the filters), `passive`, `capture`, " +
+      "`host: window` / `host: document` (listen there while the element " +
+      "is connected; `target` then resolves against the whole document). " +
+      "`target`, `key`, `debounce` and `throttle` are evaluated when the " +
+      "event fires, in the block's scope; `handle` is evaluated then too, " +
+      "without `event` / `target`, so a call in it runs on every event; " +
+      "the rest once per match. Two `@on`s for one event may coexist when " +
+      "their options differ.",
   },
   {
     syntax: "@dispatch <event>[, <event>] [(options)];",
@@ -340,9 +343,10 @@ export const BUILTIN_FUNCTIONS: readonly BuiltinDoc[] = [
     description:
       "The matched element itself — the node the rule is applied to " +
       "(inside an `@on … { }` block the listening element; `target` is the " +
-      "delegate). Hand it to `@use` functions that need the node: " +
-      "`@on click fire(element)`, `$chart: mount(element)`. Reads through " +
-      "it are not observed — use `attr()` / `prop()` for reactive reads.",
+      "delegate). It reaches a neighbour without a selector: " +
+      "`@command toggle-popover (target: element.nextElementSibling)`. " +
+      "Reads through it are not observed — use `attr()` / `prop()` for " +
+      "reactive reads.",
     group: "element",
   },
   {
@@ -393,18 +397,21 @@ export const BUILTIN_FUNCTIONS: readonly BuiltinDoc[] = [
     name: "event",
     signature: "event",
     description:
-      "Inside an `@on … { }` block, its per-event options and its " +
-      "`@dispatch` / `@command` statements: the DOM event being handled " +
-      "(`event.target`, `event.detail`, …). `undefined` elsewhere.",
+      "Inside an `@on … { }` block, its `@dispatch` / `@command` " +
+      "statements and its `target` / `key` / `debounce` / `throttle` " +
+      "options: the DOM event being handled (`event.target`, " +
+      "`event.detail`, …). `undefined` elsewhere, `handle:` included: its " +
+      "listener receives the event as its argument.",
     group: "event",
   },
   {
     name: "target",
     signature: "target",
     description:
-      "Inside an `@on … { }` block and its per-event options: the element " +
-      "the `target:` option matched (the delegate), or `event.target` " +
-      "without that option. `undefined` elsewhere.",
+      "Inside an `@on … { }` block and its `target` / `key` / `debounce` / " +
+      "`throttle` options: the element the `target:` option matched (the " +
+      "delegate), or `event.target` without that option. `undefined` " +
+      "elsewhere, `handle:` included.",
     group: "event",
   },
   {
@@ -462,8 +469,8 @@ export interface ModuleDoc {
 
 /**
  * Built-in modules, imported like JS modules (`@use "quark:math" as math;`
- * or `as *`); nothing here is global. Grouped the way Sass groups
- * `sass:math` / `sass:list` / `sass:map` / `sass:string`. Every function is
+ * or `as *`); nothing here is global. One module per kind of value
+ * (numbers, lists, maps, strings, dates, URLs). Every function is
  * pure and null-tolerant: a missing collection reads as empty, a missing
  * value passes through, and results are copies. Collection functions take
  * a dot path (`"user.name"`) instead of a callback. Runtime lives in
@@ -539,7 +546,7 @@ export const BUILTIN_MODULES: readonly ModuleDoc[] = [
         name: "find",
         signature: 'find(list, "path", value)',
         description:
-          "The first item whose value at the path equals `value`, else `undefined` (was a global built-in before 2026-09-13).",
+          "The first item whose value at the path equals `value`, else `undefined`.",
       },
       {
         name: "filter",
@@ -600,8 +607,7 @@ export const BUILTIN_MODULES: readonly ModuleDoc[] = [
       {
         name: "reverse",
         signature: "reverse(list)",
-        description:
-          "A reversed copy (was a global built-in before 2026-09-13).",
+        description: "A reversed copy.",
       },
       {
         name: "compact",
@@ -1030,7 +1036,7 @@ export const COMBINATORS: readonly CombinatorDoc[] = [
 export interface PseudoClassRow {
   /** Name without the colon (`nth-child`). */
   name: string;
-  /** As written, with a placeholder argument where one is taken. */
+  /** As written, with a stand-in argument where one is taken. */
   syntax: string;
   description: string;
 }

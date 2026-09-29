@@ -456,7 +456,7 @@ export interface ResolvedListenerOptions {
   host?: "window" | "document";
 }
 
-/** Option names evaluated per event, in the block's scope. */
+/** Option names evaluated per event (`handle` without `event` / `target`). */
 export const DYNAMIC_LISTENER_OPTIONS = [
   "target",
   "key",
@@ -547,9 +547,10 @@ export const listenerHost = (
  * (`debounce` / `throttle`), `once`, then runs the `handle` functions
  * and the block. `target`, `key`, `debounce`, `throttle` and `handle` are
  * expressions evaluated when the event fires, in the block's scope
- * (`event`, `target`, `element`, current `$bindings`), so nothing about
- * the listener is reactive: a re-run only refreshes `ListenerState`,
- * never the DOM registration.
+ * (`event`, `target`, `element`, current `$bindings`; `handle` without
+ * `event` / `target`: it names the listener, which receives the event),
+ * so nothing about the listener is reactive: a re-run only refreshes
+ * `ListenerState`, never the DOM registration.
  */
 export class Listener extends Property {
   eventTypes: string[];
@@ -622,15 +623,16 @@ export class Listener extends Property {
     });
   }
   /**
-   * Evaluate one per-event option in the block's scope: the event, the
-   * delegate (once known) and the element's current bindings.
+   * Evaluate one per-event option with the element's current bindings,
+   * plus the event and the delegate (once known) when given; `handle`
+   * gets neither, its listener receives the event.
    */
   private evaluateOption(
     element: TQuarkElement,
     state: ListenerState,
     name: DynamicListenerOption,
-    e: Event,
-    delegate: Element | undefined
+    e?: Event,
+    delegate?: Element
   ): unknown {
     const source = state.dynamic.find((o) => o.name === name);
     if (!source) return undefined;
@@ -647,7 +649,7 @@ export class Listener extends Property {
         rule: this.parent,
         property: this,
         event: e,
-        eventTarget: delegate ?? (e.target as Element | null) ?? null,
+        eventTarget: delegate ?? (e?.target as Element | null) ?? null,
       },
       hash: state.hash,
     });
@@ -676,16 +678,17 @@ export class Listener extends Property {
   }
   /** Call the `handle:` result(s) with the event; `this` is the element. */
   private callHandlers(element: TQuarkElement, value: unknown, e: Event) {
-    if (value === undefined || value === null || isNoop(value)) return;
     const handlers = Array.isArray(value) ? value.flat(Infinity) : [value];
     for (const handler of handlers) {
       if (typeof handler === "function") {
         handler.call(element, e);
-      } else if (typeof handler === "string") {
+      } else if (handler != null && !isNoop(handler)) {
         this.warnOnce(
           element,
           "handle",
-          `handle: "${handler}" is a string — write the bare name of a function`
+          typeof handler === "string"
+            ? `handle: "${handler}" is a string — write the bare name of a function`
+            : `handle: needs a function or a list of functions, got ${typeof handler}`
         );
       }
     }
@@ -712,7 +715,7 @@ export class Listener extends Property {
       if (entry.state.dynamic.some((o) => o.name === "handle")) {
         this.callHandlers(
           element,
-          this.evaluateOption(element, entry.state, "handle", e, delegate),
+          this.evaluateOption(element, entry.state, "handle"),
           e
         );
       }

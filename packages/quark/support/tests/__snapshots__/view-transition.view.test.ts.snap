@@ -4,7 +4,7 @@ exports[`view-transition view > adds and removes planets without the API, within
 {
   "attributeRuns": 5,
   "closest": 4,
-  "getVar": 4,
+  "getVar": 5,
   "importNode": 2,
   "listenerRuns": 2,
   "matches": 11,

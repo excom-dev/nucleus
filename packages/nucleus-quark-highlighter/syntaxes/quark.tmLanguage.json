@@ -679,7 +679,7 @@
       }
     },
     "selector_placeholder": {
-      "comment": "`%placeholder` is not Quark",
+      "comment": "a `%name` selector is a parse error",
       "match": "%[-\\w]+(?=[\\s,{:\\[>+~|]|$)",
       "name": "invalid.illegal.placeholder.quark"
     },
@@ -1264,7 +1264,7 @@
       ]
     },
     "at_rule_on": {
-      "comment": "`@on input, change (debounce: 300, handle: save) { … }` / `@on submit (prevent-default);`: a comma list of event names (idents or strings), then the options group; the rule ends before the block so the body is highlighted as a rule body",
+      "comment": "`@on input, change (debounce: 300) { … }` / `@on submit (prevent-default);`: a comma list of event names (idents or strings), then the options group; the rule ends before the block so the body is highlighted as a rule body",
       "begin": "\\s*((@)(on))\\s+((?:[\\w-]+|\"[^\"]*\"|\\'[^\\']*\\')(?:\\s*,\\s*(?:[\\w-]+|\"[^\"]*\"|\\'[^\\']*\\'))*)(?:\\s*(\\((?:[^()]|\\([^()]*\\))*\\)))?",
       "beginCaptures": {
         "1": {
@@ -1331,7 +1331,7 @@
       ]
     },
     "at_rule_on_options": {
-      "comment": "`(target: \"li\", once, debounce: 300, handle: save)` after @on / @dispatch / @command names or @view-transition: option names as attribute names, values as property values",
+      "comment": "`(target: \"li\", once, debounce: 300, handle: focusInput)` after @on / @dispatch / @command names or @view-transition: option names as attribute names, values as property values",
       "patterns": [
         {
           "match": "[()]",

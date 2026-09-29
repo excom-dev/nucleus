@@ -788,7 +788,7 @@ function wrapInScope(min: string): string {
 }
 
 /**
- * `"/mods/string-utils.js"` -> `"string-utils"` (SCSS-style default ns);
+ * `"/mods/string-utils.js"` -> `"string-utils"` (default ns);
  * `"quark:math"` -> `"math"`.
  */
 function deriveUseNamespace(url: string): string {

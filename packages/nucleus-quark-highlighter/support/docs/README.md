@@ -5,21 +5,24 @@ Quark sheets and Nucleus-style HTML, highlighted and formatted in VS Code / Curs
 The **Nucleus & Quark Syntax Highlighter** extension adds a Quark language for `.quark` files, highlights Quark inside `<quark-sheet>` in HTML, and gives custom elements and dashed attributes their own color so Adapters and their state stand apart from native markup. Tags, custom tags, attributes and custom attributes share one palette in both grammars, so a sheet and the markup it orchestrates read the same way.
 
 ```html
-<provider-fetch src-url="/api/todos" should-fetch>
-  <ul></ul>
+<section>
+  <provider-fetch api-url="/api/todos">
+    <ul><template><li></li></template></ul>
+  </provider-fetch>
   <quark-sheet>
     provider-fetch[is-success] {
       $todos: prop("provision").body;
       ul { content: iterate($todos); }
+      li { content: item.title; }
     }
   </quark-sheet>
-</provider-fetch>
+</section>
 ```
 
 ## Features
 
 - **Quark language** `.quark` files with CSS-familiar highlighting, folding, bracket matching and `/* */` comments; Quark's at-rules — `@use`, `@scope`, `@on` with its event list, `@dispatch` / `@command`, `@view-transition`, `@delay`, `@warn` / `@debug` / `@error` — color their names, options groups, durations, messages and blocks
-- **Quark's language, nothing else** Quark is not SCSS and not a CSS superset: every other at-rule (`@media`, `@mixin`, `@if`, `@keyframes`, …) and `%placeholder` selectors are colored as errors, because Quark's parser rejects them
+- **Quark's language, nothing else** An at-rule Quark does not have, such as `@media` or `@keyframes`, is colored as an error, because Quark's parser rejects it
 - **Inline sheets** Quark inside `<quark-sheet>` in HTML is highlighted as Quark
 - **Custom elements stand out** Dashed tags / dashed attributes get their own color in HTML and in Quark selectors; a dashed tag keeps that color wherever it appears in a selector — attribute-qualified, inside `:is()` / `:not()` / `:has()`, or before a pseudo-class or pseudo-element
 - **Format Document** `.quark` files format with `@excom/quark-formatter` (`Shift+Alt+F`)
@@ -55,7 +58,7 @@ Inline sheets need the command because VS Code's HTML formatter only formats the
 
 ### Shortcuts
 
-`Cmd+/` (`Ctrl+/`) and `Shift+Alt+A` both toggle `/* */` comments — Quark has no `//` line comments, so a sheet stays tokenizable by a CSS engine.
+`Cmd+/` (`Ctrl+/`) and `Shift+Alt+A` both toggle `/* */` comments. Quark's comments are CSS's own, so there are no `//` line comments.
 
 ### Highlighting with Shiki
 

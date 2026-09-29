@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/detect-browser",
+      "comment": "Update the Safari demo to show an install hint instead of loading polyfills",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/detect-browser"
+}

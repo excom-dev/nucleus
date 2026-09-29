@@ -1,7 +1,7 @@
 /**
  * Printer for the Quark AST.
  *
- * Output conventions match prettier's CSS/SCSS style: two-space indent,
+ * Output conventions match prettier's CSS style: two-space indent,
  * one selector per line in multi-selector rules, a single preserved blank
  * line between statement groups, comments kept where they were written
  * (including trailing same-line comments), and an 80-column print width.
@@ -14,9 +14,9 @@
  * prints `transition` / `grid-template-columns`. Strings, selectors and
  * interpolations never wrap.
  *
- * The two Quark deviations from CSS are printed compactly, exactly as
- * written: dot accessors (`$obj.field`) and bracket accessors
- * (`$obj["field"]`) never receive surrounding whitespace.
+ * Quark's accessors print compactly, exactly as written: dot accessors
+ * (`$obj.field`) and bracket accessors (`$obj["field"]`) never receive
+ * surrounding whitespace.
  */
 import {
   type Doc,
@@ -277,7 +277,7 @@ class Printer {
    * ---------------------------------------------------------------------
    */
 
-  /** `@use "/x" as ns;` — a `with (…)` configuration is not Quark. */
+  /** `@use "/x";` / `@use "/x" as ns;` / `@use "/x" as *;` */
   useRule(node: UseRule, depth: number): string[] {
     const ns =
       node.namespace === null
@@ -294,7 +294,7 @@ class Printer {
   }
 
   /**
-   * `@on input, change (debounce: 300, handle: save) { … }` /
+   * `@on input, change (debounce: 300) { … }` /
    * `@on submit (prevent-default);`: names as written, options as
    * expressions, then a block like a rule or the statement's `;`.
    */

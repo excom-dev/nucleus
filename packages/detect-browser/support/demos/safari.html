@@ -1,11 +1,15 @@
 <div>
   <small role="note">Spoof an iOS Safari user agent in DevTools and reload.</small>
   <detect-browser></detect-browser>
+  <include-content>
+    <template>
+      <p>Install this app: tap <strong>Share</strong>, then
+        <strong>Add to Home Screen</strong>.</p>
+    </template>
+  </include-content>
   <quark-sheet>
-    @use "/demo-utils" as *;
-
-    detect-browser[browser-name="safari"] {
-      content: loadPolyfills(prop("provision"));
+    detect-browser[browser-name="safari"][operating-system="ios"]:not([is-standalone]) + include-content {
+      is-active: "";
     }
   </quark-sheet>
 </div>

@@ -44,8 +44,8 @@ Showing a greeting in your system language (Only Spanish or English for this exa
 
 <include-content data-demo="language"></include-content>
 
-#### Loading platform-specific polyfills
+#### Safari-only install hint
 
-In this demo, when the browser is Safari, polyfills are loaded. Spoof an iOS Safari user agent in DevTools and reload to trigger it. It will also `console.log` the full device info.
+iOS Safari has no install prompt, so the sheet renders "Add to Home Screen" steps there, and not once the app is installed. Spoof an iOS Safari user agent in DevTools and reload to trigger it.
 
 <include-content data-demo="safari"></include-content>

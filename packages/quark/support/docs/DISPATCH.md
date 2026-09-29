@@ -9,7 +9,7 @@ todo-item {
   }
 }
 provider-fetch {
-  @on super-form-success { @dispatch provider-fetch-trigger; }
+  @on super-form-success { @command --fetch; }
 }
 button[data-help] {
   @on click { @command toggle-popover (target: element.nextElementSibling); }

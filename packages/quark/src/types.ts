@@ -55,8 +55,8 @@ export interface QuarkOptions {
   isAsyncRun?: boolean;
   /**
    * Set while an `@on` block runs, and while its per-event options
-   * (`handle`, `target`, …) evaluate: the DOM event being handled. The
-   * `event` built-in; `undefined` outside a block.
+   * (`target`, `key`, …; not `handle`) evaluate: the DOM event being
+   * handled. The `event` built-in; `undefined` outside a block.
    */
   event?: Event;
   /**

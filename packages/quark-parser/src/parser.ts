@@ -1291,11 +1291,10 @@ class Parser {
   }
 
   /**
-   * `@on click, submit (debounce: 300, handle: save) { … }`: a comma list
-   * of event names (idents or strings), an optional options group, then a
-   * block parsed as a plain rule body or `;`. Handlers live in the
-   * options group (`handle:`); a bare expression after the events is the
-   * removed handler-list form and fails with guidance.
+   * `@on click, submit (debounce: 300) { … }`: a comma list of event
+   * names (idents or strings), an optional options group, then a block
+   * parsed as a plain rule body or `;`. Handlers live in the options group
+   * (`handle:`); a bare expression after the events fails with guidance.
    */
   parseListenerRule(at: Token): ListenerRule {
     const name = "on";

@@ -2,8 +2,10 @@
   <a href="https://example.com">Click me — navigation is prevented</a>
   <output></output>
   <quark-sheet>
-    @use "/demo-utils" as *;
-
-    a { @on click (prevent-default, handle: noteEvent); }
+    a {
+      @on click (prevent-default) {
+        + output { content: "#{event.type} handled — navigation prevented"; }
+      }
+    }
   </quark-sheet>
 </div>

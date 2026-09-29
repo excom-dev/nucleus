@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/quark-parser",
+      "comment": "Update the README samples, the wording on how Quark relates to CSS, and the type comments",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/quark-parser"
+}

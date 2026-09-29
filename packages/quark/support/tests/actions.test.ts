@@ -238,6 +238,39 @@ describe("@dispatch", () => {
     expect(m.filter((x) => /refusing to dispatch "click"/.test(x))).toHaveLength(1);
   });
 
+  it("drops valueless options with a warning, and does not dispatch when a target / form cannot resolve or an option is preserve", async () => {
+    const warn = vi.spyOn(QuarkLogger, "warn").mockImplementation(() => {});
+    const seen: string[] = [];
+    const { root } = mount(
+      `<button type="button" id="b">go</button>`,
+      `#b { @on click {
+        @dispatch bare-ping (target, detail, form, host: body);
+        @dispatch bad-target-ping (target: "[bad");
+        @dispatch bad-form-ping (form: "[bad");
+        @dispatch no-form-ping (form: 5);
+        @dispatch kept-ping (detail: preserve);
+      } }`
+    );
+    await flush();
+    for (const name of ["bare-ping", "bad-target-ping", "bad-form-ping", "no-form-ping", "kept-ping"]) {
+      root.addEventListener(name, (e) => seen.push(e.type));
+    }
+    click(root.querySelector("#b"));
+    expect(seen).toEqual(["bare-ping"]);
+    const m = messages(warn);
+    for (const text of [
+      'option "target" needs a selector or an element',
+      'option "detail" needs a value',
+      'option "form" needs a form or a selector',
+      'option "host" must be window or document',
+      'target "[bad" is not a valid selector',
+      'form "[bad" is not a valid selector',
+      "form 5 is not a <form>",
+    ]) {
+      expect(m.filter((x) => x.includes(text)), text).toHaveLength(1);
+    }
+  });
+
   it("is refused at rule level, at sheet level and in a rule-level @delay (a match is not an occurrence)", async () => {
     const error = vi.spyOn(QuarkLogger, "error").mockImplementation(() => {});
     const seen: string[] = [];

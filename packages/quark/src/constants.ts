@@ -45,3 +45,22 @@ export const VALUE_MAP = {
 export const isWipe = (value: unknown): boolean => TYPES_WIPE.includes(value);
 
 export const isNoop = (value: unknown): boolean => TYPES_NOOP.includes(value);
+
+export const isThenable = (value: unknown): value is PromiseLike<unknown> =>
+  !!value &&
+  typeof value === "object" &&
+  typeof (value as PromiseLike<unknown>).then === "function";
+
+/*
+ * Promises of Quark's own render built-ins (`template()`, `iterate()`):
+ * the only ones `content:` awaits. Any other promise is refused.
+ */
+const RENDER_PROMISES = new WeakSet<object>();
+
+export const markRenderPromise = <T>(value: T): T => {
+  if (isThenable(value)) RENDER_PROMISES.add(value);
+  return value;
+};
+
+export const isRenderPromise = (value: unknown): boolean =>
+  RENDER_PROMISES.has(value as object);

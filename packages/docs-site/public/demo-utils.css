@@ -206,8 +206,7 @@
 }
 
 [id^="demo-provider-fetch-"] > :first-child,
-[id^="demo-provider-geolocation-"] > :first-child,
-[id^="demo-provider-localstorage-"] > :first-child {
+[id^="demo-provider-geolocation-"] > :first-child {
   output {
     display: block;
     white-space: pre-wrap;
@@ -217,9 +216,6 @@
 }
 
 #demo-provider-orientation-request > :first-child {
-  #orient:not([is-success]):not([is-error]) ~ output {
-    display: none;
-  }
   #orient[is-success] ~ .status,
   #orient[is-error] ~ .status {
     display: none;

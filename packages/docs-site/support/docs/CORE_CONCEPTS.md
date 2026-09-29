@@ -60,14 +60,14 @@ When you need a reusable chunk of UI with its own behavior, you write a **view**
 
 ## Where the JavaScript goes
 
-Most pages need none. When rules outgrow expressions, a sheet imports a module and calls its functions:
+Most pages need none. When a calculation outgrows Quark expressions, the sheet imports a module and calls its functions:
 
 ```quark
-@use "/utils.js" as utils;
-[bind-total] { content: utils.formatCurrency($cart.total, "USD"); }
+@use "/pricing.js" as pricing;
+[bind-total] { content: pricing.total($items, $tax-rate); }
 ```
 
-Functions should be pure: take values, return values. Side effects are allowed when they cannot be avoided, but they stay rare in practice, because the document already holds the state a side effect would otherwise manage.
+A module should be pure business logic: it takes values and returns a value. It is also the exit for anything Quark cannot yet declare. Bridging a protocol, such as the network, storage, the clock or a person, belongs to an Adapter. Quark leans that way on purpose: it calls module functions synchronously and does not await what they return, so a fetch inside a module is deliberately awkward. A function may build and return a node it owns, such as a chart; it should still leave the document around it alone.
 
 ## Quick reference
 

@@ -35,13 +35,13 @@ const expr = parseExpression(`iterate($items, ":scope > template", "id")`);
 
 ## Language reference
 
-This section defines what **parses**. What the runtime does with a parsed sheet — declaration kinds, value keywords, built-in functions, allowed methods — is the `quark` package's documentation (one page per topic: declaration kinds, values, built-ins, allowed methods, selectors). Quark is a derivative of CSS: rules, selectors, and declarations carry over, the at-rules are its own, and a construct the engine never ran is a parse error rather than a statement the runtime skips (see *Rejected on purpose*).
+This section defines what **parses**. What the runtime does with a parsed sheet — declaration kinds, value keywords, built-in functions, allowed methods — is the `quark` package's documentation (one page per topic: declaration kinds, values, built-ins, allowed methods, selectors). Quark is a derivative of CSS, written in CSS syntax: rules, selectors, nesting, declarations and comments are CSS's own, and Quark's additions (variables, expressions and at-rules of its own) stay compatible with that syntax. A construct the engine does not run is a parse error rather than a statement the runtime skips (see *Rejected on purpose*).
 
 Notation is EBNF: `=` defines, `|` alternates, `{ x }` repeats zero or more times, `[ x ]` is optional, `"x"` is literal text, and `ws` is whitespace. Every `quark` code block on this page is parsed by the package's tests; blocks marked *invalid* must fail.
 
 ### Lexical structure
 
-The tokenizer emits `ident`, `variable`, `at`, `string`, `number`, `hash`, `url`, and `punct` tokens. Whitespace is **not** a token: it sets a `ws` flag on the token that follows, and that flag decides descendant combinators, space-separated lists, and sign handling. Comments are `/* … */` only — a `//` raises `Line comments are not supported, use /* */`, so a sheet stays tokenizable by a CSS engine. They are collected separately and surface as `comment` statements between other statements; they never appear inside a selector or a value.
+The tokenizer emits `ident`, `variable`, `at`, `string`, `number`, `hash`, `url`, and `punct` tokens. Whitespace is **not** a token: it sets a `ws` flag on the token that follows, and that flag decides descendant combinators, space-separated lists, and sign handling. Comments are CSS's own `/* … */`; a `//` raises `Line comments are not supported, use /* */`. They are collected separately and surface as `comment` statements between other statements; they never appear inside a selector or a value.
 
 ```ebnf
 ws          = ( " " | "\t" | "\n" | "\r" | "\f" ) { " " | "\t" | "\n" | "\r" | "\f" }
@@ -94,7 +94,7 @@ property    = ( ident | "*" ) { ident | "*" }
 
 - A declaration's `;` is optional before `}` and at end of input; stray `;` are skipped.
 - Declarations are allowed at the top level of a sheet (a Quark extension; CSS has none).
-- A variable key is a bare `$name`; a dot chain after it (`$sig.value:`, the former signal write) is a parse error that points at the owner-side forms (`@on` block on the owner, `element.quark.setProperty()` from JS).
+- A variable key is a bare `$name`; a dot chain after it (`$user.name:`) is a parse error that points at the owner-side forms (an `@on` block on the owner, `element.quark.setProperty()` from JS).
 
 ```quark
 $app-theme: "dark";
@@ -114,10 +114,10 @@ The parser scans ahead (skipping `(…)`, `[…]`, and `#{…}`) to the first to
 | --- | --- | --- |
 | `;` / `}` / end | has a top-level `:` | declaration |
 | `;` / `}` / end | no `:` | parse error |
-| `{` | `ident ":"` at the start **and** whitespace or `{` after the colon | parse error: a nested property block |
+| `{` | `ident ":"` at the start **and** whitespace or `{` after the colon | parse error: a declaration takes no block |
 | `{` | anything else | rule |
 
-So `a:hover { … }` is a rule, while `a: hover { … }` is the nested property syntax Quark rejects.
+So `a:hover { … }` is a rule, while `a: hover { … }` is a parse error.
 
 ### Selectors
 
@@ -219,7 +219,7 @@ a {
   title: item.meta.title.toUpperCase();
   first: "#{$tags[0]} #{$obj["display-name"]}";
   ns: math.$pi * math.round($r);
-  named: fetch-user($id: 7, $opts...);
+  named: formatPrice($amount: 7, $opts...);
   self: closest(&);
   chained: prop("provision").body.items[index].name;
 }
@@ -256,7 +256,7 @@ a {
 
 #### Rejected syntax
 
-JavaScript syntax that appears in legacy sheets is a parse error, with a message naming the alternative. Conditionals use `if()` or `ternary()`; null-safe access is runtime behavior (accessing a field of `null` / `undefined` yields `undefined`), not syntax.
+JavaScript syntax is a parse error, with a message naming the alternative. Conditionals use `if()` or `ternary()`; null-safe access is runtime behavior (accessing a field of `null` / `undefined` yields `undefined`), not syntax.
 
 ```quark invalid
 a { x: $a ? $b : $c; }
@@ -291,7 +291,7 @@ a { @on click go, prevent-default; }
 ```
 
 ```quark invalid
-form { @off submit save; }
+a { @off click go; }
 ```
 
 ```quark invalid
@@ -304,7 +304,7 @@ ul { @view-transition (types: "todo-change"); }
 
 ### At-rules
 
-Quark's at-rules are the whole set — `"@use"`, `"@scope"`, `"@on"`, `"@dispatch"`, `"@command"`, `"@view-transition"`, `"@delay"`, `"@warn"`, `"@debug"`, `"@error"` — and each has a dedicated node. One table, `QUARK_AT_RULES`, types the parser's dispatch map, so any other name is a parse error: CSS's `@media` / `@supports` / `@keyframes` / `@font-face` / `@layer` and SCSS's control flow, mixins, and module rules are not part of the language.
+Quark's at-rules are the whole set — `"@use"`, `"@scope"`, `"@on"`, `"@dispatch"`, `"@command"`, `"@view-transition"`, `"@delay"`, `"@warn"`, `"@debug"`, `"@error"` — and each has a dedicated node. One table, `QUARK_AT_RULES`, types the parser's dispatch map, so any other name is a parse error: features of the browser's style engine, such as `@media`, `@supports`, `@keyframes`, `@font-face` and `@layer`, stay in a stylesheet.
 
 ```ebnf
 at-rule   = "@use" string [ "as" ( ident | "*" ) ] [ ";" ]
@@ -319,23 +319,28 @@ option    = ident [ ":" space-list ]
 name-list = ( ident | string ) { "," ( ident | string ) }
 ```
 
-`@use` imports a JS module and takes no `with (…)` clause. `@scope` takes a block and no prelude. `@on` handlers live in the options group (`handle: fn` or `handle: (a, b)`); a bare expression after the event names — the handler list of earlier versions — is an error that points there, and so is an `@on` statement with neither options nor a block (nothing to do). `@off` is not part of the language (it was removed once `@on` gained options and blocks). `@dispatch` and `@command` are statements: a block is an error. `@view-transition` and `@delay` have no statement form: a missing block is an error, and so is a missing `@delay` duration.
+`@use` imports a JS module. `@scope` takes a block and no prelude. `@on` takes its listeners in the options group: `handle: fn`, `handle: (a, b)`, or a call that returns the listener. The expression is evaluated each time the event fires, so such a call runs on every event (runtime semantics: quark's [`@on`](/nucleus/packages/quark/on) page). A bare expression after the event names is an error that points at `handle:`, and so is an `@on` statement with neither options nor a block (nothing to do). There is no `@off`: gate a listener with its options or with event data inside its block. `@dispatch` and `@command` are statements: a block is an error. `@view-transition` and `@delay` have no statement form: a missing block is an error, and so is a missing `@delay` duration.
 
 ```quark
 @use "/helpers.js" as *;
-@use "/api-client.js" as api;
+@use "/pricing.js" as pricing;
 @scope {
-  #out { content: api.getAmount(); }
+  #total { content: formatPrice(pricing.total($items, $tax-rate)); }
   form {
-    @on submit (prevent-default, handle: api.save);
+    @on submit (prevent-default) { is-submitted: ""; }
     @on input, change (debounce: 300) { data-draft: event.target.value; }
     @on keydown (key: "Escape", host: window) { is-open: none; }
-    @on click (target: "li[data-id]", once, handle: pick);
     @on reset (prevent-default) {
       data-draft: none;
       @dispatch draft-cleared (detail: (at: event.timeStamp), target: "#status");
       @command --refresh (target: "#preview");
     }
+  }
+  ul {
+    @on click (target: "li[data-id]") { data-selected: target.getAttribute("data-id"); }
+  }
+  dialog[open] > include-content {
+    @on include-content-did-render (handle: focusInput);
   }
   button[data-copy] {
     @on click {
@@ -354,31 +359,20 @@ name-list = ( ident | string ) { "," ( ident | string ) }
 
 ### Rejected on purpose
 
-Quark keeps the CSS the engine runs and nothing else, so what it does not run does not parse. Every rejection names the construct, with the line and column.
+What the engine does not run does not parse. Every rejection names the construct, with the line and column.
 
 | Construct | Message |
 | --- | --- |
 | an at-rule that is not Quark's own | `@media is not a Quark at-rule` |
-| `%placeholder` selectors | `Placeholder selectors are not supported` |
 | `#{…}` outside a string — a selector, a property name, an attribute value | `Interpolation is only supported inside strings` |
-| `!important`, `!default`, `!global` | `!important is not supported` |
-| nested property blocks | `Nested property blocks are not supported` |
-| a `@use` configuration | `@use does not take a with clause` |
+| `!important` | `!important is not supported` |
 
 ```quark invalid
 @media (width < 600px) { nav { is-compact: ""; } }
 ```
 
 ```quark invalid
-@each $name, $glyph in $icons { .icon-#{$name} { content: $glyph; } }
-```
-
-```quark invalid
-%error-message { content: $message; }
-```
-
-```quark invalid
-.icon-#{$name} { content: $glyph; }
+#step-#{$n} { is-active: ""; }
 ```
 
 ```quark invalid
@@ -386,19 +380,11 @@ li[data-id=#{$id}] { is-current: ""; }
 ```
 
 ```quark invalid
-a { border-#{$side}-radius: 3px; }
+a { data-#{$key}: $value; }
 ```
 
 ```quark invalid
 a { color: red !important; }
-```
-
-```quark invalid
-a { font: { size: 1rem; } }
-```
-
-```quark invalid
-@use "/theme.js" with ($accent: "red");
 ```
 
 ### AST
@@ -410,7 +396,7 @@ a { font: { size: 1rem; } }
 | sheet | `stylesheet` → `body: Statement[]` |
 | `selector { … }` | `rule` → `selector: selector_list`, `block` |
 | `key: value;` | `declaration` → `property` (a `property` with a `name`, or a `variable`), `value` |
-| `@use "/x.js" as api;` | `atrule` → `name: "use"`, `url`, `namespace` (`null` = derived from the url, `"*"` = global) |
+| `@use "/x.js" as pricing;` | `atrule` → `name: "use"`, `url`, `namespace` (`null` = derived from the url, `"*"` = global) |
 | `@scope { … }` | `atrule` → `name: "scope"`, `block` |
 | `@on click, submit (once, handle: a) { … }` / `@on click (handle: a);` | `atrule` → `name: "on"`, `events: event_name[]` (each `name`, `quoted`), `options: listener_option[]` (each `name`, `value: Expression \| null` — `null` for a flag), `block` (`null` in the statement form) |
 | `@dispatch cart-add (detail: $d);` / `@command --refresh (target: "#x");` | `atrule` → `name: "dispatch" \| "command"`, `names: event_name[]`, `options: listener_option[]` |
@@ -438,6 +424,6 @@ The data-driven parts of the grammar are exported so tooling never re-types them
 ## Design notes
 
 - Single-pass, charcode-based tokenizer (no regexes on the hot path). Whitespace is a flag on tokens, not a token; comments are collected separately so expression parsing never has to skip them.
-- Recursive-descent statement parser + Pratt expression parser. Node naming loosely follows `salesforce-ux/scss-parser` (`stylesheet`, `rule`, `declaration`, `atrule`, `function`, `variable`, ...), but values are structured expression nodes rather than token lists.
+- Recursive-descent statement parser + Pratt expression parser. Values are structured expression nodes rather than token lists.
 - Every node carries `start` / `end` source offsets. `QuarkParseError` reports line / column.
 - `QUARK_AT_RULES` types the parser's dispatch map, so an at-rule is one table entry plus one method, and the same table rejects every other name.

@@ -18,7 +18,7 @@ quark.unregister();
 
 `isScoped` mirrors `<quark-sheet>`'s default (see [Sheets & scoping](./SHEETS.md)); `modules` pre-provides what `@use` would import; `Quark.moduleLoader` can be overridden in tests.
 
-`Quark.whenSettled({ timeout? })` resolves once no rule pass, paint, async `content` or `@use` load is pending (`"settled"`), or after `timeout` ms (`"timeout"`, default 1000) — for tests and tools; sheets have no after-render hook.
+`Quark.whenSettled({ timeout? })` resolves once no rule pass, paint, template load or `@use` load is pending (`"settled"`), or after `timeout` ms (`"timeout"`, default 1000) — for tests and tools; sheets have no after-render hook.
 
 Writing `$variables` from app code goes through `element.quark` — see [Writing from JS](./JS_WRITES.md).
 

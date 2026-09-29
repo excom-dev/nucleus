@@ -16,7 +16,7 @@ span::before {
 }
 ```
 
-Quark was conceived as exactly this: a variant of CSS which mutates the document instead of styling.
+Quark was conceived as exactly this: a derivative of CSS which mutates the document instead of styling it.
 It also augments CSS expressions, so the same patterns can be applied for rich data:
 
 ```quark
@@ -33,7 +33,7 @@ span {
     content: prop("myData").myText;
 
     /* custom logic */
-    content: myModule.buildMyText();
+    content: myModule.formatPrice($amount);
 }
 ```
 

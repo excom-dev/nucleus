@@ -1,9 +1,8 @@
 /**
- * Built-in `@use "quark:<name>"` modules: pure helpers grouped the way
- * Sass groups `sass:math` / `sass:list` / `sass:map` / `sass:string`.
- * Nothing here is global — a sheet imports what it needs
- * (`@use "quark:math" as math;` → `math.clamp(0, $x, 1)`; `as *` merges
- * the exports bare). Every function is pure, null-tolerant (a missing
+ * Built-in `@use "quark:<name>"` modules: pure helpers grouped by the
+ * kind of value they work on. Nothing here is global — a sheet imports
+ * what it needs (`@use "quark:math" as math;` → `math.clamp(0, $x, 1)`;
+ * `as *` merges the exports bare). Every function is pure, null-tolerant (a missing
  * collection reads as empty, a missing value passes through) and returns
  * copies, never mutating its arguments. Dashed names (`sort-by`) are
  * plain object keys: the evaluator calls own-property functions by name.
@@ -57,7 +56,7 @@ const math: Vars = {
   $e: Math.E,
   min: (...values: unknown[]) => Math.min(...values.flat().map(toNumber)),
   max: (...values: unknown[]) => Math.max(...values.flat().map(toNumber)),
-  // CSS / Sass argument order: clamp(min, value, max)
+  // CSS argument order: clamp(min, value, max)
   clamp: (min: unknown, value: unknown, max: unknown) =>
     Math.min(Math.max(toNumber(value), toNumber(min)), toNumber(max)),
   round: (value: unknown, digits: unknown = 0) => {

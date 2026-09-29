@@ -5,9 +5,10 @@
     </template>
   </ul>
   <quark-sheet>
-    @use "/demo-utils" as *;
-
-    ul { content: iterate(getPlanets()); }
+    ul {
+      $planets: "Mercury", "Venus", "Earth", "Mars";
+      content: iterate($planets);
+    }
     [bind-name] { content: item; }
   </quark-sheet>
 </div>

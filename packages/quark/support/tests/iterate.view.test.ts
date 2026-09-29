@@ -1,7 +1,6 @@
 import "@excom/quark-sheet";
 import {
   afterEach,
-  beforeEach,
   describe,
   expect,
   it,
@@ -9,18 +8,14 @@ import {
 import {
   expectComplexity,
   flush,
-  installDemoModules,
   measureComplexity,
   mountView,
   readDemo,
-  restoreDemoModules,
 } from "./view-helpers";
 
 describe("iterate view", () => {
-  beforeEach(() => installDemoModules());
   afterEach(() => {
     document.body.innerHTML = "";
-    restoreDemoModules();
   });
 
   it("renders the planet list", async () => {

@@ -42,14 +42,14 @@ A sheet is minified (comments stripped, whitespace collapsed), optionally wrappe
 
 - **Rules**, nested to any depth. A nested selector is joined to its parent as a descendant, or spliced over each `&`.
 - **Declarations inside rules**, by key shape (see [Declaration kinds](./DECLARATIONS.md)).
-- **`@use "url" [as name | as *]`** anywhere in the sheet. The namespace defaults to the URL's last path segment without its extension (`/api-client.js` → `api-client`); `as *` merges exports into the bare scope, last import winning on clashes. A `with (…)` clause is a parse error.
+- **`@use "url" [as name | as *]`** anywhere in the sheet. The namespace defaults to the URL's last path segment without its extension (`/date-utils.js` → `date-utils`); `as *` merges exports into the bare scope, last import winning on clashes.
 - **`@scope { … }`**, which takes no prelude: rules inside stay anchored to the host in a global sheet.
 - **`@on <event> [(options)] …;`** inside rules: listeners (see [`@on`](./ON.md)).
 - **`@view-transition [(options)] { … }`** inside rules, around rules or inside `@on` blocks: the writes inside it commit inside a view transition (see [`@view-transition`](./VIEW_TRANSITION.md)).
 - **`@delay <ms> { … }`** inside rules and blocks: the block applies once, after the pause, if the rule still matches (see [`@delay`](./DELAY.md)).
 - **`@warn` / `@debug` / `@error <expression>;`** inside rules and blocks: report on the matched element (see [Diagnostics](./DIAGNOSTICS.md)).
 
-That list is the language: any other at-rule, a nested property block, a `%placeholder` selector, `#{…}` outside a string, and `!important` / `!default` / `!global` are parse errors, and a sheet that fails to parse does not run (`<quark-sheet>` sets `is-error`). Top-level declarations parse but have no element to write.
+That list is the language (the full set is under [At-rules](./AT_RULES.md), the grammar under [Syntax](./SYNTAX.md)). A sheet that fails to parse does not run, and `<quark-sheet>` sets `is-error`. Top-level declarations parse but have no element to write.
 
 ```quark
 @use "/helpers.js" as *;

@@ -388,7 +388,7 @@ export interface AtRuleBase extends BaseNode {
   name: string;
 }
 
-/** `@use "url" [as name | as *];`: a `with (…)` clause is a parse error. */
+/** `@use "url" [as name | as *];`: imports a JS module. */
 export interface UseRule extends AtRuleBase {
   name: "use";
   url: string;
@@ -432,12 +432,11 @@ export interface EventName extends BaseNode {
  * Quark's listener at-rule. Events are bare identifiers (`click`,
  * `super-form-success`) or strings, comma-separated. An optional
  * parenthesised options group follows (`(target: "li", once, handle:
- * save($draft))`; names are idents, values single expressions; a bare
+ * focusInput)`; names are idents, values single expressions; a bare
  * name is a flag). Then either a block — an ordinary rule body the
  * runtime applies once per event — or `;`. A statement without options
- * has nothing to do and is a parse error; a handler list after the
- * events (the pre-2026-09-13 form) is a parse error pointing at
- * `handle:`. `@off` was removed (parse error).
+ * has nothing to do and is a parse error; so is a handler list after the
+ * events (the error points at `handle:`), and so is `@off`.
  */
 export interface ListenerRule extends AtRuleBase {
   name: "on";

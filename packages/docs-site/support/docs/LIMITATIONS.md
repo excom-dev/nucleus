@@ -8,7 +8,7 @@ Works very well with all Custom Elements that follow the [Adapter](/nucleus/docs
 
 Nucleus Stack apps can always render other UI frameworks, not always the other way around:
 
-Nucleus is not out-of-the-box compatible with certain other UI frameworks/libraries that lock the DOM to their own internal state, such as React. Many of these frameworks treat the DOM as a compilation target, not the source of truth as Nucleus does. Therefore, any changes Nucleus elements or Quark make to the DOM will be seen as "unreconciled" by the other framework and will be obliterated. If you seek to integrate the Nucleus Stack into an app of another UI framework, that framework MUST either allow untracked DOM changes, or you must use a Shadow DOM as a boundary between it and the Nucleus stack.
+Nucleus is not out-of-the-box compatible with certain other UI frameworks/libraries that lock the DOM to their own internal state, such as React. Many of these frameworks treat the DOM as a compilation target, not the source of truth as Nucleus does. Therefore, any changes Nucleus elements or Quark make to the DOM will be seen as "unreconciled" by the other framework and will be obliterated. If you seek to integrate the Nucleus Stack into an app of another UI framework, that framework MUST either allow untracked DOM changes, or you must use a Shadow DOM as a boundary between it and the Nucleus stack. The same boundary serves the other direction: when a sheet hands a region to a framework that needs sole authority over its DOM, a shadow root around that region keeps the two apart ([Handing rendering to a framework](/nucleus/packages/quark/use#md-handing-rendering-to-a-framework)).
 
 ## Quark rules don't revert
 
@@ -18,6 +18,14 @@ The instant a CSS selector stops matching, the rule unapplies. Quark never does 
 
 *What to do.* For every state you leave, write the inverse rule. A future version may add reversion; do not build on that possibility.
 
+## A Quark sheet is not a stylesheet
+
+A Quark sheet that holds an at-rule Quark does not have (`@media`, `@keyframes`, `@supports`, …) fails to load.
+
+*Why.* Quark is a derivative of CSS with a different runtime: a stylesheet paints, a Quark sheet writes State. Media queries, keyframes and the rest are features of the browser's style engine, and a Quark sheet paints nothing.
+
+*What to do.* Keep them in your stylesheet, selecting on the same attributes the sheet writes.
+
 ## Writes are batched; events are not
 
 Writes from the Orchestrator are gathered and flushed as a batch, so rules always read a settled element — and, as a result, writes are not aligned to frames. Events fire immediately and are never batched, because bubbling is inviolable: a listener still mid-bubble must be able to call `preventDefault()` or `stopPropagation()` against the actual world.
@@ -26,7 +34,7 @@ Writes from the Orchestrator are gathered and flushed as a batch, so rules alway
 
 `@view-transition` is the one place a write waits for the renderer: its writes land a rendering opportunity later, inside `document.startViewTransition()`. A document runs one view transition at a time — a route transition and a Quark one in the same moment cannot both animate, and Quark commits unanimated by default while another is active. `until` keeps the old state frozen on screen and delays the new capture, so use it for short waits, never for a fetch. Two elements sharing a `view-transition-name` abort the animation (the writes still land). Scoped, per-element transitions are not available yet in browsers, but this feature will likely utilize it in the future.
 
-Element insertions under a sheet's host are observed whoever makes them, so a widget that rebuilds its DOM every frame inside a host costs a rule pass per frame. Give such a widget a shadow root or an iframe, which Quark never enters.
+Element insertions under a Quark sheet's host are observed whoever makes them, so a widget that rebuilds its DOM every frame inside a host costs a rule pass per frame. Give such a widget a shadow root or an iframe, which Quark never enters.
 
 ## The DOM is proportional to your data
 
@@ -36,7 +44,7 @@ Any item that takes part in orchestration has to exist as an addressable node. P
 
 ## No replay of past events
 
-If a sheet registers after an Adapter has already fired its connect-time events, those events are gone. Quark does not record or replay past events or past states on purpose: a replayed event cannot honor `preventDefault()` or `stopPropagation()`, so the replay would be a weaker, different event wearing the original's clothes.
+If a Quark sheet registers after an Adapter has already fired its connect-time events, those events are gone. Quark does not record or replay past events or past states on purpose: a replayed event cannot honor `preventDefault()` or `stopPropagation()`, so the replay would be a weaker, different event wearing the original's clothes.
 
 *What to do.* Load sheets before the Adapters they listen to. Put `<quark-sheet>` first in its host. Prefer state attributes (`is-success`) over one-shot events for anything that can fire during boot. Attribute-driven rules are always safe, because the first run reads the settled document.
 
@@ -56,7 +64,7 @@ Classes and ids are observed, but setting attributes is recommended over togglin
 
 ## Boundaries are absolute
 
-A shadow root or iframe opens a new State root, with its own Orchestrator. Quark never crosses that line, any more than CSS does. That is what makes isolation trustworthy for embedded widgets, and it is also why the stack avoids shadow DOM by default: a boundary is a wall in both directions.
+A shadow root or iframe opens a new State root, with its own Orchestrator. Quark never crosses that line, and neither does CSS. That is what makes isolation trustworthy for embedded widgets, and it is also why the stack avoids shadow DOM by default: a boundary is a wall in both directions. Build one on purpose where a rendering framework must own a region alone ([Handing rendering to a framework](/nucleus/packages/quark/use#md-handing-rendering-to-a-framework)).
 
 ## Nobody truly owns the document
 

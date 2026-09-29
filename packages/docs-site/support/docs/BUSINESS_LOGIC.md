@@ -97,11 +97,12 @@ The same predicate almost certainly exists on your server, guarding the endpoint
 Where the safe answer is "no", render every option, tag each with its identity, and let one rule open the ones that qualify. An option you forgot to account for stays closed:
 
 ```quark
-@use "/views/shipping/carriers.js" as carriers;
-
-[bind-carriers] {
-  content: iterate(carriers.all());
-  > data-carrier { carrier-name: item; }
+provider-fetch[api-url="/api/carriers"][is-success] {
+  $carriers: prop("provision").body;
+  [bind-carriers] {
+    content: iterate($carriers);
+    > data-carrier { carrier-name: item; }
+  }
 }
 ```
 
@@ -251,7 +252,7 @@ Here is the same feature written the way many stacks would write it:
 
 ```js
 /* anti-pattern: goes shopping in the DOM, then writes to it */
-export function updateTotal() {
+export const updateTotal = () => {
   const rows = document.querySelectorAll("#quote data-line[is-selected]");
   const total = [...rows].reduce(
     (sum, row) => sum + Number(row.getAttribute("line-amount")),
@@ -259,7 +260,7 @@ export function updateTotal() {
   );
   document.querySelector("#quote-total").textContent = `$${total}`;
   document.querySelector("#submit").disabled = total === 0;
-}
+};
 ```
 
 It works, and it costs you four things.
@@ -269,7 +270,7 @@ It works, and it costs you four things.
 - **Its conclusion never reaches the document.** `total === 0` is the decisive fact, and it dies as a local variable. No CSS rule and no other Quark rule can see it, so the next feature that needs it computes it again.
 - **It is untestable without a DOM,** and uninspectable with one — the selection is on screen, the reasoning is not.
 
-The test is simple: **if a function reads the DOM or writes the DOM, it is doing the Orchestrator's job.** Give it arguments and let it return a value. Where a side effect truly is unavoidable — handing a node to a charting library, redirecting after a payment — attach it to an event with `@on ... (handle: fn)`, so it is an occurrence with a cause, not a calculation in disguise.
+The test is simple: **if a function reads the DOM or writes the DOM, it is doing the Orchestrator's job.** Give it arguments and let it return a value. A narrow allowance is a node the function builds itself: a chart is `[bind-chart] { content: createChart($series); }`, where `createChart` creates its own element, renders into it and returns it, and still never reads or writes the document around it ([Asynchronous work](/nucleus/packages/quark/use#md-asynchronous-work) covers a render that finishes later). Talking to a server, a store or a payment provider is not a module's job: that is an Adapter's protocol, and its outcome reaches the document as attributes and a provision.
 
 ## Checklist
 
@@ -282,7 +283,7 @@ The test is simple: **if a function reads the DOM or writes the DOM, it is doing
 - [ ] The default is the denying case; qualifying opens it
 - [ ] Quark writes state (`disabled`, `content`, the record's attributes); CSS renders appearance from the same facts
 - [ ] Built-in modules checked before writing a helper
-- [ ] Every module function takes values and returns a value — no DOM, no state, no attributes
+- [ ] Every module function takes values and returns a value — no state, no attributes, no DOM beyond a node it builds and returns
 - [ ] The reason a control is disabled is a fact, and the message the user reads comes from it
 
 Related: [Orchestrating](/nucleus/docs/orchestrating) for the language itself, [Best Practices](/nucleus/docs/best_practices) for the short rules, [Building Views](/nucleus/docs/building_views) for where these files live.

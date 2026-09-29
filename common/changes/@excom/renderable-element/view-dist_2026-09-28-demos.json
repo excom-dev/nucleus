@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/renderable-element",
+      "comment": "Update the demos to switch content from `@on` blocks instead of inline scripts",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/renderable-element"
+}

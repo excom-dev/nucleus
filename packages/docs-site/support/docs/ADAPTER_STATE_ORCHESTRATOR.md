@@ -87,6 +87,8 @@ Initial State is usually authored statically, but need not be. The pattern does 
 
 **A deliberately narrow language.** Expressions may compute and read, they may not cause effects. Method calls, mapped to native JS, are limited to a read-only allowlist. The Orchestrator declares relationships between facts... anything imperative must leave through a custom, named module function, defined by the author. The architectural rule — "the Orchestrator does not execute procedures" — is enforced at the language level.
 
+**Not a bridge.** A module function is the exit for logic the language cannot yet express. Bridging a protocol (the network, storage, a sensor, a person) is not that kind of work: it belongs to an Adapter.
+
 **Failure-inert.** A broken expression logs and no-ops, like CSS. Malfunction in the Orchestrator degrades the experience... it cannot corrupt the State.
 
 **Reactive and bounded.** It observes only what its own rules reference (the underlying MutationObserver is filtered to the attributes its rules name, plus element insertions — and removals only while a rule's match depends on children or sibling position), and its authority stops at an encapsulation boundary.
@@ -99,11 +101,11 @@ This means:
 - Rules do not revert when their selector stops matching. Authors must write the inverse rule if they wish to un-apply the rule in question.
 - Specificity is not taken into account. If Rule A matches before Rule B, but has a higher CSS selector specificity, it will not matter. Rule B will be applied regardless.
 
-Quark is also a derivative of CSS rather than a superset of it. Rules, selectors and declarations carry over; the at-rules do not. Quark has its own ten (`@use`, `@scope`, `@on`, `@dispatch`, `@command`, `@view-transition`, `@delay`, `@warn`, `@debug`, `@error`) and rejects every other one at parse time instead of ignoring it.
+Quark is also a derivative of CSS, written in CSS syntax: rules, selectors, nesting and declarations carry over, and what Quark adds (variables, expressions, at-rules of its own) stays compatible with that syntax. What differs is the runtime: a stylesheet paints, a sheet writes State. Features of the browser's style engine, such as media queries and keyframes, stay in the stylesheet.
 
 ## How it differs
 
-**Component frameworks** (React and similar frameworks) put a memory model in charge, run it through custom app logic, and target the document as output. The component conflates view, orchestration, and adapter (and sometimes even styling) in one imperative unit, which is why composition and reuse are difficult. A parent cannot reshape a child's logic without forking it. ASO separates these three roles into three languages — HTML, Quark, plain functions — and deletes the memory model.
+**Component frameworks** (React and similar frameworks) put a memory model in charge, run it through custom app logic, and target the document as output. The component conflates view, orchestration, and adapter (and sometimes even styling) in one imperative unit, which is why composition and reuse are difficult. A parent cannot reshape a child's logic without forking it. ASO separates these three roles into three languages — HTML, Quark, plain functions — and deletes the memory model. Where an ASO app hands a region to such a framework, a shadow root is the boundary between them ([Handing rendering to a framework](/nucleus/packages/quark/use#md-handing-rendering-to-a-framework)).
 
 **MVC / MVVM** keeps a model separate from a view and spends its lifecycles synchronizing the two. ASO has one surface. There is nothing to bind.
 
