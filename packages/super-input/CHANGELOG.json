@@ -2,6 +2,26 @@
   "name": "@excom/super-input",
   "entries": [
     {
+      "version": "0.1.2",
+      "tag": "@excom/super-input_v0.1.2",
+      "date": "Wed, 30 Sep 2026 00:32:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update the demos and their tests"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/valence\" to `^0.1.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@excom/super-input_v0.1.1",
       "date": "Wed, 23 Sep 2026 06:16:11 GMT",

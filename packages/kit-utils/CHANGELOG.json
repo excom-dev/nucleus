@@ -2,6 +2,32 @@
   "name": "@excom/kit-utils",
   "entries": [
     {
+      "version": "0.2.0",
+      "tag": "@excom/kit-utils_v0.2.0",
+      "date": "Wed, 30 Sep 2026 00:32:38 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add `matchesKey()`, the keyboard filter behind Quark's `key:` and `keycode-filter`, which also names the space bar `Space` / `Spacebar` and the plus key `plus`"
+          },
+          {
+            "comment": "Add `resolveModuleUrl()`, and update `resolveModuleReference()` to load an absolute `http(s)` URL as it is (it prefixed the page origin) and to refuse other schemes such as `data:` and `blob:`"
+          },
+          {
+            "comment": "Update `fetchTemplate()` and `fetchPlainText()` to reject with `HTTP <status>: <url>` on an error status instead of returning the error page as content"
+          },
+          {
+            "comment": "Update `resolveTemplateContent()` and `fetchPlainText()` so `reqInit.signal` ends only that caller's wait: the shared request goes on and fills the cache, so other callers waiting on the same URL get the content (an abort used to fail them all), a time limit such as `AbortSignal.timeout(…)` no longer limits the request itself, only that wait (the uncached `fetchTemplate()` still passes its signal to `fetch`), and an already aborted signal fails at once, before any request starts"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "Fix an issue where a failed template or plain-text request stayed cached for the page: the next call fetches again"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@excom/kit-utils_v0.1.1",
       "date": "Wed, 23 Sep 2026 06:16:11 GMT",

@@ -2,6 +2,37 @@
   "name": "@excom/content-drawer",
   "entries": [
     {
+      "version": "0.2.0",
+      "tag": "@excom/content-drawer_v0.2.0",
+      "date": "Wed, 30 Sep 2026 00:32:38 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Update `content-drawer` so only an `.absolute` drawer styles its parent, as `position: relative; overflow: clip` (was every drawer, with `overflow: hidden`): a fixed or sticky drawer no longer clips its parent, and sticky descendants keep working"
+          },
+          {
+            "comment": "Update a closed `content-drawer` to be `visibility: hidden` once its slide-out ends, taking it out of the tab order and the accessibility tree: a custom `transition` on a closed drawer must keep `visibility 0s <duration>`, and a closed drawer shown in the layout needs `visibility: visible`"
+          }
+        ],
+        "none": [
+          {
+            "comment": "Update the docs: the backdrop never reads the drawer's own variables, so set `--content-drawer-transition-duration`, `--content-drawer-transition-ease` and `--content-drawer-overlay-z-index` on the parent, the backdrop or `:root`"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/kit-utils\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/valence\" to `^0.1.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@excom/content-drawer_v0.1.1",
       "date": "Wed, 23 Sep 2026 06:16:11 GMT",

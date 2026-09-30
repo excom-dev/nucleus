@@ -2,6 +2,35 @@
   "name": "@excom/quark-sheet",
   "entries": [
     {
+      "version": "0.1.4",
+      "tag": "@excom/quark-sheet_v0.1.4",
+      "date": "Wed, 30 Sep 2026 00:32:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update the tests for `did-load` and for a `src-url` that answers with an error status"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/kit-logger\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-utils\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/loadable-element\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/quark\" to `^0.2.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.3",
       "tag": "@excom/quark-sheet_v0.1.3",
       "date": "Wed, 23 Sep 2026 11:22:24 GMT",

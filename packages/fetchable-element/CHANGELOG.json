@@ -2,6 +2,38 @@
   "name": "@excom/fetchable-element",
   "entries": [
     {
+      "version": "0.2.0",
+      "tag": "@excom/fetchable-element_v0.2.0",
+      "date": "Wed, 30 Sep 2026 00:32:38 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add `did-load` from `loadable-element`: set on the first success, kept while a refresh runs, cleared on an error"
+          },
+          {
+            "comment": "Update failed-request logging to one line: an error status (400 or above) logs a warning, `<tag>: request failed` with the response, which the default `KitLogger` level hides; a network or parse failure logs an error; an abort logs nothing"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/abortable-element\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-logger\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-utils\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/loadable-element\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.1.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.2",
       "tag": "@excom/fetchable-element_v0.1.2",
       "date": "Wed, 23 Sep 2026 11:22:24 GMT",

@@ -2,6 +2,66 @@
   "name": "@excom/quark",
   "entries": [
     {
+      "version": "0.2.0",
+      "tag": "@excom/quark_v0.2.0",
+      "date": "Wed, 30 Sep 2026 00:32:38 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Improve element insertions so they run rules only for the inserted elements, plus rules that depend on children or sibling position, instead of re-running every rule over the parent's whole subtree. A dialog or popover opening under a sheet's host no longer re-applies its rules (or restarts their `@delay` timers)."
+          },
+          {
+            "comment": "Add a console warning when `handle:` evaluates to a value that is not a function"
+          },
+          {
+            "comment": "Fix an issue where a rule reading a `$binding` or `prop()` did not apply its value again when an attribute or child change made it match again, so an inverse rule left the old value in place. Where two rules reach the same key, the later one now wins for bindings, as it does for literals."
+          },
+          {
+            "comment": "Fix an issue where values indexed by `attr()`, such as `$names[attr(\"data-key\")]`, did not update when the attribute changed"
+          }
+        ],
+        "minor": [
+          {
+            "comment": "Remove promise support from `content:`. A promise that a module function returns to `content:` is refused with a console error and the content stays as it was; return a value or a node instead. `template()`, `iterate()` and `@view-transition (until: …)` wait as before."
+          },
+          {
+            "comment": "Update `handle:` in `@on` to name the listener: `event` and `target` are not in scope inside a `handle:` expression. A call in `handle:` runs on every event and must return the listener, which receives the event with `this` being the element."
+          },
+          {
+            "comment": "Add the key names `Space` / `Spacebar` and `plus` to `key:` in `@on` (`\"Shift+Space\"`); a `key:` holding only spaces now warns and names `Space`"
+          },
+          {
+            "comment": "Add absolute `http(s)` URLs to `@use`: the module loads from that URL (another origin needs CORS), and any other scheme (`data:`, `blob:`) is refused with a logged error"
+          },
+          {
+            "comment": "Add `QuarkLogger` to the exports of `@excom/quark`: `QuarkLogger.level = 2` shows the warnings Quark logs"
+          }
+        ],
+        "none": [
+          {
+            "comment": "Update the docs: modules as pure business logic, an `Asynchronous work` guide in `@use`, and one wording for how Quark relates to CSS"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/kit-devtools\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-logger\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-utils\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/provider-fetch\" to `^0.1.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/provider-storage\" to `^0.1.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.3",
       "tag": "@excom/quark_v0.1.3",
       "date": "Wed, 23 Sep 2026 11:22:24 GMT",

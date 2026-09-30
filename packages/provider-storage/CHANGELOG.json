@@ -2,6 +2,26 @@
   "name": "@excom/provider-storage",
   "entries": [
     {
+      "version": "0.1.2",
+      "tag": "@excom/provider-storage_v0.1.2",
+      "date": "Wed, 30 Sep 2026 00:32:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update the demos to write State from `@on` blocks and `prop(\"provision\")` instead of JS handlers"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/kit-logger\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.1.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@excom/provider-storage_v0.1.1",
       "date": "Wed, 23 Sep 2026 06:16:11 GMT",

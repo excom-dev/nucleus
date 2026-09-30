@@ -1,6 +1,6 @@
 {
   "name": "@excom/neutron",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Element factory of the Nucleus Stack — typed custom elements with effect-based lifecycles",
   "license": "MIT",
   "engines": {

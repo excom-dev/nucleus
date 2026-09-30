@@ -2,6 +2,41 @@
   "name": "@excom/gesture-handler",
   "entries": [
     {
+      "version": "0.2.0",
+      "tag": "@excom/gesture-handler_v0.2.0",
+      "date": "Wed, 30 Sep 2026 00:32:38 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Hand a `handoff-ref` overscroll to the gesture only when every scroller between the pointer and the element is at its limit, so content scrolled inside a nested scroller scrolls back before the sheet moves"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/kit-utils\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/content-carousel\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/content-drawer\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/event-handler\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/quark\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/quark-sheet\" to `^0.1.4`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.3",
       "tag": "@excom/gesture-handler_v0.1.3",
       "date": "Wed, 23 Sep 2026 11:22:24 GMT",

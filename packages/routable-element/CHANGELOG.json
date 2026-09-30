@@ -2,6 +2,45 @@
   "name": "@excom/routable-element",
   "entries": [
     {
+      "version": "0.2.0",
+      "tag": "@excom/routable-element_v0.2.0",
+      "date": "Wed, 30 Sep 2026 00:32:38 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Update `match-nested` to match its own path as well as child paths: `route-href=\"/users\"` is active at `/users`, so a separate route for that path renders beside it and a 404 fallback stays off there"
+          },
+          {
+            "comment": "Add relative `route-href` values: `checkout` resolves against the page's `<base>`, or against the page URL at registration when there is none"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "Fix an issue where a routable element inside `persist-content` threw a `NeutronError` when re-attached"
+          },
+          {
+            "comment": "Fix an issue where an element given a `route-href` while detached registered a route, and a `route-regex` element stayed registered after it was removed"
+          },
+          {
+            "comment": "Fix an issue where changing `match-nested` at runtime had no effect"
+          }
+        ],
+        "none": [
+          {
+            "comment": "Update the docs for `route-href`, `route-regex` and `match-nested`"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/kit-router\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.1.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@excom/routable-element_v0.1.1",
       "date": "Wed, 23 Sep 2026 06:16:11 GMT",

@@ -2,6 +2,102 @@
   "name": "@excom/spa-route",
   "entries": [
     {
+      "version": "0.2.0",
+      "tag": "@excom/spa-route_v0.2.0",
+      "date": "Wed, 30 Sep 2026 00:32:38 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Update `match-nested` on `spa-route` and `spa-a` to match its own path as well as child paths: `route-href=\"/users\"` is active at `/users`, so a separate route for that path renders beside it and a 404 fallback stays off there"
+          },
+          {
+            "comment": "Add `is-active` and `was-active` on `spa-a` with `match-nested` for child paths, given the query of its `route-href` is part of the URL's; a plain link still matches exactly"
+          },
+          {
+            "comment": "Add relative `route-href` values to `spa-route` and `spa-a`: `checkout` resolves against the page's `<base>` for matching, `is-active` and the pushed URL"
+          },
+          {
+            "comment": "Update a reload to report `move: null` in the route data: no `spa-manager-<move>` event fires for it, and the saved scroll offset is restored"
+          },
+          {
+            "comment": "Update scroll handling so the outermost `spa-manager` owns it: the browser's own scroll restoration is off while one is connected (the page's value returns after the last one disconnects), and a `spa-route` without a `spa-manager` no longer resets or restores scroll"
+          },
+          {
+            "comment": "Remove `spa-route.setScroll()`: `spa-manager` writes scroll once per navigation, after its routes are ready"
+          },
+          {
+            "comment": "Update scroll reset to happen only when a route rendered: a push or replace that renders nothing (a query change on a `reuse` route) keeps its position, and a `#fragment` target wins over the reset"
+          },
+          {
+            "comment": "Update nested `spa-manager` elements to join the outermost manager's View Transition: one transition per navigation, and only the outermost manager fires `spa-manager-will-transition` and `spa-manager-transition` and carries `is-transitioning`"
+          },
+          {
+            "comment": "Update `spa-manager-will-transition` and `spa-manager-rendered` to fire when no View Transition runs too (reduced motion, no API, `no-transition`, first paint), once per update chain, as a navigation that arrives before the update settles joins it; `document.title` follows each update; a nested manager's `spa-manager-rendered` no longer bubbles, so a listener on the outermost manager or above gets one per chain, and `preventDefault()` on `spa-manager-will-transition` holds the update, the first paint included, until `updateRoutes(true)` resumes it (with a View Transition where the page allows one) or `updateRoutes()` runs it without one"
+          },
+          {
+            "comment": "Update a `same-route=\"reuse\"` param change to run no View Transition: an update that only changes provisions no longer animates"
+          },
+          {
+            "comment": "Update a query change to provision the route again: `spa-route-provision` fires, the provision carries a new `query` object, and a `same-route=\"refresh\"` route renders again"
+          },
+          {
+            "comment": "Update `has-rendered` on `spa-manager` to be set once the routes of the first update have rendered, inside that update: a loading shell hidden on `[has-rendered]` stays until the first view is on screen (it was set when the first update started)"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "Fix scroll restoration on back and forward: it no longer snaps before the transition, a restore is re-applied while late content shifts the page, for about 2 seconds or until the user scrolls, taps, types or drags the scrollbar, and a hash-only back or forward restores too"
+          },
+          {
+            "comment": "Fix an issue where a `#fragment` target rendered by a route was not scrolled to on a push, a replace or a fresh load"
+          },
+          {
+            "comment": "Fix an issue where a `no-transition` route in the same update as an animating route changed before the View Transition captured the old view"
+          },
+          {
+            "comment": "Fix an issue where a navigation started inside a `spa-manager-rendered` listener was dropped"
+          },
+          {
+            "comment": "Fix an issue where `spa-manager` hung in a browser whose `startViewTransition()` throws: the update now runs without a transition"
+          },
+          {
+            "comment": "Improve `spa-route` readiness: an activation is ready once its view rendered and its provision applied, so scroll, title and the View Transition wait for a slow template"
+          },
+          {
+            "comment": "Remove the unused `attemptTransitionDebounced` property from `spa-manager`"
+          }
+        ],
+        "none": [
+          {
+            "comment": "Update the docs for scroll reset and restore, View Transitions, nested layouts, history actions and same-route params"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/kit-logger\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-router\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-utils\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/listenable-element\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/renderable-element\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/routable-element\" to `^0.2.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@excom/spa-route_v0.1.1",
       "date": "Wed, 23 Sep 2026 06:16:11 GMT",

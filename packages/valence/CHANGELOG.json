@@ -2,6 +2,23 @@
   "name": "@excom/valence",
   "entries": [
     {
+      "version": "0.1.2",
+      "tag": "@excom/valence_v0.1.2",
+      "date": "Wed, 30 Sep 2026 00:32:38 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix an issue where the parent of an `.absolute` dialog was forced to 600 by 600 px with a red background"
+          }
+        ],
+        "none": [
+          {
+            "comment": "Update the Modal docs: a custom dialog host stays hidden unless `aria-expanded=\"true\"` and dims with a child backdrop"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@excom/valence_v0.1.1",
       "date": "Wed, 23 Sep 2026 06:16:11 GMT",

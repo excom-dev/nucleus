@@ -2,6 +2,29 @@
   "name": "@excom/listenable-element",
   "entries": [
     {
+      "version": "0.2.0",
+      "tag": "@excom/listenable-element_v0.2.0",
+      "date": "Wed, 30 Sep 2026 00:32:38 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add the key names `space` / `spacebar` and `plus` to `keycode-filter` (`shift+space`), and `cmd` as an alias of `meta`"
+          },
+          {
+            "comment": "Update a `keycode-filter` holding only spaces to match no key and warn once (it was no filter); write `space` for the space bar"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/kit-logger\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.1.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@excom/listenable-element_v0.1.1",
       "date": "Wed, 23 Sep 2026 06:16:11 GMT",

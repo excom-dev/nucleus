@@ -2,6 +2,48 @@
   "name": "@excom/renderable-element",
   "entries": [
     {
+      "version": "0.2.0",
+      "tag": "@excom/renderable-element_v0.2.0",
+      "date": "Wed, 30 Sep 2026 00:32:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update the demos to switch content from `@on` blocks instead of inline scripts"
+          },
+          {
+            "comment": "Update the tests for a URL `template-ref`: the request no longer receives the element's abort signal, which ends only the element's wait"
+          }
+        ],
+        "minor": [
+          {
+            "comment": "Update a URL `template-ref` that answers with an error status to set `is-error` and fire the error event, paint nothing and log one error with the status as its cause; the error page is no longer rendered as content"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "Fix an issue where a failed template load held `ready` until `render-timeout`: the promise from `render` rejects at once and `delaying-ready` clears"
+          },
+          {
+            "comment": "Fix an issue where the promise from `render` never settled and `delaying-ready` stayed set when `host-ref` resolved to no host: the promise now rejects at once and `delaying-ready` clears, while an author iframe still loading keeps waiting"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/abortable-element\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-logger\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-utils\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.1.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@excom/renderable-element_v0.1.1",
       "date": "Wed, 23 Sep 2026 06:16:11 GMT",

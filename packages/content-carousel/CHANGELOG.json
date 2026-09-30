@@ -2,6 +2,32 @@
   "name": "@excom/content-carousel",
   "entries": [
     {
+      "version": "0.1.2",
+      "tag": "@excom/content-carousel_v0.1.2",
+      "date": "Wed, 30 Sep 2026 00:32:38 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Auto-play tests poll for the advanced slide instead of sleeping a fixed 80 ms (flaked on loaded CI runners); no runtime change"
+          },
+          {
+            "comment": "Fix an issue where `provision` did not follow slides added or removed, and `last-move` and `content-carousel-slide-changed` did not follow `is-active` moving from one slide to another (a swipe): each change sets one provision, and a carousel moved in the DOM no longer sets it again"
+          },
+          {
+            "comment": "Update the internal `autoPlayIntervalId` property to `_autoPlayIntervalId`, as its other private properties are named; it was never an attribute, so markup is unaffected"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/kit-utils\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.1.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@excom/content-carousel_v0.1.1",
       "date": "Wed, 23 Sep 2026 06:16:11 GMT",

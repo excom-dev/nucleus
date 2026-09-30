@@ -2,6 +2,18 @@
   "name": "@excom/kit-logger",
   "entries": [
     {
+      "version": "0.1.2",
+      "tag": "@excom/kit-logger_v0.1.2",
+      "date": "Wed, 30 Sep 2026 00:32:38 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix an issue where `KitLogManager` ignored its `level` option: the level became the environment level (no output at all when `VITE_LOG_LEVEL` is unset) and `0` became 1; an explicit level now wins, `0` included, then the environment level, then 1"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@excom/kit-logger_v0.1.1",
       "date": "Wed, 23 Sep 2026 06:16:11 GMT",

@@ -1,6 +1,6 @@
 {
   "name": "@excom/content-tabs",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "<content-tabs> custom element",
   "license": "MIT",
   "engines": {

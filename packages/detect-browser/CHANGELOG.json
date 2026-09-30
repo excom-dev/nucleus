@@ -2,6 +2,23 @@
   "name": "@excom/detect-browser",
   "entries": [
     {
+      "version": "0.1.2",
+      "tag": "@excom/detect-browser_v0.1.2",
+      "date": "Wed, 30 Sep 2026 00:32:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update the Safari demo to show an install hint instead of loading polyfills"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.1.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@excom/detect-browser_v0.1.1",
       "date": "Wed, 23 Sep 2026 06:16:11 GMT",

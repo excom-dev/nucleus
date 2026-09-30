@@ -2,6 +2,26 @@
   "name": "@excom/web-authn",
   "entries": [
     {
+      "version": "0.1.3",
+      "tag": "@excom/web-authn_v0.1.3",
+      "date": "Wed, 30 Sep 2026 00:32:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update the tests for `did-load`"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/fetchable-element\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.1.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.2",
       "tag": "@excom/web-authn_v0.1.2",
       "date": "Wed, 23 Sep 2026 11:22:24 GMT",

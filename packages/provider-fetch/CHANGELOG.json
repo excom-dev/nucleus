@@ -2,6 +2,29 @@
   "name": "@excom/provider-fetch",
   "entries": [
     {
+      "version": "0.1.3",
+      "tag": "@excom/provider-fetch_v0.1.3",
+      "date": "Wed, 30 Sep 2026 00:32:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update the docs and tests for `did-load` and the one-line failure log"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/fetchable-element\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-logger\" to `^0.1.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.2",
       "tag": "@excom/provider-fetch_v0.1.2",
       "date": "Wed, 23 Sep 2026 11:22:24 GMT",

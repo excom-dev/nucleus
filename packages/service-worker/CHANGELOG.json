@@ -2,6 +2,21 @@
   "name": "@excom/service-worker",
   "entries": [
     {
+      "version": "0.1.2",
+      "tag": "@excom/service-worker_v0.1.2",
+      "date": "Wed, 30 Sep 2026 00:32:38 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-utils\" to `^0.2.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@excom/service-worker_v0.1.1",
       "date": "Wed, 23 Sep 2026 06:16:11 GMT",
