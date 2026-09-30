@@ -3,12 +3,7 @@ import { NeutronError } from "./neutron-error";
 import type { NeutronInternal as NeutronInternalType } from "./neutron-internal";
 import { AnyFunction, EffectorOptions } from "./types";
 import { isChildEffect, setDebugLifecycleSignature } from "./utils";
-import {
-  Converter,
-  ExecHandlerFn,
-  toArray,
-  unique,
-} from "@excom/kit-utils";
+import { Converter, ExecHandlerFn, toArray, unique } from "@excom/kit-utils";
 
 interface TLifecycleConfig {
   key: string;
