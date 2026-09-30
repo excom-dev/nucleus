@@ -4,7 +4,7 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 /** Returns the parts of the first selector of the first rule. */
 const sel = (selector: string): any[] => {

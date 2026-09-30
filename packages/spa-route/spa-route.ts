@@ -1,4 +1,4 @@
-import { KitRouteData } from "@excom/kit-router";
+import { KitRoute, KitRouteData } from "@excom/kit-router";
 import { deepCompare } from "@excom/kit-utils";
 import { ConstructorType, Neutron, TEvent, TokenList } from "@excom/neutron";
 import { RenderableElement } from "@excom/renderable-element";
@@ -44,7 +44,7 @@ export type SpaRouteProvision = {
  * </spa-manager>
  *
  * @example
- * <!-- 404 fallback: only activates if no other route is active -->
+ * <!-- 404 fallback: only activates when no other route matches the path -->
  * <spa-manager>
  *   <spa-route route-href="/known"><template>Known</template></spa-route>
  *   <spa-route route-regex=".*" is-fallback>
@@ -133,7 +133,7 @@ export const SpaRoute = Neutron.compose([
       scrollSetDisabled: Boolean,
       /**
        * @option
-       * Only activate when this route matches *and* no other `<spa-route>` inside its closest `<spa-manager>` is active, nested routes included; without a manager it always activates. Place it last. Pair with a permissive `route-regex` (e.g. `.*`) for 404 catch-alls.
+       * Only activate when this route matches *and* no other `<spa-route>` in its closest `<spa-manager>` (nested routes included; without one, its document or shadow root) matches the current path. Other fallbacks, and routes that contain it or that it contains, never count. Place it last. Pair with a permissive `route-regex` (e.g. `.*`) for 404 catch-alls.
        */
       isFallback: Boolean,
       /**
@@ -207,28 +207,36 @@ export const SpaRoute = Neutron.compose([
         noTransition,
       } = element;
       if (!routeInstance) return;
-      let willActivate = !!routeData.match;
-      if (
-        // Fallback matched, but another route is already active: stay off.
-        // Not itself: an active fallback moving between two unmatched URLs
-        isFallback &&
-        willActivate &&
-        Array.from(
-          element
-            .closest("spa-manager")
-            ?.querySelectorAll("spa-route[is-active]") ?? []
-        ).some((route) => route !== element)
-      ) {
-        willActivate = false;
-      }
+      // `match.input` is the matched path: a nested layout's `match[0]` stays put
+      const path = (routeData.match as RegExpMatchArray | null)?.input;
+      const willActivate =
+        !!routeData.match &&
+        // Fallback: off while another mounted non-fallback route in scope
+        // matches. Patterns, not `is-active`: routes dispatched later are stale
+        !(
+          isFallback &&
+          Array.from(
+            (
+              element.closest("spa-manager") ??
+              (element.getRootNode() as ParentNode)
+            ).querySelectorAll<
+              Element & { isFallback?: boolean; routeInstance?: KitRoute }
+            >("spa-route")
+          ).some(
+            (route) =>
+              !route.isFallback &&
+              // Lineage never counts: its layout, a route in its own template
+              !route.contains(element) &&
+              !element.contains(route) &&
+              route.routeInstance?.match(path!).match
+          )
+        );
       const queryChanged = !deepCompare(
         _requested?.query ?? {},
         routeData.query ?? {}
       );
-      // `match.input` is the matched path: a nested layout's `match[0]` stays put
       const pathChanged =
-        (_requested?.match as RegExpMatchArray | null)?.input !==
-        (routeData.match as RegExpMatchArray | null)?.input;
+        (_requested?.match as RegExpMatchArray | null)?.input !== path;
       if (
         isActive === willActivate &&
         !(willActivate && (pathChanged || queryChanged))

@@ -46,3 +46,32 @@ export function packageJson(name: string, extra: Record<string, unknown> = {}): 
     2,
   );
 }
+
+export type ChangelogEntry = {
+  version: string;
+  date?: string;
+  /** Rush change type → comment texts. */
+  comments: Record<string, string[]>;
+};
+
+/** A Rush `CHANGELOG.json`, newest entry first. */
+export function changelogJson(name: string, entries: ChangelogEntry[]): string {
+  return JSON.stringify(
+    {
+      name,
+      entries: entries.map(({ version, date = "Wed, 30 Sep 2026 00:32:38 GMT", comments }) => ({
+        version,
+        tag: `${name}_v${version}`,
+        date,
+        comments: Object.fromEntries(
+          Object.entries(comments).map(([type, texts]) => [
+            type,
+            texts.map((comment) => ({ comment })),
+          ]),
+        ),
+      })),
+    },
+    null,
+    2,
+  );
+}

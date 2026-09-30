@@ -4,11 +4,11 @@ import {
   describe,
   expect,
   it,
+  readFileRelative,
   vi,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import { readdirSync, readFileSync } from "node:fs";
 import { KitRoute, KitRouter } from "@excom/kit-router";
-import { readViewFile } from "@excom/quark/support/tests/view-helpers";
 import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -614,7 +614,7 @@ type SiteRoute = {
 
 const siteRoutes = (): SiteRoute[] => {
   // `<link>`s are dropped: happy-dom would try to fetch them while parsing.
-  const shell = readViewFile(import.meta.url, "../../index.html").replace(
+  const shell = readFileRelative(import.meta.url, "../../index.html").replace(
     /<link[\s\S]*?>/g,
     ""
   );
@@ -660,7 +660,7 @@ describe("site route table", () => {
   /* The two areas differ only by the company route's title: every docs route
      is untitled, so `spa-manager` puts `index.html`'s own `<title>` back. */
   it("carries the company title on the company route alone", () => {
-    const shell = readViewFile(import.meta.url, "../../index.html");
+    const shell = readFileRelative(import.meta.url, "../../index.html");
     expect(shell).toContain("<title>Nucleus · docs</title>");
     expect(routes[0]!.documentTitle).toBe("Excom");
     expect(routes.filter((r) => r.documentTitle)).toHaveLength(1);

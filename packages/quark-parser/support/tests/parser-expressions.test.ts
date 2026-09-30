@@ -3,7 +3,7 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 const expr = (src: string): any => parseExpression(src);
 

@@ -3,7 +3,7 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import { commit, evalCell, range } from "../../public/views/cells-app/cells-app";
 
 /** A tiny grid: one `<td><output></output><input name=ref></td>` per ref. */

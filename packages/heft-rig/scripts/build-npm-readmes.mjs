@@ -99,7 +99,7 @@ export function footer(shortName) {
   return `Full documentation: ${packageUrl(shortName)}`;
 }
 
-function packageUrl(shortName) {
+export function packageUrl(shortName) {
   return `${SITE_ORIGIN}${SITE_BASE}/packages/${shortName}`;
 }
 

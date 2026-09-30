@@ -4,7 +4,7 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 /**
  * Adapted from real Quark sheets in ws, fb, and the docs-site

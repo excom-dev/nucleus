@@ -7,7 +7,7 @@ import {
   it,
   vi,
   wait,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 const TAG = "routable-element-test";
 if (!customElements.get(TAG)) {

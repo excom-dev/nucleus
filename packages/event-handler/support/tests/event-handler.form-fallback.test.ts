@@ -5,7 +5,7 @@ import {
   expect,
   fixture,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 /*
  * `mutate-target` guards a form that yields no data. `formToJson` always

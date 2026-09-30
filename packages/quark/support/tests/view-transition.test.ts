@@ -21,7 +21,7 @@ import {
   it,
   vi,
   wait,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import { clearFetchCaches, LoopGuard, type LoopGuardTrip } from "@excom/kit-utils";
 import type { QuarkRenderer } from "../../src/devtools-hook";
 import {

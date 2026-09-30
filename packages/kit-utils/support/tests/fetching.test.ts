@@ -16,7 +16,7 @@ import {
   spyFetch,
   vi,
   wait,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 // The template cache is module-wide, so every URL test uses its own path.
 let counter = 0;

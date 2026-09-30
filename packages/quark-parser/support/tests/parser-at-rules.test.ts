@@ -4,7 +4,7 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 const first = (src: string): any => parse(src).body[0];
 

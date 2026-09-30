@@ -7,7 +7,7 @@ import {
   fixture,
   it,
   vi,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 describe("dom", () => {
   it("Converter: converts attributes correctly", () => {

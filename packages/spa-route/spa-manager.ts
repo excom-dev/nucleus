@@ -2,6 +2,7 @@ import type {
   SpaRoute as TSpaRoute,
   SpaRouteProvisionEvent,
 } from "./spa-route";
+import { KitLogger } from "@excom/kit-logger";
 import { type KitRouteData, kitRouter } from "@excom/kit-router";
 import { tc } from "@excom/kit-utils";
 import { ConstructorType, Neutron, TEvent } from "@excom/neutron";
@@ -114,20 +115,22 @@ const canTransition = () =>
 
 const settle = (...promises: unknown[]) => Promise.allSettled(promises);
 
-/** Settle `promises`, giving up at `deadline` (a `performance.now()` time). */
+/** Settle `promises`, giving up at `deadline` (a `performance.now()` time). `true` when the deadline won. */
 const settleBy = async (promises: unknown[], deadline: number) => {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
-  await Promise.race([
+  const winner = await Promise.race([
     settle(...promises),
-    new Promise(
+    new Promise<true>(
       (resolve) =>
         (timeoutId = setTimeout(
           resolve,
-          Math.max(0, deadline - performance.now())
+          Math.max(0, deadline - performance.now()),
+          true
         ))
     ),
   ]);
   clearTimeout(timeoutId);
+  return winner === true;
 };
 
 /**
@@ -259,7 +262,7 @@ export const SpaManager = Neutron.compose([
       noTransition: Boolean,
       /**
        * @option
-       * Max wait (ms) for child routes to be ready before the update (title, scroll, its View Transition) moves on. Raise for slow remote templates.
+       * Max wait (ms) for child routes to be ready before the update (title, scroll, its View Transition) moves on; a warning is logged when it settles the update. Raise for slow remote templates.
        * @default 2000
        */
       renderTimeout: {
@@ -480,20 +483,27 @@ export const SpaManager = Neutron.compose([
       const update = async () => {
         const deadline = performance.now() + renderTimeout!;
         let rendered = false;
+        let timedOut = false;
         try {
           do {
             const queue: ReturnType<typeof noCallbacks> = _takeCallbacks();
             rendered ||= queue.render.length > 0;
             // Aborted renders reject their ready promise: settle either way
-            await settleBy(
-              // Unrender, then render; `provision` last: otherwise Quark
-              // starts rendering before unrender/render wipes the tree.
-              [...queue.unrender, ...queue.render, ...queue.provision].map(
-                (callback) => callback()
-              ),
-              deadline
-            );
+            timedOut =
+              (await settleBy(
+                // Unrender, then render; `provision` last: otherwise Quark
+                // starts rendering before unrender/render wipes the tree.
+                [...queue.unrender, ...queue.render, ...queue.provision].map(
+                  (callback) => callback()
+                ),
+                deadline
+              )) || timedOut;
           } while (hasCallbacks());
+          if (timedOut) {
+            KitLogger.warn(
+              `spa-manager: update settled by render-timeout (${renderTimeout} ms); a route is still pending`
+            );
+          }
         } finally {
           _finishUpdate(rendered);
         }

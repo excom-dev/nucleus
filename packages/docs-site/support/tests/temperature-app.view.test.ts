@@ -6,19 +6,19 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+  readFileRelative,
+} from "@excom/nucleus-test";
 import {
   expectComplexity,
   flush,
   measureComplexity,
   mountView,
-  readViewFile,
 } from "@excom/quark/support/tests/view-helpers";
-const html = readViewFile(
+const html = readFileRelative(
   import.meta.url,
   "../../public/views/temperature-app/temperature-app.html",
 );
-const quarkSrc = readViewFile(
+const quarkSrc = readFileRelative(
   import.meta.url,
   "../../public/views/temperature-app/temperature-app.quark",
 );

@@ -1,0 +1,11 @@
+@use "quark:list" as list;
+
+:scope {
+  $count: $bag.count;
+  needs-white-glove: $bag.needsWhiteGlove;
+  lead-weeks: $bag.leadWeeks;
+  has-holds: list.count($bag.items, "isUnique", true) > 0;
+}
+[bind-lead] {
+  content: "Made to order: allow about #{$bag.leadWeeks} weeks for your longest piece to be made.";
+}

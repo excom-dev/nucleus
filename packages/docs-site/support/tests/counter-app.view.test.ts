@@ -4,18 +4,18 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+  readFileRelative,
+} from "@excom/nucleus-test";
 import {
   click,
   expectComplexity,
   flush,
   measureComplexity,
   mountView,
-  readViewFile,
 } from "@excom/quark/support/tests/view-helpers";
 
-const html = readViewFile(import.meta.url, "../../public/views/counter-app/counter-app.html");
-const quarkSrc = readViewFile(
+const html = readFileRelative(import.meta.url, "../../public/views/counter-app/counter-app.html");
+const quarkSrc = readFileRelative(
   import.meta.url,
   "../../public/views/counter-app/counter-app.quark",
 );

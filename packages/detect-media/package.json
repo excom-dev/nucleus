@@ -28,6 +28,7 @@
   "devDependencies": {
     "@excom/heft-rig": "workspace:^",
     "@excom/include-content": "workspace:^",
+    "@excom/nucleus-test": "workspace:^",
     "@excom/quark": "workspace:^",
     "@excom/quark-sheet": "workspace:^"
   },

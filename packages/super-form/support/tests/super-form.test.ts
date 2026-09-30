@@ -7,7 +7,7 @@ import {
   spyFetch,
   vi,
   waitForEvent,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import { KitLogger } from "@excom/kit-logger";
 import "../../index";
 

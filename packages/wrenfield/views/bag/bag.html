@@ -1,0 +1,41 @@
+<section id="bag">
+  <link rel="stylesheet" href="/views/bag/bag.css">
+  <quark-sheet src-url="/views/bag/bag.quark"></quark-sheet>
+  <header class="bar">
+    <strong aria-hidden="true">Bag</strong>
+  </header>
+  <h1>Bag</h1>
+  <h2 class="count"><output bind-count></output></h2>
+
+  <div bind-bag-lines role="list"></div>
+
+  <aside class="card">
+    <dl class="totals">
+      <dt>Subtotal</dt><dd bind-bag="subtotal"></dd>
+      <dt>Trade discount</dt><dd bind-bag="tradeDiscount"></dd>
+      <dt>Delivery</dt><dd>Calculated at checkout</dd>
+      <dt>Total</dt><dd bind-bag="total"></dd>
+    </dl>
+    <dl class="schedule">
+      <dt>Due today</dt><dd bind-bag="dueToday"></dd>
+      <dt>Due when ready</dt><dd bind-bag="dueLater"></dd>
+    </dl>
+    <p role="note">Made-to-order pieces take a deposit of half today. The balance is due when they are ready.</p>
+    <ul class="notes">
+      <li data-note="white-glove"><svg aria-hidden="true"><use href="/img/icons.svg#truck"/></svg>White-glove delivery: some pieces are carried in by a two-person team, who unpack them in the room you choose.</li>
+      <li data-note="lead"><svg aria-hidden="true"><use href="/img/icons.svg#clock"/></svg><span bind-lead></span></li>
+      <li data-note="hold"><svg aria-hidden="true"><use href="/img/icons.svg#hourglass"/></svg>One-of-a-kind pieces are held for you for 15 minutes, then return to the collection.</li>
+    </ul>
+    <footer class="actions">
+      <p><small>Total</small> <data bind-bag="total"></data></p>
+      <spa-a route-href="/bag/checkout/details" role="button">Checkout</spa-a>
+    </footer>
+  </aside>
+
+  <section class="empty">
+    <svg aria-hidden="true"><use href="/img/icons.svg#shopping-bag"/></svg>
+    <h2>Your bag is empty</h2>
+    <p>Pieces you add wait here, and one-of-a-kind finds are held for you while you decide.</p>
+    <spa-a route-href="/shop" role="button" transition-types="tab">Browse the collection</spa-a>
+  </section>
+</section>

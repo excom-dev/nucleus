@@ -1,0 +1,50 @@
+{
+  "name": "@excom/nucleus-test",
+  "version": "0.1.0",
+  "description": "Vitest setup, matchers and helpers for testing Nucleus Stack apps and elements on happy-dom",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24.13.0"
+  },
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node node_modules/@excom/heft-rig/scripts/vite-build.mjs",
+    "build:watch": "node node_modules/@excom/heft-rig/scripts/vite-build-watch.mjs",
+    "format": "node node_modules/@excom/heft-rig/scripts/format.mjs",
+    "test": "node node_modules/@excom/heft-rig/scripts/vitest.mjs",
+    "coverage": "node node_modules/@excom/heft-rig/scripts/coverage.mjs",
+    "build:package-metas": "node node_modules/@excom/heft-rig/scripts/build-package-metas.mjs"
+  },
+  "dependencies": {
+    "@excom/nucleus-dom": "workspace:^",
+    "@open-wc/semantic-dom-diff": "^0.20.1"
+  },
+  "peerDependencies": {
+    "vitest": "^4"
+  },
+  "devDependencies": {
+    "@excom/heft-rig": "workspace:^",
+    "vitest": "^4.1.11"
+  },
+  "repository": {
+    "url": "excom-dev/nucleus",
+    "directory": "packages/nucleus-test"
+  },
+  "homepage": "https://github.com/excom-dev/nucleus/tree/main/packages/nucleus-test/support/docs/README.md",
+  "bugs": "https://github.com/excom-dev/nucleus/issues",
+  "keywords": [
+    "nucleus-test",
+    "vitest",
+    "happy-dom",
+    "testing",
+    "web-components"
+  ],
+  "excom": {
+    "documented": true,
+    "packageType": "library",
+    "umd": false
+  }
+}

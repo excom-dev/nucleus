@@ -11,10 +11,11 @@ import {
   describe,
   expect,
   it,
+  readFileRelative,
   vi,
   wait,
   waitForEvent,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import { Quark } from "@excom/quark";
 import {
   bypassSelectorCache,
@@ -22,11 +23,10 @@ import {
   expectComplexity,
   flush,
   measureComplexity,
-  readViewFile,
 } from "@excom/quark/support/tests/view-helpers";
 
-const html = readViewFile(import.meta.url, "../../public/views/live-app/live-app.html");
-const quarkSrc = readViewFile(
+const html = readFileRelative(import.meta.url, "../../public/views/live-app/live-app.html");
+const quarkSrc = readFileRelative(
   import.meta.url,
   "../../public/views/live-app/live-app.quark",
 );

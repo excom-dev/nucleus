@@ -8,17 +8,17 @@ import {
   expect,
   fixture,
   it,
+  readFileRelative,
   spyFetch,
   vi,
   waitForEvent,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import {
   flush,
   mountView as mountWithSheet,
-  readViewFile,
 } from "@excom/quark/support/tests/view-helpers";
 
-const html = readViewFile(
+const html = readFileRelative(
   import.meta.url,
   "../../public/views/release-notice/release-notice.html",
 );
@@ -27,7 +27,7 @@ const stripAssets = (s: string) => s.replace(/<link[\s\S]*?>/g, "");
 
 /** The `#release-notice { … }` rule of the shell sheet in `index.html`. */
 const shellRule = () => {
-  const shell = readViewFile(import.meta.url, "../../index.html");
+  const shell = readFileRelative(import.meta.url, "../../index.html");
   const start = shell.indexOf("#release-notice {");
   let depth = 0;
   for (let i = shell.indexOf("{", start); i < shell.length; i++) {

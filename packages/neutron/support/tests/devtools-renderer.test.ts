@@ -15,7 +15,7 @@ import {
   fixture,
   it,
   wait,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 Neutron({
   tag: "render-probe",

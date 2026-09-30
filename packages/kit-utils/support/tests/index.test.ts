@@ -3,7 +3,7 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 describe("index", () => {
   it("re-exports the helper modules", () => {

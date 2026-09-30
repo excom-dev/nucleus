@@ -1,0 +1,28 @@
+@scope {
+  :scope {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    min-height: calc(100dvh - var(--wf-tabs));
+    text-align: center;
+  }
+  .stage {
+    width: min(15rem, 60%);
+    margin-bottom: 2rem;
+  }
+  hgroup {
+    max-width: 26rem;
+    margin-bottom: 1.5rem;
+  }
+  :scope h1 {
+    margin-block: 0.25rem 0.75rem;
+  }
+  nav {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+  [data-layout="regular"] & {
+    min-height: calc(100dvh - var(--wf-header));
+  }
+}

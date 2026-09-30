@@ -8,7 +8,7 @@ import {
   vi,
   wait,
   waitForEvent,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import "../../index";
 
 // Window listener goes through Neutron's tracked registry, which passes

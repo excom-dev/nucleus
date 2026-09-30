@@ -73,6 +73,8 @@
   "peerDependencies": {},
   "devDependencies": {
     "@excom/heft-rig": "workspace:^",
+    "@excom/nucleus-dom": "workspace:^",
+    "@excom/nucleus-test": "workspace:^",
     "@excom/quark-formatter": "workspace:^"
   },
   "bugs": "https://github.com/excom-dev/nucleus/issues",

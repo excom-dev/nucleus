@@ -1,0 +1,98 @@
+<section id="account" class="narrow">
+  <link rel="stylesheet" href="/views/account/account.css">
+  <quark-sheet src-url="/views/account/account.quark"></quark-sheet>
+  <header class="bar">
+    <strong aria-hidden="true">Account</strong>
+  </header>
+  <h1>Account</h1>
+
+  <section>
+    <h2 class="eyebrow">Orders</h2>
+    <provider-fetch id="account-orders" api-url="/api/orders" class="abstract">
+      <ul class="list" bind-orders>
+        <template>
+          <li>
+            <spa-a role="link">
+              <strong bind-item="id"></strong>
+              <data bind-order-total></data>
+              <small bind-order-date></small>
+              <small class="badge" bind-item="statusLabel"></small>
+            </spa-a>
+          </li>
+        </template>
+      </ul>
+      <section class="empty card">
+        <svg aria-hidden="true"><use href="/img/icons.svg#package"/></svg>
+        <h3>No orders yet</h3>
+        <p>When you place an order, you can follow it here from the workshop to your door.</p>
+      </section>
+      <section class="error card">
+        <svg aria-hidden="true"><use href="/img/icons.svg#circle-alert"/></svg>
+        <h3>We could not load your orders</h3>
+        <p bind-error></p>
+      </section>
+    </provider-fetch>
+  </section>
+
+  <section>
+    <h2 class="eyebrow">Trade programme</h2>
+    <super-form bind-trade>
+      <form action="/api/session" method="patch">
+        <ul class="list">
+          <li><label>Trade pricing <input type="checkbox" role="switch" name="isTrade"></label></li>
+        </ul>
+      </form>
+    </super-form>
+    <p>Fifteen per cent off every piece for designers and architects, shown beside the list price.</p>
+  </section>
+
+  <section>
+    <h2 class="eyebrow">Wrenfield</h2>
+    <ul class="list">
+      <li>
+        <spa-a route-href="/account/story" role="link">
+          <span><svg aria-hidden="true"><use href="/img/icons.svg#book-open"/></svg>Our story</span>
+        </spa-a>
+      </li>
+      <li>
+        <spa-a route-href="/account/delivery-returns" role="link">
+          <span><svg aria-hidden="true"><use href="/img/icons.svg#truck"/></svg>Delivery and returns</span>
+        </spa-a>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2 class="eyebrow">Demo</h2>
+    <ul class="list">
+      <li><button type="button" class="plain" command="--open" commandfor="reset-demo">Reset demo</button></li>
+    </ul>
+    <p role="note">
+      <svg aria-hidden="true"><use href="/img/icons.svg#info"/></svg>
+      Wrenfield is a fictional house and this is a demo. Any made-up details work, and nothing is charged or shipped.
+    </p>
+  </section>
+
+  <gesture-handler gesture-types="pan-y swipe" pointer-types="touch pen mouse" progress-axis="up" snap-points="0 1"
+    from-ref=":scope > content-drawer > header" handoff-ref=":scope > content-drawer" range-ref=":scope > content-drawer">
+    <content-drawer id="reset-demo" role="region" aria-labelledby="reset-demo-title">
+      <dismiss-watcher command-name="--close"></dismiss-watcher>
+      <header>
+        <h2 id="reset-demo-title">Reset the demo?</h2>
+        <button type="button" class="icon" command="--close" commandfor="reset-demo" aria-label="Close">
+          <svg aria-hidden="true"><use href="/img/icons.svg#x"/></svg>
+        </button>
+      </header>
+      <p>This empties your bag, clears your saved pieces and orders, switches trade pricing off and puts the prefilled checkout details back.</p>
+      <footer>
+        <button type="button" class="secondary" command="--close" commandfor="reset-demo">Cancel</button>
+        <super-form bind-reset>
+          <form action="/api/demo" method="delete">
+            <button type="submit">Reset demo</button>
+          </form>
+        </super-form>
+      </footer>
+    </content-drawer>
+    <event-handler role="presentation" target-ref="content-drawer:has(+ :scope)" command-name="--close"></event-handler>
+  </gesture-handler>
+</section>

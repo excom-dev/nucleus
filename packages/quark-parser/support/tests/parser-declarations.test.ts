@@ -4,7 +4,7 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 /** Parses `src` and returns the first declaration of the first rule. */
 const firstDecl = (src: string): any => {

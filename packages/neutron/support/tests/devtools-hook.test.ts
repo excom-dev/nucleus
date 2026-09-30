@@ -5,7 +5,7 @@ import {
   fixture,
   it,
   wait,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import {
   attachDevtools,
   NUCLEUS_DEVTOOLS_HOOK_KEY,

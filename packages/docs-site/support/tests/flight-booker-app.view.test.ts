@@ -7,22 +7,22 @@ import {
   describe,
   expect,
   it,
+  readFileRelative,
   spyFetch,
   waitForEvent,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import {
   expectComplexity,
   flush,
   measureComplexity,
   mountView,
-  readViewFile,
 } from "@excom/quark/support/tests/view-helpers";
 
-const html = readViewFile(
+const html = readFileRelative(
   import.meta.url,
   "../../public/views/flight-booker-app/flight-booker-app.html",
 );
-const quarkSrc = readViewFile(
+const quarkSrc = readFileRelative(
   import.meta.url,
   "../../public/views/flight-booker-app/flight-booker-app.quark",
 );

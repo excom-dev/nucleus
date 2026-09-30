@@ -9,7 +9,7 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 const defined = (
   props: Array<{ prop: string; attr: string | false }>,

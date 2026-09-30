@@ -22,6 +22,7 @@
   "peerDependencies": {},
   "devDependencies": {
     "@excom/heft-rig": "workspace:^",
+    "@excom/nucleus-test": "workspace:^",
     "@excom/quark-parser": "workspace:^"
   },
   "repository": {

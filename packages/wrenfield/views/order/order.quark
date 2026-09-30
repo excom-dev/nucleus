@@ -1,0 +1,32 @@
+@use "quark:date" as date;
+@use "quark:map" as map;
+
+provider-fetch {
+  api-url: "/api/orders/#{$route.params.id}";
+  @on provider-fetch-success {
+    @dispatch view-title (detail: "Order #{event.detail.body.id}");
+  }
+}
+provider-fetch[did-load] {
+  $order: prop("provision").body;
+  $bag: $order;
+  order-status: $order.status;
+
+  [bind-order] {
+    content: map.get($order, attr("bind-order"));
+  }
+  [bind-placed] {
+    content: "Placed #{date.format($order.createdAt, "en-GB", (day: "numeric", month: "long", year: "numeric"))}";
+  }
+  [bind-timeline] {
+    content: iterate($order.timeline, none, "id");
+    > li {
+      is-done: item.isDone;
+      aria-current: if(item.isCurrent: "step"; else: none);
+    }
+    time {
+      datetime: item.at;
+      content: date.format(item.at, "en-US", (timeStyle: "short"));
+    }
+  }
+}

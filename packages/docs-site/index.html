@@ -506,7 +506,7 @@
         <!-- one page of a package's docs (support/docs/<DOC>.md) -->
         <spa-route route-href="/nucleus/packages/:packageName/:docName" template-ref="/views/package/package.html"
           ready-on="page-ready" same-route="refresh"></spa-route>
-        <!-- 404. Must stay last: `is-fallback` only activates when no preceding sibling matched -->
+        <!-- 404. Must stay last: on a cold load `is-fallback` does not see siblings that mount after it -->
         <spa-route route-regex=".*" is-fallback template-ref="/views/not-found/not-found.html"></spa-route>
       </spa-manager>
       <dialog id="search-dialog">

@@ -1,0 +1,15 @@
+[bind-zone] {
+  content: "Delivering to #{$checkout.address.city}, #{$checkout.address.postcode}: fees for the #{$checkout.zone} zone.";
+}
+[bind-options] {
+  content: iterate($checkout.deliveryOptions, none, "id");
+  input {
+    value: item.id;
+    checked: item.id == $checkout.delivery;
+    disabled: not item.isAvailable;
+  }
+  data {
+    value: item.fee;
+    content: if(item.fee == 0: "Free"; else: item.feeText);
+  }
+}

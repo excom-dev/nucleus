@@ -1,0 +1,22 @@
+<section id="saved">
+  <link rel="stylesheet" href="/views/saved/saved.css">
+  <quark-sheet src-url="/views/saved/saved.quark"></quark-sheet>
+  <header class="bar">
+    <strong aria-hidden="true">Saved</strong>
+  </header>
+  <h1>Saved</h1>
+  <h2 class="count"><output bind-count></output></h2>
+
+  <div bind-products role="list"></div>
+  <p role="note">
+    <svg aria-hidden="true"><use href="/img/icons.svg#info"/></svg>
+    Saving a piece does not reserve it. A one-of-a-kind piece is held for you for 15 minutes once it is in your bag.
+  </p>
+
+  <section class="empty">
+    <svg aria-hidden="true"><use href="/img/icons.svg#heart"/></svg>
+    <h2>Nothing saved yet</h2>
+    <p>Tap the heart on any piece to keep it here.</p>
+    <spa-a route-href="/shop" role="button" transition-types="tab">Browse the collection</spa-a>
+  </section>
+</section>

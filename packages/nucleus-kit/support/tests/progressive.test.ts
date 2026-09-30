@@ -16,7 +16,7 @@ import {
   it,
   vi,
   wait,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 const settle = async () => {
   await wait(0);

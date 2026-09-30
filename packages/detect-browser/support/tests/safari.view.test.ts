@@ -6,9 +6,10 @@ import {
   describe,
   expect,
   it,
+  readDemo,
   vi,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
-import { mountView, readDemo } from "@excom/quark/support/tests/view-helpers";
+} from "@excom/nucleus-test";
+import { mountView } from "@excom/quark/support/tests/view-helpers";
 
 const IOS_SAFARI =
   "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1";

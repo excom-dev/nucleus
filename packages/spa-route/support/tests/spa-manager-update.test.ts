@@ -8,13 +8,16 @@ import {
   vi,
   wait,
   waitForEvent,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import "../../index";
 import {
   installViewTransition,
+  navigate,
+  popstate,
+  resetRouter,
   StandInTransition,
   trackUnhandledRejections,
-} from "./helpers";
+} from "../../testing";
 import { KitLogger } from "@excom/kit-logger";
 import { kitRouter } from "@excom/kit-router";
 
@@ -27,28 +30,9 @@ type RouterState = {
 };
 type RouterInternals = {
   states: RouterState[];
-  currentStateId: string | null;
-  currentTempData: { move: null | string; event?: unknown };
   routes: unknown[];
 };
 const router = kitRouter as unknown as RouterInternals & typeof kitRouter;
-
-/** Put the singleton router back to a cold load of `url` (`state` extras: a saved offset = reload). */
-const resetRouter = (url = "/", state: Partial<RouterState> = {}) => {
-  history.replaceState({ id: "init" }, "", url);
-  router.states = [{ id: "init", url, isInit: true, ...state }];
-  router.currentStateId = "init";
-  router.currentTempData = { move: null };
-};
-
-/** Emulate the browser landing on a known history entry (back / forward). */
-const popstate = (state: RouterState) => {
-  history.replaceState({ id: state.id }, "", state.url);
-  window.dispatchEvent(new PopStateEvent("popstate"));
-};
-
-const navigate = (manager: Element, trigger: () => void) =>
-  waitForEvent(manager, "spa-manager-rendered", trigger);
 
 const captureEvent = (target: EventTarget, type: string) => {
   const events: Event[] = [];
@@ -709,6 +693,41 @@ describe("spa-manager transition", () => {
     expect(took).toBeGreaterThanOrEqual(140);
     // one round each would be 300 ms
     expect(took).toBeLessThan(280);
+  });
+
+  it("warns once when render-timeout settles the update", async () => {
+    const warn = vi.spyOn(KitLogger, "warn").mockImplementation(() => {});
+    document.body.innerHTML = `
+      <spa-manager render-timeout="40">
+        <spa-route route-href="/chain" match-nested ready-on="never">
+          <template>
+            <spa-route route-href="/chain" match-nested ready-on="never">
+              <template>deep</template>
+            </spa-route>
+          </template>
+        </spa-route>
+      </spa-manager>
+    `;
+    const manager = q<HTMLSpaManagerElement>("spa-manager");
+    await navigate(manager, () => kitRouter.pushState({ url: "/chain" }));
+    // the late join's round hit the passed deadline too
+    expect(warn).toHaveBeenCalledExactlyOnceWith(
+      expect.stringContaining("render-timeout (40 ms)")
+    );
+  });
+
+  it("does not warn when the routes settle in time", async () => {
+    const warn = vi.spyOn(KitLogger, "warn").mockImplementation(() => {});
+    document.body.innerHTML = `
+      <spa-manager render-timeout="5000">
+        <spa-route route-href="/a"><template>A</template></spa-route>
+        <spa-route route-href="/b"><template>B</template></spa-route>
+      </spa-manager>
+    `;
+    const manager = q<HTMLSpaManagerElement>("spa-manager");
+    await navigate(manager, () => kitRouter.pushState({ url: "/a" }));
+    await navigate(manager, () => kitRouter.pushState({ url: "/b" }));
+    expect(warn).not.toHaveBeenCalled();
   });
 
   it("does not wait for a failed view", async () => {

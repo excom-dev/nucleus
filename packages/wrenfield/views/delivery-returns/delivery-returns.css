@@ -1,0 +1,113 @@
+@scope {
+  hgroup {
+    margin-bottom: 0;
+
+    p {
+      font-size: 1.0625rem;
+    }
+  }
+  figure:has(> figure) {
+    margin-block: 2rem;
+  }
+
+  .list {
+    margin-bottom: 1.25rem;
+
+    li {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 0.2rem 0.9rem;
+      align-items: baseline;
+      padding-block: 1rem 1.1rem;
+    }
+    svg {
+      align-self: start;
+    }
+    h3 {
+      margin: 0;
+    }
+    data {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    p {
+      grid-column: 2 / -1;
+      color: var(--v-muted-color);
+      font-size: 0.875rem;
+    }
+  }
+
+  table {
+    margin: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-variant-numeric: tabular-nums;
+
+    caption {
+      caption-side: bottom;
+      padding-top: 0.75rem;
+      color: var(--v-muted-color);
+      font-size: 0.8125rem;
+      text-align: start;
+    }
+    :is(th, td) {
+      padding: 0.8rem 0.6rem;
+      border-bottom: 1px solid var(--v-muted-border-color);
+      background: none;
+      white-space: nowrap;
+    }
+    :is(th, td):first-child {
+      padding-inline-start: 1rem;
+    }
+    :is(th, td):last-child {
+      padding-inline-end: 1rem;
+    }
+    tbody tr:last-child > * {
+      border-bottom: 0;
+    }
+    thead th {
+      color: var(--v-muted-color);
+      font-size: 0.8125rem;
+      font-weight: 400;
+    }
+    tbody th {
+      font-family: var(--wf-serif);
+      font-size: 1.2rem;
+      font-weight: 500;
+    }
+    td:nth-child(2) {
+      color: var(--v-muted-color);
+    }
+    :is(th, td):nth-child(n + 3) {
+      text-align: end;
+    }
+  }
+
+  dl {
+    display: grid;
+    grid-template-columns: 8rem 1fr;
+    margin: 1.5rem 0 0;
+    border-top: 1px solid var(--v-muted-border-color);
+
+    dt,
+    dd {
+      margin: 0;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid var(--v-muted-border-color);
+    }
+    dd {
+      padding-inline-start: 1rem;
+    }
+    dt {
+      color: var(--v-muted-color);
+      font-weight: 400;
+    }
+  }
+  [role="note"] {
+    margin-top: 3.5rem;
+  }
+  [data-layout="regular"] & hgroup {
+    margin-top: 2.5rem;
+  }
+}

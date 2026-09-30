@@ -15,7 +15,7 @@ import {
   it,
   vi,
   wait,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import { createSheet, flush, mount, unregisterAll } from "./helpers";
 
 /** A WeakRef whose target is already gone (GC cannot be forced). */

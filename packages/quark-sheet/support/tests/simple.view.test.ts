@@ -4,13 +4,13 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+  readDemo,
+} from "@excom/nucleus-test";
 import {
   expectComplexity,
   flush,
   measureComplexity,
   mountView,
-  readDemo,
 } from "@excom/quark/support/tests/view-helpers";
 
 describe("simple view", () => {

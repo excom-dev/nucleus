@@ -5,12 +5,12 @@ import {
   describe,
   expect,
   it,
+  readDemo,
   wait,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import {
   flush,
   mountView,
-  readDemo,
 } from "@excom/quark/support/tests/view-helpers";
 import { drag, tap } from "./pointer-utils";
 

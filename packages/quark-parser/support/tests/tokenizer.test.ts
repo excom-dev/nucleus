@@ -3,7 +3,7 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 const types = (src: string) => tokenize(src).tokens.map((t) => t.type);
 const values = (src: string) => tokenize(src).tokens.map((t) => t.value);

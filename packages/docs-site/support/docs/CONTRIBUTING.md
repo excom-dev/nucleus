@@ -125,7 +125,7 @@ Pick the bump honestly:
 | `patch` | A fix or internal improvement with the same public contract |
 | `none` | Docs, demos or tests only |
 
-The comment is published documentation, so write it for an app author who has never seen the implementation. Ask what it means to them: does it break them, fix something that annoyed them, give them something new to try?
+The comment is published documentation — every type but `none` appears in the package's release notes, on the site and in the LLM docs — so write it for an app author who has never seen the implementation. Ask what it means to them: does it break them, fix something that annoyed them, give them something new to try?
 
 - Imperative mood, starting with a verb — Add, Remove, Fix an issue where, Improve, Update, Upgrade, Initial release of.
 - The outcome ("Searching now supports wildcards"), not the diff ("Add regex support to `SearchHelper`").

@@ -28,7 +28,8 @@
   "peerDependencies": {},
   "devDependencies": {
     "@excom/heft-rig": "workspace:^",
-    "@excom/kit-logger": "workspace:^"
+    "@excom/kit-logger": "workspace:^",
+    "@excom/nucleus-test": "workspace:^"
   },
   "repository": {
     "url": "excom-dev/nucleus",

@@ -15,6 +15,8 @@ Import JS modules into a sheet: pure functions, values in and a value out, are t
 }
 ```
 
+A default export is `default()` with `as *`, or `pricing.default()` with a namespace, never the function's own name.
+
 Imports start as soon as the sheet is parsed and load in parallel; the first rule run waits until they resolve. A failed import is logged and skipped.
 
 A path (`/x.js`, `./x.js`, `x.js`) resolves against the site root, not the sheet; an absolute `http(s)` URL loads as it is, and a module from another origin needs CORS. Any scheme besides `http(s)` and the page's own is refused (`data:`, `blob:`).

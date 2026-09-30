@@ -6,16 +6,16 @@ import {
   expect,
   fixture,
   it,
+  readFileRelative,
   spyFetch,
   vi,
   waitForEvent,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import {
   flush,
-  readViewFile,
 } from "@excom/quark/support/tests/view-helpers";
 
-const html = readViewFile(
+const html = readFileRelative(
   import.meta.url,
   "../../public/views/company/company.html",
 );

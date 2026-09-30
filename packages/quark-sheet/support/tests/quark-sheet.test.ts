@@ -9,7 +9,7 @@ import {
   spyFetch,
   wait,
   waitForEvent,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import { KitLogger } from "@excom/kit-logger";
 
 const vi = (globalThis as any).vi;

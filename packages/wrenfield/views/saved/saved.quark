@@ -1,0 +1,4 @@
+:scope {
+  $products: $me.saved.items;
+  $count: $me.saved.count;
+}

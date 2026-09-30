@@ -16,7 +16,7 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import { createSheet, flush, mount, unregisterAll } from "./helpers";
 
 /** Type into a control the way a user would: live value only, no attribute. */

@@ -49,6 +49,8 @@ Wrap screens in `<spa-manager>`, give each `<spa-route>` a `route-href`, and lin
 </nav>
 ```
 
+Tests in Vitest on happy-dom import the router helpers from `@excom/spa-route/testing`: `resetRouter`, `navigate`, `popstate`, `installViewTransition`, `trackUnhandledRejections`.
+
 ### API Reference
 
 <include-content is-active template-ref="/views/api-reference/api-reference.html"></include-content>
@@ -100,7 +102,7 @@ spa-a[is-active] {
 
 #### Nested layout & 404
 
-`match-nested` keeps a layout mounted at its own path and under child paths. `is-fallback` with `route-regex=".*"` is a 404 that only activates when no other route inside its `<spa-manager>` is active, nested routes included; place it last.
+`match-nested` keeps a layout mounted at its own path and under child paths. `is-fallback` with `route-regex=".*"` is a 404 that only activates when no other route inside its `<spa-manager>` matches the current path, nested routes included; place it last, since on a cold load it does not see siblings that mount after it.
 
 ```html
 <spa-manager>
@@ -129,7 +131,7 @@ spa-a[is-active] {
     <template>
       <section>
         <h3>404</h3>
-        <p>Catch-all — only when no other route is active.</p>
+        <p>Catch-all — only when no other route matches.</p>
       </section>
     </template>
   </spa-route>
@@ -266,10 +268,10 @@ On touch devices, horizontal drags from within `overscroll-x-threshold` of an ed
 #### Scroll reset / restore
 
 The outermost `<spa-manager>` owns scroll: while it is connected the browser's own scroll restoration is off, and a `<spa-route>` without a `<spa-manager>` ancestor does not touch scroll. By default it:
-- resets scroll to top-left on `push` / `replace`, only when a route rendered — a move that renders nothing (a query change on a `reuse` route) keeps its position, and a `#fragment` target wins over the reset
+- resets scroll to top-left on `push` / `replace`, only when a route rendered — a move that renders nothing (a param or query change on a `reuse` route) keeps its position, and a `#fragment` target wins over the reset
 - restores the saved scroll position on `back` / `forward` / reload, and holds it for about 2 seconds against late content, or until the person scrolls, taps or types, or the app scrolls
 
-The write lands once the routes are ready (capped by `render-timeout`), so `ready-on` remains the way to get late data into the restored view.
+The write lands once the routes are ready (capped by `render-timeout`), so `ready-on` remains the way to get late data into the restored view. An update settled by `render-timeout` logs one warning (`spa-manager: update settled by render-timeout (2000 ms); a route is still pending`), visible at log level 2 or higher.
 
 Override per axis with `scroll-reset-y` / `scroll-reset-x` — space-separated moves that should reset to `0` (omitted moves restore instead):
 

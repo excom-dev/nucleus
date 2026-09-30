@@ -241,21 +241,6 @@ describe("createRigViteConfig", () => {
         entryRoot: ws.site,
         tsconfigPath: path.join(ws.site, "tsconfig.json"),
       });
-      const beforeWriteFile = dtsPlugin.options.beforeWriteFile as (
-        f: string,
-        c: string,
-      ) => null | { filePath: string; content: string };
-      expect(beforeWriteFile("dist/index.js", "x")).toBeNull();
-      expect(beforeWriteFile("dist/index.d.ts", "export const a: number;")).toBeNull();
-      expect(
-        beforeWriteFile(
-          "dist/index.d.ts",
-          `import { A } from "./src/a";\nexport * from './src/b';\nexport { C } from "./src/c";\nimport "./src/side";\n`,
-        ),
-      ).toEqual({
-        filePath: "dist/index.d.ts",
-        content: `import { A } from "../src/a";\nexport * from '../src/b';\nexport { C } from "../src/c";\nimport "./src/side";\n`,
-      });
     });
 
     it("has no externals when the package has no package.json or deps", async () => {

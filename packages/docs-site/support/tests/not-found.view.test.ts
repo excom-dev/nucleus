@@ -7,19 +7,19 @@ import {
   describe,
   expect,
   it,
+  readFileRelative,
   waitForEvent,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import {
   bypassSelectorCache,
   flush,
-  readViewFile,
 } from "@excom/quark/support/tests/view-helpers";
 
-const html = readViewFile(
+const html = readFileRelative(
   import.meta.url,
   "../../public/views/not-found/not-found.html",
 );
-const quarkSrc = readViewFile(
+const quarkSrc = readFileRelative(
   import.meta.url,
   "../../public/views/not-found/not-found.quark",
 );

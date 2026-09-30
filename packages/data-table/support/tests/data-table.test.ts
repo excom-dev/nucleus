@@ -7,7 +7,7 @@ import {
   vi,
   wait,
   waitForEvent,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import "../../index";
 import type { DataTableSortDetail } from "../../data-table";
 import { invokeCommand } from "@excom/neutron";

@@ -12,7 +12,7 @@ import {
   expect,
   it,
   vi,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import { flush, mount, unregisterAll } from "./helpers";
 
 const { math, list, map, string, date, url, util } = QUARK_MODULES;

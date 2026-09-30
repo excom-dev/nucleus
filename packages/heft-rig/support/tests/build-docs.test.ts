@@ -2,7 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { buildDocs } from "../../scripts/build-docs.mjs";
-import { makeTempDir, packageJson, removeDir, writeFiles } from "./docs-pipeline-fixtures";
+import { changelogJson, makeTempDir, packageJson, removeDir, writeFiles } from "./docs-pipeline-fixtures";
 
 const read = (root: string, rel: string) => readFileSync(path.join(root, rel), "utf8");
 
@@ -326,6 +326,102 @@ describe("buildDocs", () => {
     expect(md).toContain("#### Attributes");
     expect(md).not.toContain("\n## API\n");
     expect(md).not.toContain("Demo sources");
+  });
+
+  it("adds the three newest releases to the primary element's docs, with a link to the older ones", async () => {
+    const name = "@excom/noted-el";
+    const root = path.join(tmp, "noted-el");
+    const releases = [
+      { version: "0.4.0", date: "Thu, 01 Oct 2026 23:59:59 GMT", comments: { minor: ["Add `x`"], dependency: ["Bump `@excom/other`"] } },
+      { version: "0.3.0", comments: { patch: ["Fix `y`", "Fix `z`"] } },
+      { version: "0.2.1", comments: { none: ["Tidy"] } },
+      { version: "0.2.0", comments: { hotfix: ["Revert `w`"] } },
+      { version: "0.1.0", comments: { major: ["First release"] } },
+    ];
+    writeFiles(root, {
+      "package.json": packageJson(name, { excom: { packageType: "kit-element" } }),
+      "support/custom-elements.json": JSON.stringify({
+        modules: [
+          {
+            declarations: [
+              { kind: "class", customElement: true, tagName: "side-el", name: "SideEl" },
+              { kind: "class", customElement: true, tagName: "noted-el", name: "NotedEl", attributes: [{ name: "a" }], members: [] },
+            ],
+          },
+        ],
+      }),
+      "support/docs/README.md": "# noted-el\n\nBody.",
+      "support/demos/basic.html": "<noted-el></noted-el>",
+      "CHANGELOG.json": changelogJson(name, releases),
+    });
+    await buildDocs(root);
+
+    const md = read(root, "support/dist-docs/noted-el.md");
+    expect(md.match(/^## .*/gm)).toEqual(["## Installation", "## API", "## Release notes", "## Demo sources"]);
+    expect(md).toContain(
+      [
+        "## Release notes",
+        "",
+        "### 0.4.0 (2026-10-01)",
+        "",
+        "- Add `x`",
+        "",
+        "### 0.3.0 (2026-09-30)",
+        "",
+        "- Fix `y`",
+        "- Fix `z`",
+        "",
+        "### 0.2.0 (2026-09-30)",
+        "",
+        "- Revert `w`",
+        "",
+        "Older releases: https://excom.dev/nucleus/packages/noted-el",
+        "",
+        "## Demo sources",
+      ].join("\n"),
+    );
+    expect(md).not.toContain("0.1.0");
+    expect(md).not.toContain("Bump");
+    expect(read(root, "support/dist-docs/side-el.md")).not.toContain("Release notes");
+  });
+
+  it("lists every release without an older-releases link up to the cap, undated ones by version, before the demos of a README-less package", async () => {
+    const name = "@excom/short-notes";
+    const root = path.join(tmp, "short-notes");
+    writeFiles(root, {
+      "package.json": packageJson(name, { excom: { packageType: "kit-element" } }),
+      "support/custom-elements.json": JSON.stringify({
+        modules: [{ declarations: [{ kind: "class", customElement: true, tagName: "short-notes", name: "X" }] }],
+      }),
+      "support/demos/basic.html": "<short-notes></short-notes>",
+      "CHANGELOG.json": JSON.stringify({
+        name,
+        entries: [
+          { version: "0.2.0", comments: { minor: [{ comment: "Two" }] } },
+          { version: "0.1.0", date: "soon", comments: { minor: [{ comment: "One" }] } },
+        ],
+      }),
+    });
+    await buildDocs(root);
+
+    const md = read(root, "support/dist-docs/short-notes.md");
+    expect(md).toContain("## Release notes\n\n### 0.2.0\n\n- Two\n\n### 0.1.0\n\n- One\n");
+    expect(md.match(/^## .*/gm)).toEqual(["## Installation", "## Release notes", "## Demo sources"]);
+    expect(md).not.toContain("Older releases");
+  });
+
+  it("adds no Release notes section when nothing survives the filter", async () => {
+    const name = "@excom/quiet-el";
+    const root = path.join(tmp, "quiet-el");
+    writeFiles(root, {
+      "package.json": packageJson(name, { excom: { packageType: "kit-element" } }),
+      "support/custom-elements.json": JSON.stringify({
+        modules: [{ declarations: [{ kind: "class", customElement: true, tagName: "quiet-el", name: "X" }] }],
+      }),
+      "CHANGELOG.json": changelogJson(name, [{ version: "0.1.0", comments: { dependency: ["Bump `@excom/other`"] } }]),
+    });
+    await buildDocs(root);
+    expect(read(root, "support/dist-docs/quiet-el.md")).not.toContain("Release notes");
   });
 
   it("leaves a README empty of API when the declaration has none", async () => {

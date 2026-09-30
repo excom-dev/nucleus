@@ -1,0 +1,42 @@
+@use "quark:date" as date;
+
+#account-orders[did-load] {
+  $orders: prop("provision").body;
+  order-count: $orders.length;
+
+  [bind-orders] {
+    content: iterate($orders, none, "id");
+    > li {
+      order-status: item.status;
+    }
+    spa-a {
+      route-href: "/account/orders/#{item.id}";
+    }
+    [bind-order-total] {
+      value: item.total;
+      content: item.totalText;
+    }
+    [bind-order-date] {
+      content: date.format(
+        item.createdAt,
+        "en-GB",
+        (day: "numeric", month: "long", year: "numeric")
+      );
+    }
+  }
+}
+
+[bind-trade] {
+  @on change {
+    @command --submit;
+  }
+  input {
+    checked: $me.isTrade;
+  }
+}
+[bind-reset] {
+  @on super-form-success {
+    @command --close (target: "#reset-demo");
+    @command --fetch (target: "#account-orders");
+  }
+}

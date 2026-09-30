@@ -5,7 +5,7 @@ import {
   expect,
   it,
   vi,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 type LoadDependency = typeof import("../../load-dependency").loadDependency;
 

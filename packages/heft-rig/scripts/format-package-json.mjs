@@ -116,9 +116,9 @@ const PACKAGE_TYPE_DEFAULTS = {
     engines: { node: ">=24.13.0" },
     type: "module",
     scripts: {
-      build: `node -e "console.log('${_name}: no build output')`,
-      "build:watch": `node -e "console.log('${_name}: no build watch')`,
-      format: `node -e "console.log('${_name}: no format')`,
+      build: `node -e "console.log('${_name}: no build output')"`,
+      "build:watch": `node -e "console.log('${_name}: no build watch')"`,
+      format: `node -e "console.log('${_name}: no format')"`,
       // The rig tests its own scripts with the vitest runner it ships.
       test: "node scripts/vitest.mjs",
       coverage: "node scripts/coverage.mjs",
@@ -128,17 +128,36 @@ const PACKAGE_TYPE_DEFAULTS = {
     devDependencies: {},
     keywords: [],
   }),
+  // Never published, nothing to build: the rig runs its tests and formatting.
+  app: ({ _name }) => ({
+    files: [],
+    description: `${_name} app`,
+    engines: { node: ">=24.13.0" },
+    type: "module",
+    scripts: {
+      build: `node -e "console.log('${_name}: no build output')"`,
+      format: "node node_modules/@excom/heft-rig/scripts/format.mjs",
+      test: "node node_modules/@excom/heft-rig/scripts/vitest.mjs",
+      coverage: "node node_modules/@excom/heft-rig/scripts/coverage.mjs",
+    },
+    dependencies: {},
+    peerDependencies: {},
+    devDependencies: {
+      "@excom/heft-rig": "workspace:^",
+    },
+    keywords: [_name, "app"],
+  }),
   other: ({ _name, engines }) => ({
     files: PUBLISHED_FILES,
     description: `Package ${_name}`,
     engines: { ...engines },
     type: undefined,
     scripts: {
-      build: `node -e "console.log('${_name}: no build output')`,
-      "build:watch": `node -e "console.log('${_name}: no build watch')`,
-      format: `node -e "console.log('${_name}: no format')`,
-      test: `node -e "console.log('${_name}: no tests')`,
-      coverage: `node -e "console.log('${_name}: no coverage')`,
+      build: `node -e "console.log('${_name}: no build output')"`,
+      "build:watch": `node -e "console.log('${_name}: no build watch')"`,
+      format: `node -e "console.log('${_name}: no format')"`,
+      test: `node -e "console.log('${_name}: no tests')"`,
+      coverage: `node -e "console.log('${_name}: no coverage')"`,
     },
     dependencies: {},
     peerDependencies: {},
@@ -234,7 +253,7 @@ export async function formatPackageJson(packageRoot = process.cwd()) {
   let formattedPackageJson;
 
   if (excom) {
-    const _name = name.split("/")[1];
+    const _name = name.replace(/^@[^/]+\//, "");
 
     // rename field
     const isPrivate = pkg.private;

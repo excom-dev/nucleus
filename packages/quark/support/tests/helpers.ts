@@ -10,7 +10,7 @@ import {
   fixture,
   vi,
   wait,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 /**
  * Sheet + targets must share a parent (Quark host = sheetElement.parent).

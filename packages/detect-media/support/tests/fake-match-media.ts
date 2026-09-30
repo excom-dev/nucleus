@@ -1,4 +1,4 @@
-import { vi } from "@excom/heft-rig/profiles/default/config/test-utils";
+import { vi } from "@excom/nucleus-test";
 
 export type FakeMediaQueryList = {
   media: string;

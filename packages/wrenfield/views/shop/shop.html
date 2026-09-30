@@ -1,0 +1,107 @@
+<article id="shop">
+  <link rel="stylesheet" href="/views/shop/shop.css">
+  <quark-sheet src-url="/views/shop/shop.quark"></quark-sheet>
+  <provider-fetch class="abstract">
+    <header class="bar">
+      <strong aria-hidden="true" bind-title></strong>
+    </header>
+    <h1 bind-title></h1>
+
+    <search>
+      <spa-a route-action="replace" listen-for="submit" prevent-default bind-shop-search>
+        <form>
+          <input type="search" name="q" placeholder="Search the collection" aria-label="Search the collection" autocomplete="off" enterkeyhint="search">
+        </form>
+      </spa-a>
+
+      <nav aria-label="Categories">
+        <spa-a role="link" route-action="replace" transition-types="tab" shop-path="/shop">All</spa-a>
+        <spa-a role="link" route-action="replace" transition-types="tab" shop-path="/shop/seating">Seating</spa-a>
+        <spa-a role="link" route-action="replace" transition-types="tab" shop-path="/shop/tables">Tables</spa-a>
+        <spa-a role="link" route-action="replace" transition-types="tab" shop-path="/shop/storage">Storage</spa-a>
+        <spa-a role="link" route-action="replace" transition-types="tab" shop-path="/shop/lighting">Lighting</spa-a>
+        <spa-a role="link" route-action="replace" transition-types="tab" shop-path="/shop/objects">Objects</spa-a>
+      </nav>
+
+      <h2 class="count"><output bind-count></output></h2>
+      <button type="button" class="secondary" command="--open" commandfor="filters">
+        <svg aria-hidden="true"><use href="/img/icons.svg#sliders-horizontal"/></svg>Filters
+        <small class="badge" bind-filter-count></small>
+      </button>
+
+      <nav aria-label="Active filters">
+        <spa-a role="link" route-action="replace" set-query="q=" bind-active="q"><span></span><svg aria-hidden="true"><use href="/img/icons.svg#x"/></svg></spa-a>
+        <spa-a role="link" route-action="replace" set-query="era=" bind-active="era"><span></span><svg aria-hidden="true"><use href="/img/icons.svg#x"/></svg></spa-a>
+        <spa-a role="link" route-action="replace" set-query="material=" bind-active="material"><span></span><svg aria-hidden="true"><use href="/img/icons.svg#x"/></svg></spa-a>
+        <spa-a role="link" route-action="replace" set-query="priceMax=" bind-active="priceMax"><span></span><svg aria-hidden="true"><use href="/img/icons.svg#x"/></svg></spa-a>
+        <spa-a role="link" route-action="replace" set-query="sort=" bind-active="sort"><span></span><svg aria-hidden="true"><use href="/img/icons.svg#x"/></svg></spa-a>
+        <spa-a role="link" route-action="replace" set-query="era=&amp;material=&amp;priceMax=&amp;q=" bind-clear>Clear all</spa-a>
+      </nav>
+    </search>
+
+    <div bind-products role="list"></div>
+
+    <section class="empty" bind-empty>
+      <svg aria-hidden="true"><use href="/img/icons.svg#search"/></svg>
+      <h2>Nothing matches</h2>
+      <p>No piece fits every filter. Remove one, or clear them all to see the whole room.</p>
+      <spa-a role="button" route-action="replace" set-query="era=&amp;material=&amp;priceMax=&amp;q=">Clear filters</spa-a>
+    </section>
+
+    <section class="error">
+      <svg aria-hidden="true"><use href="/img/icons.svg#circle-alert"/></svg>
+      <h2>Collection not found</h2>
+      <p bind-error></p>
+      <spa-a route-href="/shop" role="button" transition-types="tab">Browse all pieces</spa-a>
+    </section>
+
+    <gesture-handler gesture-types="pan-y swipe" pointer-types="touch pen mouse" progress-axis="up" snap-points="0 1"
+      from-ref=":scope > content-drawer > header" handoff-ref=":scope > content-drawer" range-ref=":scope > content-drawer">
+      <content-drawer id="filters" role="region" aria-labelledby="filters-title">
+        <dismiss-watcher command-name="--close"></dismiss-watcher>
+        <header>
+          <h2 id="filters-title">Filters</h2>
+          <button type="button" class="icon" command="--close" commandfor="filters" aria-label="Close">
+            <svg aria-hidden="true"><use href="/img/icons.svg#x"/></svg>
+          </button>
+        </header>
+
+        <h3 class="eyebrow">Era</h3>
+        <ul class="list" bind-eras>
+          <template>
+            <li><spa-a role="link" route-action="replace" bind-facet><span bind-item="name"></span><small bind-item="count"></small><svg aria-hidden="true"><use href="/img/icons.svg#check"/></svg></spa-a></li>
+          </template>
+        </ul>
+
+        <h3 class="eyebrow">Material</h3>
+        <ul class="list" bind-materials>
+          <template>
+            <li><spa-a role="link" route-action="replace" bind-facet><span bind-item="name"></span><small bind-item="count"></small><svg aria-hidden="true"><use href="/img/icons.svg#check"/></svg></spa-a></li>
+          </template>
+        </ul>
+
+        <h3 class="eyebrow">Price</h3>
+        <ul class="list">
+          <li><spa-a role="link" route-action="replace" set-query="priceMax=1000"><span>Under $1,000</span><svg aria-hidden="true"><use href="/img/icons.svg#check"/></svg></spa-a></li>
+          <li><spa-a role="link" route-action="replace" set-query="priceMax=2500"><span>Under $2,500</span><svg aria-hidden="true"><use href="/img/icons.svg#check"/></svg></spa-a></li>
+          <li><spa-a role="link" route-action="replace" set-query="priceMax=5000"><span>Under $5,000</span><svg aria-hidden="true"><use href="/img/icons.svg#check"/></svg></spa-a></li>
+          <li><spa-a role="link" route-action="replace" set-query="priceMax=10000"><span>Under $10,000</span><svg aria-hidden="true"><use href="/img/icons.svg#check"/></svg></spa-a></li>
+        </ul>
+
+        <h3 class="eyebrow">Sort by</h3>
+        <ul class="list">
+          <li><spa-a role="link" route-action="replace" set-query="sort="><span>Featured</span><svg aria-hidden="true"><use href="/img/icons.svg#check"/></svg></spa-a></li>
+          <li><spa-a role="link" route-action="replace" set-query="sort=newest"><span>Newest first</span><svg aria-hidden="true"><use href="/img/icons.svg#check"/></svg></spa-a></li>
+          <li><spa-a role="link" route-action="replace" set-query="sort=price-asc"><span>Price, low to high</span><svg aria-hidden="true"><use href="/img/icons.svg#check"/></svg></spa-a></li>
+          <li><spa-a role="link" route-action="replace" set-query="sort=price-desc"><span>Price, high to low</span><svg aria-hidden="true"><use href="/img/icons.svg#check"/></svg></spa-a></li>
+        </ul>
+
+        <footer>
+          <spa-a role="button" class="secondary" route-action="replace" set-query="era=&amp;material=&amp;priceMax=&amp;q=">Clear all</spa-a>
+          <button type="button" command="--close" commandfor="filters">Show <span bind-count></span></button>
+        </footer>
+      </content-drawer>
+      <event-handler role="presentation" target-ref="content-drawer:has(+ :scope)" command-name="--close"></event-handler>
+    </gesture-handler>
+  </provider-fetch>
+</article>

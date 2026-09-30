@@ -5,7 +5,7 @@ import {
   it,
   vi,
 } from "@excom/heft-rig/node_modules/vitest";
-import { wait } from "@excom/heft-rig/profiles/default/config/test-utils";
+import { wait } from "@excom/nucleus-test";
 
 /**
  * "Recomposition": an app author imports a package's raw builder (the

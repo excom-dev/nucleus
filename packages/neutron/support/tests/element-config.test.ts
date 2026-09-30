@@ -14,7 +14,7 @@ import {
   it,
   vi,
   wait,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import { TokenList } from "@excom/kit-utils";
 
 describe("Prop configuration", () => {

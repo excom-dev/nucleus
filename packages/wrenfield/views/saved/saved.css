@@ -1,0 +1,10 @@
+@scope {
+  [role="note"] {
+    max-width: 30rem;
+    margin: 3rem 0 0;
+  }
+  #me[saved-count="0"] & :is(.count, [bind-products], [role="note"]),
+  #me:not([saved-count="0"]) & .empty {
+    display: none;
+  }
+}

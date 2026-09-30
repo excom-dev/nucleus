@@ -6,7 +6,7 @@ Deeper notes on how this repository is put together. Package-level architecture 
 
 - **Nucleus Kit elements** — one tag (or a small family) per package, `excom.packageType: "kit-element"`.
 - **Element bases** — `Neutron.compose` mixins (`fetchable-element`, `renderable-element`, …). Not registered on their own (`noop-tag`).
-- **Libraries** — Quark, Valence.css, the shared `kit-*` modules, parsers. No custom-element tag.
+- **Libraries** — Quark, Valence.css, the shared `kit-*` modules, parsers. No custom-element tag. Node-only ones (`nucleus-dom`, `nucleus-test`) set `excom.umd: false`: no UMD bundle, and the install snippet lists no CDN script.
 - **Site** — `@excom/docs-site`. `documented: false`, but `support/docs/*.md` still emit a slim `package-meta.json` so these pages can be fetched like package READMEs.
 
 ## Docs pipeline
@@ -17,6 +17,7 @@ Generated artifacts (`support/package-meta.json`, `support/custom-elements.json`
    - `readme` — `README.md` (package pages).
    - `docs` — `{ [lowercase basename]: html }` for every markdown file in that folder except `INTERNAL.md` (contributor notes). Relative links between them (`./PROPS.md`, `EVENTS.md#md-emit`) work on GitHub and are rewritten to site routes. Every relative link (anything not `scheme:`, `//host` or `#hash`) renders as `<spa-a route-href="…" role="link">` so the site navigates without a reload (`render-markdown.mjs`); external and same-page links stay `<a>`.
    - `docSections` — from `support/docs-sections.json` (`{ sections: [{ id, title, docs: ["props", …] }] }`): the sidebar groups of a package whose docs span several pages, page titles from each first `<h1>`. `neutron` is the model.
+   - `readme` ends with the release notes from `CHANGELOG.json` (`major` / `minor` / `patch` / `hotfix` comments, newest first; `dependency` and `none` dropped, `release-notes.mjs`) as a closed `<details>`; `build-docs.mjs` adds the three newest releases as `## Release notes` to the primary element's markdown, so they reach `llms-full.txt`.
    - Site `dev`/`build` run this for every `@excom/*` workspace link before collecting (fresh clone works).
 2. `collect:docs-metas` (docs-site `dev` / `build`) copies metas into `public/package-metas/`.
    - `index.json` is `{ packages, docs }`. `packages` omits `packageType: "site"` and carries `docSections` where a package has them. `docs` is the overview catalog (name + title from the first `<h1>`).

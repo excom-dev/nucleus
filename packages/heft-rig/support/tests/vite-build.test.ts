@@ -144,6 +144,38 @@ describe("runFullBuild", () => {
     await rm(path.join(ws.lib, "index.css"));
   });
 
+  it("skips the UMD bundle for a package with excom.umd: false", async () => {
+    const { runFullBuild } = await load();
+    const manifest = path.join(ws.lib, "package.json");
+    const original = await readFile(manifest, "utf8");
+    await writeFile(manifest, JSON.stringify({ name: "@excom/lib", excom: { umd: false } }));
+    try {
+      await runFullBuild(ws.lib);
+    } finally {
+      await writeFile(manifest, original);
+    }
+    expect(libModes().sort()).toEqual(["index.js", "index.min.js", "other.js", "other.min.js"]);
+    const map = JSON.parse(await readFile(path.join(ws.lib, "dist/exports.generated.json"), "utf8"));
+    expect(Object.keys(map).filter((key) => key.includes(".umd"))).toEqual([]);
+  });
+
+  it("builds a testing.ts entry as ESM only, no UMD bundle", async () => {
+    const { runFullBuild } = await load();
+    await writeTree(ws.lib, { "testing.ts": "export const testing = 1;\n" });
+    await runFullBuild(ws.lib);
+    expect(libModes().filter((m) => m.startsWith("index") || m.startsWith("testing")).sort()).toEqual([
+      "index.js",
+      "index.min.js",
+      "index.umd.min.js",
+      "testing.js",
+      "testing.min.js",
+    ]);
+    const map = JSON.parse(await readFile(path.join(ws.lib, "dist/exports.generated.json"), "utf8"));
+    expect(map["./testing"]).toEqual({ import: "./dist/testing.js", default: "./dist/testing.js" });
+    expect(Object.keys(map).filter((key) => key.includes("testing") && key.includes(".umd"))).toEqual([]);
+    await rm(path.join(ws.lib, "testing.ts"));
+  });
+
   it("runs only the progressive mode for a <name>.progressive.ts entry", async () => {
     const { runFullBuild } = await load();
     vi.spyOn(console, "log").mockImplementation(() => {});

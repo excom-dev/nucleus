@@ -24,7 +24,7 @@ import {
   fixture,
   it,
   vi,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import {
   bypassSelectorCache,
   createSheet,

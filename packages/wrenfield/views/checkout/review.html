@@ -1,0 +1,61 @@
+<section id="checkout-review">
+  <quark-sheet src-url="/views/checkout/review.quark"></quark-sheet>
+  <h2>Review your order</h2>
+  <ul class="list">
+    <li>
+      <spa-a route-href="/bag/checkout/details" role="link">
+        <address>
+          <small class="eyebrow">Contact</small>
+          <span bind-checkout="contact.name"></span>
+          <span bind-checkout="contact.email"></span>
+          <span bind-checkout="contact.phone"></span>
+        </address>
+        <small>Edit</small>
+      </spa-a>
+    </li>
+    <li>
+      <spa-a route-href="/bag/checkout/details" role="link">
+        <address>
+          <small class="eyebrow">Address</small>
+          <span bind-checkout="address.line1"></span>
+          <span bind-checkout="address.line2"></span>
+          <span><span bind-checkout="address.city"></span>, <span bind-checkout="address.region"></span> <span bind-checkout="address.postcode"></span></span>
+          <span bind-checkout="address.country"></span>
+        </address>
+        <small>Edit</small>
+      </spa-a>
+    </li>
+    <li>
+      <spa-a route-href="/bag/checkout/delivery" role="link">
+        <p>
+          <small class="eyebrow">Delivery</small>
+          <span><span bind-delivery="name"></span> · <data bind-bag="deliveryFee"></data></span>
+          <small bind-delivery="eta"></small>
+        </p>
+        <small>Edit</small>
+      </spa-a>
+    </li>
+    <li>
+      <spa-a route-href="/bag/checkout/payment" role="link">
+        <p>
+          <small class="eyebrow">Payment</small>
+          <span bind-payment="name"></span>
+          <small bind-payment="blurb"></small>
+        </p>
+        <small>Edit</small>
+      </spa-a>
+    </li>
+  </ul>
+
+  <spa-a route-href="/bag/checkout/complete" listen-for="super-form-success">
+    <super-form>
+      <form action="/api/orders" method="post">
+        <p role="alert"></p>
+        <footer class="actions" bind-place-order>
+          <p><small>Due today</small> <data bind-bag="dueToday"></data></p>
+          <button type="submit" disabled>Place order</button>
+        </footer>
+      </form>
+    </super-form>
+  </spa-a>
+</section>

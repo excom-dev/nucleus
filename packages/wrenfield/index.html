@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Wrenfield</title>
+  <meta name="description" content="Wrenfield is a furniture house: made-to-order pieces, restored antiques, lighting and objects. A fictional shop, built as the reference Nucleus Stack app.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f6f2ea" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#141311" media="(prefers-color-scheme: dark)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/img/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&display=swap">
+  <link rel="stylesheet" href="https://unpkg.com/@excom/nucleus-kit@0.2.0/dist/basic.bundle.min.css">
+  <link rel="stylesheet" href="/shell.css">
+  <script type="module" src="https://unpkg.com/@excom/nucleus-kit@0.2.0/dist/nucleus-kit.progressive.min.js"></script>
+  <script type="module" async src="https://unpkg.com/@google/model-viewer@4.3.1/dist/model-viewer.min.js"></script>
+  <script>navigator.serviceWorker?.register("/sw.js", { updateViaCache: "none" });</script>
+</head>
+<body nucleus-kit-idle>
+  <quark-sheet src-url="/shell.quark"></quark-sheet>
+  <service-worker></service-worker>
+  <detect-media media-query="(width < 768px)"></detect-media>
+
+  <include-content class="abstract" bind-app>
+    <template>
+      <provider-fetch id="me" api-url="/api/me" class="abstract">
+        <spa-manager class="abstract" overscroll-behavior-x="navigate">
+          <header>
+            <spa-a route-href="/" role="link" class="wordmark">Wrenfield</spa-a>
+            <nav aria-label="Collections">
+              <spa-a route-href="/shop/seating" role="link" match-nested>Seating</spa-a>
+              <spa-a route-href="/shop/tables" role="link" match-nested>Tables</spa-a>
+              <spa-a route-href="/shop/storage" role="link" match-nested>Storage</spa-a>
+              <spa-a route-href="/shop/lighting" role="link" match-nested>Lighting</spa-a>
+              <spa-a route-href="/shop/objects" role="link" match-nested>Objects</spa-a>
+              <spa-a route-href="/shop?era=antique" role="link" match-nested>Antiques</spa-a>
+            </nav>
+            <spa-a route-href="/shop" listen-for="submit" prevent-default bind-search>
+              <form role="search">
+                <input type="search" name="q" placeholder="Search" aria-label="Search" autocomplete="off">
+              </form>
+            </spa-a>
+            <nav id="tabs" aria-label="Main">
+              <spa-a route-href="/" data-tab="home" role="link" transition-types="tab">
+                <svg aria-hidden="true"><use href="/img/icons.svg#house"/></svg>Home
+              </spa-a>
+              <spa-a route-href="/shop" data-tab="shop" role="link" match-nested transition-types="tab">
+                <svg aria-hidden="true"><use href="/img/icons.svg#armchair"/></svg>Shop
+              </spa-a>
+              <spa-a route-href="/saved" data-tab="saved" role="link" match-nested transition-types="tab">
+                <svg aria-hidden="true"><use href="/img/icons.svg#heart"/></svg>Saved
+                <small class="badge" bind-saved-count></small>
+              </spa-a>
+              <spa-a route-href="/bag" data-tab="bag" role="link" match-nested transition-types="tab">
+                <svg aria-hidden="true"><use href="/img/icons.svg#shopping-bag"/></svg>Bag
+                <small class="badge" bind-bag-count></small>
+              </spa-a>
+              <spa-a route-href="/account" data-tab="account" role="link" match-nested transition-types="tab">
+                <svg aria-hidden="true"><use href="/img/icons.svg#user-round"/></svg>Account
+              </spa-a>
+            </nav>
+          </header>
+
+          <main>
+            <spa-route route-href="/" template-ref="/views/home/home.html" pre-fetch="idle" document-title="Home · Wrenfield"></spa-route>
+            <spa-route route-href="/shop" template-ref="/views/shop/shop.html" pre-fetch="idle" document-title="Shop · Wrenfield"></spa-route>
+            <spa-route route-href="/shop/:category" template-ref="/views/shop/shop.html" document-title="Shop · Wrenfield"></spa-route>
+            <spa-route route-href="/shop/:category/:slug" template-ref="/views/product/product.html" same-route="refresh" pre-fetch="idle" document-title="Shop · Wrenfield"></spa-route>
+            <spa-route route-href="/saved" template-ref="/views/saved/saved.html" pre-fetch="idle" document-title="Saved · Wrenfield"></spa-route>
+            <spa-route route-href="/bag" template-ref="/views/bag/bag.html" pre-fetch="idle" document-title="Bag · Wrenfield"></spa-route>
+            <spa-route route-regex="^/bag/checkout/(details|delivery|payment|review)$" template-ref="/views/checkout/checkout.html" document-title="Checkout · Wrenfield"></spa-route>
+            <spa-route route-href="/bag/checkout/complete" template-ref="/views/checkout/complete.html" document-title="Order placed · Wrenfield"></spa-route>
+            <spa-route route-href="/account" template-ref="/views/account/account.html" pre-fetch="idle" document-title="Account · Wrenfield"></spa-route>
+            <spa-route route-href="/account/orders/:id" template-ref="/views/order/order.html" same-route="refresh" document-title="Order · Wrenfield"></spa-route>
+            <spa-route route-href="/account/story" template-ref="/views/story/story.html" document-title="Our story · Wrenfield"></spa-route>
+            <spa-route route-href="/account/delivery-returns" template-ref="/views/delivery-returns/delivery-returns.html" document-title="Delivery and returns · Wrenfield"></spa-route>
+            <spa-route route-regex=".*" is-fallback template-ref="/views/not-found/not-found.html" document-title="Not found · Wrenfield"></spa-route>
+          </main>
+
+          <footer>
+            <p class="wordmark">Wrenfield</p>
+            <nav aria-label="About">
+              <spa-a route-href="/account/story" role="link">Our story</spa-a>
+              <spa-a route-href="/account/delivery-returns" role="link">Delivery and returns</spa-a>
+              <spa-a route-href="/account" role="link">Trade programme</spa-a>
+            </nav>
+            <small>Wrenfield is a fictional house and this is a demo. Any made-up details work, and nothing is charged or shipped.</small>
+          </footer>
+        </spa-manager>
+
+        <gesture-handler gesture-types="pan-y swipe" pointer-types="touch pen mouse" progress-axis="up" snap-points="0 1"
+          from-ref=":scope > content-drawer > header" handoff-ref=":scope > content-drawer" range-ref=":scope > content-drawer">
+          <content-drawer id="bag-sheet" role="region" aria-labelledby="bag-sheet-title">
+            <dismiss-watcher command-name="--close"></dismiss-watcher>
+            <header>
+              <h2 id="bag-sheet-title">Added to your bag</h2>
+              <button type="button" class="icon" command="--close" commandfor="bag-sheet" aria-label="Close">
+                <svg aria-hidden="true"><use href="/img/icons.svg#x"/></svg>
+              </button>
+            </header>
+            <div bind-bag-lines role="list"></div>
+            <footer>
+              <dl class="totals">
+                <dt>Subtotal</dt>
+                <dd bind-bag="subtotal"></dd>
+              </dl>
+              <spa-a route-href="/bag" role="button" class="secondary" transition-types="tab">View bag</spa-a>
+              <spa-a route-href="/bag/checkout/details" role="button">Checkout</spa-a>
+            </footer>
+          </content-drawer>
+          <event-handler role="presentation" target-ref="content-drawer:has(+ :scope)" command-name="--close"></event-handler>
+        </gesture-handler>
+      </provider-fetch>
+    </template>
+  </include-content>
+
+  <template id="product-card">
+    <data-product role="listitem">
+      <spa-a role="link" bind-product-link>
+        <figure class="stage"><img alt="" loading="lazy" bind-product-image></figure>
+        <h3 bind-product="name"></h3>
+        <p bind-product="maker"></p>
+        <p><data bind-price></data> <data bind-trade-price></data></p>
+      </spa-a>
+      <super-form>
+        <form bind-save>
+          <button type="submit" class="icon"><svg aria-hidden="true"><use href="/img/icons.svg#heart"/></svg></button>
+        </form>
+      </super-form>
+    </data-product>
+  </template>
+
+  <template id="bag-line">
+    <data-line role="listitem">
+      <spa-a bind-line-link aria-hidden="true">
+        <figure class="stage"><img alt="" loading="lazy" bind-line-image></figure>
+      </spa-a>
+      <hgroup>
+        <h3><spa-a role="link" bind-line-link bind-item="name"></spa-a></h3>
+        <p bind-line-finish></p>
+        <p bind-line-lead></p>
+        <p bind-line-hold></p>
+      </hgroup>
+      <data bind-line-total></data>
+      <fieldset aria-label="Quantity">
+        <super-form>
+          <form method="patch" bind-line-less>
+            <input type="number" name="qty" hidden>
+            <button type="submit" class="icon" aria-label="One fewer"><svg aria-hidden="true"><use href="/img/icons.svg#minus"/></svg></button>
+          </form>
+        </super-form>
+        <output bind-item="qty"></output>
+        <super-form>
+          <form method="patch" bind-line-more>
+            <input type="number" name="qty" hidden>
+            <button type="submit" class="icon" aria-label="One more"><svg aria-hidden="true"><use href="/img/icons.svg#plus"/></svg></button>
+          </form>
+        </super-form>
+      </fieldset>
+      <super-form>
+        <form method="delete">
+          <button type="submit" class="plain">Remove</button>
+        </form>
+      </super-form>
+    </data-line>
+  </template>
+
+  <p role="status"><img src="/img/logo.svg" alt="" width="56" height="56">Opening the showroom</p>
+</body>
+</html>

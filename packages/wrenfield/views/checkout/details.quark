@@ -1,0 +1,5 @@
+@use "quark:map" as map;
+
+input {
+  value: map.get($checkout, attr("name"));
+}

@@ -6,9 +6,9 @@ import {
   it,
   vi,
   wait,
-  waitForEvent,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import "../../index";
+import { navigate, popstate, resetRouter } from "../../testing";
 import { kitRouter } from "@excom/kit-router";
 
 if (!document.startViewTransition) {
@@ -31,8 +31,6 @@ if (!document.startViewTransition) {
 type RouterState = { id: string; url: string; isInit?: boolean };
 type RouterInternals = {
   states: RouterState[];
-  currentStateId: string | null;
-  currentTempData: { move: null | string; event?: unknown };
   routes: unknown[];
 };
 const router = kitRouter as unknown as RouterInternals & typeof kitRouter;
@@ -40,28 +38,10 @@ const router = kitRouter as unknown as RouterInternals & typeof kitRouter;
 /** The page's own `<title>` — what an untitled route must fall back to. */
 const PAGE_TITLE = "Page own title";
 
-/** Put the singleton router back to a cold-load state on `url`. */
-const resetRouter = (url = "/") => {
-  history.replaceState({ id: "init" }, "", url);
-  router.states = [{ id: "init", url, isInit: true }];
-  router.currentStateId = "init";
-  router.currentTempData = { move: null };
-};
-
-/** Emulate the browser landing on a known history entry (back / forward). */
-const popstate = (state: RouterState) => {
-  history.replaceState({ id: state.id }, "", state.url);
-  window.dispatchEvent(new PopStateEvent("popstate"));
-};
-
 const q = <T extends Element>(selector: string) =>
   document.querySelector(selector) as T;
 const qa = <T extends Element>(selector: string) =>
   Array.from(document.querySelectorAll(selector)) as T[];
-
-/** Navigate and wait for the manager to settle. */
-const navigate = (manager: Element, trigger: () => void) =>
-  waitForEvent(manager, "spa-manager-rendered", trigger);
 
 /**
  * Hard-load `url` with `html` as the document: routes match at connect, so

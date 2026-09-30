@@ -9,7 +9,7 @@ import {
   it,
   vi,
   wait,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 const SESSION_KEY = "__kit_router_history__";
 

@@ -12,7 +12,7 @@ import {
 import {
   wait,
   waitForEvent,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import { createElement, TokenList } from "@excom/kit-utils";
 
 let serializeFn = (value: unknown) => value;

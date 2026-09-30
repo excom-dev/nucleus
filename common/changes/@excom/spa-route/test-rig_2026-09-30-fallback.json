@@ -1,0 +1,20 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/spa-route",
+      "comment": "Fix an issue where an `is-fallback` route stayed off after leaving a nested route for a URL no route matches: the fallback now checks which routes match the path instead of reading their `is-active` state, so its position among its siblings no longer matters while navigating, a page without a `spa-manager` gets a working fallback, a fallback inside a layout can activate on the layout's unmatched child paths, and other fallbacks never hold it off",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/spa-route",
+      "comment": "Add a warning when a `spa-manager` update settles by `render-timeout` while a route is still pending, so an empty first paint has a cause in the console at log level 2",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/spa-route",
+      "comment": "Add `@excom/spa-route/testing`, the router helpers for Vitest on happy-dom: `resetRouter()`, `navigate()`, `popstate()`, `installViewTransition()` and `trackUnhandledRejections()`",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@excom/spa-route"
+}

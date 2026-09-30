@@ -1,0 +1,7 @@
+[bind-options] {
+  content: iterate($checkout.paymentOptions, none, "id");
+  input {
+    value: item.id;
+    checked: item.id == $checkout.payment;
+  }
+}

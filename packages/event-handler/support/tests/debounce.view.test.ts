@@ -5,14 +5,14 @@ import {
   describe,
   expect,
   it,
+  readDemo,
   vi,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import {
   expectComplexity,
   flush,
   measureComplexity,
   mountView,
-  readDemo,
 } from "@excom/quark/support/tests/view-helpers";
 
 describe("debounce view", () => {
