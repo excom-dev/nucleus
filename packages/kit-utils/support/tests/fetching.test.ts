@@ -3,16 +3,19 @@ import {
   fetchPlainText,
   fetchTemplate,
   resolveModuleReference,
+  resolveModuleUrl,
   resolveTemplateContent,
 } from "../../fetching";
 import {
   afterEach,
+  beforeEach,
   describe,
   expect,
   fixture,
   it,
   spyFetch,
   vi,
+  wait,
 } from "@excom/heft-rig/profiles/default/config/test-utils";
 
 // The template cache is module-wide, so every URL test uses its own path.
@@ -39,6 +42,12 @@ describe("fetchTemplate", () => {
     const reqInit = { headers: { "x-test": "1" } };
     await fetchTemplate(url, { reqInit });
     expect(fetchSpy).toHaveBeenCalledWith(url, reqInit);
+  });
+
+  it("rejects a non-ok response instead of parsing the error page", async () => {
+    spyFetch({ status: 404, body: "<h1>Not Found</h1>" });
+    const url = uniqueUrl();
+    await expect(fetchTemplate(url)).rejects.toThrow(`HTTP 404: ${url}`);
   });
 });
 
@@ -115,6 +124,21 @@ describe("resolveTemplateContent: URL templates", () => {
     expect(own1).toBe(own2);
     expect(resolveTemplateContent(single)).not.toBe(own1);
   });
+
+  it("evicts a failed fetch so the next resolve fetches again", async () => {
+    let status = 404;
+    const fetchSpy = spyFetch(() => ({ status, body: `<p>page</p>` }));
+    const url = uniqueUrl();
+    const [a, b] = [resolveTemplateContent(url), resolveTemplateContent(url)];
+    await expect(a).rejects.toThrow("404");
+    await expect(b).rejects.toThrow("404");
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    status = 200;
+    const retry = resolveTemplateContent(url);
+    expect(retry).toBeInstanceOf(Promise);
+    expect(((await retry) as Element).textContent).toBe("page");
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+  });
 });
 
 describe("resolveTemplateContent: selector templates", () => {
@@ -166,6 +190,75 @@ describe("resolveModuleReference", () => {
   it("imports relative to the page origin (unsupported under node)", async () => {
     await expect(resolveModuleReference("/mods/x.js")).rejects.toThrow();
   });
+
+  it("refuses a data: module before importing it", async () => {
+    await expect(
+      resolveModuleReference("data:text/javascript,export const x = 1")
+    ).rejects.toThrow('Refused module URL scheme "data:"');
+  });
+});
+
+describe("resolveModuleUrl", () => {
+  const origin = "https://app.test";
+
+  it("passes absolute URLs through", () => {
+    const cdn = "https://cdn.test/lib/mod.js?v=2";
+    expect(resolveModuleUrl(cdn, origin)).toBe(cdn);
+  });
+
+  it("resolves every relative form against the site root", () => {
+    for (const ref of [
+      "/mods/x.js",
+      "./mods/x.js",
+      "../mods/x.js",
+      "mods/x.js",
+    ]) {
+      expect(resolveModuleUrl(ref, origin)).toBe(`${origin}/mods/x.js`);
+    }
+  });
+
+  it("defaults to the page origin", () => {
+    expect(resolveModuleUrl("/x.js")).toBe(`${window.location.origin}/x.js`);
+  });
+
+  it("loads a scheme-relative or backslashed ref from that host", () => {
+    for (const ref of ["//host/x.js", "\\\\host/x.js", "/\\host/x.js"]) {
+      expect(resolveModuleUrl(ref, origin)).toBe("https://host/x.js");
+    }
+  });
+
+  it("reads http:host/x.js per the page scheme", () => {
+    expect(resolveModuleUrl("http:host/x.js", origin)).toBe("http://host/x.js");
+    expect(resolveModuleUrl("http:host/x.js", "http://app.test")).toBe(
+      "http://app.test/host/x.js"
+    );
+  });
+
+  it("allows the page's own scheme, and only that one", () => {
+    const app = "capacitor://localhost";
+    for (const ref of ["/x.js", "./x.js", "x.js"]) {
+      expect(resolveModuleUrl(ref, app)).toBe(`${app}/x.js`);
+    }
+    expect(() => resolveModuleUrl("data:text/javascript,1", app)).toThrow(
+      'Refused module URL scheme "data:"'
+    );
+    expect(() => resolveModuleUrl(`${app}/x.js`, origin)).toThrow(
+      'Refused module URL scheme "capacitor:"'
+    );
+  });
+
+  it("refuses every other scheme from an https page", () => {
+    for (const ref of [
+      "data:text/javascript,export default 1",
+      "blob:https://app.test/0f0e",
+      "javascript:void 0",
+      "file:///x.js",
+    ]) {
+      expect(() => resolveModuleUrl(ref, origin)).toThrow(
+        "Refused module URL scheme"
+      );
+    }
+  });
 });
 
 describe("fetchPlainText", () => {
@@ -185,6 +278,17 @@ describe("fetchPlainText", () => {
     await expect(fetchPlainText(other)).resolves.toBe("plain body");
     expect(fetchSpy).toHaveBeenCalledTimes(2);
     expect(fetchSpy).toHaveBeenLastCalledWith(other, {});
+  });
+
+  it("rejects a non-ok response and fetches a failed URL again", async () => {
+    let status = 404;
+    const fetchSpy = spyFetch(() => ({ status, body: "sheet" }));
+    const url = uniqueUrl("/text/");
+    await expect(fetchPlainText(url)).rejects.toThrow(`HTTP 404: ${url}`);
+    status = 200;
+    await expect(fetchPlainText(url)).resolves.toBe("sheet");
+    await expect(fetchPlainText(url)).resolves.toBe("sheet");
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
   });
 });
 
@@ -226,5 +330,126 @@ describe("clearFetchCaches", () => {
     expect(next).toBeInstanceOf(Promise);
     await next;
     expect(fetchSpy).toHaveBeenCalledTimes(2);
+  });
+});
+
+/** Fetch stand-in: settles on `respond`, rejects like fetch when its signal aborts. */
+const deferredFetch = () => {
+  const pending: Array<(res: Response) => void> = [];
+  const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(
+    (_url, init) =>
+      new Promise((resolve, reject) => {
+        pending.push(resolve);
+        init?.signal?.addEventListener("abort", () =>
+          reject(init.signal!.reason)
+        );
+      })
+  );
+  const respond = (status = 200) =>
+    pending.shift()!(new Response("<p>shared</p>", { status }));
+  return { fetchSpy, respond };
+};
+
+/** `promise`, or `true` when it is still pending once queued tasks ran. */
+const atOnce = (promise: Promise<unknown>) => Promise.race([promise, wait(0)]);
+
+describe.each([
+  [
+    "resolveTemplateContent",
+    async (url: string, signal?: AbortSignal) =>
+      ((await resolveTemplateContent(url, { reqInit: { signal } })) as Element)
+        .outerHTML,
+  ],
+  [
+    "fetchPlainText",
+    (url: string, signal?: AbortSignal) =>
+      fetchPlainText(url, { reqInit: { signal } }),
+  ],
+])("%s: a caller's abort signal", (_, load) => {
+  const unhandled = vi.fn();
+  beforeEach(() => {
+    unhandled.mockClear();
+    process.on("unhandledRejection", unhandled);
+  });
+  afterEach(async () => {
+    await wait(0);
+    process.off("unhandledRejection", unhandled);
+    vi.restoreAllMocks();
+    expect(unhandled).not.toHaveBeenCalled();
+  });
+
+  it("ends only that caller's wait; the shared request serves the others", async () => {
+    const { fetchSpy, respond } = deferredFetch();
+    const url = uniqueUrl();
+    const [first, second] = [new AbortController(), new AbortController()];
+    const spies = [first, second].map(({ signal }) => ({
+      add: vi.spyOn(signal, "addEventListener"),
+      remove: vi.spyOn(signal, "removeEventListener"),
+    }));
+    const waits = [load(url, first.signal), load(url, second.signal)];
+    first.abort();
+    await expect(atOnce(waits[0])).rejects.toBe(first.signal.reason);
+    respond();
+    await expect(waits[1]).resolves.toBe("<p>shared</p>");
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    spies.forEach(({ add, remove }) =>
+      expect(remove).toHaveBeenCalledWith("abort", add.mock.calls[0][1])
+    );
+  });
+
+  it("keeps the request of a lone caller that aborts, for the next call", async () => {
+    const { fetchSpy, respond } = deferredFetch();
+    const url = uniqueUrl();
+    const controller = new AbortController();
+    const waiting = load(url, controller.signal);
+    controller.abort();
+    await expect(atOnce(waiting)).rejects.toBe(controller.signal.reason);
+    respond();
+    await wait(0);
+    const next = load(url);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    await expect(next).resolves.toBe("<p>shared</p>");
+  });
+
+  it("evicts a failed request whose only waiter aborted", async () => {
+    const { fetchSpy, respond } = deferredFetch();
+    const url = uniqueUrl();
+    const controller = new AbortController();
+    const waiting = load(url, controller.signal);
+    controller.abort();
+    await expect(atOnce(waiting)).rejects.toBe(controller.signal.reason);
+    respond(404);
+    await wait(0);
+    const retry = load(url);
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+    respond();
+    await expect(retry).resolves.toBe("<p>shared</p>");
+  });
+
+  it("rejects an already aborted signal at once and starts no request", async () => {
+    const { fetchSpy, respond } = deferredFetch();
+    const url = uniqueUrl();
+    const signal = AbortSignal.abort();
+    const other = load(url);
+    await expect(atOnce(load(url, signal))).rejects.toBe(signal.reason);
+    await expect(atOnce(load(uniqueUrl(), signal))).rejects.toBe(signal.reason);
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    respond();
+    await expect(other).resolves.toBe("<p>shared</p>");
+  });
+
+  it("still evicts a failed request that an aborted caller left", async () => {
+    const { fetchSpy, respond } = deferredFetch();
+    const url = uniqueUrl();
+    const controller = new AbortController();
+    const waits = [load(url, controller.signal), load(url)];
+    controller.abort();
+    await expect(atOnce(waits[0])).rejects.toBe(controller.signal.reason);
+    respond(404);
+    await expect(waits[1]).rejects.toThrow(`HTTP 404: ${url}`);
+    const retry = load(url);
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+    respond();
+    await expect(retry).resolves.toBe("<p>shared</p>");
   });
 });

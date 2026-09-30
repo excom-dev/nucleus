@@ -129,4 +129,5 @@ The loop guard stops this after 50 nested paints, but the fix is the selector: m
 - **Custom debugging** `Neutron.attachDevtools()` is available.
 - **`QuarkRegistry`** is exposed on `window` in development. `QuarkRegistry.findRules("bind-title")` returns the rules that touch a selector; each rule tracks `numberOfRuns`.
 - **`is-error` attributes** on sheets, providers, forms, and includes reflect failures, and matching `*-error` events carry the detail.
+- **Log level** Nucleus Kit elements log only errors by default. `import { KitLogger } from "@excom/nucleus-kit"; KitLogger.level = 2;` adds warnings, such as a request that failed with an error status (`0` silent, `1` errors, `2` warnings, `3` debug, `4` info). Quark logs through its own `QuarkLogger`, exported next to it, with the same levels set independently. The progressive entry exports `KitLogger` only.
 - **Serialize the state.** `document.documentElement.outerHTML` is a complete, shareable snapshot of the app at the moment of a bug. It will not include data provisions or Quark `$variables`.

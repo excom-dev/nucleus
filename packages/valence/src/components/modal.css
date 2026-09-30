@@ -111,9 +111,6 @@
   :where(:has(> :--dialog.absolute)) {
     /* Lowest specificity */
     position: relative;
-    height: 600px;
-    width: 600px;
-    background-color: red;
   }
   :--dialog.absolute {
     position: absolute;

@@ -32,7 +32,10 @@ const html = (body: string) => ({
 const abortError = () =>
   new DOMException("The operation was aborted.", "AbortError");
 
-/** Fetch stub that only settles when its signal aborts (rejects `reason`). */
+/**
+ * Fetch stub that rejects `reason` when its signal aborts; a shared template
+ * request gets no signal, so there it never settles.
+ */
 const spyAbortableFetch = (reason: () => Error = abortError) =>
   vi.spyOn(globalThis, "fetch").mockImplementation(
     (_url, init) =>
@@ -99,7 +102,7 @@ describe("RenderableElement template resolution", () => {
     );
   });
 
-  it("fetches template-ref as a URL with the abort signal", async () => {
+  it("fetches template-ref as a URL without the element's abort signal", async () => {
     const fetchSpy = spyFetch(html("<p>remote</p>"));
     const el = fixture<any>(
       `<${TAG} template-ref="/rl-url-basic.html"></${TAG}>`,
@@ -112,7 +115,8 @@ describe("RenderableElement template resolution", () => {
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("/rl-url-basic.html");
-    expect(init.signal).toBeDefined();
+    // the shared request belongs to the page; the element only stops waiting
+    expect(init.signal).toBeUndefined();
     expect(el.querySelector("p")?.textContent).toBe("remote");
     expect(el.didLoad).toBe(true);
     expect(el.isLoading).toBe(false);
@@ -186,6 +190,79 @@ describe("RenderableElement template resolution", () => {
     expect(nthCall).toBe(2);
   });
 
+  it("a non-ok URL template sets is-error, paints nothing and logs once", async () => {
+    const lines = vi.spyOn(console, "error").mockImplementation(() => {});
+    spyFetch({ ...html("<h1>Not Found</h1>"), status: 404 });
+    const el = fixture<any>(
+      `<${TAG} template-ref="/rl-url-404.html"></${TAG}>`,
+    );
+
+    await waitForEvent(el, EVT("error"), () => {
+      el.isActive = true;
+    });
+
+    expect(el).dom.to.equalTag(
+      `<${TAG} template-ref="/rl-url-404.html" is-active is-error></${TAG}>`,
+    );
+    expect(el.children.length).toBe(0);
+    expect(lines).toHaveBeenCalledTimes(1);
+    expect(lines.mock.calls[0][2].cause.message).toContain("404");
+  });
+
+  it("a failed URL template is fetched again by the next element", async () => {
+    KitLogger.suppress();
+    let status = 404;
+    const fetchSpy = spyFetch(() => ({ ...html("<p>back</p>"), status }));
+    const first = fixture<any>(
+      `<${TAG} template-ref="/rl-url-retry.html"></${TAG}>`,
+    );
+    await waitForEvent(first, EVT("error"), () => {
+      first.isActive = true;
+    });
+
+    status = 200;
+    const second = fixture<any>(
+      `<${TAG} template-ref="/rl-url-retry.html"></${TAG}>`,
+    );
+    await waitForEvent(second, EVT("did-render"), () => {
+      second.isActive = true;
+    });
+    expect(second.querySelector("p")?.textContent).toBe("back");
+    expect(second.isError).toBe(false);
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it("a failed template settles the ready promise at once and clears delaying-ready", async () => {
+    KitLogger.suppress();
+    spyFetch({ ...html("<p>gone</p>"), status: 404 });
+    const el = fixture<any>(
+      `<${TAG} template-ref="/rl-url-ready.html" ready-on="rl-ready"></${TAG}>`,
+    );
+    let ready!: Promise<void>;
+    el.addEventListener(EVT("render"), (event: CustomEvent) => {
+      event.preventDefault();
+      ready = event.detail();
+    });
+
+    await waitForEvent(el, EVT("error"), () => {
+      el.isActive = true;
+    });
+    const settled = async () => {
+      try {
+        await ready;
+        return "resolved";
+      } catch {
+        return "rejected";
+      }
+    };
+    const pending = async () => {
+      await wait(0);
+      return "pending";
+    };
+    expect(await Promise.race([settled(), pending()])).toBe("rejected");
+    expect(el.delayingReady).toBeFalsy();
+  });
+
   it("changing template-ref clears did-load and renders the new template", async () => {
     document.body.innerHTML = `
       <template id="rl-tpl-a"><p>A</p></template>
@@ -206,7 +283,7 @@ describe("RenderableElement template resolution", () => {
     expect(el.didLoad).toBe(true);
   });
 
-  it("changing template-ref while loading aborts the in-flight fetch", async () => {
+  it("changing template-ref while loading ends the wait on the in-flight load", async () => {
     spyAbortableFetch();
     document.body.innerHTML = `
       <template id="rl-tpl-swap"><p>swapped</p></template>
@@ -502,6 +579,33 @@ describe("RenderableElement host-ref", () => {
     expect(onUnrender).not.toHaveBeenCalled();
   });
 
+  it("settles ready at once when host-ref resolves to no host, but waits for a loading author iframe", async () => {
+    const settled = (el: any) => {
+      const outcome = vi.fn();
+      el.startReady();
+      el.readyPromiseObject.promise.then(
+        () => outcome("resolved"),
+        () => outcome("rejected"),
+      );
+      return outcome;
+    };
+    const nowhere = fixture<any>(
+      `<${TAG} host-ref="#rl-nowhere" ready-on="never"><template><p>x</p></template></${TAG}>`,
+    );
+    const nowhereOutcome = settled(nowhere);
+    nowhere.isActive = true;
+    await wait(20);
+    expect(nowhereOutcome).toHaveBeenCalledWith("rejected");
+    expect(nowhere.delayingReady).toBe(false);
+
+    const pending = buildPendingIframeHost();
+    const pendingOutcome = settled(pending.el);
+    pending.el.isActive = true;
+    await wait(20);
+    expect(pendingOutcome).not.toHaveBeenCalled();
+    expect(pending.el.readyPromiseObject).not.toBeNull();
+  });
+
   it("re-targets from light DOM to shadow while active, clearing the old host", async () => {
     const el = fixture<any>(
       `<${TAG}><template><p>moves</p></template></${TAG}>`,
@@ -680,7 +784,7 @@ describe("RenderableElement reload", () => {
     expect(el.didLoad).toBeFalsy();
   });
 
-  it("aborts an in-flight fetch before re-resolving", async () => {
+  it("ends the wait on an in-flight load before re-resolving", async () => {
     let nthCall = 0;
     vi.spyOn(globalThis, "fetch").mockImplementation((_url, init) => {
       nthCall++;
@@ -871,7 +975,7 @@ describe("RenderableElement abort handling", () => {
     KitLogger.unsuppress();
   });
 
-  it("aborts the in-flight template fetch on disconnect without an error", async () => {
+  it("stops waiting for the template on disconnect, without an error", async () => {
     spyAbortableFetch();
     const el = fixture<any>(
       `<${TAG} template-ref="/rl-abort-disconnect.html"></${TAG}>`,
@@ -937,8 +1041,8 @@ describe("RenderableElement abort handling", () => {
     expect(debugSpy).toHaveBeenCalledWith("templatePromise was aborted");
   });
 
-  it("wraps a non-abort rejection as AbortError when the signal was aborted", async () => {
-    spyAbortableFetch(() => new Error("socket closed"));
+  it("treats an abort with a custom reason as an abort, not an error", async () => {
+    spyAbortableFetch();
     const debugSpy = vi.spyOn(KitLogger, "debug").mockImplementation(
       () => {},
     );
@@ -951,7 +1055,7 @@ describe("RenderableElement abort handling", () => {
     el.isActive = true;
     await wait(0);
     expect(el.isLoading).toBe(true);
-    el.doAbort();
+    el.doAbort(new Error("socket closed"));
     await wait(10);
 
     expect(onError).not.toHaveBeenCalled();

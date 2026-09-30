@@ -63,6 +63,7 @@
         position: static;
         transform: none;
         transition: none;
+        visibility: visible;
         width: auto;
         /* flex item: shrink to the grid column, never to min-content */
         min-width: 0;

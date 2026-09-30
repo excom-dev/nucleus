@@ -67,7 +67,9 @@ const initTemplatePromise = async (
         ? error
         : Object.assign(new Error("Aborted"), { name: "AbortError" });
     }
-    throw new Error(`Failed to find template: ${templateRef}`);
+    throw new Error(`Failed to find template: ${templateRef}`, {
+      cause: error,
+    });
   }
 };
 
@@ -116,8 +118,10 @@ const makePromiseObject = () => {
  *   `event.detail` is a thunk that performs the load (if not already
  *   loaded) and renders the children, returning a Promise that resolves
  *   once the corresponding `ready-on` event fires (or immediately if
- *   `ready-on` is unset). The promise rejects if the element is torn
- *   down mid-flight (`startTeardown` while loading / `delaying-ready`).
+ *   `ready-on` is unset). The promise rejects if the template fails to
+ *   load, `host-ref` resolves to no host (nor an author iframe still
+ *   loading), or the element is torn down mid-flight (`startTeardown`
+ *   while loading / `delaying-ready`).
  *   Call `preventDefault()` to defer rendering and invoke
  *   `event.detail()` later.
  * @type RenderableRenderEvent
@@ -144,9 +148,10 @@ const makePromiseObject = () => {
  *   needed) and render the template into the host.
  * @default-action {tag}-unrender - Invokes `event.detail()` to remove
  *   rendered children from the host.
- * @command --reload - Aborts any in-flight fetch and re-resolves the
- *   template, bypassing the cache for URL refs (useful after remote content
- *   changes).
+ * @command --reload - Stops waiting for any in-flight load and re-resolves
+ *   the template, bypassing the cache for URL refs (useful after remote
+ *   content changes). A URL request is shared by the page, so the one in
+ *   flight is not cancelled.
  *
  * @child ?template - Optional immediate `<template>` child used when
  *   `template-ref` is the default `":scope > template"`. Not required when
@@ -262,8 +267,8 @@ export const RenderableElement = Neutron.compose([
       isError: Boolean,
       /**
        * @state
-       * Between `render` and the matching `ready-on` event. Hook with
-       * CSS for coordinated paints / view transitions.
+       * Between `render` and the matching `ready-on` event (or a failed
+       * load). Hook with CSS for coordinated paints / view transitions.
        */
       delayingReady: Boolean,
       // private state
@@ -350,9 +355,19 @@ export const RenderableElement = Neutron.compose([
     renderChildren: (element, resolved?: Node) => {
       const source = resolved ?? element._persistedTree;
       if (!source) return;
-      // Host not ready yet (e.g. iframe still loading). Its load handler
-      // retriggers this call.
-      if (element.hostRef && !element.renderHost) return;
+      if (element.hostRef && !element.renderHost) {
+        // An author iframe still loading paints from its load handler. With
+        // no host on the way nothing renders: release ready waiters now.
+        return (
+          !(
+            element.hostRef === "iframe" &&
+            element.querySelector(`:scope > iframe[${IFRAME_HOST_ATTR}]`)
+          ) && [
+            { delayingReady: false },
+            { tryCompleteReady: ["startTeardown", "reject"] },
+          ]
+        );
+      }
       const host = (element.renderHost ?? element) as Element;
       const children = [
         element.persistContent
@@ -598,13 +613,18 @@ export const RenderableElement = Neutron.compose([
         `${localName}: template load failed`,
         result.templatePromise
       );
-      return {
-        templatePromise: null,
-        isLoading: false,
-        didLoad: false,
-        isError: true,
-        emit: ["error"],
-      };
+      return [
+        {
+          templatePromise: null,
+          isLoading: false,
+          didLoad: false,
+          isError: true,
+          delayingReady: false,
+        },
+        // nothing will render: release waiters (e.g. `<spa-manager>`) now
+        { tryCompleteReady: ["startTeardown", "reject"] },
+        { emit: ["error"] },
+      ];
     } else {
       KitLogger.debug("templatePromise was aborted");
     }

@@ -1,11 +1,6 @@
 import { KitRouteData } from "@excom/kit-router";
 import { deepCompare } from "@excom/kit-utils";
-import {
-  ConstructorType,
-  Neutron,
-  TEvent,
-  TokenList,
-} from "@excom/neutron";
+import { ConstructorType, Neutron, TEvent, TokenList } from "@excom/neutron";
 import { RenderableElement } from "@excom/renderable-element";
 import { RoutableElement } from "@excom/routable-element";
 
@@ -30,10 +25,11 @@ export type SpaRouteProvision = {
   next: KitRouteData["next"];
   previous: KitRouteData["previous"];
   params: KitRouteData["params"];
+  query: KitRouteData["query"];
 };
 
 /**
- * One screen of a single-page app. Matches `route-href` / `route-regex`, then renders its `<template>` while active and unrenders on the way out. Place inside `<spa-manager>` for view transitions and coordinated scroll.
+ * One screen of a single-page app. Matches `route-href` / `route-regex`, then renders its `<template>` while active and unrenders on the way out. Place inside `<spa-manager>` for view transitions, `document-title` and scroll reset / restore: without one, none of them happen.
  *
  * @summary Declarative SPA screen — URL match → render.
  *
@@ -48,7 +44,7 @@ export type SpaRouteProvision = {
  * </spa-manager>
  *
  * @example
- * <!-- 404 fallback: only activates if no preceding sibling matched -->
+ * <!-- 404 fallback: only activates if no other route is active -->
  * <spa-manager>
  *   <spa-route route-href="/known"><template>Known</template></spa-route>
  *   <spa-route route-regex=".*" is-fallback>
@@ -56,10 +52,10 @@ export type SpaRouteProvision = {
  *   </spa-route>
  * </spa-manager>
  *
- * @fires spa-route-provision - Cancelable. Same route stayed active but
- *   params changed (`same-route="reuse"`). `event.detail` is a thunk that
- *   updates route data and resolves the ready promise. `<spa-manager>`
- *   batches this into the View Transition like render/unrender.
+ * @fires spa-route-provision - Cancelable. On (de)activation, and whenever
+ *   the path or query changes while active; a hash-only move does neither.
+ *   `event.detail` is a thunk that updates route data. `<spa-manager>`
+ *   batches this into its update like render/unrender.
  * @type SpaRouteProvisionEvent
  *
  * @default-action spa-route-provision - Invokes `event.detail()` to apply
@@ -80,10 +76,11 @@ export const SpaRoute = Neutron.compose([
        * @option
        * When this route matches while already active, `reuse` keeps the
        * rendered tree and updates route data; `refresh` tears down and
-       * re-renders. Use `refresh` for param-driven screens (e.g.
-       * `/users/:id` → `/users/2`); `reuse` when only route data should
-       * change (e.g. `/logs/:view`). Pair with `scroll-set-disabled` to
-       * leave the viewport untouched.
+       * re-renders once params, the matched path or the query change. Use
+       * `refresh` for param-driven screens (e.g. `/users/:id` →
+       * `/users/2`); `reuse` when only route data should change (e.g.
+       * `/logs/:view`). Pair with `scroll-set-disabled` to leave the
+       * viewport untouched.
        * @values reuse | refresh
        * @default reuse
        */
@@ -93,21 +90,22 @@ export const SpaRoute = Neutron.compose([
       },
       /**
        * @option
-       * Opt this route out of the parent `<spa-manager>` View Transition. Still renders/unrenders — just without the cross-fade.
+       * This route's render / unrender never starts a `<spa-manager>` View Transition. It still takes part in one another route starts.
        */
       noTransition: Boolean,
       /**
        * @option
-       * `window.scrollTo` behavior when this route applies a scroll reset /
-       * restore.
+       * `window.scrollTo` behavior when `<spa-manager>` resets scroll for
+       * this route. Restores are instant.
        * @default instant
        * @values auto | instant | smooth
        */
       scrollResetBehavior: String,
       /**
        * @option
-       * Navigation moves that reset scroll X to `0`. Moves omitted here
-       * restore the saved X for that history entry instead.
+       * Navigation moves that reset scroll X to `0` once a route renders
+       * (a query-only move keeps its place; a `#fragment` target wins). Moves
+       * omitted here restore the saved X for that history entry instead.
        * @values push | replace | back | forward
        * @default push replace
        */
@@ -117,8 +115,9 @@ export const SpaRoute = Neutron.compose([
       },
       /**
        * @option
-       * Navigation moves that reset scroll Y to `0`. Moves omitted here
-       * restore the saved Y for that history entry instead.
+       * Navigation moves that reset scroll Y to `0` once a route renders
+       * (a query-only move keeps its place; a `#fragment` target wins). Moves
+       * omitted here restore the saved Y for that history entry instead.
        * @values push | replace | back | forward
        * @default push replace
        */
@@ -128,12 +127,13 @@ export const SpaRoute = Neutron.compose([
       },
       /**
        * @option
-       * Disable all scroll reset / restore for this route.
+       * While this route is active, `<spa-manager>` neither resets nor
+       * restores scroll.
        */
       scrollSetDisabled: Boolean,
       /**
        * @option
-       * Only activate when this route matches *and* no earlier sibling `<spa-route>` is already active. Pair with a permissive `route-regex` (e.g. `.*`) for 404 catch-alls.
+       * Only activate when this route matches *and* no other `<spa-route>` inside its closest `<spa-manager>` is active, nested routes included; without a manager it always activates. Place it last. Pair with a permissive `route-regex` (e.g. `.*`) for 404 catch-alls.
        */
       isFallback: Boolean,
       /**
@@ -159,58 +159,42 @@ export const SpaRoute = Neutron.compose([
       provision: Object as unknown as ConstructorType<KitRouteData>,
       // private
       routeParams: Object as unknown as ConstructorType<KitRouteData["params"]>,
+      // ready waits for both the render and the provision of this activation
+      _renderPending: { type: Boolean, attr: false },
+      _provisionPending: { type: Boolean, attr: false },
+      /* The provision last requested, set at once: `provision` lands only
+         when the batched thunk runs, so A, B, A in one update would compare
+         against a stale one. */
+      _requested: {
+        type: Object as unknown as ConstructorType<SpaRouteProvision | null>,
+        attr: false,
+      },
     },
   }),
 ])
   .defineMethods({
-    setScroll: (element) => {
-      // Read props inside the timeout: ready may resolve before the
-      // matching `provision` effect lands.
-      setTimeout(() => {
-        const {
-          provision,
-          scrollResetX,
-          scrollResetY,
-          scrollResetBehavior,
-          scrollSetDisabled,
-        } = element;
-        if (!provision || scrollSetDisabled) return;
-        const move = provision?.move as string;
-        window.scrollTo({
-          top:
-            !move || scrollResetY?.includes(move)
-              ? 0
-              : provision.active.scrollY || 0,
-          left:
-            !move || scrollResetX?.includes(move)
-              ? 0
-              : provision.active.scrollX || 0,
-          behavior: (scrollResetBehavior as ScrollBehavior) || "instant",
-        });
-      }, 0);
-    },
-    isResponsibleForReady: ({ readyOn }, caller: string | Event) => {
-      if (caller === "startTeardown") {
-        return { returns: true };
-      } else if (readyOn && caller instanceof Event) {
-        return { returns: true };
-        // Same idea as RenderableElement.isResponsibleForReady, except `doProvision` flips ready, not the render
-      } else if (!readyOn && caller === "doProvision") {
-        return { returns: true };
-      }
-      return { returns: false };
-    },
+    isResponsibleForReady: (
+      { readyOn, _renderPending, _provisionPending },
+      caller: string | Event
+    ) => ({
+      returns:
+        caller === "startTeardown" ||
+        (readyOn
+          ? caller instanceof Event
+          : // Without `ready-on`: ready once rendered (if this activation
+            // renders) and provisioned, whichever lands last
+            (caller === "renderChildren" && !_provisionPending) ||
+            (caller === "doProvision" && !_renderPending)),
+    }),
     doProvision: (_, newProvision: SpaRouteProvision) => [
-      { provision: newProvision },
-      // Reuse doesn't re-render; resolve ready now unless `ready-on` is
-      // waiting on an external paint signal
+      { provision: newProvision, _provisionPending: false },
       { tryCompleteReady: ["doProvision"] },
     ],
     routeChanged: (element, routeData: KitRouteData) => {
       const {
         sameRoute,
         isActive,
-        provision,
+        _requested,
         // @ts-ignore
         doProvision,
         isFallback,
@@ -237,12 +221,19 @@ export const SpaRoute = Neutron.compose([
       ) {
         willActivate = false;
       }
-      const provisionChanged =
-        !deepCompare(provision?.params || {}, routeData?.params || {}) ||
-        // param-less routes (a `route-regex` catch-all) still change per URL
-        provision?.match?.[0] !== routeData?.match?.[0];
-      if (isActive === willActivate && !provisionChanged) {
-        // Skip only when both activation and params are unchanged.
+      const queryChanged = !deepCompare(
+        _requested?.query ?? {},
+        routeData.query ?? {}
+      );
+      // `match.input` is the matched path: a nested layout's `match[0]` stays put
+      const pathChanged =
+        (_requested?.match as RegExpMatchArray | null)?.input !==
+        (routeData.match as RegExpMatchArray | null)?.input;
+      if (
+        isActive === willActivate &&
+        !(willActivate && (pathChanged || queryChanged))
+      ) {
+        // Activation, path and query unchanged (e.g. a hash-only move)
         return false;
       }
       const willStayActive = willActivate && isActive;
@@ -274,9 +265,15 @@ export const SpaRoute = Neutron.compose([
             next: routeData.next,
             previous: routeData.previous,
             params: routeData.params,
+            query: routeData.query,
           } as SpaRouteProvision)
         : null;
-      const shouldRefresh = sameRoute === "refresh" && willStayActive;
+      const shouldRefresh =
+        sameRoute === "refresh" &&
+        willStayActive &&
+        (queryChanged ||
+          _requested?.match?.[0] !== routeData.match?.[0] ||
+          !deepCompare(_requested?.params || {}, routeData.params || {}));
       const willReuse = willStayActive && !shouldRefresh;
       return [
         shouldRefresh && {
@@ -286,11 +283,14 @@ export const SpaRoute = Neutron.compose([
         {
           isActive: willActivate,
           wasActive: wasActivated,
+          _requested: newProvision,
+          _provisionPending: willActivate,
+          // A reuse keeps waiting for a render still in flight
+          ...(!willReuse && { _renderPending: willActivate }),
         },
-        willReuse && {
-          // Same route doesn't set `isActive`, so call `startReady` here
-          startReady: [],
-        },
+        // Before the provision event, so its thunk hands `<spa-manager>` this
+        // activation's ready promise
+        willActivate && { startReady: [] },
         {
           firePromiseEvent: [
             "spa-route-provision",
@@ -313,9 +313,9 @@ export const SpaRoute = Neutron.compose([
       } | null
     )?.syncDocumentTitle();
   })
-  .onPropSet("readyPromiseObject", ({ readyPromiseObject, setScroll }) =>
-    // Reject = aborted mid-flight; scroll only on successful ready
-    readyPromiseObject.promise.then(setScroll, () => {})
+  .onEvent(
+    "spa-route-did-render",
+    (element, e) => e.target === element && { _renderPending: false }
   )
   .onEventDefault("spa-route-provision", (_, { detail }) => {
     detail();

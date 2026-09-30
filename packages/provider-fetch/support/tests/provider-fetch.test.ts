@@ -24,9 +24,11 @@ const fetchStubs = {
 };
 
 describe("provider-fetch", () => {
+  const level = KitLogger.level;
   afterEach(() => {
     document.body.innerHTML = "";
     vi.restoreAllMocks();
+    KitLogger.level = level;
   });
 
   it("sets state attributes and fetches data", async () => {
@@ -54,7 +56,7 @@ describe("provider-fetch", () => {
 
     providerFetch.addEventListener("provider-fetch-success", () => {
       expect(providerFetch).dom.to.equalTag(
-        `<provider-fetch api-url="/api/test" is-success></provider-fetch>`,
+        `<provider-fetch api-url="/api/test" is-success did-load></provider-fetch>`,
       );
       expect(providerFetch.provision?.body).toEqual({ foo: "bar" });
     });
@@ -113,7 +115,7 @@ describe("provider-fetch", () => {
 
     providerFetch.addEventListener("provider-fetch-success", () => {
       expect(providerFetch).dom.to.equalTag(
-        `<provider-fetch is-success form-ref="form" api-method="post" api-url="/api/test"></provider-fetch>`,
+        `<provider-fetch is-success did-load form-ref="form" api-method="post" api-url="/api/test"></provider-fetch>`,
       );
       expect(providerFetch.provision?.body).toEqual({ foo: "bar" });
     });
@@ -162,6 +164,22 @@ describe("provider-fetch", () => {
     expect.assertions(5);
   });
 
+  it("logs one line for a failed request", async () => {
+    KitLogger.level = 2;
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    spyFetch({ status: 404, body: "{}" });
+    const providerFetch = fixture<HTMLProviderFetchElement>(
+      `<provider-fetch></provider-fetch>`,
+    );
+
+    await waitForEvent(providerFetch, "provider-fetch-error", () => {
+      providerFetch.setAttribute("api-url", "/api/missing");
+    });
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(error).not.toHaveBeenCalled();
+  });
+
   it("interpolates params from its own attributes", async () => {
     const providerFetch = fixture<HTMLProviderFetchElement>(
       `<provider-fetch></provider-fetch>`,
@@ -177,7 +195,7 @@ describe("provider-fetch", () => {
 
     providerFetch.addEventListener("provider-fetch-success", () => {
       expect(providerFetch).dom.to.equalTag(
-        `<provider-fetch api-url="/api/users/123" is-success></provider-fetch>`,
+        `<provider-fetch api-url="/api/users/123" is-success did-load></provider-fetch>`,
       );
       expect(providerFetch.provision?.body).toEqual({ foo: "bar" });
       const calledUrl = fetchSpy.mock.calls[0][0] as string;

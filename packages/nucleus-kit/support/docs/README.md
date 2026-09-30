@@ -79,6 +79,19 @@ import "@excom/content-drawer";
 Each package is self-contained — same elements, same versions, same CSS hooks —
 and its README documents the slim install. Valence.css is `@excom/valence`.
 
+### TypeScript
+
+Generally, you are advised to avoid TypeScript unless your app starts having a lot of complex JS customization. In that case, Nucleus Kit elements declare global types: their `HTML…Element` interfaces, `HTMLElementTagNameMap` entries (so `querySelector("spa-manager")` and `closest(…)` are typed) and Quark's `element.quark`. TypeScript loads them only when it sees an import of the package, so an app that loads Nucleus Kit from a `<script type="module">` or a CDN gets "Property does not exist" on `element.closest("spa-manager")?.router` or `element.quark`.
+
+Add one declaration file that the app's `tsconfig.json` includes:
+
+```ts
+// globals.d.ts
+import "@excom/nucleus-kit";
+```
+
+A `.d.ts` file emits nothing: no runtime import, no bundle cost. À la carte apps import each package they use instead (`import "@excom/spa-route"; import "@excom/quark";`). If a TypeScript file in the app already imports Nucleus Kit or the packages, nothing is needed.
+
 ### What's included
 
 **Core**

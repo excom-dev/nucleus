@@ -46,6 +46,8 @@ Two rules keep views portable:
 
 ## Loading views
 
+A `<script>` inside a view fetched from a URL does not run; its `<link rel="stylesheet">`, `<style>` and `<quark-sheet>` do. A `<template>` parsed with the page does run its scripts once rendered. Load element definitions from the page.
+
 ### `include-content`
 
 The workhorse. It renders a `<template>` or a remote fragment when and where you want it.

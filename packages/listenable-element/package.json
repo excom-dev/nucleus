@@ -22,6 +22,7 @@
     "build:docs": "node node_modules/@excom/heft-rig/scripts/build-docs.mjs"
   },
   "dependencies": {
+    "@excom/kit-logger": "workspace:^",
     "@excom/neutron": "workspace:^",
     "throttle-debounce": "^5.0.2"
   },

@@ -527,9 +527,6 @@ importers:
 
   ../../packages/kit-router:
     dependencies:
-      '@excom/hash-object':
-        specifier: workspace:^
-        version: link:../hash-object
       '@excom/kit-logger':
         specifier: workspace:^
         version: link:../kit-logger
@@ -565,6 +562,9 @@ importers:
 
   ../../packages/listenable-element:
     dependencies:
+      '@excom/kit-logger':
+        specifier: workspace:^
+        version: link:../kit-logger
       '@excom/neutron':
         specifier: workspace:^
         version: link:../neutron
@@ -700,6 +700,9 @@ importers:
       '@excom/include-content':
         specifier: workspace:^
         version: link:../include-content
+      '@excom/kit-logger':
+        specifier: workspace:^
+        version: link:../kit-logger
       '@excom/network-status':
         specifier: workspace:^
         version: link:../network-status

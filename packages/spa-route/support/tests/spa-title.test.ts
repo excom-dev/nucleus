@@ -42,9 +42,9 @@ const PAGE_TITLE = "Page own title";
 
 /** Put the singleton router back to a cold-load state on `url`. */
 const resetRouter = (url = "/") => {
-  history.replaceState(null, "", url);
+  history.replaceState({ id: "init" }, "", url);
   router.states = [{ id: "init", url, isInit: true }];
-  router.currentStateId = null;
+  router.currentStateId = "init";
   router.currentTempData = { move: null };
 };
 
@@ -135,8 +135,7 @@ describe("spa-route document-title", () => {
   it("lets a nested route outrank its ancestor, and hands the title back", async () => {
     const html = `
       <spa-manager>
-        <!-- a regex, not match-nested: that one only matches nested paths -->
-        <spa-route route-regex="^/parent" document-title="Parent">
+        <spa-route route-href="/parent" match-nested document-title="Parent">
           <template>
             <spa-manager>
               <spa-route route-href="/parent/child" document-title="Child">

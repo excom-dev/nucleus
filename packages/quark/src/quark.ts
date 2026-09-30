@@ -141,8 +141,9 @@ export const DEFAULT_OPTIONS = {
 let quarkIdTotal = 0;
 export class Quark {
   /**
-   * Loads a `@use "url"` JS module. Resolves against the document origin.
-   * Overridable (stubbed in tests, or a bundler-aware loader).
+   * Loads a `@use "url"` JS module. A path resolves against the document
+   * origin; an absolute `http(s)` URL loads as it is. Overridable (stubbed
+   * in tests, or a bundler-aware loader).
    */
   static moduleLoader: (url: string) => Promise<Vars> = resolveModuleReference;
   /**

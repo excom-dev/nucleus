@@ -17,6 +17,8 @@ Import JS modules into a sheet: pure functions, values in and a value out, are t
 
 Imports start as soon as the sheet is parsed and load in parallel; the first rule run waits until they resolve. A failed import is logged and skipped.
 
+A path (`/x.js`, `./x.js`, `x.js`) resolves against the site root, not the sheet; an absolute `http(s)` URL loads as it is, and a module from another origin needs CORS. Any scheme besides `http(s)` and the page's own is refused (`data:`, `blob:`).
+
 `quark:` URLs import Quark's own helpers without a fetch — `@use "quark:math";` derives the namespace `math` — see [Built-in modules](./MODULES.md). Reach for them before writing a module function of your own.
 
 ## Writing module functions

@@ -1,0 +1,15 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/valence",
+      "comment": "Fix an issue where the parent of an `.absolute` dialog was forced to 600 by 600 px with a red background",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/valence",
+      "comment": "Update the Modal docs: a custom dialog host stays hidden unless `aria-expanded=\"true\"` and dims with a child backdrop",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/valence"
+}

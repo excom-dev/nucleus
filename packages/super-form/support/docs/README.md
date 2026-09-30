@@ -39,6 +39,8 @@ super-form[is-loading] { /* form currently submitting, show loading spinner */ }
 super-form[is-error]::before { content: "An error occurred." }
 ```
 
+`did-load` is set on the first success, kept through a resubmit (where `is-loading` replaces `is-success`) and cleared on an error: gate content on `[did-load]` to keep it on screen during a resubmit.
+
 Or Quark:
 
 ```quark

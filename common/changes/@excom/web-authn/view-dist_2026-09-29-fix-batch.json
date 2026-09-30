@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/web-authn",
+      "comment": "Update the tests for `did-load`",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/web-authn"
+}

@@ -61,7 +61,7 @@ Then `import "@excom/nucleus-kit"` and `@import "@excom/nucleus-kit/basic.css"`.
 
 Content-rich sites, complex data-driven business rules, progressive enhancement of static/server-rendered pages, embedded user experiences. See [Limitations](https://excom.dev/nucleus/docs/limitations) for the edges.
 
-The Nucleus Stack also opens up novel possibilities that were not easily served by any UI technology before: zero-build-tool UIs (e.g. on-the-fly generation), declarative & auditable target for LLM UI building, plain text assembly to rich UX (like a CMS), incremental upgrading of static/legacy SSR sites, resource-constrained web UIs (especially where scripting needs to be validated or limited, like an ATM), embedded UX (such as upgrading markdown with embedded functionality).
+The Nucleus Stack also opens up new possibilities that were not easily served by any UI technology before: zero-build-tool UIs (e.g. on-the-fly generation), declarative & auditable target for LLM UI building, plain text assembly to rich UX (like a CMS), incremental upgrading of static/legacy SSR sites, resource-constrained web UIs (especially where scripting needs to be validated or limited, like an ATM), embedded UX (such as upgrading markdown with embedded functionality).
 
 ## Dogfood is nutritious
 

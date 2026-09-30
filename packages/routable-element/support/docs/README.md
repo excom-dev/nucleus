@@ -6,7 +6,7 @@ URL matching for custom elements — give any Neutron class a
 ## Features
 
 - **Path patterns** Named params (`/users/:id`) and wildcards
-- **Regex routes** Full control via `route-regex`
+- **Regex routes** Full control via `route-regex` (ignored when `route-href` is set); named groups (`(?<id>\d+)`) become `params`, in a path pattern too, unnamed ones stay in `match`
 - **Nested match** Keep layouts active under child paths
 - **Live updates** Rematch when `route-href` / `route-regex` change
 
@@ -51,8 +51,7 @@ PathAware.define();
 
 #### Path match & nested layouts
 
-`route-href` activates on exact match; `match-nested` keeps a layout
-mounted under child paths.
+`route-href` activates on exact match; with `match-nested` it also matches child paths, keeping a layout mounted.
 
 ```html
 <spa-route route-href="/users" match-nested>

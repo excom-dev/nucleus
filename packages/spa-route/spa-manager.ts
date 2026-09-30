@@ -3,6 +3,7 @@ import type {
   SpaRouteProvisionEvent,
 } from "./spa-route";
 import { type KitRouteData, kitRouter } from "@excom/kit-router";
+import { tc } from "@excom/kit-utils";
 import { ConstructorType, Neutron, TEvent } from "@excom/neutron";
 import type {
   RenderableErrorEvent,
@@ -67,6 +68,131 @@ const clamp = (value, min, max) => {
   return Math.min(Math.max(Math.round(value), min), max);
 };
 
+type RouteCallback = () => unknown;
+
+const noCallbacks = () => ({
+  provision: [] as RouteCallback[],
+  render: [] as RouteCallback[],
+  unrender: [] as RouteCallback[],
+});
+
+// Hold a restored offset this long while the layout settles
+const HOLD_SCROLL_MS = 2000;
+// The person taking over scroll
+const SCROLL_INPUTS = ["wheel", "touchstart", "pointerdown", "keydown"];
+
+/* Connected outermost managers. The browser's own scroll restore stays off
+   while any is connected; the page's value comes back after the last. */
+let owners = 0;
+let pageScrollRestoration: ScrollRestoration = "auto";
+
+/** The outermost manager owns the View Transition, `document.title` and scroll. */
+const isOwner = (manager: Element): boolean =>
+  !manager.parentElement?.closest<Element>("spa-manager");
+
+const activeRoutes = (manager: Element) =>
+  (
+    Array.from(manager.querySelectorAll("spa-route")) as THTMLSpaRouteElement[]
+  ).filter(({ isActive }) => isActive);
+
+/** Nested managers whose routes are in the outermost manager's update. */
+const joinedManagers = (owner: Element) =>
+  Array.from(
+    owner.querySelectorAll<
+      Element & { _joined?: boolean; hasRendered?: boolean }
+    >("spa-manager")
+  ).filter(({ _joined }) => _joined);
+
+/** A render / unrender animates unless its route or a manager above opts out. */
+const animates = (route: THTMLSpaRouteElement): boolean =>
+  !route.noTransition && !route.closest("spa-manager[no-transition]");
+
+const canTransition = () =>
+  typeof document.startViewTransition === "function" &&
+  !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches &&
+  document.visibilityState !== "hidden";
+
+const settle = (...promises: unknown[]) => Promise.allSettled(promises);
+
+/** Settle `promises`, giving up at `deadline` (a `performance.now()` time). */
+const settleBy = async (promises: unknown[], deadline: number) => {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  await Promise.race([
+    settle(...promises),
+    new Promise(
+      (resolve) =>
+        (timeoutId = setTimeout(
+          resolve,
+          Math.max(0, deadline - performance.now())
+        ))
+    ),
+  ]);
+  clearTimeout(timeoutId);
+};
+
+/**
+ * The one scroll write the entry being entered is due:
+ * - its saved offset (back / forward / reload), held while the layout settles;
+ * - else its `#fragment` element, when the document has it;
+ * - else `0` on axes the last active route resets for this move, only once a
+ *   route rendered (a query-only move keeps its place).
+ * None while an active route has `scroll-set-disabled`.
+ */
+const dueScroll = (
+  routes: THTMLSpaRouteElement[],
+  { move, active }: KitRouteData,
+  rendered: boolean
+): { target?: ScrollToOptions; held?: ScrollToOptions; fragment?: Element } => {
+  if (routes.some(({ scrollSetDisabled }) => scrollSetDisabled)) return {};
+  const route = routes.at(-1);
+  const resets = (moves?: string[]) =>
+    rendered && !!move && !!moves?.includes(move);
+  const resetX = resets(route?.scrollResetX);
+  const resetY = resets(route?.scrollResetY);
+  // Restores are instant, and only they are held
+  const restored: ScrollToOptions = {
+    ...(!resetX && active?.scrollX != null && { left: active.scrollX }),
+    ...(!resetY && active?.scrollY != null && { top: active.scrollY }),
+    behavior: "instant",
+  };
+  const held = "left" in restored || "top" in restored ? restored : undefined;
+  const fragment =
+    !held && location.hash
+      ? document.getElementById(
+          tc(() => decodeURIComponent(location.hash.slice(1))) ?? ""
+        )
+      : null;
+  if (fragment) return { fragment };
+  if (!held && !resetX && !resetY) return {};
+  return {
+    held,
+    target: {
+      behavior: (route?.scrollResetBehavior as ScrollBehavior) || "instant",
+      ...(resetX && { left: 0 }),
+      ...(resetY && { top: 0 }),
+      ...held,
+    },
+  };
+};
+
+// A frame, or 100 ms where frames pause (a hidden page)
+const nextFrame = async () => {
+  let frameId = 0;
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  await new Promise((resolve) => {
+    frameId = requestAnimationFrame(resolve);
+    timeoutId = setTimeout(resolve, 100);
+  });
+  cancelAnimationFrame(frameId);
+  clearTimeout(timeoutId);
+};
+
+const scrollState = () => ({
+  x: window.scrollX,
+  y: window.scrollY,
+  size: `${document.documentElement.scrollWidth}x${document.documentElement.scrollHeight}`,
+});
+
 /**
  * Coordinates sibling `<spa-route>` children: batches their render / unrender into one View Transition per navigation, re-emits nav lifecycle events, and optionally handles touch edge-swipe back / forward.
  *
@@ -80,11 +206,11 @@ const clamp = (value, min, max) => {
  *
  * @descendant spa-route - Routes this manager coordinates. Their render lifecycle is intercepted and batched into one view transition per navigation.
  *
- * @fires spa-manager-will-transition - Cancelable. Once per navigation, just before the View Transition starts. `preventDefault()` skips the transition for this navigation.
+ * @fires spa-manager-will-transition - Cancelable. Outermost manager, once per update chain (the first paint included), before its update (and View Transition, if any) starts. `preventDefault()` holds the update until `updateRoutes(true)` is called (`updateRoutes()` runs it without a View Transition).
  * @type SpaManagerWillTransitionEvent
- * @fires spa-manager-transition - After `document.startViewTransition()` is called.
+ * @fires spa-manager-transition - Outermost manager, after `document.startViewTransition()` is called.
  * @type SpaManagerTransitionEvent
- * @fires spa-manager-rendered - After the transition (or synchronous fallback) finishes and routes are settled.
+ * @fires spa-manager-rendered - After the update (and its transition) finishes: routes settled, title and scroll applied. Nested managers whose routes took part fire it too, without bubbling.
  * @type SpaManagerRenderedEvent
  * @fires spa-manager-error - Re-emitted when a child fires `spa-route-error`. `event.detail` mirrors the source error.
  * @type SpaManagerErrorEvent
@@ -97,15 +223,15 @@ const clamp = (value, min, max) => {
  * @fires spa-manager-forward - On `forward` navigations.
  * @type SpaManagerForwardEvent
  *
- * @default-action spa-manager-will-transition - Starts the batched View Transition (or synchronous update when transitions are unavailable / opted out).
+ * @default-action spa-manager-will-transition - Starts the batched update, inside a View Transition unless the API is missing, reduced motion is on, the page is hidden, it is the first paint (without `transition-first-render`), the browser already animated the navigation, the batch only provisions or routes opt out.
  *
- * @listens spa-route-render - Queues the child's render callback for the next batched transition.
+ * @listens spa-route-render - Queues the child's render callback for the next batched update. A nested manager lets it bubble on to the outermost one.
  * @type RenderableRenderEvent
  * @listens spa-route-unrender - Queues the child's unrender callback (runs before renders so the outgoing route leaves first).
  * @type RenderableUnrenderEvent
- * @listens spa-route-provision - Queues a same-route param update (reuse) into the next batched transition.
+ * @listens spa-route-provision - Queues the child's route data update into the next batched update.
  * @type SpaRouteProvisionEvent
- * @listens spa-route-error - Falls back to a non-transitioned update and re-emits as `spa-manager-error`.
+ * @listens spa-route-error - Re-emits as `spa-manager-error`.
  * @type RenderableErrorEvent
  */
 export const SpaManager = Neutron.compose([
@@ -120,7 +246,8 @@ export const SpaManager = Neutron.compose([
       transitionFirstRender: Boolean,
       /**
        * @option
-       * Delay (ms) before starting the batched View Transition. Gives late
+       * Delay (ms) before an update that animates (its View Transition) starts;
+       * an update that does not animate, and the first paint, never are. Gives late
        * sibling render/unrender events time to queue, or room for last-second
        * DOM work. Unset / `null` starts synchronously.
        */
@@ -132,7 +259,7 @@ export const SpaManager = Neutron.compose([
       noTransition: Boolean,
       /**
        * @option
-       * Max wait (ms) for child render promises before forcing the transition to resolve. Raise for slow remote templates.
+       * Max wait (ms) for child routes to be ready before the update (title, scroll, its View Transition) moves on. Raise for slow remote templates.
        * @default 2000
        */
       renderTimeout: {
@@ -178,7 +305,7 @@ export const SpaManager = Neutron.compose([
       isTransitioning: Boolean,
       /**
        * @state
-       * At least one render has committed. Gates `transition-first-render`; useful for hiding loading shells.
+       * The first update with a render has settled (rendered, failed or hit `render-timeout`). Set in that update, inside its View Transition if one runs, before `spa-manager-rendered`: hide a loading shell / splash screen on it. Gates `transition-first-render`.
        */
       hasRendered: Boolean,
       /**
@@ -189,17 +316,27 @@ export const SpaManager = Neutron.compose([
       provision: Object as unknown as ConstructorType<KitRouteData>,
       router: Object as unknown as ConstructorType<typeof kitRouter>,
       // private
+      // an update is scheduled or running, or its transition is finishing
       executingTransition: { type: Boolean, attr: false },
-      // the batch right after an unbatched first paint (see pushRouteCallback)
-      _firstPaintPending: { type: Boolean, attr: false },
-      // the page's own <title>, captured before the first route title lands
-      _defaultTitle: { type: String, attr: false },
-      renderTimeoutId: {
-        type: Number as unknown as ConstructorType<
-          ReturnType<typeof setTimeout>
-        >,
+      // the update is running its routes: route events join it
+      _updating: { type: Boolean, attr: false },
+      // the queued batch has a render / unrender that may animate
+      _animate: { type: Boolean, attr: false },
+      // nested: its routes are in the outermost manager's update
+      _joined: { type: Boolean, attr: false },
+      // outermost: a navigation's scroll write is still due
+      _scrollDue: { type: Boolean, attr: false },
+      // registered with the router: later calls are navigations
+      _routed: { type: Boolean, attr: false },
+      // a restored offset, re-applied while the layout settles
+      _heldScroll: {
+        type: Object as unknown as ConstructorType<ScrollToOptions | null>,
         attr: false,
       },
+      // counted in `owners`
+      _ownsScroll: { type: Boolean, attr: false },
+      // the page's own <title>, captured before the first route title lands
+      _defaultTitle: { type: String, attr: false },
       transitionDelayId: {
         type: Number as unknown as ConstructorType<
           ReturnType<typeof setTimeout>
@@ -210,12 +347,9 @@ export const SpaManager = Neutron.compose([
         type: Object as unknown as ConstructorType<ViewTransition | null>,
         attr: false,
       },
-      _routeCallbacks: Object as unknown as ConstructorType<{
-        provision: Array<() => void>;
-        render: Array<() => void>;
-        unrender: Array<() => void>;
-      }>,
-      attemptTransitionDebounced: Function,
+      _routeCallbacks: Object as unknown as ConstructorType<
+        ReturnType<typeof noCallbacks>
+      >,
       swipeTracker: Object as unknown as ConstructorType<{
         identifier: number;
         startX: number;
@@ -237,61 +371,60 @@ export const SpaManager = Neutron.compose([
     }),
     pushRouteCallback: (
       element,
-      e,
+      e: Event,
       type: "provision" | "render" | "unrender",
-      callback
+      callback: RouteCallback
     ) => {
+      // Nested: let the event bubble on, the outermost manager batches it
+      if (!isOwner(element)) return { _joined: true };
       e.stopPropagation();
-      if (shouldTransition(element, e.target as THTMLSpaRouteElement)) {
-        const shouldStartTransition =
-          // @ts-ignore TODO defineMethods
-          !element.isTransitioning && !element.hasCallbacks();
-        const _routeCallbacks = {
-          provision: [...(element._routeCallbacks?.provision || [])],
-          render: [...(element._routeCallbacks?.render || [])],
-          unrender: [...(element._routeCallbacks?.unrender || [])],
-        };
-        _routeCallbacks[type]!.push(callback);
-        e.preventDefault();
-        /* Rapid back/forward (or any nav) during a transition: skip the
-           current View Transition so `finished` resolves and `doCleanup`
-           can drain the newly queued callbacks now. */
-        if (element.isTransitioning) {
-          element._activeViewTransition?.skipTransition?.();
-        }
-        return [
-          { _routeCallbacks },
-          // Start a new transition only when nothing is in flight
-          shouldStartTransition && {
-            emit: ["spa-manager-will-transition"],
-          },
-        ];
-      } else {
-        /* First paint runs unbatched; the rest of the same activation
-           (`spa-route-provision`) is batched next, and that batch must not
-           start a View Transition — a hard load used to cross-fade the page. */
-        return { hasRendered: true, _firstPaintPending: !element.hasRendered };
+      e.preventDefault();
+      const {
+        _routeCallbacks,
+        _updating,
+        isTransitioning,
+        executingTransition,
+        _activeViewTransition,
+      } = element;
+      // @ts-ignore TODO defineMethods
+      const isIdle = !executingTransition && !element.hasCallbacks();
+      /* A navigation after the update, while its transition still animates:
+         skip it so `doCleanup` starts the next update now. During the update
+         the route joins it instead (a nested route rendered by a layout). */
+      if (isTransitioning && !_updating) {
+        _activeViewTransition?.skipTransition?.();
       }
-    },
-    // @ts-ignore TODO defineMethods
-    doCleanup: ({ _routeCallbacks, hasCallbacks }) => {
-      // More callbacks arrived mid-transition: run another transition
       return [
-        { _activeViewTransition: null },
-        ...(hasCallbacks()
-          ? [{ updateRoutes: [true] }]
-          : [
-              {
-                executingTransition: false,
-              },
-              // Routes have settled: the active set is final
-              {
-                syncDocumentTitle: [],
-              },
-              {
-                emit: ["spa-manager-rendered"],
-              },
-            ]),
+        {
+          _routeCallbacks: {
+            ...noCallbacks(),
+            ..._routeCallbacks,
+            [type]: [...(_routeCallbacks?.[type] || []), callback],
+          },
+        },
+        type !== "provision" &&
+          animates(e.target as THTMLSpaRouteElement) && { _animate: true },
+        isIdle && { emit: ["spa-manager-will-transition"] },
+      ];
+    },
+    _takeCallbacks: ({ _routeCallbacks }) => [
+      { returns: { ...noCallbacks(), ..._routeCallbacks } },
+      { _routeCallbacks: noCallbacks(), _animate: false },
+    ],
+    doCleanup: (element) => {
+      // @ts-ignore TODO defineMethods
+      if (element.hasCallbacks()) {
+        // A navigation arrived after the update: run the next one
+        return [{ _activeViewTransition: null }, { updateRoutes: [true] }];
+      }
+      return [
+        { _activeViewTransition: null, executingTransition: false },
+        // Nested managers whose routes took part announce it too; not
+        // bubbling, so the outermost one gets one event per update
+        ...joinedManagers(element).map((target) => ({
+          emit: ["spa-manager-rendered", { target, bubbles: false }],
+        })),
+        { emit: ["spa-manager-rendered"] },
       ];
     },
     /**
@@ -308,14 +441,10 @@ export const SpaManager = Neutron.compose([
         parentManager.syncDocumentTitle();
         return;
       }
-      // Attribute reflection is synchronous, but the prop is the source of truth
-      const titled = (
-        Array.from(
-          element.querySelectorAll("spa-route")
-        ) as THTMLSpaRouteElement[]
-      )
-        // Last in document order wins, so a nested route beats its ancestor
-        .findLast((route) => route.isActive && route.documentTitle);
+      // Last in document order wins, so a nested route beats its ancestor
+      const titled = activeRoutes(element).findLast(
+        ({ documentTitle }) => documentTitle
+      );
       // No route has ever claimed the title: leave the page's own alone
       if (!titled && element._defaultTitle == null) return;
       if (element._defaultTitle == null) {
@@ -326,90 +455,180 @@ export const SpaManager = Neutron.compose([
         document.title = title;
       }
     },
-    _updateRoutes: (element, doTransition: boolean) => {
-      // @ts-ignore TODO defineMethods
-      const { doCleanup, provision, fireTransition } = element;
-      // Callbacks that arrived mid-transition are picked up by `doCleanup`
-      const callbacks = [
-        // Order matters: unrender first
-        ...(element._routeCallbacks?.unrender || []),
-        // then render
-        ...(element._routeCallbacks?.render || []),
-        // `provision` last: otherwise Quark starts rendering before unrender/render wipes the tree.
-        ...(element._routeCallbacks?.provision || []),
-      ];
-      const runUpdate = () => {
-        const promises = callbacks
-          .map((cb) => cb())
-          .filter((p: any) => p instanceof Promise);
-        return new Promise((resolve) => {
-          if (!promises.length) {
-            resolve(true);
-          } else {
-            // Aborted renders reject their ready promise; settle either way
-            // so a skipped / canceled nav doesn't hang until `renderTimeout`.
-            Promise.allSettled(promises).then(() => {
-              resolve(true);
-            });
-            element.renderTimeoutId = setTimeout(() => {
-              resolve(true);
-            }, element.renderTimeout!);
-          }
-        });
+    _updateRoutes: (_, animate: boolean) => [
+      { isTransitioning: animate, _updating: true },
+      { _runUpdate: [animate] },
+    ],
+    _runUpdate: async (element, animate: boolean) => {
+      const {
+        // @ts-ignore TODO defineMethods
+        _takeCallbacks,
+        // @ts-ignore TODO defineMethods
+        hasCallbacks,
+        // @ts-ignore TODO defineMethods
+        _finishUpdate,
+        // @ts-ignore TODO defineMethods
+        doCleanup,
+        // @ts-ignore TODO defineMethods
+        fireTransition,
+        provision,
+        renderTimeout,
+      } = element;
+      /* The one update, with or without a View Transition: routes (and any
+         route that activates meanwhile), then title, then scroll. One
+         `render-timeout` for the whole update, late joins included. */
+      const update = async () => {
+        const deadline = performance.now() + renderTimeout!;
+        let rendered = false;
+        try {
+          do {
+            const queue: ReturnType<typeof noCallbacks> = _takeCallbacks();
+            rendered ||= queue.render.length > 0;
+            // Aborted renders reject their ready promise: settle either way
+            await settleBy(
+              // Unrender, then render; `provision` last: otherwise Quark
+              // starts rendering before unrender/render wipes the tree.
+              [...queue.unrender, ...queue.render, ...queue.provision].map(
+                (callback) => callback()
+              ),
+              deadline
+            );
+          } while (hasCallbacks());
+        } finally {
+          _finishUpdate(rendered);
+        }
       };
-      const firstPaint = element._firstPaintPending;
-      element._firstPaintPending = false;
-      // Skip if the browser already has a UA visual transition
-      if (
-        doTransition &&
-        !firstPaint &&
-        !provision?.event?.hasUAVisualTransition
-      ) {
-        element.isTransitioning = true;
-        const viewTransition = document.startViewTransition({
-          update: runUpdate,
-          types: [provision?.move ? "route-" + provision.move : undefined]
-            .concat(
-              provision?.move === "back"
-                ? provision?.next?.ttypes || []
-                : provision?.active?.ttypes || []
-            )
-            .filter((type): type is string => type !== undefined),
-        });
-        viewTransition.finished.then(() => {
-          doCleanup();
-        });
-        fireTransition(viewTransition);
-      } else {
-        runUpdate().then(() => {
-          doCleanup();
-        });
+      let updating: Promise<void> | undefined;
+      // An engine that rejects the options (no transition types) throws
+      const transition: ViewTransition | undefined =
+        animate &&
+        tc(() =>
+          document.startViewTransition({
+            update: () => (updating = update()),
+            types: [provision?.move ? "route-" + provision.move : undefined]
+              .concat(
+                provision?.move === "back"
+                  ? provision?.next?.ttypes || []
+                  : provision?.active?.ttypes || []
+              )
+              .filter((type): type is string => type !== undefined),
+          })
+        );
+      try {
+        if (transition) {
+          fireTransition(transition);
+          // A skipped transition rejects `ready`: settle all, then clean up
+          await settle(
+            transition.ready,
+            transition.updateCallbackDone,
+            transition.finished
+          );
+          await settle(updating);
+        } else {
+          await update();
+        }
+      } finally {
+        doCleanup();
       }
-      return {
-        _routeCallbacks: {
-          provision: [],
-          render: [],
-          unrender: [],
-        },
-      };
     },
+    /* Routes settled: `has-rendered` lands with them (in the new snapshot),
+       on nested managers that took part too. A manager removed mid-update
+       leaves title and scroll alone. */
+    _finishUpdate: (element, rendered: boolean) => {
+      if (rendered) {
+        joinedManagers(element).forEach(
+          (manager) => (manager.hasRendered = true)
+        );
+      }
+      return [
+        rendered && { hasRendered: true },
+        element.isMounted && { syncDocumentTitle: [] },
+        element.isMounted && { _applyScroll: [rendered] },
+        { _updating: false },
+      ];
+    },
+    /**
+     * The navigation's one scroll write: in its update once the routes are
+     * ready, before the new snapshot, or right away when no route reacted
+     * (a hash-only move).
+     */
+    _applyScroll: (element, rendered: boolean) => {
+      const { provision, _scrollDue } = element;
+      if (!_scrollDue || !provision) return;
+      const { target, held, fragment } = dueScroll(
+        activeRoutes(element),
+        provision,
+        rendered
+      );
+      fragment?.scrollIntoView();
+      if (target) window.scrollTo(target);
+      return { _scrollDue: false, _heldScroll: held ?? null };
+    },
+    // @ts-ignore TODO defineMethods
+    _scrollIfIdle: ({ _updating, hasCallbacks }) =>
+      !_updating && !hasCallbacks() && { _applyScroll: [false] },
+    /**
+     * Re-apply a held offset whenever the page's scroll size changes (late
+     * content, scroll anchoring). A move while the size stays put is the
+     * person (a scrollbar drag) or the app scrolling: release.
+     */
+    _holdScroll: async (element, held: ScrollToOptions) => {
+      const releaseAt = performance.now() + HOLD_SCROLL_MS;
+      let last = scrollState();
+      while (element._heldScroll === held && performance.now() < releaseAt) {
+        await nextFrame();
+        const now = scrollState();
+        if (element._heldScroll !== held) break;
+        if (now.size === last.size) {
+          if (Math.abs(now.x - last.x) >= 1 || Math.abs(now.y - last.y) >= 1) {
+            break;
+          }
+          continue;
+        }
+        window.scrollTo(held);
+        last = scrollState();
+      }
+      if (element._heldScroll === held) {
+        // @ts-ignore TODO defineMethods
+        element._releaseScroll();
+      }
+    },
+    _releaseScroll: () => ({ _heldScroll: null }),
     resetTransitionDelayId: ({ transitionDelayId }, clear: boolean) => {
       if (clear && transitionDelayId) {
         clearTimeout(transitionDelayId);
       }
       return { transitionDelayId: null };
     },
-    updateRoutes: (
-      // @ts-ignore TODO defineMethods
-      { _updateRoutes, transitionDelay, resetTransitionDelayId },
-      doTransition: boolean
-    ) => {
+    updateRoutes: (element, doTransition: boolean) => {
+      const {
+        // @ts-ignore TODO defineMethods
+        _updateRoutes,
+        // @ts-ignore TODO defineMethods
+        resetTransitionDelayId,
+        transitionDelay,
+        provision,
+        hasRendered,
+        transitionFirstRender,
+        _animate,
+      } = element;
       resetTransitionDelayId(true);
+      const animate =
+        doTransition &&
+        // A batch that only provisions changes nothing to animate
+        !!_animate &&
+        canTransition() &&
+        // First paint has nothing to transition from
+        (hasRendered || transitionFirstRender) &&
+        // The browser already animated the navigation
+        !provision?.event?.hasUAVisualTransition;
       const cb = () => {
         resetTransitionDelayId(false);
-        _updateRoutes(doTransition);
+        _updateRoutes(animate);
       };
-      if (transitionDelay == null) {
+      // Only an update that animates waits for `transition-delay`, never the
+      // first paint
+      if (!animate || !hasRendered || transitionDelay == null) {
         cb();
       } else {
         return { transitionDelayId: setTimeout(cb, transitionDelay) };
@@ -422,12 +641,23 @@ export const SpaManager = Neutron.compose([
         { detail: { transition: viewTransition } },
       ],
     }),
-    routeChanged: ({ activeUrl }, routeData: KitRouteData) => ({
-      ...(activeUrl && { lastMove: routeData.move }),
-      activeUrl: routeData.active.url,
-      provision: routeData,
-      ...(routeData.move && { emit: ["spa-manager-" + routeData.move] }),
-    }),
+    routeChanged: (element, routeData: KitRouteData) => {
+      const owns = isOwner(element);
+      /* Routes react to a navigation synchronously: no batch by the next
+         microtask means nothing will write its scroll. Not the registration
+         call: routes may connect later, the first update writes. */
+      // @ts-ignore TODO defineMethods
+      if (owns && element._routed) queueMicrotask(element._scrollIfIdle);
+      return {
+        _routed: true,
+        ...(element.activeUrl && { lastMove: routeData.move }),
+        activeUrl: routeData.active.url,
+        provision: routeData,
+        // A navigation starts: its write is due, a held offset is released
+        ...(owns && { _scrollDue: true, _heldScroll: null }),
+        ...(routeData.move && { emit: ["spa-manager-" + routeData.move] }),
+      };
+    },
     handleTouchStart: ({ overscrollXThreshold }, e: TouchEvent) => {
       if (e.touches.length === 1) {
         const touch = e.touches[0];
@@ -501,16 +731,45 @@ export const SpaManager = Neutron.compose([
   })
   .onConstructed(() => ({
     router: kitRouter,
-    _routeCallbacks: {
-      provision: [],
-      render: [],
-      unrender: [],
-    },
+    _routeCallbacks: noCallbacks(),
   }))
   .onConnected(
     // Run RoutableElement logic
     ({ wasMounted }) => !wasMounted && { routeHref: new RegExp(".*") }
   )
+  /* The outermost manager restores scroll itself: the browser's own restore
+     lands during `popstate`, on the old view, before any transition starts. */
+  .onConnected((element) => {
+    if (element.isMoving || !isOwner(element)) return;
+    if (owners++ === 0) pageScrollRestoration = history.scrollRestoration;
+    history.scrollRestoration = "manual";
+    return { _ownsScroll: true };
+  })
+  .onDisconnected(({ isMoving, _ownsScroll }) => {
+    if (isMoving) return;
+    if (_ownsScroll && --owners === 0) {
+      history.scrollRestoration = pageScrollRestoration;
+    }
+    // Re-registers on reconnect; a detached manager writes nothing
+    return {
+      _routed: false,
+      _ownsScroll: false,
+      _scrollDue: false,
+      _heldScroll: null,
+    };
+  })
+  // Hold a restored offset until the person scrolls, touches, clicks or types
+  .onPropChanged("_heldScroll", ({ _heldScroll, _releaseScroll }) => [
+    {
+      toggleListeners: SCROLL_INPUTS.map((type) => [
+        type,
+        _releaseScroll,
+        !!_heldScroll,
+        { target: window, passive: true },
+      ]),
+    },
+    _heldScroll && { _holdScroll: [_heldScroll] },
+  ])
   .onPropChanged(
     "overscrollBehaviorX",
     ({
@@ -545,22 +804,14 @@ export const SpaManager = Neutron.compose([
   }))
   .onPropUnset(
     "executingTransition",
-    ({ renderTimeoutId, resetTransitionDelayId, _activeViewTransition }) => {
-      if (renderTimeoutId) {
-        clearTimeout(renderTimeoutId);
-      }
+    ({ resetTransitionDelayId, _activeViewTransition }) => {
       // @ts-ignore TODO fix `onPropUnset` typing for boolean props
       resetTransitionDelayId(true);
       // @ts-ignore TODO fix `onPropUnset` typing for boolean props
       _activeViewTransition?.skipTransition?.();
+      // The queue stays: a `spa-manager-rendered` listener may navigate
       return {
-        renderTimeoutId: null,
         _activeViewTransition: null,
-        _routeCallbacks: {
-          provision: [],
-          render: [],
-          unrender: [],
-        },
         isTransitioning: false,
       };
     }
@@ -575,31 +826,16 @@ export const SpaManager = Neutron.compose([
     pushRouteCallback: [e, "provision", e.detail],
   }))
   .onEventDefault("spa-manager-will-transition", () => ({
-    hasRendered: true,
     executingTransition: true,
   }))
+  // Nested: announced by the outermost manager's update
+  .onEvent(
+    "spa-manager-rendered",
+    (element, e) => e.target === element && { _joined: false }
+  )
   .onEvent("spa-route-error", (_, e) => {
     e.stopPropagation();
     return {
-      updateRoutes: [false],
       emit: ["spa-manager-error", { detail: e.detail }],
     };
   });
-const prefersReducedMotion =
-  // @ts-ignore make ts unhappy, but this supports legacy browsers
-  window.matchMedia?.(`(prefers-reduced-motion: reduce)`) === true ||
-  window.matchMedia?.(`(prefers-reduced-motion: reduce)`).matches === true;
-
-function shouldTransition(
-  // typeof SpaManager.CustomElement
-  manager: any,
-  route: THTMLSpaRouteElement
-): boolean {
-  return (
-    !!document.startViewTransition &&
-    !prefersReducedMotion &&
-    !manager.noTransition &&
-    !route.noTransition &&
-    (manager.transitionFirstRender || manager.hasRendered)
-  );
-}

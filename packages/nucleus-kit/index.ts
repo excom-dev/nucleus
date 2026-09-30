@@ -11,6 +11,7 @@ export * from "@excom/dom-observer";
 export * from "@excom/event-handler";
 export * from "@excom/gesture-handler";
 export * from "@excom/include-content";
+export { KitLogger } from "@excom/kit-logger";
 export * from "@excom/network-status";
 export * from "@excom/neutron";
 export * from "@excom/provider-fetch";

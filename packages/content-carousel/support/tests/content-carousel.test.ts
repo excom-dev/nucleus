@@ -210,7 +210,7 @@ describe("content-carousel (navigation edge cases)", () => {
     const carousel = build("", 0);
     await command(carousel, "--next");
     expect(carousel.autoPlayStopped).toBe(false);
-    expect(carousel.autoPlayIntervalId).toBe(null);
+    expect(carousel._autoPlayIntervalId).toBe(null);
   });
 });
 
@@ -321,6 +321,172 @@ describe("content-carousel (provision)", () => {
   });
 });
 
+describe("content-carousel (changes from outside)", () => {
+  afterEach(() => {
+    document.body.innerHTML = "";
+    vi.restoreAllMocks();
+  });
+
+  const build = (active = 0) =>
+    fixture<HTMLContentCarouselElement>(
+      `<content-carousel>
+        <content-carousel-slide ${active === 0 ? "is-active" : ""}></content-carousel-slide>
+        <content-carousel-slide ${active === 1 ? "is-active" : ""}></content-carousel-slide>
+        <content-carousel-slide ${active === 2 ? "is-active" : ""}></content-carousel-slide>
+      </content-carousel>`,
+    );
+
+  /** The carousel's own `neutron-provision` / slide-changed (both bubble). */
+  const watch = (carousel: HTMLContentCarouselElement) => {
+    const provisions = vi.fn();
+    const changes: ContentCarouselSlideChangedDetail[] = [];
+    carousel.addEventListener("neutron-provision", (e) => {
+      if (e.target === carousel) provisions();
+    });
+    carousel.addEventListener("content-carousel-slide-changed", (e) => {
+      if (e.target === carousel) changes.push((e as CustomEvent).detail);
+    });
+    return { provisions, changes };
+  };
+
+  it("follows is-active written on the slides", async () => {
+    const carousel = build(0);
+    const slides = carousel.querySelectorAll("content-carousel-slide");
+    const { provisions, changes } = watch(carousel);
+
+    slides[0].removeAttribute("is-active");
+    slides[2].setAttribute("is-active", "");
+    await wait(0);
+    expect(carousel.provision).toEqual({ index: 2, count: 3, lastMove: "forward" });
+    expect(carousel.getAttribute("last-move")).toBe("forward");
+    expect(changes).toEqual([{ activeSlide: slides[2], previousSlide: slides[0] }]);
+    expect(provisions).toHaveBeenCalledTimes(1);
+
+    slides[2].isActive = false;
+    slides[1].isActive = true;
+    await wait(0);
+    expect(carousel.provision).toEqual({ index: 1, count: 3, lastMove: "back" });
+    expect(carousel.getAttribute("last-move")).toBe("back");
+    expect(changes[1]).toEqual({ activeSlide: slides[1], previousSlide: slides[2] });
+    expect(provisions).toHaveBeenCalledTimes(2);
+  });
+
+  it("counts no move from the first-slide fallback", async () => {
+    const carousel = fixture<HTMLContentCarouselElement>(
+      `<content-carousel>
+        <content-carousel-slide></content-carousel-slide>
+        <content-carousel-slide></content-carousel-slide>
+      </content-carousel>`,
+    );
+    const slides = carousel.querySelectorAll("content-carousel-slide");
+    const { changes } = watch(carousel);
+    slides[1].setAttribute("is-active", "");
+    await wait(0);
+    expect(carousel.provision).toEqual({ index: 1, count: 2, lastMove: null });
+    expect(carousel.hasAttribute("last-move")).toBe(false);
+    expect(changes).toEqual([]);
+  });
+
+  it("counts slides added after connect without a move", async () => {
+    const carousel = build(1);
+    const { provisions, changes } = watch(carousel);
+    carousel.prepend(document.createElement("content-carousel-slide"));
+    carousel.append(document.createElement("content-carousel-slide"));
+    await wait(0);
+    expect(carousel.provision).toEqual({ index: 2, count: 5, lastMove: null });
+    expect(carousel.hasAttribute("last-move")).toBe(false);
+    expect(provisions).toHaveBeenCalledTimes(1);
+    expect(changes).toEqual([]);
+  });
+
+  it("fills in the position when slides arrive in chunks after an empty connect", async () => {
+    const carousel = fixture<HTMLContentCarouselElement>(
+      `<content-carousel></content-carousel>`,
+    );
+    const { changes } = watch(carousel);
+    carousel.append(document.createElement("content-carousel-slide"));
+    await wait(0);
+    expect(carousel.provision).toEqual({ index: 0, count: 1, lastMove: null });
+    const active = document.createElement("content-carousel-slide");
+    active.setAttribute("is-active", "");
+    carousel.append(active);
+    await wait(0);
+    expect(carousel.provision).toEqual({ index: 1, count: 2, lastMove: null });
+    expect(changes).toEqual([]);
+  });
+
+  it("follows removed slides; losing the active one is no move", async () => {
+    const carousel = build(1);
+    const slides = carousel.querySelectorAll("content-carousel-slide");
+    const { changes } = watch(carousel);
+
+    slides[0].remove();
+    await wait(0);
+    expect(carousel.provision).toEqual({ index: 0, count: 2, lastMove: null });
+
+    // no slide carries `is-active` now: index falls back to the first
+    slides[1].remove();
+    await wait(0);
+    expect(carousel.provision).toEqual({ index: 0, count: 1, lastMove: null });
+    expect(carousel.hasAttribute("last-move")).toBe(false);
+
+    slides[2].remove();
+    await wait(0);
+    expect(carousel.provision).toEqual({ index: -1, count: 0, lastMove: null });
+    expect(changes).toEqual([]);
+  });
+
+  it("assigns nothing when the result did not change", async () => {
+    const carousel = build(1);
+    const slides = carousel.querySelectorAll("content-carousel-slide");
+    const { provisions, changes } = watch(carousel);
+    slides[1].removeAttribute("is-active");
+    slides[1].setAttribute("is-active", "");
+    await wait(0);
+    expect(provisions).not.toHaveBeenCalled();
+    expect(changes).toEqual([]);
+  });
+
+  it("adds no second provision or event after a command", async () => {
+    const carousel = build(0);
+    const { provisions, changes } = watch(carousel);
+    await command(carousel, "--next");
+    await wait(0);
+    expect(provisions).toHaveBeenCalledTimes(1);
+    expect(changes).toHaveLength(1);
+  });
+
+  it("keeps nested carousels apart", async () => {
+    const outer = fixture<HTMLContentCarouselElement>(
+      `<content-carousel>
+        <content-carousel-slide is-active>
+          <content-carousel>
+            <content-carousel-slide is-active></content-carousel-slide>
+            <content-carousel-slide></content-carousel-slide>
+          </content-carousel>
+        </content-carousel-slide>
+        <content-carousel-slide></content-carousel-slide>
+      </content-carousel>`,
+    );
+    const inner = outer.querySelector<HTMLContentCarouselElement>(
+      "content-carousel",
+    )!;
+    const innerSlides = inner.querySelectorAll("content-carousel-slide");
+
+    innerSlides[0].removeAttribute("is-active");
+    innerSlides[1].setAttribute("is-active", "");
+    inner.append(document.createElement("content-carousel-slide"));
+    await wait(0);
+    expect(inner.provision).toEqual({ index: 1, count: 3, lastMove: "forward" });
+    expect(outer.provision).toEqual({ index: 0, count: 2, lastMove: null });
+
+    outer.append(document.createElement("content-carousel-slide"));
+    await wait(0);
+    expect(outer.provision).toEqual({ index: 0, count: 3, lastMove: null });
+    expect(inner.provision).toEqual({ index: 1, count: 3, lastMove: "forward" });
+  });
+});
+
 describe("content-carousel (auto-play lifecycle)", () => {
   afterEach(() => {
     document.body.innerHTML = "";
@@ -334,13 +500,13 @@ describe("content-carousel (auto-play lifecycle)", () => {
         <content-carousel-slide></content-carousel-slide>
       </content-carousel>`,
     );
-    const firstId = carousel.autoPlayIntervalId;
+    const firstId = carousel._autoPlayIntervalId;
     expect(firstId).not.toBe(null);
     const clearSpy = vi.spyOn(globalThis, "clearInterval");
 
     carousel.autoPlay = 0.05;
     expect(clearSpy).toHaveBeenCalledWith(firstId);
-    const secondId = carousel.autoPlayIntervalId;
+    const secondId = carousel._autoPlayIntervalId;
     expect(secondId).not.toBe(null);
     expect(secondId).not.toBe(firstId);
     const slides = carousel.querySelectorAll("content-carousel-slide");
@@ -348,9 +514,23 @@ describe("content-carousel (auto-play lifecycle)", () => {
 
     carousel.autoPlay = null;
     expect(clearSpy).toHaveBeenCalledWith(secondId);
-    expect(carousel.autoPlayIntervalId).toBe(null);
+    expect(carousel._autoPlayIntervalId).toBe(null);
     await wait(80);
     expect(carousel.getActiveSlide()).toBe(slides[1]);
+  });
+
+  it("keeps the interval id in a private prop, off the attributes", async () => {
+    const carousel = fixture<HTMLContentCarouselElement>(
+      `<content-carousel auto-play="10">
+        <content-carousel-slide is-active></content-carousel-slide>
+        <content-carousel-slide></content-carousel-slide>
+      </content-carousel>`,
+    );
+    expect(carousel._autoPlayIntervalId).toBeDefined();
+    expect(carousel._autoPlayIntervalId).not.toBe(null);
+    expect("autoPlayIntervalId" in carousel).toBe(false);
+    expect(carousel.hasAttribute("auto-play-interval-id")).toBe(false);
+    expect(carousel.getAttributeNames()).toEqual(["auto-play"]);
   });
 
   it("does not start the interval when auto-play-stopped is preset", async () => {
@@ -361,7 +541,7 @@ describe("content-carousel (auto-play lifecycle)", () => {
       </content-carousel>`,
     );
     const slides = carousel.querySelectorAll("content-carousel-slide");
-    expect(carousel.autoPlayIntervalId).toBe(null);
+    expect(carousel._autoPlayIntervalId).toBe(null);
     await wait(80);
     expect(carousel.getActiveSlide()).toBe(slides[0]);
   });
@@ -375,14 +555,14 @@ describe("content-carousel (auto-play lifecycle)", () => {
     );
     const slides = carousel.querySelectorAll("content-carousel-slide");
     carousel.autoPlayStopped = true;
-    expect(carousel.autoPlayIntervalId).toBe(null);
+    expect(carousel._autoPlayIntervalId).toBe(null);
     await wait(80);
     expect(carousel.getActiveSlide()).toBe(slides[0]);
     carousel.autoPlayStopped = false;
     // unsetting the flag alone does not restart; a new auto-play value does
-    expect(carousel.autoPlayIntervalId).toBe(null);
+    expect(carousel._autoPlayIntervalId).toBe(null);
     carousel.autoPlay = 0.04;
-    expect(carousel.autoPlayIntervalId).not.toBe(null);
+    expect(carousel._autoPlayIntervalId).not.toBe(null);
     await expectActiveSlide(carousel, slides[1]);
   });
 
@@ -395,7 +575,7 @@ describe("content-carousel (auto-play lifecycle)", () => {
     const clearSpy = vi.spyOn(globalThis, "clearInterval");
     carousel.autoPlayStopped = true;
     expect(clearSpy).not.toHaveBeenCalled();
-    expect(carousel.autoPlayIntervalId).toBe(null);
+    expect(carousel._autoPlayIntervalId).toBe(null);
     expect(carousel).dom.to.equalTag(
       `<content-carousel auto-play-stopped></content-carousel>`,
     );
@@ -409,11 +589,11 @@ describe("content-carousel (auto-play lifecycle)", () => {
       </content-carousel>`,
     );
     const slides = carousel.querySelectorAll("content-carousel-slide");
-    expect(carousel.autoPlayIntervalId).not.toBe(null);
+    expect(carousel._autoPlayIntervalId).not.toBe(null);
     carousel.remove();
     await wait(0);
     expect(carousel.autoPlayStopped).toBe(true);
-    expect(carousel.autoPlayIntervalId).toBe(null);
+    expect(carousel._autoPlayIntervalId).toBe(null);
     await wait(80);
     expect(carousel.getActiveSlide()).toBe(slides[0]);
   });
@@ -437,7 +617,7 @@ describe("content-carousel (auto-play lifecycle)", () => {
       </content-carousel>`,
     );
     const slides = carousel.querySelectorAll("content-carousel-slide");
-    const intervalId = carousel.autoPlayIntervalId;
+    const intervalId = carousel._autoPlayIntervalId;
     expect(intervalId).not.toBe(null);
     const clearSpy = vi.spyOn(globalThis, "clearInterval");
 
@@ -448,7 +628,7 @@ describe("content-carousel (auto-play lifecycle)", () => {
 
     // a synchronous re-parent is a move, not a removal
     expect(carousel.autoPlayStopped).toBe(false);
-    expect(carousel.autoPlayIntervalId).toBe(intervalId);
+    expect(carousel._autoPlayIntervalId).toBe(intervalId);
     expect(clearSpy).not.toHaveBeenCalled();
     await expectActiveSlide(carousel, slides[1]);
   });

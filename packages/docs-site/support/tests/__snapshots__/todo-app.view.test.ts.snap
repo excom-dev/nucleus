@@ -2,22 +2,22 @@
 
 exports[`todo-app view > lists todos, posts a new one, and stays within the complexity budget > complexity 1`] = `
 {
-  "attributeRuns": 9,
+  "attributeRuns": 10,
   "closest": 5,
-  "getVar": 0,
-  "importNode": 0,
+  "getVar": 1,
+  "importNode": 1,
   "listenerRuns": 3,
   "matches": 19,
-  "parentElement": 43,
+  "parentElement": 46,
   "quarkRuns": 3,
   "queryScopeCost": 110,
   "querySelectorAll": 6,
-  "removeAttribute": 3,
+  "removeAttribute": 4,
   "ruleRuns": 7,
-  "schedulePaint": 9,
-  "setAttribute": 6,
-  "setVar": 1,
+  "schedulePaint": 10,
+  "setAttribute": 9,
+  "setVar": 2,
   "textContent": 0,
-  "variableRuns": 1,
+  "variableRuns": 2,
 }
 `;

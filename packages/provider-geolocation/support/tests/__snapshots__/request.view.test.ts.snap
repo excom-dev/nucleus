@@ -2,19 +2,19 @@
 
 exports[`request view > prints the position read on request > complexity 1`] = `
 {
-  "attributeRuns": 1,
+  "attributeRuns": 2,
   "closest": 0,
-  "getVar": 2,
+  "getVar": 4,
   "importNode": 0,
   "listenerRuns": 0,
   "matches": 4,
-  "parentElement": 3,
+  "parentElement": 5,
   "quarkRuns": 3,
   "queryScopeCost": 3,
   "querySelectorAll": 3,
   "removeAttribute": 1,
   "ruleRuns": 4,
-  "schedulePaint": 1,
+  "schedulePaint": 2,
   "setAttribute": 2,
   "setVar": 1,
   "textContent": 1,

@@ -48,9 +48,9 @@ const router = kitRouter as unknown as RouterInternals & typeof kitRouter;
 
 /** Put the singleton router back to a cold-load state. */
 const resetRouter = () => {
-  history.replaceState(null, "", "/");
+  history.replaceState({ id: "init" }, "", "/");
   router.states = [{ id: "init", url: "/", isInit: true }];
-  router.currentStateId = null;
+  router.currentStateId = "init";
   router.currentTempData = { move: null };
   router.MAX_STATES = router.DEFAULT_MAX_STATES;
 };
@@ -68,9 +68,8 @@ const popstate = (state: RouterState, hasUAVisualTransition = false) => {
 const click = (el: Element) => el.dispatchEvent(new Event("click"));
 
 /**
- * Navigate and wait for the manager to settle. A cold first paint
- * renders synchronously, but `spa-route-provision` still batches once
- * `has-rendered` flips, so `spa-manager-rendered` follows every nav.
+ * Navigate and wait for the manager to settle: every nav, the first paint
+ * included, runs one batched update that ends in `spa-manager-rendered`.
  */
 const navigate = (manager: Element, trigger: () => void) =>
   waitForEvent(manager, "spa-manager-rendered", trigger);
@@ -341,6 +340,79 @@ describe("spa-a actions", () => {
     expect(loose.routeInstance).toBeNull();
   });
 
+  it("keeps a match-nested link active on its base, child and query URLs", async () => {
+    document.body.innerHTML = `
+      <spa-a route-href="/checkout" match-nested></spa-a>
+      <spa-a route-href="/checkout"></spa-a>
+    `;
+    const [nested, exact] = qa<HTMLSpaAElement>("spa-a");
+    const urls = [
+      "/checkout",
+      "/checkout/",
+      "/checkout/shipping",
+      "/checkout?step=2",
+      "/checkout/shipping?x=1",
+    ];
+    for (const url of urls) {
+      kitRouter.pushState({ url });
+      await wait(0);
+      expect(nested.isActive, url).toBe(true);
+      // every move but the first leaves a checkout URL
+      expect(nested.wasActive, url).toBe(url !== urls[0]);
+      expect(exact.isActive, url).toBe(url === "/checkout");
+    }
+    kitRouter.pushState({ url: "/checkoutx" });
+    await wait(0);
+    expect(nested.isActive).toBe(false);
+    expect(nested.wasActive).toBe(true);
+  });
+
+  it("falls back to route-href for back after a first-move replace", async () => {
+    document.body.innerHTML = `
+      <spa-manager>
+        <spa-route route-href="/"><template>Home</template></spa-route>
+        <spa-route route-href="/x"><template>X</template></spa-route>
+      </spa-manager>
+      <spa-a route-href="/x" route-action="replace"></spa-a>
+      <spa-a route-href="/" route-action="back"></spa-a>
+    `;
+    const manager = q<HTMLSpaManagerElement>("spa-manager");
+    const [replace, back] = qa<HTMLSpaAElement>("spa-a");
+    const goSpy = vi.spyOn(history, "go").mockImplementation(() => {});
+    await waitForEvent(manager, "spa-manager-rendered");
+
+    await navigate(manager, () => click(replace));
+    expect(kitRouter.canGoBack()).toBe(false);
+    await navigate(manager, () => click(back));
+    expect(goSpy).not.toHaveBeenCalled();
+    expect(manager.lastMove).toBe("push");
+    expect(manager.activeUrl).toBe("/");
+  });
+
+  it("resolves a relative route-href against <base>", async () => {
+    const base = document.head.appendChild(
+      Object.assign(document.createElement("base"), { href: "/shop/" })
+    );
+    try {
+      document.body.innerHTML = `
+        <spa-manager>
+          <spa-route route-href="checkout"><template><p id="co">co</p></template></spa-route>
+        </spa-manager>
+        <spa-a route-href="checkout?step=2"></spa-a>
+      `;
+      const manager = q<HTMLSpaManagerElement>("spa-manager");
+      const link = q<HTMLSpaAElement>("spa-a");
+
+      await navigate(manager, () => click(link));
+      expect(location.pathname + location.search).toBe("/shop/checkout?step=2");
+      expect(manager.activeUrl).toBe("/shop/checkout?step=2");
+      expect(q("#co")).not.toBeNull();
+      expect(link.isActive).toBe(true);
+    } finally {
+      base.remove();
+    }
+  });
+
   it("navigating to the current URL keeps the rendered screen", async () => {
     document.body.innerHTML = `
       <spa-manager>
@@ -524,6 +596,71 @@ describe("spa-route", () => {
     expect(q("#detail")).toBeNull();
   });
 
+  it("activates a match-nested layout on its bare path, keeping the fallback off", async () => {
+    document.body.innerHTML = `
+      <spa-manager>
+        <spa-route route-href="/users" match-nested><template><p id="layout">users</p></template></spa-route>
+        <spa-route route-regex=".*" is-fallback><template>Not found</template></spa-route>
+      </spa-manager>
+      <spa-a route-href="/users"></spa-a>
+    `;
+    const manager = q<HTMLSpaManagerElement>("spa-manager");
+    const [layout, fallback] = qa<HTMLSpaRouteElement>("spa-route");
+
+    await navigate(manager, () => click(q("spa-a")));
+    expect(layout.isActive).toBe(true);
+    expect(layout.provision?.match?.[0]).toBe("/users");
+    expect(fallback.isActive).toBe(false);
+    expect(q("#layout")).not.toBeNull();
+
+    // a query does not unmatch the layout
+    kitRouter.pushState({ url: "/users?tab=2" });
+    await wait(5);
+    expect(layout.isActive).toBe(true);
+    expect(fallback.isActive).toBe(false);
+  });
+
+  it("re-registers links, routes and managers inside persist-content on re-attach", async () => {
+    // As in browsers: an effect key the element does not declare throws
+    const errorSpy = vi.spyOn(KitLogger, "error");
+    document.body.innerHTML = `
+      <spa-manager>
+        <spa-route route-href="/p" match-nested persist-content>
+          <template>
+            <spa-a id="inner-link" route-href="/p/a"></spa-a>
+            <spa-manager>
+              <spa-route route-href="/p/a"><template><p id="pa">pa</p></template></spa-route>
+            </spa-manager>
+          </template>
+        </spa-route>
+        <spa-route route-href="/q"><template>Q</template></spa-route>
+      </spa-manager>
+      <spa-a route-href="/p/a"></spa-a>
+      <spa-a route-href="/q"></spa-a>
+    `;
+    const manager = q<HTMLSpaManagerElement>("spa-manager");
+    const [toPa, toQ] = qa<HTMLSpaAElement>("body > spa-a");
+
+    await navigate(manager, () => click(toPa));
+    await wait(5);
+    const innerLink = q<HTMLSpaAElement>("#inner-link");
+    expect(innerLink.isActive).toBe(true);
+
+    await navigate(manager, () => click(toQ));
+    await wait(5);
+    expect(innerLink.isConnected).toBe(false);
+    expect(innerLink.routeInstance).toBeNull();
+
+    await navigate(manager, () => click(toPa));
+    await wait(5);
+    // the same nodes are back, and every element routes again
+    expect(q("#inner-link")).toBe(innerLink);
+    expect(innerLink.routeInstance).not.toBeNull();
+    expect(innerLink.isActive).toBe(true);
+    expect(q("#pa")).not.toBeNull();
+    expect(errorSpy).not.toHaveBeenCalled();
+  });
+
   describe("ready-on", () => {
     it("resolves ready when the ready-on event fires", async () => {
       document.body.innerHTML = `
@@ -670,7 +807,8 @@ describe("spa-manager", () => {
     const [routeA, routeB] = qa<HTMLSpaRouteElement>("spa-route");
     const [linkA, linkB] = qa<HTMLSpaAElement>("spa-a");
 
-    // Warm up: `has-rendered` flips, so the next nav is a real batch.
+    // Warm up: once `has-rendered` is set, the next nav animates and waits
+    // `transition-delay`, so both clicks below land in one batch.
     await navigate(manager, () => click(linkA));
     expect(manager.hasRendered).toBe(true);
 
@@ -1072,5 +1210,22 @@ describe("utils search params", () => {
     expect(urlMatchesHref("/a?foo=1&bar=2", "/a?foo=1&bar=3")).toBe(false);
     expect(urlMatchesHref("/a?foo=1&bar=2", "/a?bar=2&foo=1")).toBe(true);
     expect(urlMatchesHref("/a?foo=1", "/a")).toBe(false);
+  });
+
+  it("matches the base, child paths and a query subset with nested", () => {
+    const nested = { nested: true };
+    expect(urlMatchesHref("/checkout", "/checkout", nested)).toBe(true);
+    expect(urlMatchesHref("/checkout/", "/checkout", nested)).toBe(true);
+    expect(urlMatchesHref("/checkout/a?x=1", "/checkout", nested)).toBe(true);
+    expect(urlMatchesHref("/checkoutx", "/checkout", nested)).toBe(false);
+    expect(urlMatchesHref("/ab", "/a", nested)).toBe(false);
+    expect(urlMatchesHref("/anything/at/all", "/", nested)).toBe(true);
+    // the href's query must be part of the URL's
+    expect(urlMatchesHref("/a/b?tab=1&x=2", "/a?tab=1", nested)).toBe(true);
+    expect(urlMatchesHref("/a/b?tab=2", "/a?tab=1", nested)).toBe(false);
+    expect(urlMatchesHref("/a/b", "/a?tab=1", nested)).toBe(false);
+    // without `nested`, matching stays exact
+    expect(urlMatchesHref("/checkout/a", "/checkout")).toBe(false);
+    expect(urlMatchesHref("/a?tab=1&x=2", "/a?tab=1")).toBe(false);
   });
 });

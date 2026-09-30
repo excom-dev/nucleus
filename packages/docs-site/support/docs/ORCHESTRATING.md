@@ -120,7 +120,7 @@ Keywords:
 
 ## Expressions
 
-Values are Quark expressions, not JavaScript. They are derived from CSS expressions. Quote strings; numbers may carry units; `+ - * / %` and comparisons behave as you would expect; `and` / `or` short-circuit; member access on a missing value yields `undefined` instead of throwing. Prefer `#{$x}` interpolation over `+` when building strings.
+Values are Quark expressions, not JavaScript. They are derived from CSS expressions. Quote strings; a number with a unit (`10px`) is a string; `+ - * / %` and comparisons behave as you would expect; `and` / `or` short-circuit; member access on a missing value yields `undefined` instead of throwing. Prefer `#{$x}` interpolation over `+` when building strings.
 
 ```quark
 [bind-count] { content: "Items: #{$items.length}"; }

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/neutron",
+      "comment": "Fix an issue where an effect naming a property the element does not have was skipped silently under test runners: it throws `NeutronError` there too, as in a browser",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/neutron"
+}

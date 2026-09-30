@@ -5,6 +5,7 @@ Loading / success / error state, a `provision`, and the three events — once, f
 ## Features
 
 - **Three states** `is-loading` / `is-success` / `is-error`, mutually exclusive
+- **Stale-while-revalidate** `did-load` is set on the first success, kept through a refresh, cleared on an error — keep content on screen during a refresh
 - **One payload** The result or the error lands on `provision`
 - **Three events** `{tag}-loading` / `{tag}-success` / `{tag}-error`, tag-prefixed automatically
 - **Four effects** `_setLoading`, `_setSuccess`, `_setError`, `_resetLoadState` — the element decides *when*, the base does the bookkeeping

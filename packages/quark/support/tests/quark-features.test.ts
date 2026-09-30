@@ -4,7 +4,7 @@
  * hacks) so regressions stay visible.
  */
 import { Quark } from "../../index";
-import { isObservedProperty } from "@excom/kit-utils";
+import { isObservedProperty, LoopGuard } from "@excom/kit-utils";
 import { QuarkLogger } from "../../src/utils";
 import {
   afterEach,
@@ -17,6 +17,7 @@ import {
   wait,
 } from "@excom/heft-rig/profiles/default/config/test-utils";
 import {
+  bypassSelectorCache,
   createSheet,
   expectComplexity,
   flush,
@@ -1809,6 +1810,49 @@ describe("Quark features", () => {
         expect(hit).toHaveBeenCalledTimes(6);
         quark.unregister();
       });
+
+      it("key: names the space bar and the plus key", async () => {
+        const hit = vi.fn();
+        const { root, quark, register } = createSheet(
+          `<div id="space" tabindex="0"></div><div id="plus" tabindex="0"></div>`,
+          `#space { @on keydown (key: "Space Shift+Spacebar", handle: hit); }
+           #plus { @on keydown (key: "plus", handle: hit); }`,
+          { hit }
+        );
+        register();
+        await flush();
+        keydown(root.querySelector("#space")!, " ");
+        keydown(root.querySelector("#space")!, " ", { shiftKey: true });
+        keydown(root.querySelector("#plus")!, "+", { shiftKey: true });
+        expect(hit).toHaveBeenCalledTimes(3);
+        keydown(root.querySelector("#space")!, "s");
+        keydown(root.querySelector("#plus")!, "=");
+        expect(hit).toHaveBeenCalledTimes(3);
+        quark.unregister();
+      });
+
+      it('key: " " matches no key and warns once, naming Space', async () => {
+        const warn = vi.spyOn(QuarkLogger, "warn").mockImplementation(() => {});
+        const hit = vi.fn();
+        const { root, quark, register } = createSheet(
+          `<div id="box" tabindex="0"></div>`,
+          `#box { @on keydown (key: " ", handle: hit); }`,
+          { hit }
+        );
+        register();
+        await flush();
+        const box = root.querySelector("#box")!;
+        keydown(box, " ");
+        keydown(box, "a");
+        expect(hit).not.toHaveBeenCalled();
+        const messages = warn.mock.calls
+          .map(([arg]) => (arg as { message: string }).message)
+          .filter((m) => m.includes('"key"'));
+        expect(messages).toHaveLength(1);
+        expect(messages[0]).toMatch(/"Space"/);
+        warn.mockRestore();
+        quark.unregister();
+      });
     });
   });
 
@@ -2339,6 +2383,354 @@ describe("Quark features", () => {
       expect(root.querySelector("[bind-v]")?.textContent).toBe("inner-2");
       quark.unregister();
     });
+  });
+
+  describe("rematch (inverse rules)", () => {
+    /*
+     * A rule that matches again re-runs its `$binding` / `prop()` reads,
+     * as it does literals, so the inverse-rule idiom holds for every value
+     * kind, from either starting state.
+     */
+    const PAIRS: Record<
+      string,
+      { src: string; read: (el: Element) => string | null }
+    > = {
+      "content, literal inverse": {
+        src: `[bind-x][on] { content: $label; }
+              [bind-x]:not([on]) { content: "off"; }`,
+        read: (el) => el.textContent,
+      },
+      "content, binding inverse": {
+        src: `[bind-x][on] { content: $label; }
+              [bind-x]:not([on]) { content: $off-label; }`,
+        read: (el) => el.textContent,
+      },
+      "attribute, literal inverse": {
+        src: `[bind-x][on] { title: $label; }
+              [bind-x]:not([on]) { title: "off"; }`,
+        read: (el) => el.getAttribute("title"),
+      },
+      "attribute, binding inverse": {
+        src: `[bind-x][on] { title: $label; }
+              [bind-x]:not([on]) { title: $off-label; }`,
+        read: (el) => el.getAttribute("title"),
+      },
+      "$def, literal inverse": {
+        src: `[bind-x][on] { $shown: $label; }
+              [bind-x]:not([on]) { $shown: "off"; }
+              [bind-x] b { content: $shown; }`,
+        read: (el) => el.querySelector("b")!.textContent,
+      },
+      "$def, binding inverse": {
+        src: `[bind-x][on] { $shown: $label; }
+              [bind-x]:not([on]) { $shown: $off-label; }
+              [bind-x] b { content: $shown; }`,
+        read: (el) => el.querySelector("b")!.textContent,
+      },
+    };
+    const cases = Object.entries(PAIRS).flatMap(([name, pair]) =>
+      [true, false].map((startOn) => [name, startOn, pair] as const)
+    );
+
+    it.each(cases)("%s, starting on: %s", async (_, startOn, pair) => {
+      const { root, quark, register } = createSheet(
+        `<p bind-x ${startOn ? "on" : ""}><b></b></p>`,
+        `:scope { $label: "LBL"; $off-label: "off"; }
+         ${pair.src}`
+      );
+      register();
+      await flush();
+      const el = root.querySelector("[bind-x]")!;
+      const states = startOn
+        ? [true, false, true, false]
+        : [false, true, false, true];
+      for (const on of states) {
+        el.toggleAttribute("on", on);
+        await flush();
+        expect(pair.read(el)).toBe(on ? "LBL" : "off");
+      }
+      quark.unregister();
+    });
+
+    it.each([
+      [
+        "an ancestor",
+        "article[on] [bind-x]",
+        "article:not([on]) [bind-x]",
+        "article",
+      ],
+      ["the host", ":scope[on] [bind-x]", ":scope:not([on]) [bind-x]", null],
+      ["a descendant", "[bind-x]:has([on])", "[bind-x]:not(:has([on]))", "i"],
+    ])(
+      "re-runs a binding read when a gate on %s flips",
+      async (_, on, off, gate) => {
+        const restore = bypassSelectorCache();
+        try {
+          const { root, quark, register } = createSheet(
+            `<article><p bind-x><i></i></p></article>`,
+            `:scope { $label: "LBL"; }
+           ${on} { title: $label; }
+           ${off} { title: "off"; }`
+          );
+          register();
+          await flush();
+          const el = root.querySelector("[bind-x]")!;
+          const target = gate ? root.querySelector(gate)! : root;
+          for (const state of [true, false, true]) {
+            target.toggleAttribute("on", state);
+            await flush();
+            expect(el.getAttribute("title")).toBe(state ? "LBL" : "off");
+          }
+          quark.unregister();
+        } finally {
+          restore();
+        }
+      }
+    );
+
+    /*
+     * Structure as the gate: a child added or removed under a `:has()` /
+     * `:empty` subject rematches it. `[whenPresent, whenAbsent, parent]`:
+     * the rules reading `$label` / `$off-label` while a `<b>` sits in `parent`.
+     */
+    const STRUCTURE: Record<string, [string, string, string]> = {
+      "[bind-x]:has(b)": [
+        "[bind-x]:has(b)",
+        "[bind-x]:not(:has(b))",
+        "[bind-x]",
+      ],
+      ":scope:has(b) [bind-x]": [
+        ":scope:has(b) [bind-x]",
+        ":scope:not(:has(b)) [bind-x]",
+        "i",
+      ],
+      "[bind-x]:empty": ["[bind-x]:not(:empty)", "[bind-x]:empty", "[bind-x]"],
+    };
+    const structureCases = Object.entries(STRUCTURE).flatMap(([name, rules]) =>
+      [true, false].map((startWith) => [name, startWith, rules] as const)
+    );
+
+    it.each(structureCases)(
+      "re-runs binding reads when a child flips %s, starting with it: %s",
+      async (_, startWith, [present, absent, parent]) => {
+        const restore = bypassSelectorCache();
+        try {
+          const { root, quark, register } = createSheet(
+            `<div bind-x></div><i></i>`,
+            `:scope { $label: "LBL"; $off-label: "off"; }
+             ${present} { title: $label; }
+             ${absent} { title: $off-label; }`
+          );
+          const el = root.querySelector("[bind-x]")!;
+          const host = root.querySelector(parent)!;
+          if (startWith) host.append(document.createElement("b"));
+          register();
+          await flush();
+          const states = startWith
+            ? [true, false, true, false]
+            : [false, true, false, true];
+          for (const withChild of states) {
+            const child = host.querySelector("b");
+            if (withChild && !child) host.append(document.createElement("b"));
+            if (!withChild) child?.remove();
+            await flush();
+            expect(el.getAttribute("title")).toBe(withChild ? "LBL" : "off");
+          }
+          quark.unregister();
+        } finally {
+          restore();
+        }
+      }
+    );
+
+    /*
+     * `[rule, prepare, change, isApplied]`: `change` (measured, twice) makes
+     * the rule match again; its write lands under its own subject.
+     */
+    const SELF_WRITES: Record<
+      string,
+      [
+        string,
+        (el: Element) => void,
+        (el: Element) => void,
+        (el: Element) => boolean,
+      ]
+    > = {
+      ":empty, rows": [
+        `[bind-x]:empty { content: iterate($items, "#row"); }`,
+        () => {},
+        (el) => el.replaceChildren(),
+        (el) => el.children.length === 2,
+      ],
+      ":has(), rows": [
+        `[bind-x]:has(li) { content: iterate($items, "#row"); }`,
+        () => {},
+        (el) => el.lastElementChild!.remove(),
+        (el) => el.children.length === 2,
+      ],
+      ":empty, text": [
+        `[bind-x]:empty { content: $label; }`,
+        (el) => el.replaceChildren(document.createElement("li")),
+        (el) => el.firstElementChild!.remove(),
+        (el) => el.textContent === "LBL",
+      ],
+    };
+
+    it.each(Object.entries(SELF_WRITES))(
+      "settles when a gated rule writes under its own subject (%s)",
+      async (_, [rule, prepare, change, isApplied]) => {
+        const restore = bypassSelectorCache();
+        const trips: unknown[] = [];
+        const stopTrips = LoopGuard.onTrip((trip) => trips.push(trip));
+        try {
+          const { root, quark, register } = createSheet(
+            `<ul bind-x><li></li></ul><template id="row"><li></li></template>`,
+            `:scope { $items: 1, 2; $label: "LBL"; }
+             ${rule}`
+          );
+          register();
+          await flush();
+          const el = root.querySelector("[bind-x]")!;
+          const budgets = [];
+          for (let i = 0; i < 2; i++) {
+            prepare(el);
+            await flush();
+            const meter = measureComplexity(quark);
+            change(el);
+            await flush();
+            budgets.push(meter.take());
+            meter.stop();
+            expect(isApplied(el)).toBe(true);
+          }
+          expect(budgets[1]).toEqual(budgets[0]);
+          expect(trips).toEqual([]);
+          quark.unregister();
+        } finally {
+          stopTrips();
+          restore();
+        }
+      }
+    );
+
+    it("re-runs binding reads only on the element whose gate flipped in a batch", async () => {
+      const { root, quark, register } = createSheet(
+        `<p bind-x id="a"></p><p bind-x id="b"></p>`,
+        `:scope { $label: "LBL"; }
+         [bind-x]:not([hold]) { content: $label; data-echo: attr("data-z"); }`
+      );
+      register();
+      await flush();
+      const [a, b] = [...root.querySelectorAll("[bind-x]")];
+      a.setAttribute("hold", "");
+      await flush();
+
+      const meter = measureComplexity(quark);
+      // one pass: `a` matches again, `b` only changes what data-echo reads
+      a.removeAttribute("hold");
+      b.setAttribute("data-z", "z");
+      await flush();
+      const budget = meter.take();
+      meter.stop();
+      expect(b.getAttribute("data-echo")).toBe("z");
+      // a: content + data-echo; b: data-echo
+      expect(budget.attributeRuns).toBe(3);
+      quark.unregister();
+    });
+
+    it("still never re-runs a binding read by the attribute it writes", async () => {
+      const { root, quark, register } = createSheet(
+        `<p bind-x data-mode="a"></p>`,
+        `:scope { $mode: "sheet"; }
+         [bind-x][data-mode] { data-mode: $mode; data-seen: $mode; }`
+      );
+      register();
+      await flush();
+      const el = root.querySelector("[bind-x]")!;
+      expect(el.getAttribute("data-mode")).toBe("sheet");
+      el.removeAttribute("data-seen");
+      el.setAttribute("data-mode", "outside");
+      await flush();
+      expect(el.getAttribute("data-seen")).toBe("sheet");
+      expect(el.getAttribute("data-mode")).toBe("outside");
+      quark.unregister();
+    });
+
+    it("reads a binding that changed while the rule did not match", async () => {
+      const { root, quark, register } = createSheet(
+        `<p bind-x on></p>`,
+        `[bind-x][on] { content: $label; }
+         [bind-x]:not([on]) { content: "off"; }`
+      );
+      root.quark.setProperty("label", "one");
+      register();
+      await flush();
+      const el = root.querySelector("[bind-x]")!;
+      expect(el.textContent).toBe("one");
+      el.removeAttribute("on");
+      await flush();
+      root.quark.setProperty("label", "two");
+      await flush();
+      expect(el.textContent).toBe("off");
+      el.setAttribute("on", "");
+      await flush();
+      expect(el.textContent).toBe("two");
+      quark.unregister();
+    });
+
+    it("lets the later rule win when both depend on the changed attribute", async () => {
+      const { root, quark, register } = createSheet(
+        `<p bind-x mode="special"></p>`,
+        `:scope { $generic: "generic"; $special: "special"; }
+         [bind-x][mode] { content: $generic; }
+         [bind-x][mode="special"] { content: $special; }`
+      );
+      register();
+      await flush();
+      const el = root.querySelector("[bind-x]")!;
+      expect(el.textContent).toBe("special");
+      for (const mode of ["plain", "special", "plain", "special"]) {
+        el.setAttribute("mode", mode);
+        await flush();
+        expect(el.textContent).toBe(mode === "plain" ? "generic" : mode);
+      }
+      quark.unregister();
+    });
+
+    it.each([
+      ["a binding", `$names[attr("data-key")]`],
+      ["prop()", `prop("names")[attr("data-key")]`],
+    ])(
+      "re-runs %s indexed by attr() when that attribute changes, not for another",
+      async (_, expression) => {
+        const { root, quark, register } = createSheet(
+          `<p bind-x data-key="a"></p>`,
+          `:scope { $names: (a: "Alpha", b: "Beta"); }
+           [bind-x] { content: ${expression}; data-echo: attr("data-z"); }`
+        );
+        const el = root.querySelector("[bind-x]") as HTMLElement & {
+          names?: Record<string, string>;
+        };
+        el.names = { a: "Alpha", b: "Beta" };
+        register();
+        await flush();
+        expect(el.textContent).toBe("Alpha");
+
+        el.setAttribute("data-key", "b");
+        await flush();
+        expect(el.textContent).toBe("Beta");
+
+        // an attribute only `data-echo` reads: the indexed read stays skipped
+        const meter = measureComplexity(quark);
+        el.setAttribute("data-z", "z");
+        await flush();
+        const budget = meter.take();
+        meter.stop();
+        expect(el.getAttribute("data-echo")).toBe("z");
+        expect(budget.attributeRuns).toBe(1);
+        expect(budget.getVar).toBe(0);
+        quark.unregister();
+      }
+    );
   });
 
   describe("@scope / :scope", () => {

@@ -1,0 +1,15 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/fetchable-element",
+      "comment": "Add `did-load` from `loadable-element`: set on the first success, kept while a refresh runs, cleared on an error",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/fetchable-element",
+      "comment": "Update failed-request logging to one line: an error status (400 or above) logs a warning, `<tag>: request failed` with the response, which the default `KitLogger` level hides; a network or parse failure logs an error; an abort logs nothing",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@excom/fetchable-element"
+}

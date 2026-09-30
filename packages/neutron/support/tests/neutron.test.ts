@@ -471,24 +471,24 @@ describe("Neutron: test-element", () => {
   it("calls correct element prop callbacks", async () => {
     const { propSet } = TestElement.builtConfig.lifecycles;
     (propSet[4][1] as Mock).mockImplementation(() => ({
-      pTag: { autofocus: true },
+      pTag: { hidden: true },
     }));
 
     testProps(testElement, testMatrix5A);
-    expect(testElement.pTag!.autofocus).toBe(true);
+    expect(testElement.pTag!.hidden).toBe(true);
     testProps(testElement, testMatrix5B);
   });
 
   it("calls correct element prop callbacks with serialize and deserialize", async () => {
     const { propSet } = TestElement.builtConfig.lifecycles;
     (propSet[4][1] as Mock).mockImplementation(() => ({
-      pTag: { autofocus: false },
+      pTag: { hidden: true },
     }));
     serializeFn = (v) => (v ? new WeakRef(v) : v);
     // @ts-expect-error
     deserializeFn = (v) => (v ? v.deref() : v);
     testProps(testElement, testMatrix5A);
-    expect(testElement.pTag!.autofocus).toBe(false);
+    expect(testElement.pTag!.hidden).toBe(true);
     testProps(testElement, testMatrix5B);
   });
 
@@ -1080,7 +1080,7 @@ describe("Neutron", () => {
     // child-element effect
     (propSet[1][1] as Mock).mockImplementation(() => {
       return [
-        { pTag: { autofocus: true } },
+        { pTag: { hidden: true } },
         { pTag: { emit: ["p-modified"] } },
       ];
     });
@@ -1092,7 +1092,7 @@ describe("Neutron", () => {
       },
       0,
     );
-    expect(testElement.pTag!.autofocus).toBe(true);
+    expect(testElement.pTag!.hidden).toBe(true);
 
     // `style` deep-merges
     (propSet[1][1] as Mock).mockImplementation(() => ({

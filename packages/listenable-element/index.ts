@@ -1,4 +1,6 @@
 import { selectOne } from "../kit-utils/dom";
+import { matchesKey } from "../kit-utils/key-filter";
+import { KitLogger } from "@excom/kit-logger";
 import { Neutron, TokenList } from "@excom/neutron";
 import { debounce } from "throttle-debounce";
 
@@ -48,7 +50,8 @@ export const ListenableElement = Neutron({
      * @option
      * Space-separated key filters (OR). Join modifiers with `+` (AND, any
      * order): `shift+k tab` → Shift+K or Tab. Modifiers: `shift`, `alt`,
-     * `ctrl`/`control`, `meta`. Case-insensitive.
+     * `ctrl`/`control`, `meta`/`cmd`. Name the space bar `space` /
+     * `spacebar` and the plus key `plus` (`shift+space`). Case-insensitive.
      * @values <key|mod+key>…
      */
     keycodeFilter: TokenList,
@@ -231,40 +234,22 @@ export const ListenableElement = Neutron({
     };
   });
 
-const KEY_MODIFIERS: Record<string, (e: KeyboardEvent) => boolean> = {
-  shift: (e) => e.shiftKey,
-  alt: (e) => e.altKey,
-  ctrl: (e) => e.ctrlKey,
-  control: (e) => e.ctrlKey,
-  meta: (e) => e.metaKey,
-};
-
-function modifierKeyName(mod: string): string {
-  return mod === "ctrl" || mod === "control" ? "control" : mod;
-}
-
-/** One filter token: `k`, `shift`, or `shift+k` / `k+shift`. */
-function matchesKeycodeToken(token: string, e: KeyboardEvent): boolean {
-  const parts = token.toLowerCase().split("+").filter(Boolean);
-  if (!parts.length) return false;
-
-  const mods = parts.filter((p) => p in KEY_MODIFIERS);
-  const keys = parts.filter((p) => !(p in KEY_MODIFIERS));
-  if (!mods.every((m) => KEY_MODIFIERS[m](e))) return false;
-
-  const key = e.key?.toLowerCase();
-  if (!key) return false;
-  if (keys.length) return keys.every((k) => key === k);
-  // Modifier-only token (e.g. `shift`): match that modifier keydown.
-  return mods.some((m) => key === modifierKeyName(m));
-}
+const warnedBlankKeycode = new WeakSet<Element>();
 
 function matchesKeycode(element: any, e: Event) {
-  if (!element.keycodeFilter?.length) return true;
-  const ke = e as KeyboardEvent;
-  return [...element.keycodeFilter].some((token: string) =>
-    matchesKeycodeToken(token, ke)
-  );
+  if (element.keycodeFilter?.length) {
+    return matchesKey(element.keycodeFilter, e);
+  }
+  // `keycode-filter=" "` meant the space bar, not "no filter"
+  const raw = element.getAttribute("keycode-filter");
+  if (!raw || raw.trim()) return true;
+  if (!warnedBlankKeycode.has(element)) {
+    warnedBlankKeycode.add(element);
+    KitLogger.warn(
+      `<${element.localName}> keycode-filter names no key, so none matches — write "space" for the space bar`
+    );
+  }
+  return false;
 }
 
 function matchesSelector(element: any, e: Event) {

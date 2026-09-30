@@ -15,7 +15,7 @@ import { reportDiagnostic, resolveExpression, resolveField } from "./resolvers";
 import type { Rule } from "./rule";
 import type { QuarkOptions, TransitionSpec } from "./types";
 import { deref, QuarkLogger } from "./utils";
-import { LoopGuard, tc } from "@excom/kit-utils";
+import { LoopGuard, matchesKey, tc } from "@excom/kit-utils";
 import type { Expression } from "@excom/quark-parser";
 
 /** How `QuarkInternal.propertyHasBeenSet` tells a property's kind apart. */
@@ -43,7 +43,9 @@ export class Property {
   parent: Rule;
   /**
    * Resolves from bindings ($vars) or `prop()`, so it re-runs on change
-   * events, not sync DOM runs. Reactivity is in the AST; no cross-sheet
+   * events. A sync DOM run skips it unless its rule may have just matched
+   * again (a selector attribute, a child under `:has()` / `:empty`) or an
+   * `attr()` it reads changed. Reactivity is in the AST; no cross-sheet
    * analysis needed.
    */
   isReactive: boolean;
@@ -123,7 +125,12 @@ export class Property {
         : "listener";
   }
 
-  run(element: HTMLElement, options: QuarkOptions): void {
+  /**
+   * `affected`: in a sync run, its rule may have just matched again or an
+   * `attr()` it reads moved, so binding / `prop()` reads refresh like
+   * literals.
+   */
+  run(element: HTMLElement, options: QuarkOptions, affected = false): void {
     const elementInternal = getQuarkInternal(element);
     const propertyIsNew = !elementInternal.propertyHasBeenSet(
       this.parent.quarkInstance.hash,
@@ -166,6 +173,7 @@ export class Property {
       (options.isAsyncRun
         ? this.isReactive
         : !this.isReactive ||
+          affected ||
           // a binding this reads was written earlier in this run: refresh
           // inline instead of through the deferred change event
           (!!trace &&
@@ -479,46 +487,6 @@ export interface ListenerState {
   last?: number;
 }
 
-const KEY_MODIFIERS: Record<string, (e: KeyboardEvent) => boolean> = {
-  shift: (e) => e.shiftKey,
-  alt: (e) => e.altKey,
-  ctrl: (e) => e.ctrlKey,
-  control: (e) => e.ctrlKey,
-  meta: (e) => e.metaKey,
-  cmd: (e) => e.metaKey,
-};
-
-const modifierKeyName = (mod: string): string =>
-  mod === "ctrl" || mod === "control"
-    ? "control"
-    : mod === "cmd"
-      ? "meta"
-      : mod;
-
-/**
- * One chord token: `k`, `shift`, or `shift+k` / `k+shift`. Listed
- * modifiers must be held; a modifier-only token matches that key's
- * own keydown. Same rules as `event-handler`'s `keycode-filter`.
- */
-const matchesKeyToken = (token: string, e: KeyboardEvent): boolean => {
-  const parts = token.toLowerCase().split("+").filter(Boolean);
-  if (!parts.length) return false;
-  const mods = parts.filter((p) => p in KEY_MODIFIERS);
-  const keys = parts.filter((p) => !(p in KEY_MODIFIERS));
-  if (!mods.every((m) => KEY_MODIFIERS[m](e))) return false;
-  const key = e.key?.toLowerCase();
-  if (!key) return false;
-  if (keys.length) return keys.every((k) => key === k);
-  return mods.some((m) => key === modifierKeyName(m));
-};
-
-/** `key: "Escape Shift+K"`, space-separated alternatives, any may match. */
-export const matchesKey = (filter: string, e: Event): boolean =>
-  filter
-    .split(/\s+/)
-    .filter(Boolean)
-    .some((token) => matchesKeyToken(token, e as KeyboardEvent));
-
 /** The EventTarget an `@on (host: …)` listener registers on. */
 export const listenerHost = (
   element: Element,
@@ -766,8 +734,16 @@ export class Listener extends Property {
           delegate
         );
         if (isNoop(filter)) return;
-        if (typeof filter !== "string" || !filter.trim()) {
+        if (typeof filter !== "string") {
           this.warnOnce(element, "key", `option "key" needs a string value`);
+          return;
+        }
+        if (!filter.trim()) {
+          this.warnOnce(
+            element,
+            "key",
+            `option "key" names no key — write "Space" for the space bar`
+          );
           return;
         }
         if (!matchesKey(filter, e)) return;

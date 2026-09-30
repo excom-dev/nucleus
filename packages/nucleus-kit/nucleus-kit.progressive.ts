@@ -10,6 +10,9 @@
  */
 type Loader = () => Promise<unknown>;
 
+/** The logger Nucleus Kit elements use: `KitLogger.level = 2` shows warnings. */
+export { KitLogger } from "@excom/kit-logger";
+
 const contentCarousel: Loader = () => import("@excom/content-carousel");
 const contentDrawer: Loader = () => import("@excom/content-drawer");
 const contentTabs: Loader = () => import("@excom/content-tabs");
@@ -95,7 +98,7 @@ const scan = (node: Node) => {
  * on `document` at import time; call it yourself for a shadow root.
  */
 export const observeElements = (
-  root: Document | Element | ShadowRoot,
+  root: Document | Element | ShadowRoot
 ): (() => void) => {
   scan(root);
   const observer = new MutationObserver((records) => {
@@ -108,7 +111,7 @@ export const observeElements = (
 const loaded = new Promise((resolve) =>
   document.readyState == "complete"
     ? resolve(0)
-    : window.addEventListener("load", resolve, { once: true }),
+    : window.addEventListener("load", resolve, { once: true })
 );
 
 /** Next idle period (≤ 3 s away); a 100 ms timer without `requestIdleCallback` (Safari). */
@@ -116,7 +119,7 @@ const idle = () =>
   new Promise((resolve) =>
     typeof requestIdleCallback == "function"
       ? requestIdleCallback(resolve, { timeout: 3000 })
-      : setTimeout(resolve, 100),
+      : setTimeout(resolve, 100)
   );
 
 /** Data-saver mode (Chromium; `prefers-reduced-data` ships nowhere yet). */
@@ -129,12 +132,12 @@ const saveData = () =>
  * The entry calls this itself on `<script data-idle>` / `<body nucleus-kit-idle>`.
  */
 export const idleLoadElements = async (
-  tags: readonly string[] = PROGRESSIVE_TAGS,
+  tags: readonly string[] = PROGRESSIVE_TAGS
 ): Promise<void> => {
   const known = tags.filter(
     (tag) =>
       PROGRESSIVE_TAGS.includes(tag) ||
-      console.warn(`[nucleus-kit] unknown idle tag <${tag}>`),
+      console.warn(`[nucleus-kit] unknown idle tag <${tag}>`)
   );
   await loaded;
   if (saveData()) return;
@@ -154,7 +157,7 @@ observeElements(document);
 loaded.then(() => {
   const spec =
     [...document.querySelectorAll<HTMLScriptElement>("script[data-idle]")].find(
-      (script) => script.src == import.meta.url,
+      (script) => script.src == import.meta.url
     )?.dataset.idle ?? document.body.getAttribute("nucleus-kit-idle");
   if (spec != null) idleLoadElements(spec.match(/\S+/g) ?? PROGRESSIVE_TAGS);
 });

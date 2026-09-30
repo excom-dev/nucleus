@@ -146,6 +146,17 @@ describe("Effects: application", () => {
     );
   });
 
+  it("rejects the whole effect when a key is not a property of the element", async () => {
+    const el = await mount();
+    expect(() => el.run({ stepText: "set", _undeclared: true })).toThrow(
+      new NeutronError(
+        "Cannot set property `_undeclared` on order-host - property does not exist."
+      )
+    );
+    expect(el.stepText).toBeNull();
+    expect("_undeclared" in el).toBe(false);
+  });
+
   it("validates element-prop effects", async () => {
     const el = await mount();
     expect(() => el.run({ childEl: { title: "x" } })).toThrow(

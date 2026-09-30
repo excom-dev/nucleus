@@ -49,7 +49,7 @@ describe("LoadableElement", () => {
     const provisioned = listen(el, "neutron-provision");
     el._setLoading();
     el._setSuccess({ ok: true });
-    expect(el).dom.to.equalTag(`<${TAG} is-success></${TAG}>`);
+    expect(el).dom.to.equalTag(`<${TAG} is-success did-load></${TAG}>`);
     expect(el.provision).toEqual({ ok: true });
     expect(success).toHaveBeenCalledTimes(1);
     expect(success.mock.calls[0][0].detail).toEqual({ ok: true });
@@ -71,14 +71,14 @@ describe("LoadableElement", () => {
     const el = fixture<any>(`<${TAG}></${TAG}>`);
     el._setSuccess(1);
     el._setLoading();
-    expect(el).dom.to.equalTag(`<${TAG} is-loading></${TAG}>`);
+    expect(el).dom.to.equalTag(`<${TAG} is-loading did-load></${TAG}>`);
     el._setError("x");
     expect(el).dom.to.equalTag(`<${TAG} is-error></${TAG}>`);
     el._setSuccess(2);
-    expect(el).dom.to.equalTag(`<${TAG} is-success></${TAG}>`);
+    expect(el).dom.to.equalTag(`<${TAG} is-success did-load></${TAG}>`);
   });
 
-  it("_resetLoadState clears every state silently and keeps the provision", () => {
+  it("_resetLoadState clears every state silently and keeps the provision and did-load", () => {
     const el = fixture<any>(`<${TAG}></${TAG}>`);
     const spies = ["loading", "success", "error"].map((t) =>
       listen(el, EVT(t))
@@ -86,8 +86,23 @@ describe("LoadableElement", () => {
     el._setSuccess("kept");
     spies.forEach((s) => s.mockClear());
     el._resetLoadState();
-    expect(el).dom.to.equalTag(`<${TAG}></${TAG}>`);
+    expect(el).dom.to.equalTag(`<${TAG} did-load></${TAG}>`);
     expect(el.provision).toBe("kept");
     spies.forEach((s) => expect(s).not.toHaveBeenCalled());
+  });
+
+  it("did-load stays through a refresh with the last provision, and clears on error", () => {
+    const el = fixture<any>(`<${TAG}></${TAG}>`);
+    el._setLoading();
+    expect(el.didLoad).toBeFalsy();
+    el._setSuccess("first");
+    el._setLoading();
+    expect(el).dom.to.equalTag(`<${TAG} is-loading did-load></${TAG}>`);
+    expect(el.provision).toBe("first");
+    el._setError({ message: "boom" });
+    expect(el).dom.to.equalTag(`<${TAG} is-error></${TAG}>`);
+    expect(el.provision).toEqual({ message: "boom" });
+    el._setLoading();
+    expect(el).dom.to.equalTag(`<${TAG} is-loading></${TAG}>`);
   });
 });

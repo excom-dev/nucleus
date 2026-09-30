@@ -55,7 +55,7 @@ ul {
 | --- | --- |
 | `target: "<selector>"` | Delegation: fires only when the event target is inside a descendant matching the selector; that element is `target` in the block and in the `key` / `debounce` / `throttle` options (`event.target` otherwise). With `host:` the selector is matched document-wide. |
 | `self` | Fires only when the event target is the matched element itself. |
-| `key: "Escape"` / `"Shift+K"` | Keyboard chord; space-separated tokens are alternatives (`"Escape Enter"`). Listed modifiers (`shift`, `alt`, `ctrl`, `meta` / `cmd`) must be held. |
+| `key: "Escape"` / `"Shift+K"` | Keyboard chord; space-separated tokens are alternatives (`"Escape Enter"`). Listed modifiers (`shift`, `alt`, `ctrl`, `meta` / `cmd`) must be held. The space bar is `Space` / `Spacebar`, the plus key `plus` (`"Shift+Space"`). |
 | `prevent-default` / `stop-propagation` / `stop-immediate-propagation` | Act on the event as soon as it passes the filters, before any timing. |
 | `debounce: <ms>` / `throttle: <ms>` | Wait for a pause / run at most once per window (leading edge). Exclusive. |
 | `handle: fn` | A JS listener, for imperative DOM work Quark has no declaration for (moving focus once content renders): a function reference (`focusInput`), a list `(a, b)`, or a call that returns the listener. Each is called with the event before the block, `this` being the element. `prevent-default` and `stop-propagation` are listeners too, for lists. |

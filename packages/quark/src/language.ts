@@ -154,7 +154,8 @@ export const AT_RULES: readonly AtRuleDoc[] = [
       "Imports a JS module of pure functions anywhere in the sheet. The " +
       "namespace defaults to the URL's last path segment without its " +
       "extension; `as *` merges exports into the bare scope, last import " +
-      "winning. The first rule run waits for the imports.",
+      "winning. The first rule run waits for the imports. A path resolves " +
+      "against the site root; an absolute `http(s)` URL loads as it is.",
   },
   {
     syntax: "@scope { … }",
@@ -188,7 +189,8 @@ export const AT_RULES: readonly AtRuleDoc[] = [
       "inside a matching descendant; that element is `target` in the " +
       "block), `self` (only when the event target is the matched " +
       'element), `key: "Escape"` / `"Shift+K"` (keyboard chords; ' +
-      "space-separated alternatives). Event flags: `prevent-default`, " +
+      "space-separated alternatives; the space bar is `Space` / " +
+      "`Spacebar`, the plus key `plus`). Event flags: `prevent-default`, " +
       "`stop-propagation`, `stop-immediate-propagation`. Timing: " +
       "`debounce: <ms>`, `throttle: <ms>`. JS: `handle: fn` — a function " +
       "reference, a list `(a, b)`, or a call that returns the listener; " +

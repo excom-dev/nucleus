@@ -3,46 +3,56 @@
    `#site-header` is an invalid selector there — and one invalid selector
    drops the whole rule. Always match the ident set by `view-transition-name`. */
 
-/* SITE HEADER — lifted out of the root snapshot and held still at every
-   width, so only the page content animates. */
+/* SITE HEADER, RELEASE NOTICE — lifted out of the root snapshot and held
+   still at every width, so only the page content animates. */
 html:active-view-transition {
   #site-header {
     view-transition-name: site-header;
+  }
+  #release-notice {
+    view-transition-name: release-notice;
   }
 }
 ::view-transition-group(site-header),
 ::view-transition-image-pair(site-header),
 ::view-transition-old(site-header),
-::view-transition-new(site-header) {
+::view-transition-new(site-header),
+::view-transition-group(release-notice),
+::view-transition-image-pair(release-notice),
+::view-transition-old(release-notice),
+::view-transition-new(release-notice) {
   /* preserve without animation */
   animation: none;
 }
-::view-transition-old(site-header) {
-  /* the new snapshot already paints the header */
+::view-transition-old(site-header),
+::view-transition-old(release-notice) {
+  /* the new snapshot already paints them */
   display: none;
 }
-::view-transition-new(site-header) {
+::view-transition-new(site-header),
+::view-transition-new(release-notice) {
   mix-blend-mode: normal;
 }
 
-/* PAGE SLIDE — phones only. Wider viewports name nothing extra, so the
-   default root cross-fade stays. */
+/* PAGE SLIDE — phones only; wider viewports keep the default root cross-fade.
+   Slides the root snapshot, which is always the size of the viewport. A named
+   route would make its group travel the scroll distance between the views. */
 @media (max-width: 768px) {
   :root {
     --slide-duration: 0.2s;
     --slide-bezier: cubic-bezier(0.2, 0.7, 0.75, 1);
   }
 
-  html:active-view-transition-type(page-next) spa-route:has(*),
-  html:active-view-transition-type(page-prev) spa-route:has(*) {
-    view-transition-name: page;
-  }
-
-  ::view-transition-image-pair(page) {
+  html:active-view-transition-type(page-next)::view-transition-image-pair(root),
+  html:active-view-transition-type(page-prev)::view-transition-image-pair(
+      root
+    ) {
     isolation: auto;
   }
-  ::view-transition-old(page),
-  ::view-transition-new(page) {
+  html:active-view-transition-type(page-next)::view-transition-old(root),
+  html:active-view-transition-type(page-next)::view-transition-new(root),
+  html:active-view-transition-type(page-prev)::view-transition-old(root),
+  html:active-view-transition-type(page-prev)::view-transition-new(root) {
     /* the UA cross-fade blend would wash out the overlap while sliding */
     mix-blend-mode: normal;
   }
@@ -51,36 +61,36 @@ html:active-view-transition {
      redone after a back. */
   html:active-view-transition-type(page-next):not(
       :active-view-transition-type(route-back)
-    )::view-transition-old(page),
+    )::view-transition-old(root),
   html:active-view-transition-type(page-prev):active-view-transition-type(
       route-back
-    )::view-transition-old(page) {
+    )::view-transition-old(root) {
     animation: slide-out-left var(--slide-duration) both var(--slide-bezier);
   }
   html:active-view-transition-type(page-next):not(
       :active-view-transition-type(route-back)
-    )::view-transition-new(page),
+    )::view-transition-new(root),
   html:active-view-transition-type(page-prev):active-view-transition-type(
       route-back
-    )::view-transition-new(page) {
+    )::view-transition-new(root) {
     animation: slide-in-right var(--slide-duration) both var(--slide-bezier);
   }
 
   /* Backward: a `page-prev` link, or a `page-next` navigation undone by back. */
   html:active-view-transition-type(page-prev):not(
       :active-view-transition-type(route-back)
-    )::view-transition-old(page),
+    )::view-transition-old(root),
   html:active-view-transition-type(page-next):active-view-transition-type(
       route-back
-    )::view-transition-old(page) {
+    )::view-transition-old(root) {
     animation: slide-out-right var(--slide-duration) both var(--slide-bezier);
   }
   html:active-view-transition-type(page-prev):not(
       :active-view-transition-type(route-back)
-    )::view-transition-new(page),
+    )::view-transition-new(root),
   html:active-view-transition-type(page-next):active-view-transition-type(
       route-back
-    )::view-transition-new(page) {
+    )::view-transition-new(root) {
     animation: slide-in-left var(--slide-duration) both var(--slide-bezier);
   }
 

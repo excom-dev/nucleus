@@ -447,7 +447,7 @@ describe("web-authn", () => {
       expect(JSON.parse(verifyInit.body)).toEqual(credential);
 
       expect(el).dom.to.equalTag(
-        `<web-authn is-success options-url="/api/register/options" verify-url="/api/register/verify" start-method="register">
+        `<web-authn did-load is-success options-url="/api/register/options" verify-url="/api/register/verify" start-method="register">
           <form><input name="username" value="alice"></form>
         </web-authn>`,
       );

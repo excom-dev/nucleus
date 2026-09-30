@@ -62,9 +62,7 @@ const byDocumentOrder = (a: Node, b: Node) =>
  */
 export const outermostElements = (elements: HTMLElement[]): HTMLElement[] => {
   if (elements.length < 2) return elements;
-  const sorted = elements
-    .slice()
-    .sort(byDocumentOrder);
+  const sorted = elements.slice().sort(byDocumentOrder);
   const kept = new Set<HTMLElement>();
   let last: HTMLElement | undefined;
   for (const el of sorted) {
@@ -562,8 +560,17 @@ export class Rule {
       `outermostElements`.
     */
     const roots = new Set<HTMLElement>();
-    const fanOut = (root: HTMLElement | null) => {
-      if (root) roots.add(root);
+    /*
+      Reached through a selector dependency (a gate attribute, or a child
+      under a `:has()` / `:empty` subject): the match may have just
+      started, so binding reads re-run (`runProps`).
+    */
+    const rematchRoots = new Set<HTMLElement>();
+    const rematched = new Set<HTMLElement>();
+    const fanOut = (root: HTMLElement | null, rematch = false) => {
+      if (!root) return;
+      roots.add(root);
+      if (rematch) rematchRoots.add(root);
     };
     /** Insertion parents → the nodes inserted below them (see `planScans`). */
     const insertions = new Map<HTMLElement, Element[]>();
@@ -590,7 +597,8 @@ export class Rule {
     };
     mutationMap?.forEach((attrs, element) => {
       let addedSelf = false;
-      const mutateSelf = (el: HTMLElement = element) => {
+      const mutateSelf = (el: HTMLElement = element, rematch = false) => {
+        if (rematch) rematched.add(el);
         if (el === element) {
           if (addedSelf) return;
           addedSelf = true;
@@ -601,21 +609,25 @@ export class Rule {
         elementsToMutate.add(el);
       };
       /** Compound `c`'s element `el` was affected: it is a subject, or subjects sit below / beside it. */
-      const reach = (el: HTMLElement, c: CompoundDependency) => {
-        if (c.isSubject) mutateSelf(el);
-        else fanOut(rootFor(el, c.root));
+      const reach = (
+        el: HTMLElement,
+        c: CompoundDependency,
+        rematch = false
+      ) => {
+        if (c.isSubject) mutateSelf(el, rematch);
+        else fanOut(rootFor(el, c.root), rematch);
       };
       /**
        * Elements came or went below `el`: `:has()` / `:empty` candidates
-       * on the way up may have flipped.
+       * on the way up may have flipped (a rematch, like a gate attribute).
        */
       const childrenChanged = (el: HTMLElement) => {
         for (const c of compounds) {
           if (!c.reactsToChildren) continue;
-          if (c.broad) fanOut(host);
-          else matchingAncestors(el, c).forEach((a) => reach(a, c));
+          if (c.broad) fanOut(host, true);
+          else matchingAncestors(el, c).forEach((a) => reach(a, c, true));
         }
-        if (hostReactsToChildren) fanOut(host);
+        if (hostReactsToChildren) fanOut(host, true);
       };
       [...attrs].sort(kindOrder).forEach((attr) => {
         if (attr === "RUN_ALL") {
@@ -666,13 +678,15 @@ export class Rule {
                 ? matchesRule(element)
                 : this.matchesPrefix(element, c))
             ) {
-              reach(element, c);
+              reach(element, c, true);
             }
-            if (c.looseAttrs.has(attr)) fanOut(rootFor(element, c.looseRoot));
+            if (c.looseAttrs.has(attr)) {
+              fanOut(rootFor(element, c.looseRoot), true);
+            }
             if (c.hasAttrs.has(attr)) {
-              matchingAncestors(element, c).forEach((a) => reach(a, c));
+              matchingAncestors(element, c).forEach((a) => reach(a, c, true));
             }
-            if (c.broadAttrs.has(attr)) fanOut(host);
+            if (c.broadAttrs.has(attr)) fanOut(host, true);
           }
           if (hostDeps) {
             /*
@@ -684,7 +698,7 @@ export class Rule {
               element === host
                 ? hostDeps.selfAttrs.has(attr) || hostDeps.looseAttrs.has(attr)
                 : hostDeps.hasAttrs.has(attr) || hostDeps.broadAttrs.has(attr);
-            if (affected) fanOut(host);
+            if (affected) fanOut(host, true);
           }
         }
       });
@@ -692,6 +706,15 @@ export class Rule {
     // find the most distant ancestors
     planScans(outermostElements([...roots]), insertions).forEach(
       ({ root: ancestor, accept }) => {
+        // `null`: every match here is a rematch; else those in the rematch
+        // roots this root absorbed (a root counting itself costs one run)
+        const within = rematchRoots.has(ancestor)
+          ? null
+          : [...rematchRoots].filter((r) => ancestor.contains(r));
+        const add = (el: HTMLElement) => {
+          elementsToMutate.add(el);
+          if (!within || within.some((r) => r.contains(el))) rematched.add(el);
+        };
         if (accept) {
           // an insertion scan visits every match in its accepted nodes
           accept.forEach((_, node) => coverage?.add(node));
@@ -704,18 +727,14 @@ export class Rule {
           if (direct) {
             // a node counts itself only when inserted (a merged full root does not)
             direct.forEach((node) => {
-              if (accept.get(node) && node.matches(runSelector)) {
-                elementsToMutate.add(node);
-              }
+              if (accept.get(node) && node.matches(runSelector)) add(node);
               node.querySelectorAll(runSelector).forEach((el) => {
-                elementsToMutate.add(el as HTMLElement);
+                add(el as HTMLElement);
               });
             });
           } else {
             ancestor.querySelectorAll(runSelector).forEach((el) => {
-              if (isAccepted(el, accept, ancestor)) {
-                elementsToMutate.add(el as HTMLElement);
-              }
+              if (isAccepted(el, accept, ancestor)) add(el as HTMLElement);
             });
           }
           this.numberOfRuns++;
@@ -736,11 +755,11 @@ export class Rule {
             ? (host.getRootNode() as Document | HTMLElement)
             : ancestor;
         if (targetsHost) {
-          if (queryRoot.contains(host)) elementsToMutate.add(host);
+          if (queryRoot.contains(host)) add(host);
         } else {
           if (queryRoot instanceof Element) coverage?.add(queryRoot);
           queryRoot.querySelectorAll(runSelector).forEach((el) => {
-            elementsToMutate.add(el as HTMLElement);
+            add(el as HTMLElement);
           });
         }
         this.numberOfRuns++;
@@ -758,7 +777,7 @@ export class Rule {
       });
     }
     elementsToMutate.forEach((element) => {
-      this.runProps(mutationMap, element, options);
+      this.runProps(mutationMap, element, options, rematched.has(element));
     });
   }
   /**
@@ -821,10 +840,14 @@ export class Rule {
     );
   }
 
+  /**
+   * `rematch`: reached through a selector dependency (see `Property.run`).
+   */
   runProps(
     mutationMap: MutationMap,
     element: HTMLElement,
-    options: QuarkOptions
+    options: QuarkOptions,
+    rematch = false
   ) {
     const { propertiesToRun } = options;
     const mutatedProperties = Array.from(
@@ -832,8 +855,8 @@ export class Rule {
     );
 
     const trace = this.quarkInstance.runTrace;
-    const shouldRunProperty = (property: Variable | Attribute | Listener) => {
-      if (propertiesToRun && !propertiesToRun.includes(property)) return false;
+    const runProperty = (property: Variable | Attribute | Listener) => {
+      if (propertiesToRun && !propertiesToRun.includes(property)) return;
       // this second check ensures that we avoid running a given property if
       // that property is what triggered the change to begin with. `class`
       // is exempt: its tokens are separate facts (`.a { class: (b: true) }`
@@ -844,38 +867,25 @@ export class Rule {
       ) {
         // not refreshed by this run: a deferred write it reads must reach it
         if (trace) recordSeq(trace.visited, element, property, 0);
-        return false;
+        return;
       }
-      return true;
+      property.run(
+        element,
+        options,
+        rematch ||
+          property.referencedAttrNames.some((name) =>
+            mutatedProperties.includes(name)
+          )
+      );
     };
 
-    this.variables.forEach((v) => {
-      if (shouldRunProperty(v)) {
-        v.run(element, options);
-      }
-    });
-    this.listeners.forEach((l) => {
-      if (shouldRunProperty(l)) {
-        l.run(element, options);
-      }
-    });
-    this.attributes.forEach((a) => {
-      if (shouldRunProperty(a)) {
-        a.run(element, options);
-      }
-    });
+    this.variables.forEach(runProperty);
+    this.listeners.forEach(runProperty);
+    this.attributes.forEach(runProperty);
     // after the writes: a diagnostic reads what this pass set; a delay
     // restarts on every application of the rule
-    this.diagnostics.forEach((d) => {
-      if (shouldRunProperty(d)) {
-        d.run(element, options);
-      }
-    });
-    this.delays.forEach((d) => {
-      if (shouldRunProperty(d)) {
-        d.run(element, options);
-      }
-    });
+    this.diagnostics.forEach(runProperty);
+    this.delays.forEach(runProperty);
   }
   filterPropertiesToRun(options: QuarkOptions) {
     const allProps = [

@@ -207,10 +207,7 @@ export const processEffectorResult = (
           );
         }
       } else {
-        /* BUG: happy-dom omits property keys on elements, so this
-         * check fails tests. `!import.meta.env.TEST` skips the throw
-         * there; test vs non-test behavior now differs. */
-        if (!(key in element) && !import.meta.env.TEST) {
+        if (!(key in element)) {
           throw new NeutronError(
             `Cannot set property \`${key}\` on ${element.localName} - property does not exist.`
           );

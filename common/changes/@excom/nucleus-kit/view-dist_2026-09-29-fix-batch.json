@@ -1,0 +1,145 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Add `KitLogger` to the exports of Nucleus Kit and its progressive entry: `KitLogger.level = 2` shows the warnings Nucleus Kit elements log",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Add `QuarkLogger` to the exports of Nucleus Kit, its ESM entry and its UMD global, next to `KitLogger`: `QuarkLogger.level = 2` shows the warnings Quark logs, independently of `KitLogger.level`; the progressive entry does not export it, as that would load all of Quark up front",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Add `did-load` to `provider-fetch`, `super-form`, `web-authn` and `quark-sheet`: set on the first success, kept while a refresh loads, cleared on an error, so content can stay on screen with `[did-load]` instead of `[is-success]`",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Add relative `route-href` values to `spa-route` and `spa-a`: `checkout` resolves against the page's `<base>`",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Add the key names `Space` / `Spacebar` and `plus` to Quark's `key:` and to `keycode-filter` (`Shift+Space`)",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Add absolute `http(s)` URLs to Quark's `@use`: the module loads from that URL, and any other scheme (`data:`, `blob:`) is refused with a logged error",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Update `match-nested` on `spa-route` and `spa-a` to match its own path as well as child paths: `route-href=\"/users\"` is active at `/users`, so a separate route for that path renders beside it and a 404 fallback stays off there",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Update a reload to report `move: null` in the route data: no `spa-manager-<move>` event fires for it, and the saved scroll offset is restored",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Update scroll handling so the outermost `spa-manager` owns it: the browser's own scroll restoration is off while one is connected (the page's value returns after the last one disconnects), a `spa-route` without a `spa-manager` no longer scrolls, and `spa-route.setScroll()` is removed",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Update scroll reset to happen only when a route rendered: a push or replace that renders nothing (a query change on a `reuse` route) keeps its position, and a `#fragment` target wins over the reset",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Update nested `spa-manager` elements to join the outermost manager's View Transition: one transition per navigation, and only the outermost manager fires `spa-manager-will-transition` and `spa-manager-transition` and carries `is-transitioning`",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Update `spa-manager-will-transition` and `spa-manager-rendered` to fire when no View Transition runs too (reduced motion, no API, `no-transition`, first paint), once per update chain, as a navigation that arrives before the update settles joins it; a nested manager's `spa-manager-rendered` no longer bubbles, so a listener on the outermost manager or above gets one per chain, and `preventDefault()` on `spa-manager-will-transition` holds the update, the first paint included, until `updateRoutes(true)` resumes it (with a View Transition where the page allows one) or `updateRoutes()` runs it without one",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Update a `same-route=\"reuse\"` param change to run no View Transition: an update that only changes provisions no longer animates",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Update a query change to provision the route again: `spa-route-provision` fires, the provision carries a new `query` object, and a `same-route=\"refresh\"` route renders again",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Update `has-rendered` on `spa-manager` to be set once the routes of the first update have rendered, inside that update: a loading shell hidden on `[has-rendered]` stays until the first view is on screen (it was set when the first update started)",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Update a closed `content-drawer` to be `visibility: hidden` once its slide-out ends: a custom `transition` on it must keep `visibility 0s <duration>`, and a closed drawer shown in the layout needs `visibility: visible`",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Update `content-drawer` so only an `.absolute` drawer styles its parent, as `position: relative; overflow: clip` (was every drawer, with `overflow: hidden`)",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Update failed-request logging to one line: an error status logs a warning, which the default `KitLogger` level hides, and a network or parse failure logs an error",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Update a template or sheet URL that answers with an error status to give `is-error` and paint nothing: the error page is no longer rendered as content",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Update a `keycode-filter` holding only spaces to match no key and warn once; write `space` for the space bar",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Fix an issue where a rule reading a `$binding` or `prop()` did not apply its value again when an attribute or child change made it match again, so an inverse rule left the old value in place",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Fix scroll restoration on back and forward: it no longer snaps before the transition, a restore follows late content for about 2 seconds or until the user scrolls, taps, types or drags the scrollbar, and a `#fragment` target rendered by a route is scrolled to",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Fix an issue where a navigation started inside a `spa-manager-rendered` listener was dropped",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Fix an issue where `spa-manager` hung in a browser whose `startViewTransition()` throws: the update now runs without a transition",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Fix `provision.params` on a `route-regex` route: named groups (`(?<id>\\d+)`) give `params.id`, URL-decoded, unmatched groups are left out, and unnamed groups are read from `provision.match` (every group used to land under the key `undefined`)",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Fix `provision.params` on a `spa-route` whose `route-href` holds a capture group of its own, such as `/(a|b)/:id`: placeholders keep their names (the group shifted them, so a param landed under the key `undefined`), a group the author names, such as `(?<lang>en|de)`, becomes a param, and a placeholder that did not take part in the match is left out (it was the string `\"undefined\"`)",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Fix an issue where a `route-href` with a non-capturing group, such as `/(?:a|b)/:id`, made `spa-route` and `spa-a` throw",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Fix an issue where `include-content` and `spa-route` elements on the same template URL stayed `is-loading` when one of them disconnected, reloaded or changed `template-ref` during the load: the shared request now finishes for the others",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/nucleus-kit"
+}

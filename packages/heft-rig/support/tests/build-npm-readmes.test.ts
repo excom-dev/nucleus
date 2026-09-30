@@ -187,7 +187,7 @@ describe("rewriteNpmLinks", () => {
     const untouched = [
       "[x](https://excom.dev/nucleus/packages/quark)",
       "[y](http://example.com/a.md)",
-      "[z](mailto:joe@excom.global)",
+      "[z](mailto:hello@example.com)",
       "[w](//cdn.example.com/x.png)",
       "[h](#md-features)",
     ];

@@ -22,7 +22,7 @@ Slide-in drawers and sheets for nav menus, filters, confirmations, and side pane
 
 ## Usage
 
-Put content inside `<content-drawer>` and invoke `--open`, `--close`, or `--toggle` on it — a native `<button command commandfor>`, or `<event-handler command-name target-ref>` when the invoker is not a button. Its parent automatically becomes `position: relative; overflow: hidden`, so give the parent a real size along the drawer's axis.
+Put content inside `<content-drawer>` and invoke `--open`, `--close`, or `--toggle` on it — a native `<button command commandfor>`, or `<event-handler command-name target-ref>` when the invoker is not a button. The parent of an `.absolute` drawer becomes `position: relative; overflow: clip`, so give that parent a real size along the drawer's axis.
 
 ```html
 <button type="button" command="--toggle" commandfor="sheet">Toggle sheet</button>
@@ -31,6 +31,8 @@ Put content inside `<content-drawer>` and invoke `--open`, `--close`, or `--togg
 </content-drawer>
 <event-handler class="tag-backdrop" role="presentation" target-ref="content-drawer:has(+ :scope)" command-name="--close"></event-handler>
 ```
+
+The backdrop never reads the drawer's own variables: set `--content-drawer-transition-duration`, `--content-drawer-transition-ease` and `--content-drawer-overlay-z-index` on the parent, the backdrop or `:root`. After its slide-out a closed drawer is `visibility: hidden`, so a custom `transition` on it must keep `visibility 0s <duration>`.
 
 ### API Reference
 

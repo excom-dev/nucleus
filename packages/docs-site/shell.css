@@ -233,7 +233,6 @@ main
   content-drawer:not([aria-label="preview"] content-drawer) {
   /* exclude demo content drawers */
   --content-drawer-z-index: 6;
-  --content-drawer-overlay-z-index: 5;
 }
 #site-menu {
   display: none;

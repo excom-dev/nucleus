@@ -1,6 +1,6 @@
 # Modal
 
-A native `dialog` centers an `article` over a dimmed backdrop; the header's close control and the footer buttons are styled, and `[role="dialog"]` hosts get the same look with a sibling backdrop.
+A native `dialog` centers an `article` over a dimmed backdrop; the header's close control and the footer buttons are styled, and `[role="dialog"]` hosts get the same look with a child backdrop.
 
 ## Usage
 
@@ -31,6 +31,6 @@ A native `dialog` centers an `article` over a dimmed backdrop; the header's clos
 
 ## Custom hosts
 
-`[role="dialog"]` / `.tag-dialog` (`:--dialog`) get the same layout; open state is `[open]` or `aria-expanded="true"`. Pseudo-elements cannot be aliased, so a custom host dims with a **sibling** element: `[role="presentation"]` or `.tag-backdrop` as the dialog's first child (`:--dialog-backdrop-aliases`) — `<content-drawer>` uses this. `.absolute` on the dialog positions it (and its backdrop) inside a `position: relative` parent instead of the viewport.
+`[role="dialog"]` / `.tag-dialog` (`:--dialog`) get the same layout and stay hidden unless `aria-expanded="true"`; `[open]` opens a native `dialog` only. Pseudo-elements cannot be aliased, so a custom host dims with a **child** element: `[role="presentation"]` or `.tag-backdrop` (`:--dialog-backdrop-aliases`) — `<content-drawer>` takes the same element as its next sibling. `.absolute` on the dialog positions it (and its backdrop) inside a `position: relative` parent instead of the viewport.
 
 Element authors reuse the exact same dimmer through the `modal-backdrop` mixin — see [Themes & layers](./THEMES.md).

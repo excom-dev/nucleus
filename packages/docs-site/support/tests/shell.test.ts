@@ -718,7 +718,7 @@ describe("site base trailing slash", () => {
 
   afterEach(() => {
     router?.destroy();
-    sessionStorage.removeItem("__spa_router_data__");
+    sessionStorage.removeItem("__kit_router_history__");
     history.replaceState(null, "", "/");
   });
 

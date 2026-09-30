@@ -67,7 +67,7 @@ export class KitLogManager {
   constructor(opts: KitLogManagerOpts) {
     this.namespace = opts.namespace;
     const LOG_LEVEL = parseInt((import.meta as any).env.VITE_LOG_LEVEL);
-    this.level = (opts.level ?? isNumber(LOG_LEVEL)) ? LOG_LEVEL : 1;
+    this.level = opts.level ?? (isNumber(LOG_LEVEL) ? LOG_LEVEL : 1);
     this.formatArgs = opts.formatArgs || ((args) => args);
   }
   #format(prefix: string, args: any[]) {

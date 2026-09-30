@@ -1,0 +1,15 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/content-carousel",
+      "comment": "Fix an issue where `provision` did not follow slides added or removed, and `last-move` and `content-carousel-slide-changed` did not follow `is-active` moving from one slide to another (a swipe): each change sets one provision, and a carousel moved in the DOM no longer sets it again",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/content-carousel",
+      "comment": "Update the internal `autoPlayIntervalId` property to `_autoPlayIntervalId`, as its other private properties are named; it was never an attribute, so markup is unaffected",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/content-carousel"
+}

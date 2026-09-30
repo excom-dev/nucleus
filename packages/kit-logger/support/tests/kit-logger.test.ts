@@ -227,11 +227,8 @@ describe("KitLogManager edge cases", () => {
     expect(manager.level).toBe(1);
   });
 
-  it("constructs with an explicit level option", () => {
-    /* Constructor still reads `level` from the env even when `opts.level`
-       is given (operator-precedence bug). Only assert construction succeeds. */
-    const manager = new KitLogManager({ namespace: "Test", level: 3 });
-    expect(manager.namespace).toBe("Test");
+  it.each([0, 3])("uses an explicit level of %i", (level) => {
+    expect(new KitLogManager({ namespace: "Test", level }).level).toBe(level);
   });
 
   it("exposes a shared default logger instance", async () => {
