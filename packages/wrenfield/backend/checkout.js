@@ -70,6 +70,7 @@ const placeOrder = (ctx) => {
   const order = {
     id,
     createdAt: new Date(ctx.now).toISOString(),
+    userId: ctx.state.session.userId ?? null,
     contact: draft.contact,
     address: draft.address,
     delivery: { id: delivery.id, name: delivery.name, fee: delivery.fee, eta: delivery.eta },

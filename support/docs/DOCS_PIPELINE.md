@@ -21,6 +21,7 @@ Generated artifacts (`support/package-meta.json`, `support/custom-elements.json`
    - Site `dev`/`build` run this for every `@excom/*` workspace link before collecting (fresh clone works).
 2. `collect:docs-metas` (docs-site `dev` / `build`) copies metas into `public/package-metas/`.
    - `index.json` is `{ packages, docs }`. `packages` omits `packageType: "site"` and carries `docSections` where a package has them. `docs` is the overview catalog (name + title from the first `<h1>`).
+   - `excom.navGroup: "libraries"` (the only value `format-package-json` accepts) moves a package from its type's sidebar list into the collapsed Libraries group, and `index.json` entries carry it; `nucleus-dom`, `nucleus-test` and `quark-formatter` set it.
    - `search-docs.json` indexes each doc page as `kind: "page"` (`doc` = page key).
 3. `/packages/:packageName`, `/packages/:packageName/:docName` and `/docs/:name` share `package.html`. The sheet picks `/package-metas/<pkg>.json` vs `docs-site.json` and renders `readme` vs `docs[name]`, plus the page's breadcrumb and previous / next links.
 4. `rush build:docs` + `rush build:docs-index` — markdown API tables + `dist-docs/llms.txt` / `llms-full.txt`. `build:docs-index` also copies those two files into `packages/docs-site/dist` so Cloudflare serves `/llms.txt` and `/llms-full.txt`.

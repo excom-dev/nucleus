@@ -92,8 +92,11 @@
     }
   }
 
-  [bind-products] {
+  [bind-products],
+  [bind-skeleton] {
     margin-top: 1.5rem;
+  }
+  [bind-products] {
     transition: opacity 0.2s;
   }
   provider-fetch[is-loading] [bind-products] {
@@ -159,7 +162,8 @@
     nav {
       flex-wrap: wrap;
     }
-    [bind-products] {
+    [bind-products],
+    [bind-skeleton] {
       margin-top: 2.5rem;
     }
   }

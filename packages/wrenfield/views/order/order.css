@@ -1,4 +1,17 @@
 @scope {
+  provider-fetch:not([did-load]) > :is(h1, p, section:not(.error)) {
+    display: none;
+  }
+  .wf-skeleton {
+    margin-block: 1rem 2.5rem;
+
+    > :first-child {
+      min-height: 2.5rem;
+    }
+    > :last-child {
+      min-height: 12rem;
+    }
+  }
   h1 + p {
     display: flex;
     flex-wrap: wrap;

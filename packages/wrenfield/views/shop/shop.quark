@@ -20,10 +20,25 @@ provider-fetch {
     @dispatch view-title (detail: event.detail.body.title);
   }
 }
+provider-fetch:not([did-load]) {
+  [bind-products],
+  [bind-empty] {
+    hidden: "";
+  }
+  [bind-skeleton] {
+    hidden: none;
+  }
+}
 provider-fetch[did-load] {
   $listing: prop("provision").body;
   $products: $listing.items;
   $count: $listing.total;
+  [bind-products] {
+    hidden: none;
+  }
+  [bind-skeleton] {
+    hidden: "";
+  }
   [bind-title] {
     content: $listing.title;
   }

@@ -15,6 +15,31 @@
     display: block;
   }
 
+  [bind-signed-out],
+  [bind-signed-in] {
+    padding: 1.25rem;
+
+    > p {
+      margin: 0 0 1rem;
+    }
+    web-authn {
+      display: block;
+
+      & + web-authn {
+        margin-top: 0.75rem;
+      }
+    }
+    button {
+      width: 100%;
+    }
+    output:not(:empty) {
+      display: block;
+      margin-top: 0.5rem;
+      color: var(--v-del-color);
+      font-size: 0.8125rem;
+    }
+  }
+
   [bind-orders] {
     &:not(:has(> li)) {
       display: none;
@@ -41,8 +66,11 @@
       justify-self: end;
     }
   }
-  provider-fetch:not([order-count="0"]) > .empty {
+  provider-fetch:not([did-load][order-count="0"]) > .empty {
     display: none;
+  }
+  provider-fetch > .wf-skeleton > * {
+    min-height: 3.5rem;
   }
   :scope :is(.empty, .error) {
     margin: 0 0 2rem;

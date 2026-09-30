@@ -118,6 +118,8 @@ interface Session {
   /** Pointer ids captured since recognition */
   captured: Set<number>;
   longPressed: boolean;
+  /** `pan-x` / `pan-y`: native scroll cancelled for this touch; `null` unjudged */
+  scrollLock: boolean | null;
   type: GestureType | null;
   axis: Vec;
   rangePx: number;
@@ -152,6 +154,7 @@ interface Methods {
   _handleMove: (e: PointerEvent) => void;
   _handleUp: (e: PointerEvent) => void;
   _handleHandoff: EventListener;
+  _lockScroll: EventListener;
 }
 
 /**
@@ -190,8 +193,8 @@ const OPPOSITE: Record<GestureDirection, GestureDirection> = {
 const PAN_TYPES = ["pan", "pan-x", "pan-y"];
 const MULTI_TYPES: GestureType[] = ["pinch", "rotate"];
 const VELOCITY_WINDOW_MS = 100;
-/** Travel (px) before a `handoff-ref` move is judged */
-const HANDOFF_MIN_PX = 3;
+/** Travel (px) before a first touch move is judged: handoff, pan scroll lock */
+const FIRST_MOVE_PX = 3;
 /** Slack (px) still counted as at scroll limit */
 const LIMIT_EPSILON = 1;
 /** Computed `overflow-*` of an element the user can scroll */
@@ -320,9 +323,10 @@ export const GestureHandler = Neutron({
     // options
     /**
      * @option
-     * Gestures to recognize. `pan-x` / `pan-y` one axis (other stays native
-     * scroll); `pan` both; `pinch` / `rotate` need two fingers; `swipe`
-     * velocity on release; `tap` / `double-tap` / `long-press` fire events.
+     * Gestures to recognize. `pan-x` / `pan-y` one axis (a touch starting
+     * along it holds the page still, one across it scrolls); `pan` both;
+     * `pinch` / `rotate` need two fingers; `swipe` velocity on release;
+     * `tap` / `double-tap` / `long-press` fire events.
      * @values pan | pan-x | pan-y | pinch | rotate | swipe | tap | double-tap | long-press
      * @default pan
      */
@@ -684,7 +688,41 @@ GestureHandler.defineMethods({
    * opens a session.
    */
   _handleHandoff: (element, event: Event) => handoffEffects(element, event),
+  /**
+   * `pan-x` / `pan-y` `touchmove`: a first move along the pan axis cancels
+   * native scroll for the rest of the touch, before `threshold-px`, until
+   * the pan is rejected. iOS would otherwise scroll the page across the
+   * axis mid-swipe.
+   */
+  _lockScroll: (element, event: Event) => {
+    const { _session: s, gestureTypes } = element;
+    const { targetTouches, cancelable, target } = event as TouchEvent;
+    if (s?.scrollLock === null && s.armed && targetTouches.length === 1) {
+      const dx = s.acc[0] + targetTouches[0].clientX - s.base[0];
+      const dy = s.acc[1] + targetTouches[0].clientY - s.base[1];
+      if (Math.hypot(dx, dy) < FIRST_MOVE_PX) return; // too early to tell
+      const along = gestureTypes.includes(
+        Math.abs(dx) >= Math.abs(dy) ? "pan-x" : "pan-y"
+      );
+      const direction = dominantDirection(dx, dy);
+      // A scroller under the finger with room that way keeps the touch
+      if (along && canScroll(element, target as Element, direction)) return;
+      s.scrollLock = !s.rejected && along;
+    }
+    if (s?.scrollLock && !s.rejected && cancelable) event.preventDefault();
+  },
 })
+  .onPropChanged("gestureTypes", ({ gestureTypes, _lockScroll }) => ({
+    toggleListeners: [
+      [
+        "touchmove",
+        _lockScroll,
+        gestureTypes.some((type) => type === "pan-x" || type === "pan-y"),
+        // Only a non-passive `touchmove` can stop the page scrolling
+        { passive: false },
+      ],
+    ],
+  }))
   .onPropSet("handoffRef", ({ _handleHandoff }) => ({
     addListeners: HANDOFF_EVENTS.map((name) => [
       name,
@@ -892,7 +930,7 @@ function handsOver(element: El, target: Element, dx: number, dy: number) {
   const [ax, ay] = AXES[forward];
   const along = dx * ax + dy * ay;
   const across = Math.abs(dx * ay - dy * ax);
-  if (Math.abs(along) < HANDOFF_MIN_PX || Math.abs(along) <= across) {
+  if (Math.abs(along) < FIRST_MOVE_PX || Math.abs(along) <= across) {
     return false;
   }
   const { progressOffset, progressMin, progressMax } = element;
@@ -919,7 +957,7 @@ function handoffEffects(element: El, event: Event): unknown[] | undefined {
   }
   const dx = pointer.clientX - h.x;
   const dy = pointer.clientY - h.y;
-  if (Math.hypot(dx, dy) < HANDOFF_MIN_PX) return; // too early to tell
+  if (Math.hypot(dx, dy) < FIRST_MOVE_PX) return; // too early to tell
   if (!handsOver(element, h.target, dx, dy)) {
     return [{ _handoff: null }]; // container scrolls; leave it
   }
@@ -968,6 +1006,7 @@ function createSession(element: El, pointerType: string): Session {
     rejected: false,
     captured: new Set(),
     longPressed: false,
+    scrollLock: null,
     type: null,
     axis,
     rangePx: range,

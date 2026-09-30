@@ -20,7 +20,7 @@ service-worker {
 }
 
 #me {
-  @on super-form-success, super-form-error {
+  @on super-form-success, super-form-error, web-authn-success {
     @command --fetch;
   }
   @on super-form-success (target: "super-form:has(> form[action='/api/bag'])") {

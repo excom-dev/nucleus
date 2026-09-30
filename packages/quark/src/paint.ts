@@ -24,6 +24,7 @@
  * motion, hidden document, nothing would change, another transition
  * active under `if-active: skip`), the commit is plain.
  */
+import { counts } from "./meter";
 import type { SettleUntil } from "./settle";
 import { addBusyCheck, whenSettled } from "./settle";
 import type { PaintFn } from "./types";
@@ -154,6 +155,7 @@ export const schedulePaint = (
   priority: number = 1,
   extras?: Pick<PaintEntry, "transition" | "willChange">
 ) => {
+  counts.schedulePaint++;
   // paints commit in a later task: carry the causal depth of the run that
   // scheduled them so the loop guard sees one continuous chain
   const depth = LoopGuard.current();

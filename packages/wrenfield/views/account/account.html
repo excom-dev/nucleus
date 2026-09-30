@@ -7,8 +7,32 @@
   <h1>Account</h1>
 
   <section>
+    <h2 class="eyebrow">Your account</h2>
+    <article class="card" bind-signed-out hidden>
+      <p>Sign in with a passkey to keep your orders together. No username, no password: your device unlocks it.</p>
+      <web-authn start-method="authenticate" options-url="/api/passkeys/authenticate/options" verify-url="/api/passkeys/authenticate/verify">
+        <form><button type="submit">Sign in with a passkey</button></form>
+        <output></output>
+      </web-authn>
+      <web-authn start-method="register" options-url="/api/passkeys/register/options" verify-url="/api/passkeys/register/verify">
+        <form><button type="submit" class="secondary">Create a passkey</button></form>
+        <output></output>
+      </web-authn>
+    </article>
+    <article class="card" bind-signed-in hidden>
+      <p>Signed in as <strong bind-user-name></strong> · since <time bind-user-since></time></p>
+      <super-form bind-sign-out>
+        <form action="/api/passkeys/session" method="delete">
+          <button type="submit" class="secondary">Sign out</button>
+        </form>
+      </super-form>
+    </article>
+  </section>
+
+  <section>
     <h2 class="eyebrow">Orders</h2>
     <provider-fetch id="account-orders" api-url="/api/orders" class="abstract">
+      <div class="wf-skeleton" aria-hidden="true"><div></div><div></div><div></div></div>
       <ul class="list" bind-orders>
         <template>
           <li>
@@ -83,7 +107,7 @@
           <svg aria-hidden="true"><use href="/img/icons.svg#x"/></svg>
         </button>
       </header>
-      <p>This empties your bag, clears your saved pieces and orders, switches trade pricing off and puts the prefilled checkout details back.</p>
+      <p>This signs you out and forgets your passkeys, empties your bag, clears your saved pieces and orders, switches trade pricing off and puts the prefilled checkout details back.</p>
       <footer>
         <button type="button" class="secondary" command="--close" commandfor="reset-demo">Cancel</button>
         <super-form bind-reset>

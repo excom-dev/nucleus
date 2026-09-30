@@ -1,5 +1,5 @@
 importScripts(
-  ...["config", "shop", "bag", "checkout", "account"].map(
+  ...["config", "shop", "bag", "checkout", "account", "passkeys"].map(
     (name) => `/backend/${name}.js`
   )
 );
@@ -8,7 +8,7 @@ const CATALOG_URL = "/data/catalog.json";
 const DB_NAME = "wrenfield";
 const LATENCY_MS = [80, 250];
 
-// An update returns the state keys it changes; the view builds the response from the new state.
+// An update returns (or resolves to) the state keys it changes; the view builds the response from the new state.
 const ROUTES = Object.entries({
   "GET /me": { view: me },
   "PATCH /session": { update: setTrade, view: me },
@@ -28,6 +28,26 @@ const ROUTES = Object.entries({
   "GET /orders/latest": { view: latestOrder },
   "GET /orders/:id": { view: orderById },
   "DELETE /demo": { update: () => DEFAULT_STATE, view: () => ({ ok: true }) },
+  "POST /passkeys/register/options": {
+    update: beginRegistration,
+    view: registrationOptions,
+  },
+  "POST /passkeys/register/verify": {
+    update: verifyRegistration,
+    view: signedIn,
+  },
+  "POST /passkeys/authenticate/options": {
+    update: beginAuthentication,
+    view: authenticationOptions,
+  },
+  "POST /passkeys/authenticate/verify": {
+    update: verifyAuthentication,
+    view: signedIn,
+  },
+  "DELETE /passkeys/session": {
+    update: signOut,
+    view: (ctx) => ({ user: currentUser(ctx) }),
+  },
 }).map(([route, handlers]) => {
   const [method, path] = route.split(" ");
   return {
@@ -115,7 +135,7 @@ const handle = async (request) => {
     catalog: await catalog(),
     state: await readState(),
   };
-  const changes = route.update?.(ctx) ?? {};
+  const changes = (await route.update?.(ctx)) ?? {};
   await writeState(changes);
   return json(
     route.view({ ...ctx, state: { ...ctx.state, ...changes } }),

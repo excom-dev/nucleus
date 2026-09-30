@@ -108,6 +108,7 @@
   <detect-browser></detect-browser>
   <quark-sheet>
     @use "/shell" as *;
+    @use "quark:list" as list;
 
     #release-notice {
       /* opens once: sheet re-runs restart a delay, so gate it on the fact it writes */
@@ -123,19 +124,24 @@
 
     provider-fetch[api-url*="package-metas/index.json"][is-success] {
       $package-indices: prop("provision").body;
+      /* `excom.navGroup` moves a package out of its type's list, into that group */
+      $ungrouped: list.reject($package-indices.packages, "navGroup");
       .package-links {
         [bind-elements] ul:not(ul ul) {
-          content: iterate(getPackagesByType($package-indices, "kit-element"));
+          content: iterate(getPackagesByType($ungrouped, "kit-element"));
         }
         [bind-element-bases] ul:not(ul ul) {
-          content: iterate(getPackagesByType($package-indices, "element-base"));
+          content: iterate(getPackagesByType($ungrouped, "element-base"));
         }
         [bind-tools] ul:not(ul ul) {
-          content: iterate(getPackagesByType($package-indices, "tool"));
+          content: iterate(getPackagesByType($ungrouped, "tool"));
         }
         /* the standalone libraries: same rows, rendered flat (shell.css) */
         [bind-libraries] ul:not(ul ul) {
-          content: iterate(getPackagesByType($package-indices, "library"));
+          content: iterate(getPackagesByType($ungrouped, "library"));
+        }
+        [bind-library-group] ul:not(ul ul) {
+          content: iterate(list.filter($package-indices.packages, "navGroup", "libraries"));
         }
         ul:not(ul ul) > li {
           $pkg: item.shortName;
@@ -364,12 +370,17 @@
             <div class="library-links" bind-libraries>
               <include-content is-active template-ref="#template-tree"></include-content>
             </div>
+            <!-- closed until one of its pages is active -->
             <details open bind-elements>
               <summary title="Drop-In Custom Elements">Elements</summary>
               <include-content is-active template-ref="#template-tree"></include-content>
             </details>
             <details open bind-tools>
               <summary title="Developer Tooling">Tools</summary>
+              <include-content is-active template-ref="#template-tree"></include-content>
+            </details>
+            <details bind-library-group>
+              <summary title="Supporting Libraries">Libraries</summary>
               <include-content is-active template-ref="#template-tree"></include-content>
             </details>
             <details open bind-element-bases>

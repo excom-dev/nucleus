@@ -210,10 +210,18 @@ const PACKAGE_TYPE_DEFAULTS = {
   }),
 };
 
+// Docs-site sidebar groups a package may opt into with `excom.navGroup`.
+const NAV_GROUPS = ["libraries"];
+
 const buildPackageJson = (packageConfig) => {
-  const packageType = packageConfig.excom?.packageType;
+  const { packageType, navGroup } = packageConfig.excom ?? {};
   if (packageType && !PACKAGE_TYPE_DEFAULTS[packageType]) {
     throw new Error(`Invalid package type: ${packageType}`);
+  }
+  if (navGroup !== undefined && !NAV_GROUPS.includes(navGroup)) {
+    throw new Error(
+      `Invalid navGroup: ${navGroup} (allowed: ${NAV_GROUPS.join(", ")})`,
+    );
   }
   return PACKAGE_TYPE_DEFAULTS[packageType]
     ? PACKAGE_TYPE_DEFAULTS[packageType](packageConfig)

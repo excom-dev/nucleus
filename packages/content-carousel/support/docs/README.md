@@ -8,7 +8,7 @@ Rotate slides on autopilot or on click — galleries, hero banners, walkthroughs
 
 - **Auto-play** Rotate on a timer via `auto-play`
 - **Manual nav** `--back` / `--next` commands from plain buttons; `rel="prev"` / `rel="next"` positions them
-- **Slide or fade** Choose the transition with `slide-animation`
+- **Slide or fade** Choose the transition with `slide-animation`: `slide` / `fade` / `track`
 - **Swipeable** `slide-animation="track"` wrapped in [`gesture-handler`](/nucleus/packages/gesture-handler): drag and flick between slides
 - **Pauses itself** Manual navigation stops auto-play automatically
 - **Bindable position** `.provision` is `{ index, count, lastMove }` — a
@@ -40,6 +40,8 @@ content-carousel {
   [bind-progress] { content: "#{$slide} / #{$count}"; }
 }
 ```
+
+Nothing animates until the first move: `last-move` is unset until then, so an initial `is-active`, in markup or written by the app, appears in place. `slide-animation="track"` renders only the active slide and its two DOM neighbours, so slides must be siblings (a `display: contents` wrapper around them is fine) and, with three or more slides, a wrap — `--next` from the last, `--back` from the first — cuts to the new slide instead of sliding; put it inside [`gesture-handler`](/nucleus/packages/gesture-handler) to drag it.
 
 ### API Reference
 

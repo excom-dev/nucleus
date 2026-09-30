@@ -137,6 +137,7 @@ export const WebAuthn = Neutron.compose([
 
       return {
         isLoading: true,
+        isError: false,
         optionsPromise: doAuth({
           fetchArgs: getFetchArgs([optionsUrl, { method: apiMethod }]),
           startMethod,
@@ -168,22 +169,17 @@ export const WebAuthn = Neutron.compose([
       ],
     })
   )
-  .onPromiseRejected("optionsPromise", (_, result) => {
-    console.error("WebAuthn error:", result.optionsPromise);
-    return {
-      emit: [
-        "error",
-        {
-          detail: {
-            message:
-              result.optionsPromise instanceof Error
-                ? result.optionsPromise.message
-                : "WebAuthn operation failed",
-          },
-        },
-      ],
-    };
-  });
+  .onPromiseRejected("optionsPromise", (_, result) => ({
+    // Same end state as a failed verify: `is-error`, `provision`, one event
+    setErrorState: [
+      {
+        message:
+          result.optionsPromise instanceof Error
+            ? result.optionsPromise.message
+            : "WebAuthn operation failed",
+      },
+    ],
+  }));
 
 async function doAuth({
   fetchArgs,

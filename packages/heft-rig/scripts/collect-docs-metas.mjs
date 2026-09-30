@@ -5,7 +5,8 @@
  *
  *   public/package-metas/index.json         ({ packages, docs }; a package
  *                                            entry carries `docSections` when
- *                                            its docs span several pages)
+ *                                            its docs span several pages and
+ *                                            `navGroup` when it sets one)
  *   public/package-metas/<shortName>.json
  *   public/package-metas/search-docs.json   (minified slim corpus, see build-search-docs.mjs)
  *
@@ -152,10 +153,13 @@ export async function collectDocsMetas(packageRoot = process.cwd()) {
     seen.add(shortName);
     metas.push(meta);
     await cp(metaPath, path.join(outDir, `${shortName}.json`));
+    const { packageType, navGroup } = meta.package?.excom ?? {};
     catalog.push({
       shortName,
-      packageType: meta.package?.excom?.packageType,
+      packageType,
       version: meta.package?.version,
+      // Sidebar group that replaces the package's type list (`excom.navGroup`).
+      ...(navGroup ? { navGroup } : {}),
       // Sidebar groups for packages whose docs span several pages.
       ...(meta.docSections?.length ? { docSections: meta.docSections } : {}),
     });

@@ -9,6 +9,8 @@
       <strong aria-hidden="true" bind-name></strong>
     </header>
 
+    <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+
     <data-product>
       <content-tabs>
         <content-tabs-header tab-name="photos" is-open>
@@ -39,7 +41,7 @@
           </gesture-handler>
         </content-tabs-body>
         <content-tabs-body tab-name="model">
-          <model-viewer camera-controls touch-action="pan-y" environment-image="neutral" shadow-intensity="1" shadow-softness="1"
+          <model-viewer camera-controls touch-action="none" environment-image="neutral" shadow-intensity="1" shadow-softness="1"
             ar ar-modes="webxr scene-viewer quick-look">
             <figure class="stage" slot="poster"><img alt="" bind-product-image></figure>
             <button type="button" slot="ar-button" class="secondary">

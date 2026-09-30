@@ -63,6 +63,7 @@
   --wf-blur: saturate(1.6) blur(1rem);
   --wf-serif: "Cormorant Garamond", "Iowan Old Style", Palatino, Georgia, serif;
   --wf-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --wf-ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
   --wf-page: 75rem;
   --wf-gutter: 1.25rem;
   --wf-bar: 2.75rem;
@@ -70,8 +71,36 @@
   --wf-header: 4.25rem;
   --wf-sticky: calc(var(--wf-header) + 1.5rem);
   --wf-gap: clamp(2rem, 6vw, 5rem);
+  --wf-source: 3.5rem;
 
   scrollbar-gutter: stable;
+
+  /* "See source" shows its label from 400px; the bar title keeps clear of it */
+  @media (width >= 400px) {
+    --wf-source: 8.25rem;
+  }
+}
+/* No blur while a View Transition runs: the compositor would resample it every
+   frame. Surfaces fall back to the solid paper. */
+html:active-view-transition {
+  --wf-blur: none;
+  --wf-glass: var(--wf-paper);
+}
+/* iOS: no pull-to-refresh, pinch or double-tap zoom. Safari ignores user-scalable
+   in the viewport meta, and suppresses double-tap zoom per element, not per page. */
+html {
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+}
+body,
+a,
+button,
+spa-a,
+input,
+textarea,
+summary,
+label {
+  touch-action: manipulation;
 }
 
 body {
@@ -319,12 +348,24 @@ spa-manager > header {
         display: none;
       }
     }
+    /* the row is tight below the full page width: the pill drops its label */
+    @container (width < 75rem) {
+      > #source-link {
+        width: 2.25rem;
+        padding: 0;
+
+        span {
+          position: absolute;
+          clip-path: inset(50%);
+        }
+      }
+    }
   }
 
   [data-layout="compact"] & {
     display: contents;
 
-    > :not(#tabs) {
+    > :not(#tabs, #source-link) {
       display: none;
     }
     #tabs {
@@ -368,6 +409,56 @@ spa-manager > header {
       min-width: 1.1rem;
       padding: 0.15rem 0.3rem;
       text-align: center;
+    }
+  }
+}
+
+/* Floats top-right on phones; sits in the header row on wider screens, where
+   search and tabs leave no free corner. A hidden label stays in the DOM for
+   the accessible name. */
+#source-link {
+  flex: none;
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.25rem;
+  padding-inline: 0.85rem;
+  border: 1px solid var(--v-muted-border-color);
+  border-radius: 2rem;
+  color: var(--wf-ink);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  white-space: nowrap;
+  view-transition-name: source-link;
+
+  &:is(:hover, :focus-visible) {
+    border-color: var(--wf-ink);
+  }
+  svg {
+    flex: none;
+    width: 1.1rem;
+    height: 1.1rem;
+    fill: currentColor;
+  }
+  [data-layout="compact"] & {
+    position: fixed;
+    top: max(0.75rem, env(safe-area-inset-top));
+    right: max(0.75rem, env(safe-area-inset-right));
+    z-index: 11;
+    background: var(--wf-glass);
+    backdrop-filter: var(--wf-blur);
+
+    @media (width < 400px) {
+      width: 2.25rem;
+      padding: 0;
+
+      span {
+        position: absolute;
+        clip-path: inset(50%);
+      }
     }
   }
 }
@@ -441,7 +532,7 @@ main {
     justify-self: center;
   }
   > strong {
-    max-width: 100%;
+    max-width: min(100%, calc(100vw - 2 * var(--wf-source)));
     overflow: hidden;
     font-weight: 600;
     text-overflow: ellipsis;
@@ -891,6 +982,34 @@ label {
     background: none;
   }
 }
+/* Placeholder blocks until a view's data lands; after .stage so its ground yields */
+.wf-skeleton {
+  display: grid;
+  gap: 0.75rem;
+
+  > * {
+    min-height: 1em;
+    border-radius: 0.5rem;
+    background: var(
+      --wf-skeleton-bg,
+      color-mix(in oklab, currentColor 12%, transparent)
+    );
+    animation: wf-skeleton 1.2s ease-in-out infinite alternate;
+  }
+  > .stage {
+    aspect-ratio: 4 / 5;
+  }
+}
+@keyframes wf-skeleton {
+  to {
+    opacity: 0.45;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wf-skeleton > * {
+    animation: none;
+  }
+}
 spa-a:has(> .stage) {
   display: grid;
   gap: 0.15rem;
@@ -916,6 +1035,11 @@ data-line {
   @starting-style {
     opacity: 0;
   }
+}
+/* A View Transition captures its new snapshot while @starting-style still holds
+   items at opacity 0, which reads as a dark flash on phones. */
+html:active-view-transition :is(data-product, data-line) {
+  transition: none;
 }
 data-product {
   display: block;
@@ -1138,19 +1262,19 @@ content-drawer {
 :root:has([data-layout="compact"]):not(:active-view-transition-type(tab)) {
   &:has(spa-manager:is([last-move="push"], [last-move="forward"])) {
     &::view-transition-old(root) {
-      animation: 0.45s var(--wf-ease) both push-under;
+      animation: 0.3s var(--wf-ease-out) both push-under;
     }
     &::view-transition-new(root) {
-      animation: 0.45s var(--wf-ease) both push-over;
+      animation: 0.3s var(--wf-ease-out) both push-over;
     }
   }
   &:has(spa-manager[last-move="back"]) {
     &::view-transition-old(root) {
       z-index: 1;
-      animation: 0.45s var(--wf-ease) both reverse push-over;
+      animation: 0.3s var(--wf-ease-out) both reverse push-over;
     }
     &::view-transition-new(root) {
-      animation: 0.45s var(--wf-ease) both reverse push-under;
+      animation: 0.3s var(--wf-ease-out) both reverse push-under;
     }
   }
 }
@@ -1164,6 +1288,24 @@ content-drawer {
     translate: -30% 0;
     opacity: 0.6;
   }
+}
+/* Chrome is held still so only the page slides; the live new snapshot already
+   paints it, so the old one would only ghost. */
+::view-transition-group(tabs),
+::view-transition-image-pair(tabs),
+::view-transition-new(tabs),
+::view-transition-group(header),
+::view-transition-image-pair(header),
+::view-transition-new(header),
+::view-transition-group(source-link),
+::view-transition-image-pair(source-link),
+::view-transition-new(source-link) {
+  animation: none;
+}
+::view-transition-old(tabs),
+::view-transition-old(header),
+::view-transition-old(source-link) {
+  display: none;
 }
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(*),

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/heft-rig",
+      "comment": "Add the optional `excom.navGroup` package.json key (only `\"libraries\"` is accepted by `format-package-json`), carried into the docs-site `index.json` catalog so a package can move from its type's sidebar list into a named group",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@excom/heft-rig"
+}

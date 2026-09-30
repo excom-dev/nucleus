@@ -487,6 +487,52 @@ describe("content-carousel (changes from outside)", () => {
   });
 });
 
+describe("content-carousel (track mode)", () => {
+  afterEach(() => {
+    document.body.innerHTML = "";
+    vi.restoreAllMocks();
+  });
+
+  // happy-dom applies no stylesheet (and misreads combinators inside `:not()`):
+  // the sibling facts content-carousel.css shows slides by, one at a time
+  const slot = (slide: Element) =>
+    slide.matches("[is-active]")
+      ? 0
+      : slide.matches("[is-active] + *")
+        ? 1
+        : slide.matches(":has(+ [is-active])")
+          ? -1
+          : "hidden";
+
+  const build = (active = "is-active") =>
+    fixture<HTMLContentCarouselElement>(
+      `<content-carousel slide-animation="track">
+        <content-carousel-slide ${active}></content-carousel-slide>
+        ${"<content-carousel-slide></content-carousel-slide>".repeat(4)}
+      </content-carousel>`,
+    );
+
+  it("renders only the active slide and its neighbours", async () => {
+    const carousel = build();
+    const slides = [...carousel.querySelectorAll("content-carousel-slide")];
+    expect(slides.map(slot)).toEqual([0, 1, "hidden", "hidden", "hidden"]);
+    await command(carousel, "--next");
+    expect(slides.map(slot)).toEqual([-1, 0, 1, "hidden", "hidden"]);
+  });
+
+  it("sets last-move on the first move, not on connect or the initial is-active", async () => {
+    const carousel = build("");
+    const slides = carousel.querySelectorAll("content-carousel-slide");
+    expect(carousel.hasAttribute("last-move")).toBe(false);
+    slides[0].setAttribute("is-active", "");
+    await wait(0);
+    expect(carousel.provision).toEqual({ index: 0, count: 5, lastMove: null });
+    expect(carousel.hasAttribute("last-move")).toBe(false);
+    await command(carousel, "--next");
+    expect(carousel.getAttribute("last-move")).toBe("forward");
+  });
+});
+
 describe("content-carousel (auto-play lifecycle)", () => {
   afterEach(() => {
     document.body.innerHTML = "";

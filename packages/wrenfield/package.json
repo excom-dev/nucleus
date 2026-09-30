@@ -13,6 +13,8 @@
     "format": "node node_modules/@excom/heft-rig/scripts/format.mjs",
     "test": "node node_modules/@excom/heft-rig/scripts/vitest.mjs",
     "coverage": "node node_modules/@excom/heft-rig/scripts/coverage.mjs",
+    "stage": "node scripts/stage.mjs",
+    "deploy": "node scripts/stage.mjs && npx wrangler deploy",
     "dev": "node serve.js"
   },
   "dependencies": {},

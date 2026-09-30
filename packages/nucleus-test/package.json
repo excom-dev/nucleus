@@ -44,6 +44,7 @@
   ],
   "excom": {
     "documented": true,
+    "navGroup": "libraries",
     "packageType": "library",
     "umd": false
   }

@@ -181,6 +181,29 @@ describe("collectDocsMetas", () => {
     ]);
   });
 
+  it("carries a package's navGroup into the index catalog", async () => {
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const root = path.join(tmp, "nav-group-site");
+    const inGroup = (shortName: string, packageType: string) =>
+      JSON.stringify({
+        shortName,
+        package: { version: "0.0.1", excom: { packageType, navGroup: "libraries" } },
+      });
+    writeFiles(root, {
+      "node_modules/@excom/grouped-lib/support/package-meta.json": inGroup("grouped-lib", "library"),
+      "node_modules/@excom/grouped-tool/support/package-meta.json": inGroup("grouped-tool", "tool"),
+      "node_modules/@excom/plain-lib/support/package-meta.json": meta("plain-lib"),
+    });
+    const outDir = await collectDocsMetas(root);
+    expect(readJson(path.join(outDir, "index.json")).packages).toEqual([
+      { shortName: "grouped-lib", packageType: "library", version: "0.0.1", navGroup: "libraries" },
+      { shortName: "grouped-tool", packageType: "tool", version: "0.0.1", navGroup: "libraries" },
+      { shortName: "plain-lib", packageType: "kit-element", version: "0.0.1" },
+    ]);
+    const plain = readJson(path.join(outDir, "index.json")).packages[2];
+    expect("navGroup" in plain).toBe(false);
+  });
+
   it("keeps the site package out of `packages` while still writing its meta", async () => {
     vi.spyOn(console, "log").mockImplementation(() => {});
     const root = path.join(tmp, "site-hidden");

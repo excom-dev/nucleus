@@ -316,6 +316,22 @@ describe("buildPackageMetas", () => {
     });
   });
 
+  it("carries excom.navGroup in the package block for the catalog to read", async () => {
+    const root = path.join(tmp, "grouped-lib");
+    writeFiles(root, {
+      "package.json": packageJson("@excom/grouped-lib", {
+        excom: { documented: true, navGroup: "libraries", packageType: "library" },
+      }),
+      "index.ts": "export const x = 1;",
+    });
+    await buildPackageMetas(root);
+    expect(readMeta(root).package.excom).toEqual({
+      documented: true,
+      navGroup: "libraries",
+      packageType: "library",
+    });
+  });
+
   it("gives a library the prerequisite UMDs its own dependencies reach", async () => {
     const root = path.join(tmp, "tiny-lib");
     writeFiles(root, {

@@ -1,6 +1,22 @@
+provider-fetch:not([did-load]) {
+  [bind-hero],
+  [bind-products] {
+    hidden: "";
+  }
+  [bind-skeleton] {
+    hidden: none;
+  }
+}
 provider-fetch[did-load] {
   $home: prop("provision").body;
 
+  [bind-hero],
+  [bind-products] {
+    hidden: none;
+  }
+  [bind-skeleton] {
+    hidden: "";
+  }
   [bind-hero] {
     $product: $home.hero;
   }

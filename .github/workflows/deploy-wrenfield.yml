@@ -1,0 +1,42 @@
+# Manual redeploy of wrenfield.excom.dev from `main`. Pushes to `main` deploy
+# through the Release workflow (publish.yml), after the version bump, so the
+# page always pins a Kit version that is on npm. Run this from `main` only:
+# another ref can carry a Kit version that was never published.
+#
+# CLOUDFLARE_API_TOKEN needs Workers Scripts:Edit (account), plus Workers
+# Routes:Edit and DNS:Edit on the excom.dev zone for the custom domain
+# declared in packages/wrenfield/wrangler.jsonc.
+name: Deploy Wrenfield
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+
+      # No dependencies to install: staging copies files and reads the Kit
+      # version from packages/nucleus-kit/package.json.
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24.13.0"
+      - run: node packages/wrenfield/scripts/stage.mjs
+
+      # From the repo root like the docs deploy: the action installs wrangler
+      # with npm where it runs, which cannot read the package's `workspace:`
+      # dependencies. Config paths resolve relative to the config file.
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --config packages/wrenfield/wrangler.jsonc

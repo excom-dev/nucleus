@@ -16,7 +16,11 @@
       font-size: 1rem;
     }
   }
-  [bind-collections] .stage {
+  [bind-skeleton="hero"] > :nth-child(3) {
+    min-height: 3rem;
+  }
+  [bind-collections] .stage,
+  [bind-skeleton="collections"] > .wf-skeleton > .stage {
     aspect-ratio: 1;
   }
   [bind-rail="antiques"] {
@@ -33,11 +37,13 @@
   }
 
   [data-layout="compact"] & {
-    [bind-hero] .stage {
+    [bind-hero] .stage,
+    [bind-skeleton="hero"] > .stage {
       margin: calc((var(--wf-bar) + env(safe-area-inset-top)) * -1) calc(var(--wf-gutter) * -1) 0;
       border-radius: 0;
     }
-    [bind-collections] {
+    [bind-collections],
+    [bind-skeleton="collections"] {
       --wf-column: 42vw;
     }
   }
@@ -62,7 +68,19 @@
         margin-top: 2rem;
       }
     }
-    [bind-collections] {
+    [bind-skeleton="hero"] {
+      grid-template-columns: 5fr 6fr;
+      gap: 0.75rem var(--wf-gap);
+      align-items: end;
+      margin-top: 2.5rem;
+
+      > .stage {
+        grid-area: 1 / 2 / span 3;
+        aspect-ratio: 1;
+      }
+    }
+    [bind-collections],
+    [bind-skeleton="collections"] {
       grid-template-columns: repeat(5, 1fr);
     }
     [bind-rail="antiques"] {

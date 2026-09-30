@@ -125,6 +125,28 @@ describe("formatPackageJson", () => {
     expect(Object.keys(json.excom)).toEqual(["coverageThreshold", "documented", "packageType"]);
   });
 
+  it("accepts the libraries nav group and keeps it in sorted position", async () => {
+    const { json } = await run({
+      name: "@excom/nucleus-dom",
+      version: "1.0.0",
+      excom: { packageType: "library", navGroup: "libraries", documented: true },
+    });
+    expect(json.excom).toEqual({
+      documented: true,
+      navGroup: "libraries",
+      packageType: "library",
+    });
+    expect(Object.keys(json.excom)).toEqual(["documented", "navGroup", "packageType"]);
+  });
+
+  it("rejects a nav group the docs site does not know", async () => {
+    for (const navGroup of ["tools", "", null, 1]) {
+      await expect(
+        run({ name: "@excom/x", version: "1.0.0", excom: { packageType: "library", navGroup } }),
+      ).rejects.toThrow(`Invalid navGroup: ${navGroup} (allowed: libraries)`);
+    }
+  });
+
   it("applies element-base defaults with a PascalCase name", async () => {
     const { json } = await run({
       name: "@excom/fetchable-element",

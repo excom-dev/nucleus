@@ -6,7 +6,13 @@
       <p class="wordmark">Wrenfield</p>
     </header>
 
-    <data-product bind-hero>
+    <div class="wf-skeleton" bind-skeleton="hero" aria-hidden="true">
+      <div class="stage"></div>
+      <div style="width: 30%"></div>
+      <div style="width: 80%"></div>
+      <div style="width: 60%"></div>
+    </div>
+    <data-product bind-hero hidden>
       <spa-a bind-product-link aria-hidden="true">
         <figure class="stage"><img alt="" bind-product-image></figure>
       </spa-a>
@@ -35,6 +41,12 @@
           </li>
         </template>
       </ul>
+      <div bind-skeleton="collections" role="list" class="rail" aria-hidden="true">
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+      </div>
     </section>
 
     <section bind-rail="featured">
@@ -43,7 +55,13 @@
         <h2>Featured pieces</h2>
         <spa-a route-href="/shop" role="link" transition-types="tab">See all</spa-a>
       </header>
-      <div bind-products role="list" class="rail"></div>
+      <div bind-products role="list" class="rail" hidden></div>
+      <div bind-skeleton role="list" class="rail" aria-hidden="true">
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+      </div>
     </section>
 
     <section bind-rail="antiques">
@@ -52,7 +70,13 @@
         <h2>Restored by hand, one of each</h2>
         <spa-a route-href="/shop?era=antique" role="link" transition-types="tab">Enter the room</spa-a>
       </header>
-      <div bind-products role="list" class="rail"></div>
+      <div bind-products role="list" class="rail" hidden></div>
+      <div bind-skeleton role="list" class="rail" aria-hidden="true">
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+      </div>
     </section>
 
     <section bind-rail="arrivals">
@@ -61,7 +85,13 @@
         <h2>New arrivals</h2>
         <spa-a route-href="/shop?sort=newest" role="link" transition-types="tab">See all</spa-a>
       </header>
-      <div bind-products role="list" class="rail"></div>
+      <div bind-products role="list" class="rail" hidden></div>
+      <div bind-skeleton role="list" class="rail" aria-hidden="true">
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+      </div>
     </section>
 
     <section bind-rail="recent">
@@ -69,7 +99,13 @@
         <p class="eyebrow">Where you left off</p>
         <h2>Recently viewed</h2>
       </header>
-      <div bind-products role="list" class="rail"></div>
+      <div bind-products role="list" class="rail" hidden></div>
+      <div bind-skeleton role="list" class="rail" aria-hidden="true">
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+      </div>
     </section>
 
     <aside class="trade card">

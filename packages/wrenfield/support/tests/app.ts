@@ -1,9 +1,12 @@
 // The app on happy-dom: index.html's body, files served from the package, /api/* through the worker.
 // The whole Nucleus Kit from source: every element defined.
 import { Quark } from "@excom/nucleus-kit";
-import { afterEach, consoleSinks, expect, onTestFinished, readFileRelative, serveStatic, vi } from "@excom/nucleus-test";
+import { afterEach, consoleSinks, expect, onTestFinished, readFileRelative, serveStatic, trackComplexity, vi } from "@excom/nucleus-test";
 import { popstate, resetRouter, trackUnhandledRejections } from "@excom/spa-route/testing";
 import { loadWorker, ROOT } from "./backend/worker.mjs";
+
+// No Node types in this package: only the environment is read.
+declare const process: { env: Record<string, string | undefined> } | undefined;
 
 export type Call = [method: string, path: string, body?: unknown];
 
@@ -70,7 +73,8 @@ export const until = <T>(fn: () => T | Promise<T>): ReturnType<typeof expect.pol
   expect.poll(fn, { timeout: 10_000, interval: 10 });
 
 // One stand-in for the whole file: a request that outlives its test (an idle pre-fetch, a late template) gets a file, not the network.
-const page = { serve: serveStatic(ROOT, { fallback: "index.html" }), issues: [] as string[], inflight: 0 };
+type Gate = { pattern: RegExp; waiting: number; opened: Promise<void>; release: () => void };
+const page = { serve: serveStatic(ROOT, { fallback: "index.html" }), issues: [] as string[], inflight: 0, gates: [] as Gate[] };
 globalThis.fetch = async (input, init) => {
   page.inflight++;
   try {
@@ -90,6 +94,27 @@ export const idle = async () => {
     quiet = settled ? quiet + 1 : 0;
   }
 };
+/**
+ * Holds `/api` requests matching `pattern` ("GET /api/home?a=1") until the returned `release()`, so a test
+ * sees the page while it waits; `idle` ignores a held request. Call before `openApp` to hold a first load.
+ */
+export const hold = (pattern: RegExp) => {
+  let open!: () => void;
+  const gate: Gate = {
+    pattern,
+    waiting: 0,
+    opened: new Promise<void>((resolve) => (open = resolve)),
+    release: () => {
+      page.gates = page.gates.filter((held) => held !== gate);
+      page.inflight += gate.waiting; // in flight again before `idle` can look
+      gate.waiting = 0;
+      open();
+    },
+  };
+  page.gates.push(gate);
+  return gate.release;
+};
+const route = ({ method, url }: Request) => `${method} ${url.slice(location.origin.length)}`;
 /** Runs `action`, then waits for the page to settle: the Chrome suite's `page.do`. */
 export const act = async (action: () => unknown) => {
   await action();
@@ -156,7 +181,16 @@ export const openApp = async (start: string, { setup = [] as Call[], size = SIZE
   const worker = loadWorker();
   for (const call of setup) await worker.api(...call);
   const issues: string[] = [];
-  Object.assign(page, { issues, serve: serveStatic(ROOT, { fallback: "index.html", api: (request) => worker.dispatch(request) }) });
+  const api = async (request: Request) => {
+    const gate = page.gates.find(({ pattern }) => pattern.test(route(request)));
+    if (gate) {
+      page.inflight--; // held, not in flight
+      gate.waiting++;
+      await gate.opened;
+    }
+    return worker.dispatch(request);
+  };
+  Object.assign(page, { issues, serve: serveStatic(ROOT, { fallback: "index.html", api }) });
   for (const method of ["error", "warn"] as const) {
     vi.spyOn(consoleSinks, method).mockImplementation((...args) => issues.push(`console.${method}: ${args.join(" ")}`));
   }
@@ -173,6 +207,7 @@ export const openApp = async (start: string, { setup = [] as Call[], size = SIZE
 };
 
 afterEach(async () => {
+  page.gates.forEach(({ release }) => release());
   await idle();
   document.body.innerHTML = "";
   Object.assign(page, { issues: [], serve: serveStatic(ROOT, { fallback: "index.html" }) });
@@ -180,3 +215,6 @@ afterEach(async () => {
   delete (navigator as { serviceWorker?: unknown }).serviceWorker;
   resetRouter();
 });
+// Counts of this polling-driven app suite vary run to run (up to 2x): snapshots are written only on request,
+// e.g. `NUCLEUS_COMPLEXITY=1 pnpm test`, and are not committed. After the teardown: after hooks run last-registered first.
+if (process?.env.NUCLEUS_COMPLEXITY) trackComplexity(Quark.meter, { settle: idle });

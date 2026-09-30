@@ -7,6 +7,11 @@
       margin: 0;
     }
   }
+  /* `did-load` survives a refetch: the skeleton fills only the first load */
+  provider-fetch[did-load] > .wf-skeleton,
+  provider-fetch:not([did-load]) > :is(data-product, [bind-related]) {
+    display: none;
+  }
 
   content-tabs {
     display: flex;
@@ -78,14 +83,21 @@
     user-select: none;
 
     > [rel] {
+      /* Valence's button transitions plus the fade */
+      --wf-rel-transition: background-color var(--v-transition), border-color var(--v-transition), color var(--v-transition),
+        box-shadow var(--v-transition), opacity 0.3s;
       margin: 0 1rem;
       border-radius: 50%;
       background: var(--wf-glass);
       backdrop-filter: var(--wf-blur);
+      transition: var(--wf-rel-transition);
     }
     &:has(content-carousel-slide:first-of-type[is-active]) > [rel="prev"],
     &:has(content-carousel-slide:last-of-type[is-active]) > [rel="next"] {
+      opacity: 0;
       visibility: hidden;
+      pointer-events: none;
+      transition: var(--wf-rel-transition), visibility 0s linear 0.3s;
     }
   }
   [bind-dots] {
@@ -302,10 +314,11 @@
   }
 
   [data-layout="compact"] & {
-    content-tabs-body > * {
+    content-tabs-body > *,
+    .wf-skeleton > .stage {
       margin: calc((var(--wf-bar) + env(safe-area-inset-top)) * -1) calc(var(--wf-gutter) * -1) 0;
     }
-    :is(content-carousel, model-viewer) {
+    :is(content-carousel, model-viewer, .wf-skeleton > .stage) {
       border-radius: 0;
     }
     content-carousel > [rel] {
@@ -332,9 +345,21 @@
         --v-font-size: clamp(2.25rem, 4vw, 3rem);
       }
     }
-    :is(content-carousel, model-viewer) {
+    :is(content-carousel, model-viewer, .wf-skeleton > .stage) {
       width: 100%;
       max-height: max(26rem, 100dvh - 14rem);
+    }
+    provider-fetch > .wf-skeleton {
+      grid-template: auto auto 1fr / minmax(0, 7fr) minmax(0, 5fr);
+      column-gap: var(--wf-gap);
+      margin-top: 1.5rem;
+
+      > .stage {
+        grid-row: 1 / -1;
+      }
+      > :not(.stage) {
+        grid-column: 2;
+      }
     }
   }
 }

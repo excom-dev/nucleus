@@ -20,6 +20,8 @@ quark.unregister();
 
 `Quark.whenSettled({ timeout? })` resolves once no rule pass, paint, template load or `@use` load is pending (`"settled"`), or after `timeout` ms (`"timeout"`, default 1000) — for tests and tools; sheets have no after-render hook.
 
+`Quark.meter` counts the engine's work across every sheet — sheet passes, rule / binding / attribute / listener runs, `$variable` reads and writes, paints — always on, at negligible cost: `counts`, `reset()`, `scopeSelectors()`. It is the engine for complexity snapshots in `@excom/nucleus-test`: `trackComplexity(Quark.meter, { settle: () => Quark.whenSettled() })`.
+
 Writing `$variables` from app code goes through `element.quark` — see [Writing from JS](./JS_WRITES.md).
 
 ## DevTools

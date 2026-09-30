@@ -39,9 +39,17 @@
       </nav>
     </search>
 
-    <div bind-products role="list"></div>
+    <div bind-products role="list" hidden></div>
+    <div bind-skeleton role="list" aria-hidden="true">
+      <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+      <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+      <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+      <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+      <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+      <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+    </div>
 
-    <section class="empty" bind-empty>
+    <section class="empty" bind-empty hidden>
       <svg aria-hidden="true"><use href="/img/icons.svg#search"/></svg>
       <h2>Nothing matches</h2>
       <p>No piece fits every filter. Remove one, or clear them all to see the whole room.</p>

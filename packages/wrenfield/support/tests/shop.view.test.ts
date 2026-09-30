@@ -1,5 +1,8 @@
-import { describe, it } from "@excom/nucleus-test";
-import { $, $$, act, fill, openApp, SIZES, text, until, where } from "./app";
+import { describe, expect, it } from "@excom/nucleus-test";
+import { $, $$, act, fill, hold, idle, openApp, push, SIZES, text, until, where } from "./app";
+
+/** What a person sees: elements outside any `hidden` subtree. */
+const shown = (selector: string) => $$(selector).filter((element) => !element.closest("[hidden]"));
 
 describe.each(Object.entries(SIZES))("%s", (_name, size) => {
   it("header search follows a query-only change and a reload", async () => {
@@ -25,6 +28,53 @@ describe.each(Object.entries(SIZES))("%s", (_name, size) => {
     await until(listing).toEqual(results("walnut", 7));
     await reload("/shop?q=walnut");
     await until(listing).toEqual(results("walnut", 7));
+  });
+
+  it("skeleton cards stand in for the listing until it loads", async () => {
+    const release = hold(/^GET \/api\/products/);
+    const { worker } = await openApp("/shop", { size });
+    const { total } = (await worker.api("GET", "/products")).body as { total: number };
+
+    expect(shown("#shop .wf-skeleton")).toHaveLength(6);
+    expect(shown("#shop .wf-skeleton").every((card) => card.getAttribute("aria-hidden") === "true")).toBe(true);
+    expect(shown("#shop [bind-products] > data-product")).toHaveLength(0);
+    expect(shown("#shop [bind-empty]")).toHaveLength(0);
+
+    release();
+    await idle();
+    expect(shown("#shop .wf-skeleton")).toHaveLength(0);
+    expect(shown("#shop [bind-products] > data-product")).toHaveLength(total);
+    expect(shown("#shop [bind-empty]")).toHaveLength(0);
+  });
+
+  it("Nothing matches shows only once the loaded listing is empty", async () => {
+    const release = hold(/^GET \/api\/products/);
+    await openApp("/shop?q=zzzz", { size });
+    expect(shown("#shop .wf-skeleton")).toHaveLength(6);
+    expect(shown("#shop [bind-empty]")).toHaveLength(0);
+
+    release();
+    await idle();
+    expect(shown("#shop .wf-skeleton")).toHaveLength(0);
+    expect(shown("#shop [bind-products] > data-product")).toHaveLength(0);
+    expect(text("#shop [bind-empty] h2")).toBe("Nothing matches");
+    expect(shown("#shop [bind-empty]")).toHaveLength(1);
+  });
+
+  it("a refetch keeps the listing on screen and does not bring the skeleton back", async () => {
+    await openApp("/shop?q=oak", { size });
+    const cards = () => shown("#shop [bind-products] > data-product").length;
+    const release = hold(/^GET \/api\/products\?.*q=walnut/);
+    push("/shop?q=walnut");
+    await until(() => $("#shop provider-fetch")!.hasAttribute("is-loading")).toBe(true);
+
+    expect(shown("#shop .wf-skeleton")).toHaveLength(0);
+    expect(cards()).toBe(9);
+
+    release();
+    await idle();
+    expect(shown("#shop .wf-skeleton")).toHaveLength(0);
+    expect(cards()).toBe(7);
   });
 
   it.skip("back to a scrolled shop list restores its offset", () => {

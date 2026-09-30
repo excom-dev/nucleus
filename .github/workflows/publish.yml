@@ -8,14 +8,15 @@
 #   2. Build everything from the bumped tree, so package metas, CDN
 #      snippets, npm READMEs and the docs site carry the new versions.
 #   3. Publish to npm (and the VS Code extension).
-#   4. Deploy the docs site, on every push: a docs-only change has nothing
-#      to publish but still needs a deploy.
+#   4. Deploy the docs site and Wrenfield, on every push: a docs-only change
+#      has nothing to publish but still needs a deploy. Wrenfield pins the Kit
+#      version just bumped, so it runs after the publish.
 #   5. Push the bump commit last, so `main` only records versions that
 #      reached npm.
 # Why one pipeline: a site deployed in parallel is built from the pre-bump
 # commit and shows the old versions, and the bump commit never starts a run
 # to correct it (`[skip ci]`; GITHUB_TOKEN pushes start no workflows).
-# deploy-docs.yml is for manual redeploys only.
+# deploy-docs.yml and deploy-wrenfield.yml are for manual redeploys only.
 name: Release
 
 on:
@@ -141,6 +142,18 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy packages/docs-site/dist --project-name=excom-docs
+      # Wrenfield (wrenfield.excom.dev), a Worker with static assets. The token
+      # also needs Workers Scripts:Edit (account), plus Workers Routes:Edit and
+      # DNS:Edit on the excom.dev zone for the custom domain. The stage step
+      # reads the bumped Kit version, which the publish above put on npm.
+      - name: Stage Wrenfield
+        run: node packages/wrenfield/scripts/stage.mjs
+      - name: Deploy Wrenfield to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --config packages/wrenfield/wrangler.jsonc
 
       # 5. Push the bump, if one was committed (HEAD moved off the checked-out
       # commit). Runs whenever npm publish succeeded, even if the extension or

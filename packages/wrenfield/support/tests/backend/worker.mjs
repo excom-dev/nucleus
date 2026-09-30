@@ -1,5 +1,7 @@
 // Loads sw.js into a fake service worker scope: in-memory IndexedDB, FIFO lock, settable clock, no latency.
 import vm from "node:vm";
+import { atob, btoa } from "node:buffer";
+import { webcrypto } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -88,6 +90,11 @@ export const loadWorker = ({ root = ROOT, now = Date.now(), fetch = serveFrom(ro
     Response,
     Request,
     structuredClone,
+    crypto: webcrypto,
+    TextEncoder,
+    TextDecoder,
+    atob,
+    btoa,
     console,
     setTimeout: (fn) => setTimeout(fn, 0),
     indexedDB,
@@ -131,5 +138,8 @@ export const loadWorker = ({ root = ROOT, now = Date.now(), fetch = serveFrom(ro
     return context.scenario(call, travel);
   };
 
-  return { dispatch, send, api, travel, runScenario };
+  // A top-level binding of the worker's scripts, e.g. a pure helper under test.
+  const binding = (name) => vm.runInContext(name, context);
+
+  return { dispatch, send, api, travel, runScenario, binding };
 };

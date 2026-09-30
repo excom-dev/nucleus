@@ -7,6 +7,12 @@ provider-fetch {
     @dispatch view-title (detail: "Order #{event.detail.body.id}");
   }
 }
+provider-fetch[did-load] > .wf-skeleton {
+  hidden: "";
+}
+provider-fetch:not([did-load]) > .wf-skeleton {
+  hidden: none;
+}
 provider-fetch[did-load] {
   $order: prop("provision").body;
   $bag: $order;

@@ -54,7 +54,7 @@ export type PackageMeta = {
     version: string;
     description?: string;
     peerDependencies?: Record<string, string>;
-    excom?: { packageType?: string; documented?: boolean };
+    excom?: { packageType?: string; documented?: boolean; navGroup?: string };
     exports?: Record<string, unknown>;
   };
   demos: Record<string, string>;
@@ -71,6 +71,8 @@ export type PackageMeta = {
 
 export type PackageIndexEntry = {
   packageType: string;
+  /** Nav group overriding the `packageType` placement (`libraries`). */
+  navGroup?: string;
   shortName: string;
   version: string;
   docSections?: DocSection[];

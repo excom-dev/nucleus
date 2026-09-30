@@ -67,7 +67,7 @@ export const ContentCarousel = Neutron({
     /**
      * @option
      * Transition used when the active slide changes.
-     * @values slide | fade
+     * @values slide | fade | track
      * @default slide
      */
     slideAnimation: String,
@@ -75,7 +75,8 @@ export const ContentCarousel = Neutron({
      * @state
      * Direction of the most recent slide change — drives the CSS
      * animation direction. `is-active` moved from one slide to another
-     * counts as `forward` / `back` by position.
+     * counts as `forward` / `back` by position. Unset until the first move,
+     * so the initial slide appears without animating in.
      * @values forward | back
      */
     lastMove: String,

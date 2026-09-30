@@ -1,5 +1,13 @@
 import type { DiffOptions } from "@open-wc/semantic-dom-diff/get-diffable-html";
 
+export {
+  type ComplexityBudget,
+  type ComplexityMetric,
+  type EngineMeter,
+  expectComplexity,
+  measureComplexity,
+  trackComplexity,
+} from "./src/complexity";
 export { consoleSinks, summarizeConsoleArg } from "./src/console";
 export { readDemo, readFileRelative } from "./src/files";
 export { clearEventListeners, getEventListeners } from "./src/listeners";

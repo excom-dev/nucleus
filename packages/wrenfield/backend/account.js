@@ -10,7 +10,7 @@ const addSaved = (ctx) => {
 
 const removeSaved = (ctx) => ({ saved: ctx.state.saved.filter((sku) => sku !== ctx.params.sku) });
 
-const orderView = (order, now) => {
+const orderView = ({ userId, ...order }, now) => {
   const placedAt = Date.parse(order.createdAt);
   const stages = TIMELINE.map((stage) => ({
     ...stage,
@@ -38,16 +38,20 @@ const orderView = (order, now) => {
   );
 };
 
-const orders = (ctx) => ctx.state.orders.map((order) => orderView(order, ctx.now));
+// The signed-in user's orders, or the guest's (userId null) when signed out.
+const ownOrders = ({ state }) =>
+  state.orders.filter((order) => (order.userId ?? null) === (state.session.userId ?? null));
+const orders = (ctx) => ownOrders(ctx).map((order) => orderView(order, ctx.now));
 const latestOrder = (ctx) => orders(ctx)[0] ?? fail(404, "There are no orders yet.");
 const orderById = (ctx) =>
   orders(ctx).find((order) => order.id === ctx.params.id) ?? fail(404, "We could not find that order.");
 
 const me = (ctx) => ({
   isTrade: ctx.state.session.isTrade,
+  user: currentUser(ctx),
   bag: bag(ctx),
   saved: saved(ctx),
-  orderCount: ctx.state.orders.length,
+  orderCount: ownOrders(ctx).length,
 });
 
 const setTrade = ({ body, state }) => ({

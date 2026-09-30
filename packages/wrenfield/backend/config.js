@@ -6,6 +6,9 @@ const RAIL_LENGTH = 8;
 const RELATED_LENGTH = 4;
 const RECENT_LENGTH = 8;
 const SUMMARY_AMOUNTS = ["subtotal", "tradeDiscount", "deliveryFee", "total", "dueToday", "dueLater"];
+const RP_NAME = "Wrenfield";
+const PASSKEY_TIMEOUT_MS = 60_000;
+const CHALLENGE_TTL_MS = 120_000;
 
 const CATEGORIES = {
   seating: "Seating",
@@ -97,7 +100,7 @@ const CHECKOUT_FIELDS = {
 };
 
 const DEFAULT_STATE = {
-  session: { isTrade: false },
+  session: { isTrade: false, userId: null },
   bag: [],
   saved: [],
   checkout: {
@@ -116,4 +119,8 @@ const DEFAULT_STATE = {
   orders: [],
   sold: [],
   recent: [],
+  users: {},
+  credentials: {},
+  // the one ceremony in flight: { kind, challenge, expiresAt, user? }
+  pending: null,
 };

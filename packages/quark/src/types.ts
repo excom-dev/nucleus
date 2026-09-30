@@ -2,6 +2,7 @@ import type { ListenerOptionSource } from "./ast";
 import type { Attribute, Listener, Variable } from "./properties";
 import type { TQuarkElement } from "./quark-element";
 import type { Rule } from "./rule";
+export type { QuarkMeter, QuarkMetric } from "./meter";
 export type UtilFn = (e: any) => any;
 
 export type Vars = Record<string, any>;
