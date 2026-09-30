@@ -17,5 +17,6 @@ describe("invalid-message view", () => {
     const host = root.querySelector("super-input")!;
     expect(host.getAttribute("invalid-message")).toMatch(/US phone/);
     expect(host.querySelector("input")?.required).toBe(true);
+    expect(host.querySelector("input")?.inputMode).toBe("numeric");
   });
 });

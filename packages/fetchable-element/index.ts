@@ -72,8 +72,8 @@ export type FetchableErrorEvent = TEvent & {
  * @fires {tag}-success - Dispatched when the request resolves
  *   successfully. `event.detail` is the parsed response (see `provision`).
  * @type FetchableSuccessEvent
- * @fires {tag}-error - Dispatched when the request fails — non-2xx
- *   status, network error, or a thrown error. `event.detail` is the
+ * @fires {tag}-error - Dispatched when the request fails — status 400
+ *   or above, network error, or a thrown error. `event.detail` is the
  *   error payload (see `provision`). Not dispatched for aborted requests.
  * @type FetchableErrorEvent
  */
@@ -183,12 +183,12 @@ export const FetchableElement = Neutron.compose([
       /**
        * @state
        * The most recent request resolved successfully. Mutually
-       * exclusive with `is-error`.
+       * exclusive with `is-loading` and `is-error`.
        */
       isSuccess: Boolean,
       /**
        * @state
-       * The most recent request failed (non-2xx status, network
+       * The most recent request failed (status 400 or above, network
        * error, or a thrown error other than `AbortError`). Fires with
        * the `error` event.
        */
@@ -244,7 +244,11 @@ export const FetchableElement = Neutron.compose([
       { _setSuccess: [provision] },
     ],
     setErrorState: ({ localName }, provision: any) => {
-      KitLogger.error(`Element error: ${localName} - `, provision);
+      // an error status is an answer (e.g. a 422), not a crash
+      KitLogger[provision?.status ? "warn" : "error"](
+        `${localName}: request failed`,
+        provision
+      );
       return [{ fetchPromise: null }, { _setError: [provision] }];
     },
     getFormElement: (element) => ({
@@ -359,11 +363,16 @@ export const FetchableElement = Neutron.compose([
       }
   );
 
+/**
+ * Rejects with the response on an error status, or `{ message, stack }` on a
+ * network / parse failure. Resolves `undefined` on abort. `setErrorState`
+ * logs the failure, once.
+ */
 async function callFetch(
   url: string,
   options: RequestInit
 ): Promise<FetchResponse | undefined> {
-  let responseData;
+  let responseData: FetchResponse;
   try {
     const response = await fetch(url, options);
     responseData = {
@@ -379,21 +388,13 @@ async function callFetch(
         ? await response.json()
         : await response.text(),
     };
-    if (responseData.status >= 400) {
-      throw new Error("Response error code: " + responseData.status);
-    }
-    return responseData;
   } catch (error) {
-    if (error?.name !== "AbortError") {
-      // Prefer the error response; otherwise it's a thrown / programmatic error
-      const errorData = responseData || {
-        message: error.message,
-        stack: error.stack,
-      };
-      KitLogger.error("Element error: ", error);
-      throw errorData;
-    } else {
+    if (error?.name === "AbortError") {
       KitLogger.debug("Fetch request was aborted");
+      return;
     }
+    throw { message: error.message, stack: error.stack };
   }
+  if (responseData.status >= 400) throw responseData;
+  return responseData;
 }

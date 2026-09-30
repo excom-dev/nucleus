@@ -54,3 +54,9 @@ include-content[data-language] {
 [bind-copy-button] {
   content: template("#copy-source-button");
 }
+#md-next-steps + ul,
+#md-start-here + ul {
+  spa-a:not([data-completed], [is-active]) {
+    data-completed: didCompleteLink(element);
+  }
+}

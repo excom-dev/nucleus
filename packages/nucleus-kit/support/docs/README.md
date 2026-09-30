@@ -33,7 +33,7 @@ document for Nucleus Kit element tags and imports each element's package the
 first time its tag appears (initial scan, then every inserted subtree), so a
 page pays only for the elements it uses. Packages shared by several elements
 (`neutron`, `kit-utils`, `quark`, the element bases) are separate chunks
-under `dist/progressive/`, fetched once. The entry is 3 kB; a page using
+under `dist/progressive/`, fetched once. The entry is 3.5 kB; a page using
 `quark-sheet` and `content-drawer` loads ~55 kB gzip less than the all-in
 build.
 
@@ -45,6 +45,21 @@ Trade-offs: elements upgrade one network round-trip later (style the
 pre-upgrade state with `:not(:defined)`), it is ES modules only, and elements
 inside a shadow root need `observeElements(shadowRoot)` from the same module.
 The all-in `index.umd.min.js` and the ESM `index.js` are unchanged.
+
+#### Idle loading
+
+Prefetch the remaining packages once the page has loaded, so later views, dialogs and SPA navigations upgrade instantly with no round-trip. Packages load one per browser idle period; tags already on the page load first and are never fetched twice.
+
+Opt in on `<body>` (works with inline / bundled imports) or on the entry's own `<script>`:
+
+```html
+<body nucleus-kit-idle>                                    <!-- every package -->
+<body nucleus-kit-idle="spa-route super-form data-table">  <!-- only these -->
+
+<script type="module" src="/node_modules/@excom/nucleus-kit/nucleus-kit.progressive.min.js" data-idle></script>
+```
+
+An empty value loads everything; a space-separated list loads only the packages behind those tags (unknown tags log a warning). `data-idle` is read only from the `<script>` whose `src` is the entry itself and wins over the body attribute. Nothing is prefetched in data-saver mode (Save-Data). From JS, `idleLoadElements(tags?)` does the same.
 
 ### À la carte
 
@@ -63,6 +78,19 @@ import "@excom/content-drawer";
 
 Each package is self-contained — same elements, same versions, same CSS hooks —
 and its README documents the slim install. Valence.css is `@excom/valence`.
+
+### TypeScript
+
+Generally, you are advised to avoid TypeScript unless your app starts having a lot of complex JS customization. In that case, Nucleus Kit elements declare global types: their `HTML…Element` interfaces, `HTMLElementTagNameMap` entries (so `querySelector("spa-manager")` and `closest(…)` are typed) and Quark's `element.quark`. TypeScript loads them only when it sees an import of the package, so an app that loads Nucleus Kit from a `<script type="module">` or a CDN gets "Property does not exist" on `element.closest("spa-manager")?.router` or `element.quark`.
+
+Add one declaration file that the app's `tsconfig.json` includes:
+
+```ts
+// globals.d.ts
+import "@excom/nucleus-kit";
+```
+
+A `.d.ts` file emits nothing: no runtime import, no bundle cost. À la carte apps import each package they use instead (`import "@excom/spa-route"; import "@excom/quark";`). If a TypeScript file in the app already imports Nucleus Kit or the packages, nothing is needed.
 
 ### What's included
 

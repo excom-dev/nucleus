@@ -100,7 +100,7 @@ spa-a[is-active] {
 
 #### Nested layout & 404
 
-`match-nested` keeps a layout mounted under child paths. `is-fallback` with `route-regex=".*"` is a 404 that only activates when no preceding sibling matched.
+`match-nested` keeps a layout mounted at its own path and under child paths. `is-fallback` with `route-regex=".*"` is a 404 that only activates when no other route inside its `<spa-manager>` is active, nested routes included; place it last.
 
 ```html
 <spa-manager>
@@ -124,12 +124,12 @@ spa-a[is-active] {
       </section>
     </template>
   </spa-route>
-  <spa-route route-regex=".*?view=admin.*" template-ref="/views/admin-sidebar.html"></spa-route>
+  <spa-route route-regex="^/(?:admin|staff)(?:/|$)" template-ref="/views/admin-sidebar.html"></spa-route>
   <spa-route route-regex=".*" is-fallback>
     <template>
       <section>
         <h3>404</h3>
-        <p>Catch-all — only when no preceding sibling matched.</p>
+        <p>Catch-all — only when no other route is active.</p>
       </section>
     </template>
   </spa-route>
@@ -160,7 +160,7 @@ no active route has a title.
 
 #### History actions
 
-`route-action="back"` / `"forward"` walk history; `"replace"` swaps the current entry instead of pushing.
+`route-action="back"` / `"forward"` walk in-app history only: with none to walk, the link pushes its `route-href`, and without a `route-href` it logs an error and does nothing. `"replace"` swaps the current entry instead of pushing.
 
 ```html
 <spa-manager>
@@ -190,7 +190,7 @@ no active route has a title.
 
 #### View Transitions
 
-`<spa-manager>` wraps each navigation in `document.startViewTransition()` (when supported). Style with `::view-transition-*`; set per-link types via `transition-types` (e.g. card expansion); opt a route out with `no-transition`.
+The outermost `<spa-manager>` wraps each navigation in one `document.startViewTransition()`; nested managers join it. None runs when the API is missing, with reduced motion, in a hidden page, on the first paint (unless `transition-first-render`), or when the update only changes provisions. `document.title` follows every update all the same, and `spa-manager-rendered` fires once per update chain: a navigation that arrives during a running update joins or follows it and shares its event. Style with `::view-transition-*`; set per-link types via `transition-types` (e.g. card expansion); opt a route out with `no-transition`.
 
 ```css
 ::view-transition-old(root),
@@ -265,9 +265,11 @@ On touch devices, horizontal drags from within `overscroll-x-threshold` of an ed
 
 #### Scroll reset / restore
 
-By default, `<spa-route>`:
-- resets scroll to top-left on `push` / `replace`
-- restores the saved scroll position on `back` / `forward`
+The outermost `<spa-manager>` owns scroll: while it is connected the browser's own scroll restoration is off, and a `<spa-route>` without a `<spa-manager>` ancestor does not touch scroll. By default it:
+- resets scroll to top-left on `push` / `replace`, only when a route rendered — a move that renders nothing (a query change on a `reuse` route) keeps its position, and a `#fragment` target wins over the reset
+- restores the saved scroll position on `back` / `forward` / reload, and holds it for about 2 seconds against late content, or until the person scrolls, taps or types, or the app scrolls
+
+The write lands once the routes are ready (capped by `render-timeout`), so `ready-on` remains the way to get late data into the restored view.
 
 Override per axis with `scroll-reset-y` / `scroll-reset-x` — space-separated moves that should reset to `0` (omitted moves restore instead):
 
@@ -279,14 +281,14 @@ Override per axis with `scroll-reset-y` / `scroll-reset-x` — space-separated m
 ></spa-route>
 ```
 
-Animate with `scroll-reset-behavior="smooth"`. Disable all scroll handling with `scroll-set-disabled`.
+Animate a reset with `scroll-reset-behavior="smooth"`; restores are instant. Disable all scroll handling with `scroll-set-disabled`. With several active routes (a layout and its child), the last in document order decides the reset.
 
 #### Same-route params
 
-When the matched route stays the same but params change (e.g. `/users/1` → `/users/2`):
+When the matched route stays the same but its path or query changes (e.g. `/users/1` → `/users/2`, `?page=1` → `?page=2`), the route provisions again; its provision carries `params` (path placeholders and named groups: `(?<id>\d+)` gives `params.id`, unnamed groups stay in `match`) and `query`:
 
-- `same-route="reuse"` (default) — keep the rendered tree, update route data, and let `<spa-manager>` run a View Transition
-- `same-route="refresh"` — tear down and re-render the view
+- `same-route="reuse"` (default) — keep the rendered tree and update route data, without a View Transition
+- `same-route="refresh"` — tear down and re-render the view when params or the query change
 
 ```html
 <spa-route route-href="/users/:id" same-route="refresh">
@@ -304,7 +306,7 @@ When the matched route stays the same but params change (e.g. `/users/1` → `/u
 
 #### Transition delay
 
-`transition-delay` on `<spa-manager>` waits N ms before starting the batched View Transition — useful when sibling routes need a beat to queue their render/unrender callbacks, or for last-second DOM work.
+`transition-delay` on `<spa-manager>` waits N ms before starting the batched View Transition — useful when sibling routes need a beat to queue their render/unrender callbacks, or for last-second DOM work. An update that does not animate, and the first paint, start at once.
 
 ```html
 <spa-manager transition-delay="50">

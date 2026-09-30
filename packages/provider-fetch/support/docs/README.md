@@ -30,6 +30,8 @@ provider-fetch[is-loading] { /* show loading spinner */ }
 provider-fetch[is-error]::before { content: "An error occurred." }
 ```
 
+`did-load` is set on the first success, kept through a refresh (where `is-loading` replaces `is-success`) and cleared on an error: gate content on `[did-load]` to keep it on screen during a refresh.
+
 Or Quark:
 
 ```quark

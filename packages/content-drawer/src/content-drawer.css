@@ -37,7 +37,8 @@
 @define-mixin module-content-drawer {
   :root {
     /**
-     * Slide transition duration.
+     * Slide and backdrop fade duration. Set on the parent, the backdrop or
+     * `:root`: the backdrop never reads the drawer's own value.
      * @cssproperty
      * @syntax <time>
      * @default 0.25s
@@ -47,7 +48,8 @@
       0.25s
     );
     /**
-     * Slide transition easing.
+     * Slide and backdrop fade easing. Set on the parent, the backdrop or
+     * `:root`: the backdrop never reads the drawer's own value.
      * @cssproperty
      * @syntax <easing-function>
      * @default ease-out
@@ -98,6 +100,7 @@
     --content-drawer-z-index: 3;
     /**
      * Stack order for the sibling backdrop (`:--dialog-backdrop-aliases`).
+     * Set on the parent, the backdrop or `:root`, not on the drawer.
      * @cssproperty
      * @syntax <integer>
      * @default 2
@@ -105,9 +108,11 @@
     --content-drawer-overlay-z-index: 2;
   }
 
-  *:has(> :--content-drawer) {
+  /* Frame for `.absolute` sheets, lowest specificity. `clip`, not `hidden`:
+     no scroll container, so sticky descendants keep working */
+  :where(*:has(> :--content-drawer.absolute)) {
     position: relative;
-    overflow: hidden;
+    overflow: clip;
   }
 
   :--content-drawer {
@@ -124,9 +129,9 @@
   }
 
   :--content-drawer:not(.relative) {
-    /* Not `display: none` when closed. Child intersection observers must
-       keep working, and a discrete display transition would animate a
-       drawer that starts `[is-open]` on first paint. */
+    /* Closed hides with `visibility`, not `display: none`: child
+       intersection observers keep working, and a drawer that starts
+       `[is-open]` does not animate on first paint. */
     display: block;
     position: fixed;
     z-index: var(--content-drawer-z-index);
@@ -141,6 +146,16 @@
     &:--content-drawer--is-scrubbing {
       transition: none;
     }
+    /* Closed: out of tab order / a11y tree once the slide-out ends. Time it
+       via the variables; a custom closed `transition` keeps
+       `visibility 0s <duration>`. */
+    &:not(:--content-drawer--is-open, :--content-drawer--is-scrubbing) {
+      visibility: hidden;
+      transition:
+        transform var(--content-drawer-transition-duration)
+          var(--content-drawer-transition-ease),
+        visibility 0s var(--content-drawer-transition-duration);
+    }
 
     /**
      * Close control — empty `.close` / `[rel="prev"]`
@@ -153,7 +168,7 @@
     padding: var(--v-spacing);
 
     /**
-     * `position: sticky` instead of the default `absolute` placement.
+     * `position: sticky` instead of the default `fixed` placement.
      * @cssclass
      */
     &.sticky {
@@ -161,7 +176,8 @@
     }
     /**
      * `position: absolute` instead of the default `fixed` placement —
-     * a sheet inside its (`position: relative`) parent.
+     * a sheet inside its parent, which becomes `position: relative;
+     * overflow: clip`.
      * @cssclass
      */
     &.absolute {
@@ -327,6 +343,13 @@
       width: 100%;
       transition: max-width var(--content-drawer-transition-duration)
         var(--content-drawer-transition-ease);
+      &:not(:--content-drawer--is-open) {
+        visibility: hidden;
+        transition:
+          max-width var(--content-drawer-transition-duration)
+            var(--content-drawer-transition-ease),
+          visibility 0s var(--content-drawer-transition-duration);
+      }
       &:--content-drawer--is-open {
         /**
          * Overrides `--content-drawer-relative-max-width` for this

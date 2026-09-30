@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/heft-rig",
+      "comment": "Package metas read `exports` from the built `dist/exports.generated.json` when package.json has none (it is only applied at publish time), so the docs-site \"View Dist Files\" dialog is no longer empty",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/heft-rig",
+  "email": "133191653+excom-dev@users.noreply.github.com"
+}

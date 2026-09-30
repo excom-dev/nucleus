@@ -1,5 +1,5 @@
 import { readBinding } from "./bindings";
-import { VALUE_MAP } from "./constants";
+import { isThenable, markRenderPromise, VALUE_MAP } from "./constants";
 import { QuarkEvalError } from "./evaluator";
 import { getQuarkInternal } from "./quark-internal";
 import type { ExpressionResult, QuarkOptions } from "./types";
@@ -133,19 +133,22 @@ const BUILTINS: Record<string, (ctx: BuiltinContext) => unknown> = {
     },
   "dangerous-html":
     ({ elRef }: BuiltinContext) =>
-    (result: string): ExpressionResult =>
-      di.apply([elRef], () => {
-        if (isPrimitive(typeof result)) {
-          return {
-            type: "html",
-            value: result as string,
-          };
-        }
-      }),
+    (result: unknown): ExpressionResult | PromiseLike<unknown> =>
+      // an outside promise passes through for `content:` to refuse
+      isThenable(result)
+        ? result
+        : di.apply([elRef], () => {
+            if (isPrimitive(typeof result)) {
+              return {
+                type: "html",
+                value: result as string,
+              };
+            }
+          }),
   template:
     ({ elRef }: BuiltinContext) =>
-    (templateRef: string): Promise<ExpressionResult> | undefined =>
-      di.apply([elRef], (el) => {
+    (templateRef: string): Promise<ExpressionResult> | undefined => {
+      const nodes = di.apply([elRef], (el) => {
         return execWhenReady(
           resolveTemplateContent(
             templateRef || ":scope > template",
@@ -162,17 +165,25 @@ const BUILTINS: Record<string, (ctx: BuiltinContext) => unknown> = {
             };
           }
         );
-      }),
+      });
+      return markRenderPromise(nodes);
+    },
   iterate:
     ({ elRef, options }: BuiltinContext) =>
     (
       result,
       templateRef,
       keyProperty
-    ): Promise<ExpressionResult | null> | undefined | null => {
+    ):
+      | Promise<ExpressionResult | null>
+      | PromiseLike<unknown>
+      | undefined
+      | null => {
       // no collection → wipe rendered children (use `preserve` to opt out)
       if (result == null) return null;
-      return di.apply([elRef], async (el) => {
+      // an outside promise passes through for `content:` to refuse
+      if (isThenable(result)) return result;
+      const rows = di.apply([elRef], async (el) => {
         const isArray = Array.isArray(result);
         const isObject = !isArray && isPojo(result);
         if (!isArray && !isObject) return undefined;
@@ -281,6 +292,7 @@ const BUILTINS: Record<string, (ctx: BuiltinContext) => unknown> = {
           }
         );
       });
+      return markRenderPromise(rows);
     },
 };
 

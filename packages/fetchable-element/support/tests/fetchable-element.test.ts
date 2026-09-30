@@ -49,7 +49,7 @@ describe("FetchableElement", () => {
     const el = fixture<any>(`<${TAG}></${TAG}>`);
     const data = { status: 200, body: { result: "ok" } };
     el.setSuccessState(data);
-    expect(el).dom.to.equalTag(`<${TAG} is-success></${TAG}>`);
+    expect(el).dom.to.equalTag(`<${TAG} is-success did-load></${TAG}>`);
     expect(el.provision).toEqual(data);
   });
 

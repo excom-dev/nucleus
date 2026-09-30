@@ -2,42 +2,46 @@ import "@excom/quark-sheet";
 import "../../index";
 import {
   afterEach,
-  beforeEach,
   describe,
   expect,
   it,
-  wait,
+  vi,
 } from "@excom/heft-rig/profiles/default/config/test-utils";
 import {
   expectComplexity,
   flush,
-  installDemoModules,
   measureComplexity,
   mountView,
   readDemo,
-  restoreDemoModules,
 } from "@excom/quark/support/tests/view-helpers";
 
 describe("debounce view", () => {
-  beforeEach(() => installDemoModules());
   afterEach(() => {
     document.body.innerHTML = "";
-    restoreDemoModules();
   });
 
-  it("emits search-query after the debounce window", async () => {
+  it("coalesces a burst of input into one search-query", async () => {
     const { root, quark } = await mountView(readDemo(import.meta.url, "debounce"));
     const input = root.querySelector<HTMLInputElement>('input[name="detail.q"]')!;
-    input.value = "oak";
+    const output = root.querySelector("output")!;
+    const details: unknown[] = [];
+    root.addEventListener("search-query", (e) =>
+      details.push((e as CustomEvent).detail),
+    );
     const meter = measureComplexity(quark!);
-    input.dispatchEvent(new Event("input", { bubbles: true }));
-    await flush();
-    expect(root.querySelector("output")?.textContent).toBe("Waiting…");
-    await wait(220);
+    // one synchronous burst: all three land inside the 200ms window
+    ["o", "oa", "oak"].forEach((value) => {
+      input.value = value;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    await vi.waitFor(() => expect(output.textContent).not.toBe("Waiting…"), {
+      timeout: 2000,
+    });
     await flush();
     const budget = meter.take();
     meter.stop();
-    expect(root.querySelector("output")?.textContent).toMatch(/oak/);
+    expect(details).toEqual([{ q: "oak", strict: false }]);
+    expect(JSON.parse(output.textContent!)).toEqual({ q: "oak", strict: false });
     expectComplexity(budget);
   });
 });

@@ -5,10 +5,8 @@
     Ping previous output
   </event-handler>
   <quark-sheet>
-    @use "/demo-utils" as *;
-
     output {
-      @on demo-ping (handle: setOutputFromDetail);
+      @on demo-ping { content: event.detail.label; }
     }
   </quark-sheet>
 </div>

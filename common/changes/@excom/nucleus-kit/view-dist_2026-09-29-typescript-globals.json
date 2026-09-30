@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Add a TypeScript section to the README: an app that loads Nucleus Kit from HTML or a CDN gets its global element types from a `globals.d.ts` containing `import \"@excom/nucleus-kit\";`",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/nucleus-kit"
+}

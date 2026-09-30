@@ -123,9 +123,11 @@ const submitForm = (superForm: HTMLSuperFormElement) => {
 };
 
 describe("super-form", () => {
+  const level = KitLogger.level;
   afterEach(() => {
     document.body.innerHTML = "";
     vi.restoreAllMocks();
+    KitLogger.level = level;
   });
 
   it("sets state attributes and submits properly", async () => {
@@ -159,7 +161,9 @@ describe("super-form", () => {
     await waitForEvent(superForm, "super-form-success", () => {
       submitForm(superForm);
     });
-    expect(superForm).dom.to.equalTag(`<super-form is-success></super-form>`);
+    expect(superForm).dom.to.equalTag(
+      `<super-form is-success did-load></super-form>`,
+    );
     expect(superForm.provision?.body).toEqual({ results: [{ a: 1 }] });
   });
 
@@ -255,6 +259,24 @@ describe("super-form", () => {
     expect(superForm.provision?.body).toEqual({ message: "something broke" });
   });
 
+  it("a 422 logs one line and keeps the response body as the provision", async () => {
+    KitLogger.level = 2;
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    spyFetch({ status: 422, body: JSON.stringify({ email: "taken" }) });
+    const superForm = fixture<HTMLSuperFormElement>(
+      `<super-form>${formHtml}</super-form>`,
+    );
+
+    await waitForEvent(superForm, "super-form-error", () => {
+      submitForm(superForm);
+    });
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(error).not.toHaveBeenCalled();
+    expect(superForm.provision?.status).toBe(422);
+    expect(superForm.provision?.body).toEqual({ email: "taken" });
+  });
+
   it("interpolates params from its own attributes and merges them with GET request attributes", async () => {
     const superForm = fixture<HTMLSuperFormElement>(
       `<super-form>${formHtml}</super-form>`,
@@ -274,7 +296,9 @@ describe("super-form", () => {
     await waitForEvent(superForm, "super-form-success", () => {
       submitForm(superForm);
     });
-    expect(superForm).dom.to.equalTag(`<super-form is-success></super-form>`);
+    expect(superForm).dom.to.equalTag(
+      `<super-form is-success did-load></super-form>`,
+    );
     expect(superForm.provision?.body).toEqual({ results: [{ a: 1 }] });
     const calledUrl = new URL(fetchSpy.mock.calls[0][0] as URL);
     expect(calledUrl.pathname).toBe("/api/users/123");

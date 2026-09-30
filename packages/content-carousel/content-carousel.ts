@@ -41,8 +41,8 @@ export interface ContentCarouselProvision {
  *   auto-play.
  * @command --next - Shows the next slide (wraps to first). Stops auto-play.
  *
- * @fires content-carousel-slide-changed - After any slide change, manual or
- *   auto.
+ * @fires content-carousel-slide-changed - After any slide change: a command,
+ *   auto-play, or `is-active` moved from one slide to another (a swipe).
  * @type ContentCarouselSlideChangedEvent
  *
  * @example
@@ -74,7 +74,8 @@ export const ContentCarousel = Neutron({
     /**
      * @state
      * Direction of the most recent slide change — drives the CSS
-     * animation direction.
+     * animation direction. `is-active` moved from one slide to another
+     * counts as `forward` / `back` by position.
      * @values forward | back
      */
     lastMove: String,
@@ -91,15 +92,21 @@ export const ContentCarousel = Neutron({
      * @provision
      * Position: `{ index, count, lastMove }` — the active slide's index
      * among this carousel's own slides, how many there are, and the
-     * direction of the last move. Set on connect and after every slide
-     * change. Not reflected as an attribute.
+     * direction of the last move. Set on connect and after every change,
+     * including slides added / removed and `is-active` written on a slide.
+     * Not reflected as an attribute.
      * @type ContentCarouselProvision
      */
     provision: Object as unknown as ConstructorType<ContentCarouselProvision>,
     // private state
-    autoPlayIntervalId: Object as unknown as ConstructorType<
-      ReturnType<typeof setInterval>
-    >,
+    _autoPlayIntervalId: {
+      type: Object as unknown as ConstructorType<
+        ReturnType<typeof setInterval>
+      >,
+      attr: false,
+    },
+    _activeSlide: { type: HTMLElement, store: "weak" },
+    _syncQueued: { type: Boolean, attr: false },
   },
 })
   .defineMethods({
@@ -116,42 +123,76 @@ export const ContentCarousel = Neutron({
       const lastMove = isBack ? "back" : "forward";
       return {
         lastMove,
+        _activeSlide: nextSlide,
         ...(isManual && autoPlay ? { autoPlayStopped: true } : {}),
-        provision: readProvision(element, lastMove),
+        provision: readProvision(getOwnSlides(element), lastMove),
         emit: [
           "content-carousel-slide-changed",
           { detail: { activeSlide: nextSlide, previousSlide: activeSlide } },
         ] as any,
       };
     },
-    getActiveSlide: (element) => {
+    getActiveSlide: (element) => ({
+      // Explicit type: inference hits a circular type issue here
+      returns: activeOf(
+        getOwnSlides(element)
+      ) as unknown as T_HTMLContentCarouselSlideElement | null,
+    }),
+    /**
+     * Re-read the own slides: after connect, and after a slide connected,
+     * disconnected or changed `is-active`. `is-active` passing from one slide
+     * to another is a move; the first-slide fallback never is. Assigns only
+     * what changed.
+     */
+    _sync: (element) => {
+      const { _activeSlide: previousSlide, lastMove, provision } = element;
       const slides = getOwnSlides(element);
+      const activeSlide = slides.find(hasIsActive) || null;
+      const isMove =
+        !!previousSlide && !!activeSlide && activeSlide !== previousSlide;
+      const move = !isMove
+        ? lastMove
+        : slides.indexOf(activeSlide) < slides.indexOf(previousSlide)
+          ? "back"
+          : "forward";
+      const next = readProvision(slides, move);
       return {
-        // Explicit type: inference hits a circular type issue here
-        returns: (slides.find((slide) => slide.hasAttribute("is-active")) ||
-          slides[0] ||
-          null) as unknown as T_HTMLContentCarouselSlideElement | null,
+        _syncQueued: false,
+        _activeSlide: activeSlide,
+        ...(isMove
+          ? {
+              lastMove: move,
+              emit: [
+                "content-carousel-slide-changed",
+                { detail: { activeSlide, previousSlide } },
+              ] as any,
+            }
+          : {}),
+        ...(isSameProvision(provision, next) ? {} : { provision: next }),
       };
     },
-    /** The current `{ index, count, lastMove }`, read from the DOM. */
-    _readProvision: (element) => ({
-      returns: readProvision(element, element.lastMove),
-    }),
   })
-  .onConnected(({ _readProvision }) => ({
-    provision: _readProvision() as ContentCarouselProvision,
-  }))
+  .defineMethods({
+    /** Called by slides; batches their changes into one re-read. */
+    _queueSync: ({ _syncQueued, _sync }) => {
+      if (!_syncQueued) {
+        queueMicrotask(_sync);
+        return { _syncQueued: true };
+      }
+    },
+  })
+  .onConnected(() => ({ _sync: [] }))
   .onPropChanged(
     "autoPlay",
     (
-      { autoPlay, autoPlayIntervalId, intervalCallback, autoPlayStopped },
+      { autoPlay, _autoPlayIntervalId, intervalCallback, autoPlayStopped },
       previous
     ) => {
-      if (previous.autoPlay && autoPlayIntervalId) {
-        clearInterval(autoPlayIntervalId);
+      if (previous.autoPlay && _autoPlayIntervalId) {
+        clearInterval(_autoPlayIntervalId);
       }
       return {
-        autoPlayIntervalId:
+        _autoPlayIntervalId:
           autoPlay && !autoPlayStopped
             ? setInterval(intervalCallback, autoPlay * 1000)
             : null,
@@ -166,31 +207,44 @@ export const ContentCarousel = Neutron({
         autoPlayStopped: true,
       }
   )
-  .onPropSet("autoPlayStopped", ({ autoPlayIntervalId }) => {
-    if (autoPlayIntervalId || autoPlayIntervalId === 0) {
-      clearInterval(autoPlayIntervalId);
+  .onPropSet("autoPlayStopped", ({ _autoPlayIntervalId }) => {
+    if (_autoPlayIntervalId || _autoPlayIntervalId === 0) {
+      clearInterval(_autoPlayIntervalId);
       return {
-        autoPlayIntervalId: null,
+        _autoPlayIntervalId: null,
       };
     }
   })
   .onCommand("--back", () => ({ _move: [true, true] }))
   .onCommand("--next", () => ({ _move: [false, true] }));
 
+const hasIsActive = (slide: HTMLElement) => slide.hasAttribute("is-active");
+
+/** The `is-active` slide, else the first; `null` without slides. */
+const activeOf = (slides: HTMLElement[]) =>
+  slides.find(hasIsActive) || slides[0] || null;
+
 /** A fresh provision object from the carousel's own slides. */
 function readProvision(
-  element: HTMLElement,
+  slides: HTMLElement[],
   lastMove: string | null | undefined
 ): ContentCarouselProvision {
-  const slides = getOwnSlides(element);
-  const active =
-    slides.find((slide) => slide.hasAttribute("is-active")) || slides[0];
+  const active = activeOf(slides);
   return {
     index: active ? slides.indexOf(active) : -1,
     count: slides.length,
     lastMove: lastMove === "forward" || lastMove === "back" ? lastMove : null,
   };
 }
+
+const isSameProvision = (
+  a: ContentCarouselProvision | null | undefined,
+  b: ContentCarouselProvision
+) =>
+  !!a &&
+  a.index === b.index &&
+  a.count === b.count &&
+  a.lastMove === b.lastMove;
 
 /**
  * Slides this carousel owns, in document order. A nested carousel keeps

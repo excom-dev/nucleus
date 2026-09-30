@@ -14,7 +14,7 @@ Available in every expression, after `@use` exports: element reads, loop context
 | `attr("name")` | The matched element's attribute value (`null` when absent). `attr("content")` returns its `innerHTML`. A literal name is observed: the rule re-runs when that attribute changes, even if it is not in the selector. `attr($name)` reads but does not subscribe. |
 | `prop("name")` | The matched element's JS property (`prop("provision")` reads a Neutron provision). A literal name is observed: the rule re-runs when JS assigns `element.name` (coalesced per microtask). In-place mutation and browser-driven native state are not observed. `prop($name)` reads but does not subscribe. |
 | `closest("selector")` | `element.closest(selector)` from the matched element: the nearest ancestor-or-self matching the selector, else `null`. Not observed. |
-| `element` | The matched element itself — the node the rule is applied to (inside an `@on … { }` block the listening element; `target` is the delegate). Hand it to `@use` functions that need the node: `@on click fire(element)`, `$chart: mount(element)`. Reads through it are not observed — use `attr()` / `prop()` for reactive reads. |
+| `element` | The matched element itself — the node the rule is applied to (inside an `@on … { }` block the listening element; `target` is the delegate). It reaches a neighbour without a selector: `@command toggle-popover (target: element.nextElementSibling)`. Reads through it are not observed — use `attr()` / `prop()` for reactive reads. |
 
 **Loop context**
 
@@ -35,8 +35,8 @@ Available in every expression, after `@use` exports: element reads, loop context
 
 | Name | Description |
 | --- | --- |
-| `event` | Inside an `@on … { }` block, its per-event options and its `@dispatch` / `@command` statements: the DOM event being handled (`event.target`, `event.detail`, …). `undefined` elsewhere. |
-| `target` | Inside an `@on … { }` block and its per-event options: the element the `target:` option matched (the delegate), or `event.target` without that option. `undefined` elsewhere. |
+| `event` | Inside an `@on … { }` block, its `@dispatch` / `@command` statements and its `target` / `key` / `debounce` / `throttle` options: the DOM event being handled (`event.target`, `event.detail`, …). `undefined` elsewhere, `handle:` included: its listener receives the event as its argument. |
+| `target` | Inside an `@on … { }` block and its `target` / `key` / `debounce` / `throttle` options: the element the `target:` option matched (the delegate), or `event.target` without that option. `undefined` elsewhere, `handle:` included. |
 | `prevent-default` | A listener that calls `event.preventDefault()`, for `handle:`. The `(prevent-default)` flag is the shorter form. |
 | `stop-propagation` | A listener that calls `event.stopPropagation()`, for `handle:`. The `(stop-propagation)` flag is the shorter form. |
 

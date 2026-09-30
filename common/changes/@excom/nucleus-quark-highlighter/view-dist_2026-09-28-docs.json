@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/nucleus-quark-highlighter",
+      "comment": "Update the README and fix its `provider-fetch` sample",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/nucleus-quark-highlighter"
+}

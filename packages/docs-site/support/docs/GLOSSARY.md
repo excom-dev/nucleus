@@ -16,7 +16,7 @@ One definition per term. Capitalization marks a term that names one of the three
 
 **Command** — An imperative aimed at one element, carried by the platform's `command` event (`CommandEvent`): non-bubbling, cancelable, with a `--verb` name (`--submit`, `--reload`) and a `source`. Invoked by `<button command commandfor>`, `<event-handler command-name>`, or script; handled with Neutron `onCommand`. Not State (it describes no fact) and not an announcement.
 
-**Content** — In Quark, the `content:` property: text, a cloned `<template>`, a fetched fragment, an iteration, or trusted HTML.
+**Content** — In Quark, the `content:` property: text, a cloned `<template>`, a fetched fragment, an iteration, trusted HTML, or a node a module function built.
 
 **Default action** — What an element does after firing a cancelable event unless a listener synchronously calls `preventDefault()`. The escape hatch for customizing an Adapter without forking it.
 

@@ -24,7 +24,7 @@ export const SpaA = Neutron.compose([
     props: {
       /**
        * @option
-       * Navigation mode when activated (default click).
+       * Navigation mode when activated (default click). `back` / `forward` walk in-app history only: with none to walk, the link pushes its `route-href`; without one it logs an error and does nothing.
        * @default push
        * @values push | replace | back | forward
        */
@@ -88,20 +88,22 @@ export const SpaA = Neutron.compose([
         );
       }
     },
-    routeChanged: ({ routeHref, matchHash }, { move, previous, next }) => {
+    routeChanged: (
+      { routeHref, matchHash, matchNested },
+      { move, previous, next }
+    ) => {
+      const opts = { ignoreHash: !matchHash, nested: matchNested };
+      const matches = (url: string) =>
+        !!routeHref && urlMatchesHref(url, routeHref, opts);
       return {
-        isActive: urlMatchesHref(location.href, routeHref!, {
-          ignoreHash: !matchHash,
-        }),
+        isActive: matches(location.href),
         wasActive:
-          // After a reload, history survives but router states don't: check `next.url`
+          // Entry left: `next` on back, `previous` on push / forward.
+          // Replace: `previous` is the entry before the replaced one.
           move === "back" && next?.url
-            ? urlMatchesHref(next.url, routeHref!, { ignoreHash: !matchHash })
-            : // need to check previous.url in the case where window reload happens - history will still be persisted, but router states will not
-              ["forward", "push", "replace"].includes(move) && previous?.url
-              ? urlMatchesHref(previous.url, routeHref!, {
-                  ignoreHash: !matchHash,
-                })
+            ? matches(next.url)
+            : ["forward", "push", "replace"].includes(move!) && previous?.url
+              ? matches(previous.url)
               : false,
       };
     },

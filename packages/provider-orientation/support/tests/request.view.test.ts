@@ -1,39 +1,50 @@
 import { invokeCommand } from "@excom/neutron";
-import "@excom/event-handler";
 import "@excom/quark-sheet";
 import "../../index";
 import {
   afterEach,
-  beforeEach,
   describe,
   expect,
   it,
+  waitForEvent,
 } from "@excom/heft-rig/profiles/default/config/test-utils";
 import {
+  expectComplexity,
   flush,
-  installDemoModules,
+  measureComplexity,
   mountView,
   readDemo,
-  restoreDemoModules,
 } from "@excom/quark/support/tests/view-helpers";
 
+/** What an Android sensor reports: `alpha` from north, `absolute` set. */
+const turnTo = (alpha: number) =>
+  window.dispatchEvent(
+    Object.assign(new Event("deviceorientation"), { alpha, absolute: true }),
+  );
+
 describe("request view", () => {
-  beforeEach(() => installDemoModules());
   afterEach(() => {
     document.body.innerHTML = "";
-    restoreDemoModules();
   });
 
-  it("starts paused and accepts a request click", async () => {
-    const { root } = await mountView(readDemo(import.meta.url, "request"));
-    expect(root.querySelector("provider-orientation")?.hasAttribute("is-paused")).toBe(
-      true,
-    );
+  it("listens on request, then prints the heading", async () => {
+    const { root, quark } = await mountView(readDemo(import.meta.url, "request"));
+    const provider = root.querySelector("provider-orientation")!;
+    const output = root.querySelector("output")!;
     const button = root.querySelector<HTMLButtonElement>("button[command]")!;
+    expect(provider.hasAttribute("is-paused")).toBe(true);
     expect(button.getAttribute("command")).toBe("--request");
-    // happy-dom has no Command API: dispatch what the button would have
-    invokeCommand(root.querySelector("provider-orientation")!, "--request", button);
+    // happy-dom has no sensor permission API: the request starts listening
+    invokeCommand(provider, "--request", button);
     await flush();
-    expect(root.querySelector("output")?.textContent).toBeTruthy();
+    expect(provider.hasAttribute("is-success")).toBe(true);
+    expect(output.textContent).toBe("Listening — no reading yet.");
+    const meter = measureComplexity(quark!);
+    await waitForEvent(provider, "provider-orientation-success", () => turnTo(270));
+    await flush();
+    const budget = meter.take();
+    meter.stop();
+    expect(output.textContent).toBe("Heading 90°");
+    expectComplexity(budget);
   });
 });

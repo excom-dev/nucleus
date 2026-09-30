@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/quark-formatter",
+      "comment": "Update the README samples, the package description and keywords",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/quark-formatter"
+}

@@ -7,11 +7,7 @@
  * pure / read-only calls.
  */
 import { METHOD_ALLOWLIST } from "./language-tables";
-import type {
-  Argument,
-  Expression,
-  Interpolation,
-} from "@excom/quark-parser";
+import type { Argument, Expression, Interpolation } from "@excom/quark-parser";
 import { parseExpression } from "@excom/quark-parser";
 
 export interface EvalContext {

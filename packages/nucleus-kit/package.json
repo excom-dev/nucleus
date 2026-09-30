@@ -35,6 +35,7 @@
     "@excom/event-handler": "workspace:^",
     "@excom/gesture-handler": "workspace:^",
     "@excom/include-content": "workspace:^",
+    "@excom/kit-logger": "workspace:^",
     "@excom/network-status": "workspace:^",
     "@excom/neutron": "workspace:^",
     "@excom/provider-fetch": "workspace:^",

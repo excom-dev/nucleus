@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/loadable-element",
+      "comment": "Add `did-load`: set on the first success, kept while a refresh loads and after a cancel, and cleared on an error, so content can stay on screen during a refresh with `[did-load]` instead of `[is-success]`",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@excom/loadable-element"
+}

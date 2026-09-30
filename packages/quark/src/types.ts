@@ -55,8 +55,8 @@ export interface QuarkOptions {
   isAsyncRun?: boolean;
   /**
    * Set while an `@on` block runs, and while its per-event options
-   * (`handle`, `target`, …) evaluate: the DOM event being handled. The
-   * `event` built-in; `undefined` outside a block.
+   * (`target`, `key`, …; not `handle`) evaluate: the DOM event being
+   * handled. The `event` built-in; `undefined` outside a block.
    */
   event?: Event;
   /**
@@ -140,6 +140,9 @@ export interface ContextField extends ContextSheet {
 }
 
 export type MutationMap = Map<HTMLElement, Set<string>>;
+
+/** `content` parent -> its inserted elements still below it; no entry = whole-subtree fan-out */
+export type InsertedNodes = Map<HTMLElement, Element[]>;
 
 export type ExpressionResult =
   | {

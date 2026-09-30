@@ -1,0 +1,65 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/kit-router",
+      "comment": "Update `matchNested` in `KitRoute` to match the pattern's own path as well as its child paths: `/users` matches `/users`, `/users/` and `/users/42`, never `/usersx`, and `/` matches every path",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/kit-router",
+      "comment": "Update a page reload to report `move: null` in `KitRouteData` (it was the last move before the reload), as any page load that is not a back or forward traversal does",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/kit-router",
+      "comment": "Add `query` to `KitRouteData`, holding `location.search` as an object",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/kit-router",
+      "comment": "Add relative paths to routes and navigation: `KitRoute`, `pushState()` and `replaceState()` resolve `checkout` against the page's `<base>`, and `resolveHref()` is exported",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/kit-router",
+      "comment": "Fix an issue where history entries with the same URL shared their scroll offset and move: each entry keeps its own, a scroll offset of 0 is saved, and the offset is saved when the page is left or reloaded",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/kit-router",
+      "comment": "Fix the route data in `KitRouteData` after a typed URL, a link from another site or a fragment link: the entry is added to the tracked states, and every entry's `history.state` carries an `id`, the first entry included",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/kit-router",
+      "comment": "Fix `canGoForward()` after `replaceState()` on an entry reached by going back, and `canGoBack()` after `replaceState()` on the first entry",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/kit-router",
+      "comment": "Fix an issue where a same-origin frame overwrote the page's saved history, so a page embedding one lost its scroll restore on reload",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/kit-router",
+      "comment": "Fix `params` for a route built from a regular expression: named groups (`(?<id>\\d+)`) give `params.id`, URL-decoded, unmatched groups are left out, and unnamed groups are no longer stored, so read them from `match` (every group used to land under the key `undefined`)",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/kit-router",
+      "comment": "Fix `params` for a path pattern that holds a capture group of its own, such as `/(a|b)/:id`: placeholders keep their names (the group shifted them, so a param landed under the key `undefined`), a group the author names, such as `(?<lang>en|de)`, becomes a param, and a placeholder that did not take part in the match is left out (it was the string `\"undefined\"`)",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/kit-router",
+      "comment": "Fix an issue where a path pattern with a non-capturing group, such as `/(?:a|b)/:id`, made `KitRoute` throw",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/kit-router",
+      "comment": "Fix an issue where a route built from a regular expression with the `g` flag gave empty `params`, and with the `y` flag missed every second match: both now match like one without the flag",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/kit-router"
+}

@@ -53,4 +53,39 @@ describe("refetch view", () => {
     expect(provider.hasAttribute("is-success")).toBe(true);
     expectComplexity(budget);
   });
+
+  it("keeps the list and did-load while a refetch is in flight", async () => {
+    const todo = (title: string) =>
+      new Response(JSON.stringify({ id: 1, title }), {
+        headers: { "content-type": "application/json" },
+      });
+    let answer!: (response: Response) => void;
+    vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(todo("Once"))
+      .mockImplementationOnce(
+        () => new Promise((resolve) => (answer = resolve)),
+      );
+    const { root } = await mountView(readDemo(import.meta.url, "refetch"));
+    const provider = root.querySelector("provider-fetch")!;
+    if (!provider.hasAttribute("is-success")) {
+      await waitForEvent(provider, "provider-fetch-success");
+    }
+    await flush();
+    const titles = () =>
+      [...root.querySelectorAll("li")].map((li) => li.textContent).join();
+
+    invokeCommand(provider, "--fetch", root.querySelector("button")!);
+    await flush();
+    expect(provider.hasAttribute("is-loading")).toBe(true);
+    expect(provider.hasAttribute("is-success")).toBe(false);
+    expect(provider.hasAttribute("did-load")).toBe(true);
+    expect(titles()).toContain("Once");
+
+    await waitForEvent(provider, "provider-fetch-success", () => {
+      answer(todo("Twice"));
+    });
+    await flush();
+    expect(provider.hasAttribute("did-load")).toBe(true);
+    expect(titles()).toContain("Twice");
+  });
 });

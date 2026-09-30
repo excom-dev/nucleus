@@ -1,13 +1,13 @@
 <div>
-  <section>
-    <event-handler fire-event="cart-add" detail-sku="sku-1">
-      Add to cart
-    </event-handler>
-    <output>Waiting…</output>
-  </section>
+  <event-handler fire-event="cart-add" detail-sku="sku-1">
+    Add to cart
+  </event-handler>
+  <output>Waiting…</output>
   <quark-sheet>
-    @use "/demo-utils" as *;
+    @use "quark:util" as *;
 
-    section { @on cart-add (handle: setOutputFromDetail); }
+    :scope {
+      @on cart-add { output { content: to-json(event.detail); } }
+    }
   </quark-sheet>
 </div>

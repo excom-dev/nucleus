@@ -6,15 +6,19 @@ import {
   it,
   vi,
 } from "@excom/heft-rig/profiles/default/config/test-utils";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { KitRoute, KitRouter } from "@excom/kit-router";
 import { readViewFile } from "@excom/quark/support/tests/view-helpers";
 import { createRequire } from "node:module";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { renderMarkdown } from "@excom/heft-rig/scripts/render-markdown.mjs";
 import {
   addLengths,
   buildAppFileLink,
   buildGitHubLink,
   copySource,
+  didCompleteLink,
   displayName,
   docMetaUrl,
   docNeighbors,
@@ -450,6 +454,42 @@ describe("editor helpers", () => {
   });
 });
 
+describe("didCompleteLink", () => {
+  afterEach(() => {
+    document.body.innerHTML = "";
+  });
+
+  /** A `spa-a` under a `spa-manager` stand-in whose router reports `past`. */
+  const linkIn = (href: string, past?: Array<{ url: string }>) => {
+    const manager = document.createElement("spa-manager") as HTMLElement & {
+      router?: { previousStates: Array<{ url: string }> };
+    };
+    if (past) manager.router = { previousStates: past };
+    manager.innerHTML = `<ul><li><spa-a route-href="${href}"></spa-a></li></ul>`;
+    document.body.append(manager);
+    return manager.querySelector("spa-a")!;
+  };
+
+  it("is true when the link's route is a state before the active one", () => {
+    const past = [{ url: "/nucleus" }, { url: "/nucleus/docs/quick_start" }];
+    expect(didCompleteLink(linkIn("/nucleus/docs/quick_start", past))).toBe(
+      true
+    );
+  });
+
+  it("is false for an unvisited route or one only reachable forward", () => {
+    const past = [{ url: "/nucleus" }];
+    expect(didCompleteLink(linkIn("/nucleus/docs/styling", past))).toBe(false);
+    expect(didCompleteLink(linkIn("/nucleus/docs/styling", []))).toBe(false);
+  });
+
+  it("is false outside a spa-manager or before it has a router", () => {
+    document.body.innerHTML = `<spa-a route-href="/nucleus"></spa-a>`;
+    expect(didCompleteLink(document.querySelector("spa-a")!)).toBe(false);
+    expect(didCompleteLink(linkIn("/nucleus"))).toBe(false);
+  });
+});
+
 describe("search", () => {
   it("filterSearchResults returns nothing for short / empty queries or unknown corpus versions", () => {
     expect(filterSearchResults(corpus, "")).toEqual([]);
@@ -678,7 +718,7 @@ describe("site base trailing slash", () => {
 
   afterEach(() => {
     router?.destroy();
-    sessionStorage.removeItem("__spa_router_data__");
+    sessionStorage.removeItem("__kit_router_history__");
     history.replaceState(null, "", "/");
   });
 
@@ -699,6 +739,47 @@ describe("site base trailing slash", () => {
     expect(location.pathname).toBe(SITE_BASE);
     expect(home).toHaveBeenCalledTimes(1);
     expect(home.mock.lastCall![0].match).not.toBeNull();
+  });
+});
+
+describe("site guides", () => {
+  const dir = resolve(dirname(fileURLToPath(import.meta.url)), "../docs");
+  const guides = readdirSync(dir)
+    .filter((f) => f.endsWith(".md") && f !== "INTERNAL.md")
+    .map((file) => ({ file, md: readFileSync(resolve(dir, file), "utf8") }));
+  const names = new Set(
+    guides.map(({ file }) => file.slice(0, -3).toLowerCase())
+  );
+
+  it("link only to guides that exist", () => {
+    const broken = guides.flatMap(({ file, md }) =>
+      [...md.matchAll(/\]\(\/nucleus\/docs\/(\w+)/g)]
+        .filter(([, name]) => !names.has(name))
+        .map(([, name]) => `${file} → ${name}`)
+    );
+    expect(broken).toEqual([]);
+  });
+
+  /* `package.quark` / `package.css` style these two lists as `+ ul` cards. */
+  it("render Start here / Next steps as a bullet list of spa links", () => {
+    const lists = guides.flatMap(({ file, md }) => {
+      const doc = new DOMParser().parseFromString(
+        renderMarkdown(md),
+        "text/html"
+      );
+      return [...doc.querySelectorAll("#md-start-here, #md-next-steps")].map(
+        (h) => ({ file, list: h.nextElementSibling })
+      );
+    });
+    expect(lists.map(({ file }) => file)).toContain("INTRODUCTION.md");
+    expect(lists.length).toBeGreaterThan(1);
+    for (const { file, list } of lists) {
+      expect(list?.tagName, file).toBe("UL");
+      expect(
+        list!.querySelectorAll("spa-a[route-href]").length,
+        file
+      ).toBeGreaterThan(0);
+    }
   });
 });
 

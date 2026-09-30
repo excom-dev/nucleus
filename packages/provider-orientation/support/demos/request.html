@@ -1,14 +1,19 @@
-<div id="orient-demo">
+<div>
   <button type="button" command="--request" commandfor="orient">
     Enable compass
   </button>
-  <provider-orientation id="orient" is-paused></provider-orientation>
+  <provider-orientation id="orient" is-paused>
+    <output></output>
+  </provider-orientation>
   <p class="status">No reading yet — click above. Requires a device
     sensor (desktop browsers usually have none).</p>
-  <output>Waiting…</output>
   <quark-sheet>
-    @use "/demo-utils" as *;
-
-    #orient-demo { @on neutron-provision (handle: setOutputFromElementData); }
+    provider-orientation {
+      $reading: prop("provision");
+      &[is-success] output {
+        content: if($reading.bearing != null: "Heading #{$reading.bearing.toFixed(0)}°"; else: "Listening — no reading yet.");
+      }
+      &[is-error] output { content: $reading.message or $reading; }
+    }
   </quark-sheet>
 </div>

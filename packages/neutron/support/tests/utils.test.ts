@@ -26,7 +26,7 @@ describe("utils", () => {
 
     const mutateDiv2 = utils
       .effector(() => [
-        { autofocus: true },
+        { hidden: true },
         {
           textContent: "Hello!",
           style: { color: "blue" },
@@ -42,7 +42,7 @@ describe("utils", () => {
       ])
       .bind(div);
     expect(mutateDiv2()).to.equal("PERHAPS");
-    expect(div.autofocus).to.be.true;
+    expect(div.hidden).to.be.true;
     expect(div.textContent).to.equal("Hello!");
     expect(div.style.color).to.equal("blue");
     expect(div.id).to.equal("other-id");
@@ -54,7 +54,7 @@ describe("utils", () => {
           style: { color: "green" },
           returns: "NO",
         },
-        { autofocus: false },
+        { hidden: false },
         {
           title: "z-title",
         },
@@ -66,7 +66,7 @@ describe("utils", () => {
       .bind(div);
 
     expect(mutateDiv3()).to.equal("NO");
-    expect(div.autofocus).to.be.false;
+    expect(div.hidden).to.be.false;
     expect(div.textContent).to.equal("World!");
     expect(div.style.color).to.equal("green");
     expect(div.id).to.equal("x-id");

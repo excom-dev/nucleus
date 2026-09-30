@@ -31,8 +31,8 @@ export const getQuarkMin = (sheet: string) => {
  * to one space and blank-line runs to one newline. Comments stay for the
  * parser (a regex pre-strip ate `//` inside strings like `"https://…"`).
  */
-export function minifyQuark(scssString: string): string {
-  return scssString
+export function minifyQuark(source: string): string {
+  return source
     .replace(/[ \t\f\r]+/g, " ")
     .replace(/ ?\n[ \n]*/g, "\n")
     .trim();

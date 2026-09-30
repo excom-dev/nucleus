@@ -20,6 +20,7 @@
     "**/packages/*/tsconfig.json": true,
     "**/packages/*/custom-elements.json": true,
     "**/packages/*/package-meta.json": true,
+    "**/packages/*/README.md": true,
     "**/dist-docs": true,
   },
 
@@ -43,6 +44,7 @@
     "**/packages/*/tsconfig.json": true,
     "**/packages/**/custom-elements.json": true,
     "**/packages/**/package-meta.json": true,
+    "**/packages/*/README.md": true,
     "**/dist-docs": true,
   },
 
@@ -63,6 +65,7 @@
     "**/packages/*/tsconfig.json": true,
     "**/packages/**/custom-elements.json": true,
     "**/packages/**/package-meta.json": true,
+    "**/packages/*/README.md": true,
     "**/dist-docs": true,
   },
 

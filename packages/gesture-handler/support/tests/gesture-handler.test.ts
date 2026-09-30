@@ -359,6 +359,37 @@ describe("gesture-handler", () => {
     up({ x: 100, y: 300 });
   });
 
+  it("handoff-ref waits for every scroller between the pointer and the element", async () => {
+    // docs-site editor sheet: a named sheet and a named sideways-only editor,
+    // with the file body scrolling vertically between them
+    const { el } = mount(
+      `gesture-types="pan-y swipe" progress-axis="up" progress-offset="1"
+       range-px="200" handoff-ref="[data-sheet], [data-editor]"`,
+      `<div data-sheet><div data-body style="overflow-y: auto">
+         <div data-editor><p style="overflow: hidden">content</p></div>
+       </div></div>`
+    );
+    await frame();
+    const body = el.querySelector<HTMLElement>("[data-body]")!;
+    const content = el.querySelector<HTMLElement>("p")!;
+    const pull = (y: number) => {
+      down(el, { x: 100, y: 300 }, content);
+      return touchMove(content, 100, y).defaultPrevented;
+    };
+
+    // scrolled body: pulling down scrolls it back up (innermost match is at 0)
+    body.scrollTop = 40;
+    expect(pull(306)).toBe(false);
+    expect(el.hasAttribute("is-active")).toBe(false);
+
+    // an unscrollable node (overflow: hidden) with an offset is not a scroller
+    body.scrollTop = 0;
+    content.scrollTop = 40;
+    expect(pull(306)).toBe(true);
+    expect(el.hasAttribute("is-active")).toBe(true);
+    up({ x: 100, y: 306 });
+  });
+
   it("handoff-ref ignores a move with no progress left that way, or across the axis", async () => {
     const { el, content } = mountHandoff();
     await frame();

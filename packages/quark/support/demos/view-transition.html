@@ -7,8 +7,6 @@
     </template>
   </ul>
   <quark-sheet>
-    @use "/demo-utils" as *;
-
     :scope {
       $count: +attr("data-count");
       @on click (target: "[data-add]") { data-count: $count + 1; }
@@ -17,8 +15,9 @@
     [data-add] { disabled: $count == 4; }
     [data-remove] { disabled: $count == 0; }
     ul {
+      $planets: "Mercury", "Venus", "Earth", "Mars";
       @view-transition (types: "planets") {
-        content: iterate(getPlanets().slice(0, $count));
+        content: iterate($planets.slice(0, $count));
       }
     }
     [bind-name] { content: item; }

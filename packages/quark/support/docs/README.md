@@ -2,7 +2,7 @@
 
 CSS-like orchestration for your HTML — bind attributes, render lists, and wire events without a component tree.
 
-Quark is a derivative of CSS with CSS-compatible syntax (a CSS parser can tokenize Quark). The language is familiar. Rule properties are HTML attributes. The utilities (at-rules, util functions) are new.
+Quark is a derivative of CSS, written in CSS syntax. Selectors, nesting, declarations and comments are CSS's own; the few additions Quark makes, such as variables, expressions and at-rules of its own, stay compatible with that syntax, so anyone who can read a stylesheet can read a sheet. What differs is the runtime: a stylesheet paints, a Quark sheet writes State — attributes, content and variables on the elements it matches. Media queries, keyframes and the rest of the browser's style engine stay in your stylesheet.
 
 Prefer `<quark-sheet>` for apps; use the `Quark` class when you need a programmatic host (tests, tooling).
 
@@ -10,7 +10,7 @@ Prefer `<quark-sheet>` for apps; use the `Quark` class when you need a programma
 
 - **CSS-like sheets** Selectors + nested rules that mutate the live DOM
 - **`$variables`** Scoped values that nest and resolve in expressions
-- **JS writes** `element.quark.setProperty()` writes a `$variable` from JavaScript, on any element
+- **JS writes** `element.quark.setProperty()` hands values app JS already holds to the document as `$variables`
 - **CSS variables** Write `--custom-props` from state; style via `var()`
 - **Content rendering** `content`, `template()`, `iterate()`, `dangerous-html()`
 - **Element properties** `prop("provision")` reads Neutron provisions / any JS property, re-running on assignment
@@ -20,7 +20,7 @@ Prefer `<quark-sheet>` for apps; use the `Quark` class when you need a programma
 - **Diagnostics** `@warn` / `@debug` / `@error` report from a rule; the selector is the condition
 - **Built-in modules** `@use "quark:math"`, `quark:list`, `quark:map`, `quark:string`, `quark:date`, `quark:url`, `quark:util` — pure helpers, imported like JS modules
 - **Attribute helpers** `dataset`, `ariaset`, `class`, `none` to clear
-- **JS modules** Call app helpers from expressions via `@use "/url"`
+- **JS modules** Pure functions from `@use "/url"`, called in expressions
 - **Scoped host** Sheet + targets share a parent; updates follow DOM mutations
 - **DevTools** `Quark.attachDevtools()` reports rule applications and `$variables` to the Nucleus DevTools extension
 
@@ -97,7 +97,7 @@ Values & expressions
 At-rules
 
 - [At-rules](./AT_RULES.md) — the ones that run
-- [`@use`](./USE.md) — JS modules
+- [`@use`](./USE.md) — JS modules, asynchronous work
 - [`@on`](./ON.md) — events, blocks, options
 - [`@dispatch` / `@command`](./DISPATCH.md) — outgoing events and commands
 - [`@view-transition`](./VIEW_TRANSITION.md) — animated writes
@@ -136,8 +136,8 @@ Native element state drives content — no JS, no listeners:
 </quark-sheet>
 ```
 
-#### Count clicks from JS
+#### Hand a value from app JS
 
-The sheet hands the owner element to a JS helper; each click calls `owner.quark.setProperty("$count", …)` and every rule reading `$count` below the owner re-runs. See [Writing from JS](./JS_WRITES.md).
+App JS that already holds a rich value (feature flags, a messages dictionary) hands it to the document with `element.quark.setProperty()`, and every rule reading that `$variable` below the element re-runs. See [Writing from JS](./JS_WRITES.md).
 
 <include-content data-demo="js-api"></include-content>

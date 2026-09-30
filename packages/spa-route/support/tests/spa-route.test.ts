@@ -510,54 +510,63 @@ describe("spa-route same-route + scroll", () => {
     expect(secondInput.value).toBe("");
   });
 
-  it("setScroll resets on push/replace and restores on back/forward", async () => {
+  it("spa-manager resets scroll on push and restores it on back/forward (setScroll is gone)", async () => {
     document.body.innerHTML = `
       <spa-manager>
         <spa-route route-href="/a"><template>A</template></spa-route>
+        <spa-route route-href="/b"><template>B</template></spa-route>
       </spa-manager>
       <spa-a route-href="/a"></spa-a>
+      <spa-a route-href="/b"></spa-a>
     `;
-    const route = document.querySelector("spa-route") as HTMLSpaRouteElement;
-    const link = document.querySelector("spa-a") as HTMLSpaAElement;
-    const scrollToSpy = vi
-      .spyOn(window, "scrollTo")
-      .mockImplementation(() => {});
-
-    await waitForEvent(route, "spa-route-did-render", () => {
-      link.dispatchEvent(new Event("click"));
-    });
-    await wait(0);
-    expect(scrollToSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ top: 0, left: 0 }),
-    );
-    scrollToSpy.mockClear();
-
-    const active = {
-      ...(route.provision?.active || { url: "/a", id: "1" }),
-      scrollY: 240,
-      scrollX: 12,
+    const manager = document.querySelector(
+      "spa-manager",
+    ) as HTMLSpaManagerElement;
+    const [routeA, routeB] = Array.from(
+      document.querySelectorAll("spa-route"),
+    ) as HTMLSpaRouteElement[];
+    const [linkA, linkB] = Array.from(
+      document.querySelectorAll("spa-a"),
+    ) as HTMLSpaAElement[];
+    const scrollToSpy = vi.spyOn(window, "scrollTo");
+    const land = (index: number) => {
+      const { id, url } = manager.router!.states.at(index)!;
+      history.replaceState({ id }, "", url);
+      window.dispatchEvent(new PopStateEvent("popstate"));
     };
+    expect("setScroll" in routeA).toBe(false);
 
-    route.provision = { ...route.provision!, move: "push", active } as any;
-    route.setScroll();
-    await wait(0);
-    expect(scrollToSpy).toHaveBeenCalledWith(
+    await waitForEvent(manager, "spa-manager-rendered", () => {
+      linkA.dispatchEvent(new Event("click"));
+    });
+    expect(scrollToSpy).toHaveBeenLastCalledWith(
       expect.objectContaining({ top: 0, left: 0 }),
     );
-    scrollToSpy.mockClear();
+    document.documentElement.scrollTop = 240;
+    document.documentElement.scrollLeft = 12;
 
-    route.provision = { ...route.provision!, move: "back", active } as any;
-    route.setScroll();
-    await wait(0);
-    expect(scrollToSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ top: 240, left: 12 }),
+    await waitForEvent(manager, "spa-manager-rendered", () => {
+      linkB.dispatchEvent(new Event("click"));
+    });
+    expect(scrollToSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({ top: 0, left: 0 }),
     );
+
+    await waitForEvent(manager, "spa-manager-rendered", () => land(-2));
+    expect(routeA.isActive).toBe(true);
+    expect(scrollToSpy).toHaveBeenLastCalledWith({
+      top: 240,
+      left: 12,
+      behavior: "instant",
+    });
     scrollToSpy.mockClear();
 
-    route.scrollSetDisabled = true;
-    route.setScroll();
-    await wait(0);
+    routeB.scrollSetDisabled = true;
+    await waitForEvent(manager, "spa-manager-rendered", () => land(-1));
+    expect(routeB.isActive).toBe(true);
     expect(scrollToSpy).not.toHaveBeenCalled();
+    document.documentElement.scrollTop = 0;
+    document.documentElement.scrollLeft = 0;
   });
 });
 

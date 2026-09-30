@@ -44,13 +44,20 @@ export async function buildPackageMetas(packageRoot = process.cwd()) {
 
   if (skipDocumented && !isSiteDocs) return;
 
+  // `exports` is written into package.json only at publish time
+  // (`apply-exports`), after the metas are built; in every other run — the
+  // dev site, deploy-docs, publish.yml — it is absent, so read the map the
+  // build generated (`dist/exports.generated.json`) as the source of truth.
+  const exportsMap =
+    pkg.exports ??
+    (await readJsonIfExists(path.resolve(packageRoot, "dist/exports.generated.json")));
   const packageBlock = {
     name: pkg.name,
     version: pkg.version,
     description: pkg.description,
     peerDependencies: pkg.peerDependencies ?? {},
     excom: pkg.excom,
-    exports: pkg.exports,
+    exports: exportsMap,
   };
 
   if (skipDocumented && isSiteDocs) {
@@ -91,7 +98,7 @@ export async function buildPackageMetas(packageRoot = process.cwd()) {
       hasUmdEntry: rootFiles.includes(UMD_ENTRY_SOURCE),
     }),
     elementApis,
-    exportedFiles: buildExportedFiles(pkg.exports),
+    exportedFiles: buildExportedFiles(exportsMap),
   });
 }
 

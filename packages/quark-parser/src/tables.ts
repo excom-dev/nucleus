@@ -58,8 +58,8 @@ export const SELECTOR_PSEUDOS: ReadonlySet<string> = new Set([
 
 /**
  * Quark's at-rules — the whole set. Each has a dedicated AST node and a
- * parse method; any other name (`@media`, `@if`, `@keyframes`, …) is a
- * parse error, since Quark is a derivative of CSS, not a superset.
+ * parse method; any other name (`@media`, `@keyframes`, …) is a parse
+ * error.
  */
 export const QUARK_AT_RULES = [
   "use",

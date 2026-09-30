@@ -22,7 +22,7 @@ import {
   vi,
   wait,
 } from "@excom/heft-rig/profiles/default/config/test-utils";
-import { LoopGuard, type LoopGuardTrip } from "@excom/kit-utils";
+import { clearFetchCaches, LoopGuard, type LoopGuardTrip } from "@excom/kit-utils";
 import type { QuarkRenderer } from "../../src/devtools-hook";
 import {
   bypassSelectorCache,
@@ -238,15 +238,15 @@ describe("@view-transition", () => {
     it("captures the new state after timeout when Quark does not settle, warning once per block", async () => {
       stub = installViewTransitionStub();
       const warnings = spyWarnings();
-      const hang = (n: string) => (n === "1" ? "ready" : new Promise(() => {}));
+      // a remote template that never arrives keeps Quark busy
+      vi.spyOn(globalThis, "fetch").mockImplementation(() => new Promise(() => {}));
       const { root } = mount(
         `<div id="box" data-n="1"><span></span></div>`,
         `#box {
           $n: attr("data-n");
           @view-transition (timeout: 40) { data-copy: $n; }
-          span { content: hang($n); }
-        }`,
-        { hang }
+          span { content: if($n == "1": "ready"; else: template("/tpls/never.html")); }
+        }`
       );
       await settle();
       const box = root.querySelector("#box")!;
@@ -261,6 +261,7 @@ describe("@view-transition", () => {
       await stub.calls[1].updateCallbackDone;
       expect(warnings().filter((m) => m.includes("did not settle within 40ms"))).toHaveLength(1);
       box.remove();
+      clearFetchCaches("/tpls/never.html");
     });
 
     it("holds delayed writes back and commits them in their own transition", async () => {
@@ -735,17 +736,13 @@ describe("@view-transition", () => {
 
     const node = document.createElement("b");
     node.textContent = "node";
-    /** Async content: a promise of text, a Node, a NodeList or a wipe. */
-    const later = (v: string) =>
-      Promise.resolve(
-        v === "text"
-          ? "later"
-          : v === "node"
-            ? node
-            : v === "list"
-              ? document.createRange().createContextualFragment("<i>a</i><i>b</i>").childNodes
-              : null
-      );
+    /** Objects painted through the settle step: a Node, a fresh NodeList, a URL (as its text). */
+    const pick = (v: string) =>
+      v === "node"
+        ? node
+        : v === "list"
+          ? document.createRange().createContextualFragment("<i>a</i><i>b</i>").childNodes
+          : new URL(`https://example.com/${v}`);
     cases.push(
       {
         name: "ariaset",
@@ -757,15 +754,15 @@ describe("@view-transition", () => {
         ],
       },
       {
-        name: "async content: text, a node, a node list and a wipe",
+        name: "a node, a node list, an object's text and a wipe that iterate() settles later",
         html: `<p id="t" data-v="none">x</p>`,
-        sheet: `#t { @view-transition { content: later(attr("data-v")); } }`,
+        sheet: `#t { @view-transition { content: if(attr("data-v") == "none": iterate("none"); else: pick(attr("data-v"))); } }`,
         steps: [
-          { act: set("#t", "data-v", "text"), transitions: 1 },
-          { act: set("#t", "data-v", "text"), transitions: 0 },
           { act: set("#t", "data-v", "node"), transitions: 1 },
           { act: set("#t", "data-v", "node"), transitions: 0 },
           { act: set("#t", "data-v", "list"), transitions: 1 },
+          { act: set("#t", "data-v", "url"), transitions: 1 },
+          { act: set("#t", "data-v", "url"), transitions: 0 },
           { act: set("#t", "data-v", "none"), transitions: 1 },
           { act: set("#t", "data-v", "none"), transitions: 0 },
         ],
@@ -775,7 +772,7 @@ describe("@view-transition", () => {
     for (const { name, html, sheet, steps } of cases) {
       it(`detects changes for ${name}`, async () => {
         stub = installViewTransitionStub();
-        const { root } = mount(html, sheet, { rows, later });
+        const { root } = mount(html, sheet, { rows, pick });
         await settle();
         for (const [index, { act, transitions }] of steps.entries()) {
           const before = stub.calls.length;
@@ -897,6 +894,26 @@ describe("@view-transition", () => {
       await wait(40);
       expect(stub.calls[0].isUpdated).toBe(false);
       reject(new Error("offline"));
+      await stub.calls[0].updateCallbackDone;
+      expect(root.querySelector("#msg")!.textContent).toBe("Loading");
+    });
+
+    it("waits on a promise that a module function returns", async () => {
+      stub = installViewTransitionStub();
+      let resolve!: () => void;
+      const pending = new Promise<void>((r) => (resolve = r));
+      const loaded = () => pending;
+      const { root } = mount(
+        `<div id="loader"><p id="msg"></p></div>`,
+        `#loader[is-loading] { @view-transition (until: loaded(), timeout: 800) { #msg { content: "Loading"; } } }`,
+        { loaded }
+      );
+      await settle();
+      root.querySelector("#loader")!.setAttribute("is-loading", "");
+      await waitFor(() => !!stub!.calls[0]?.isUpdating);
+      await wait(40);
+      expect(stub.calls[0].isUpdated).toBe(false);
+      resolve();
       await stub.calls[0].updateCallbackDone;
       expect(root.querySelector("#msg")!.textContent).toBe("Loading");
     });

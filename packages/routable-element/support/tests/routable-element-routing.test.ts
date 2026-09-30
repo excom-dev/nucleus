@@ -222,6 +222,70 @@ describe("RoutableElement routing", () => {
     expect(onSpy).not.toHaveBeenCalled();
   });
 
+  it("re-registers on reconnect with Neutron's undeclared-prop guard on", async () => {
+    // As in browsers: an effect key the element does not declare throws
+    const el = fixture<TestElement>(`<${TAG} route-href="/a"></${TAG}>`);
+    await wait(0);
+    el.remove();
+    await wait(0);
+    document.body.appendChild(el);
+    await wait(0);
+    expect(el.routeInstance).toBeInstanceOf(KitRoute);
+    kitRouter.pushState({ url: "/a" });
+    expect(el.isActive).toBe(true);
+  });
+
+  it("registers nothing while detached, then the current pattern on reconnect", async () => {
+    const el = fixture<TestElement>(`<${TAG} route-href="/a"></${TAG}>`);
+    await wait(0);
+    el.remove();
+    await wait(0);
+    onSpy.mockClear();
+
+    el.routeHref = "/b";
+    el.matchNested = true;
+    await wait(0);
+    expect(el.routeInstance).toBeNull();
+    expect(onSpy).not.toHaveBeenCalled();
+
+    document.body.appendChild(el);
+    await wait(0);
+    expect(el.routeInstance!.key).toBe("/b");
+    expect(el.routeInstance!.opts).toEqual({ matchNested: true });
+    expect(onSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("unregisters a regex-only route on disconnect", async () => {
+    const el = fixture<TestElement>(`<${TAG} route-regex="^/r"></${TAG}>`);
+    await wait(0);
+    const route = el.routeInstance!;
+
+    el.remove();
+    await wait(0);
+    expect(el.routeInstance).toBeNull();
+    expect(offSpy).toHaveBeenCalledWith(route);
+    // a detached element is never called again (safe to collect)
+    routeChangedSpy.mockClear();
+    kitRouter.pushState({ url: "/r1" });
+    expect(routeChangedSpy).not.toHaveBeenCalled();
+  });
+
+  it("rebuilds the route when match-nested changes", async () => {
+    const el = fixture<TestElement>(`<${TAG} route-href="/docs"></${TAG}>`);
+    await wait(0);
+    const exact = el.routeInstance!;
+    kitRouter.pushState({ url: "/docs/intro" });
+    expect(el.isActive).toBe(false);
+
+    el.matchNested = true;
+    await wait(0);
+    expect(offSpy).toHaveBeenCalledWith(exact);
+    expect(el.routeInstance!.opts).toEqual({ matchNested: true });
+    expect(el.isActive).toBe(true);
+    kitRouter.pushState({ url: "/docs" });
+    expect(el.isActive).toBe(true);
+  });
+
   it("keeps the registration when the element is moved synchronously", async () => {
     const el = fixture<TestElement>(`<${TAG} route-href="/a"></${TAG}>`);
     await wait(0);

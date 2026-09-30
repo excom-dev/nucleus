@@ -522,6 +522,71 @@ describe("include-content reload", () => {
   });
 });
 
+describe("include-content remote template errors", () => {
+  afterEach(() => {
+    document.body.innerHTML = "";
+    vi.restoreAllMocks();
+  });
+
+  it("a 404 template sets is-error, paints nothing and fires the error event", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    spyFetch({
+      status: 404,
+      body: "<title>404</title><h1>Not Found</h1>",
+      headers: new Headers({ "content-type": "text/html" }),
+    });
+    const el = fixture<HTMLIncludeContentElement>(
+      `<include-content template-ref="/missing-view.html"></include-content>`,
+    );
+
+    await waitForEvent(el, "include-content-error", () => {
+      el.isActive = true;
+    });
+    expect(el).dom.to.equalTag(
+      `<include-content template-ref="/missing-view.html" is-active is-error></include-content>`,
+    );
+    expect(el.children.length).toBe(0);
+  });
+});
+
+describe("include-content shared remote template", () => {
+  afterEach(() => {
+    document.body.innerHTML = "";
+    vi.restoreAllMocks();
+  });
+
+  it("still loads when the first element disconnects mid-load", async () => {
+    let respond = () => {};
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockImplementation(
+      (_url, init) =>
+        new Promise((resolve, reject) => {
+          respond = () => resolve(new Response("<p>shared</p>"));
+          init?.signal?.addEventListener("abort", () =>
+            reject(init.signal!.reason),
+          );
+        }),
+    );
+    const [first, second] = [1, 2].map(() =>
+      fixture<HTMLIncludeContentElement>(
+        `<include-content template-ref="/shared-abort.html"></include-content>`,
+      ),
+    );
+    first.isActive = true;
+    second.isActive = true;
+    await wait(0);
+    expect([first.isLoading, second.isLoading]).toEqual([true, true]);
+
+    first.remove();
+    await wait(0);
+    await waitForEvent(second, "include-content-did-render", respond);
+    expect(second).dom.to.equalTag(
+      `<include-content template-ref="/shared-abort.html" is-active did-load></include-content>`,
+    );
+    expect(second.querySelector("p")?.textContent).toBe("shared");
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("include-content idle / lazy edge cases", () => {
   afterEach(() => {
     document.body.innerHTML = "";

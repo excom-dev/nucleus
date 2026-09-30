@@ -18,7 +18,9 @@ import {
   flush,
   readViewFile,
 } from "@excom/quark/support/tests/view-helpers";
+import { renderMarkdown } from "@excom/heft-rig/scripts/render-markdown.mjs";
 import {
+  didCompleteLink,
   docMetaUrl,
   docNeighbors,
   docTitle,
@@ -41,7 +43,18 @@ const shellStub = {
   getDocHtml,
   docNeighbors,
   docTitle,
+  didCompleteLink,
   upgradeTemplateCode: () => {},
+};
+
+/** One `## <heading>` section of a site guide, rendered like the site meta. */
+const guideSection = (file: string, heading: string) => {
+  const md = readViewFile(import.meta.url, `../docs/${file}`);
+  const section = md
+    .split(/\n(?=## )/)
+    .find((s) => s.startsWith(`## ${heading}\n`));
+  if (!section) throw new Error(`${file} has no "## ${heading}"`);
+  return renderMarkdown(section);
 };
 
 const neutronMeta: PackageMeta = {
@@ -87,6 +100,11 @@ const siteMeta = {
   docs: {
     introduction: '<h1 id="md-introduction">Introduction</h1>',
     core_concepts: '<h1 id="md-core-concepts">Core Concepts</h1>',
+    // the guide link lists `package.quark` marks as visited
+    guide_links:
+      '<h1 id="md-guide-links">Guide links</h1>' +
+      guideSection("INTRODUCTION.md", "Start here") +
+      guideSection("QUICK_START.md", "Next steps"),
   },
   docSections: [
     {
@@ -134,9 +152,20 @@ const mountPage = async (
   {
     expectFetch = true,
     routeDocName,
-  }: { expectFetch?: boolean; routeDocName?: string } = {},
+    previousUrls,
+  }: {
+    expectFetch?: boolean;
+    routeDocName?: string;
+    /** Mount under a real `spa-manager` whose `router` is stubbed to report these past urls. */
+    previousUrls?: string[];
+  } = {},
 ) => {
-  const host = document.createElement("div");
+  const host = document.createElement(previousUrls ? "spa-manager" : "div");
+  if (previousUrls) {
+    (host as HTMLElement & { router: unknown }).router = {
+      previousStates: previousUrls.map((url) => ({ url })),
+    };
+  }
   host.innerHTML = `<quark-sheet>spa-route { $route: prop("provision"); $route-doc-name: attr("data-doc-name"); }</quark-sheet><spa-route></spa-route>`;
   const route = host.querySelector<HTMLElement & { provision: unknown }>(
     "spa-route",
@@ -288,5 +317,30 @@ describe("package view", () => {
     expect(requested).toEqual([]);
     expect(page.hasAttribute("is-success")).toBe(false);
     expect(page.querySelector(".md-content")?.innerHTML).toBe("");
+  });
+
+  it("marks guide links the router has a past visit to", async () => {
+    const quickStart = "/nucleus/docs/quick_start";
+    const styling = "/nucleus/docs/styling";
+    const { page } = await mountPage(
+      { name: "guide_links" },
+      { previousUrls: ["/nucleus", quickStart, styling] },
+    );
+    await vi.waitFor(() =>
+      expect(
+        page.querySelectorAll("#md-start-here + ul spa-a[data-completed]"),
+      ).toHaveLength(2),
+    );
+
+    for (const list of ["#md-start-here + ul", "#md-next-steps + ul"]) {
+      const completed = [
+        ...page.querySelectorAll(`${list} spa-a[data-completed]`),
+      ].map((a) => a.getAttribute("route-href"));
+      expect(completed).toEqual([quickStart, styling]);
+      // every other guide link, including the "Other Guides" row, stays open
+      expect(page.querySelectorAll(`${list} spa-a`).length).toBeGreaterThan(8);
+    }
+    // links outside the two lists are never marked
+    expect(page.querySelectorAll("spa-a[data-completed]")).toHaveLength(4);
   });
 });

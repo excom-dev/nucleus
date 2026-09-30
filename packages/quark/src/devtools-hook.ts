@@ -41,7 +41,7 @@ export type QuarkInspectSnapshot = {
   /**
    * Listeners from Quark `@on` at-rules, per event type, one entry per
    * attached function, tagged with the declaration that produced it
-   * (`$expression`, e.g. `setOutputFromDetail`).
+   * (`$expression`, e.g. `focusInput`).
    */
   listeners: Record<string, DevtoolsFunctionRef[]>;
   /** `iterate()` row context, when this element is a rendered row. */

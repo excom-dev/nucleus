@@ -1,12 +1,15 @@
-import { hashObject } from "@excom/hash-object";
 import { KitLogger } from "@excom/kit-logger";
 import { requestIdleCb } from "@excom/kit-shims";
+
+// Not `__spa_router_data__`: 0.1.3 sessions (content-hash ids) are ignored
+const SESSION_KEY = "__kit_router_history__";
 
 export interface KitRouteState {
   id: string;
   url: string;
   title?: string;
   isInit?: boolean;
+  /** Saved whenever the entry is left, `pagehide` included. */
   scrollX?: number;
   scrollY?: number;
   ttypes?: string[];
@@ -25,8 +28,18 @@ export interface KitRouteData {
   active: KitRouteState;
   next: KitRouteState | null;
   all: KitRouteState[];
+  /**
+   * Path pattern placeholders and named groups (unmatched ones left out). Read
+   * unnamed groups from `match`.
+   */
   params: Record<string, string> | null;
+  /** `location.search` as an object. */
+  query: Record<string, string>;
   match: Array<any> | null;
+  /**
+   * How `active` was entered. `null`: page load (not back / forward), or an
+   * entry the router did not create (fragment link).
+   */
   move: null | "push" | "replace" | "back" | "forward";
   event?: {
     hasUAVisualTransition: boolean;
@@ -39,6 +52,29 @@ export interface KitRouteOpts {
 }
 
 export type KitRouteHandler = (data: KitRouteData) => void;
+
+/**
+ * Resolves a relative `href` against `document.baseURI` (honours `<base>`) to
+ * path + query + hash. Absolute paths and full URLs pass through.
+ */
+export const resolveHref = (href: string) => {
+  if (href.startsWith("/") || URL.canParse(href)) return href;
+  const { pathname, search, hash } = new URL(href, document.baseURI);
+  return pathname + search + hash;
+};
+
+/** Like the pathname `locationChanged` matches; a bare `%` stays as is. */
+const decodePath = (path: string) => {
+  try {
+    return decodeURI(path);
+  } catch {
+    return path;
+  }
+};
+
+// `:name` compiles to a group `${PARAM_GROUP}<position>`: valid for any name,
+// unique when repeated. Unlikely prefix, so no clash with an author's groups.
+const PARAM_GROUP = "__kit_param_";
 
 export class KitRoute {
   key: string | RegExp;
@@ -57,39 +93,46 @@ export class KitRoute {
     this.opts = opts;
     this.paramNames = [];
     if (typeof key === "string") {
-      const expression = key
-        .replace(/([:*])(\w+)/g, (_full, _dots, name) => {
-          // `_full` and `_dots` are unused
-          this.paramNames.push(name);
-          return "([^/]+)";
-        })
+      const expression = decodePath(resolveHref(key))
+        .replace(
+          // Not after `?`: `(?:x)` is a group
+          /(?<!\?)[:*](\w+)/g,
+          (_match, name) =>
+            `(?<${PARAM_GROUP}${this.paramNames.push(name) - 1}>[^/]+)`
+        )
         .replace(/\*/g, "(?:.*)");
-      const endOfPath = opts.matchNested ? "/" : "$";
-      this.regex = new RegExp(`^${expression}${endOfPath}`);
+      const base = expression.replace(/\/$/, "");
+      this.regex = new RegExp(
+        opts.matchNested
+          ? // The base path or a child path, never `/basex`; `/` matches all
+            base
+            ? `^${base}(?=/|$)`
+            : "^/"
+          : `^${expression}$`
+      );
     } else if (key instanceof RegExp) {
-      this.regex = key;
+      // `g` drops the groups from a match, `y` reads `lastIndex`
+      this.regex = new RegExp(key, key.flags.replace(/[gy]/g, ""));
     } else {
       throw new Error("Invalid route key type. Must be string or RegExp.");
     }
   }
   public match(pathname: string) {
-    const { regex, paramNames } = this;
-    const match = pathname.match(regex);
-    return {
-      match,
-      params:
-        match && match.length > 0
-          ? this.collectRouteParams(match, paramNames)
-          : null,
-    };
+    const match = pathname.match(this.regex);
+    return { match, params: match && this.collectRouteParams(match) };
   }
-  private collectRouteParams(match: string[], paramNames: string[]) {
+  private collectRouteParams({ groups = {} }: RegExpMatchArray) {
     try {
-      return match.slice(1, match.length).reduce((params, value, index) => {
-        params[paramNames[index]] = decodeURIComponent(value);
-
-        return params;
-      }, {});
+      return Object.fromEntries(
+        Object.entries(groups)
+          .filter(([, value]) => value !== undefined)
+          .map(([group, value]) => [
+            group.startsWith(PARAM_GROUP)
+              ? this.paramNames[+group.slice(PARAM_GROUP.length)]
+              : group,
+            decodeURIComponent(value),
+          ])
+      );
     } catch (_) {
       return {};
     }
@@ -110,95 +153,102 @@ export class KitRouter {
     event?: KitRouteData["event"];
   };
   protected currentStateId: string | null;
+  // Same-origin frames share the page's sessionStorage: one key per frame
+  private sessionKey =
+    window === window.top
+      ? SESSION_KEY
+      : `${SESSION_KEY}:${window.name || location.pathname}`;
   private handlePopState: (e: PopStateEvent) => void;
+  private handlePageHide: () => void;
 
   constructor() {
-    const sessionData = this.getInitSessionData();
-    this.states = sessionData.states;
-    this.currentTempData = sessionData.currentTempData;
-    this.currentStateId = sessionData.currentStateId;
-    this.routes = [];
+    const { states, currentStateId } = this.getInitSessionData();
+    this.states = states;
+    this.currentStateId = currentStateId;
+    this.currentTempData = { move: null };
+    const from = this.getStateIndex(currentStateId);
+    const to = this.getStateIndex(history.state?.id);
+    if (to < 0) {
+      // New entry: first visit, typed URL, link from another page
+      this.track(true);
+    } else {
+      // Reload, or back / forward from another document
+      this.setSessionData({
+        currentStateId: this.states[to].id,
+        currentTempData: {
+          move: from < 0 || from === to ? null : from < to ? "forward" : "back",
+        },
+      });
+    }
     this.handlePopState = (e: PopStateEvent) => {
-      if (this.currentStateId) {
-        const lastPopStateIndex = this.getStateIndex(this.currentStateId);
-        const currentStateIndex = this.getStateIndex(history.state?.id);
-        if (lastPopStateIndex < currentStateIndex) {
-          this.setScrollData(this.states[lastPopStateIndex]);
-          this.setSessionData({
-            currentTempData: {
-              move: "forward",
-              event: {
-                hasUAVisualTransition: e.hasUAVisualTransition,
-              },
-            },
-          });
-        } else if (lastPopStateIndex > currentStateIndex) {
-          this.setScrollData(this.states[lastPopStateIndex]);
-          this.setSessionData({
-            currentTempData: {
-              move: "back",
-              event: {
-                hasUAVisualTransition: e.hasUAVisualTransition,
-              },
-            },
-          });
-        }
-      } else {
-        // TODO: set scroll data here?
+      const from = this.getStateIndex(this.currentStateId);
+      const to = this.getStateIndex(history.state?.id);
+      if (from > -1 && from !== to) this.setScrollData(this.states[from]);
+      if (to < 0) {
+        // Entry the router did not create: fragment link, foreign pushState
+        this.track();
+      } else if (from !== to) {
         this.setSessionData({
+          currentStateId: this.states[to].id,
           currentTempData: {
-            move: "back",
+            move: from < to ? "forward" : "back",
             event: {
               hasUAVisualTransition: e.hasUAVisualTransition,
             },
           },
         });
       }
-      this.setSessionData({
-        // Falls back to the initial state id when history has no recognized id
-        currentStateId: this.getActiveState(
-          this.getStateIndex(history.state?.id)
-        ).id,
-      });
       this.locationChanged();
     };
+    this.handlePageHide = () => {
+      const index = this.currentIndex();
+      if (index > -1) this.setScrollData(this.states[index]);
+      this.writeSession();
+    };
     window.addEventListener("popstate", this.handlePopState);
+    window.addEventListener("pagehide", this.handlePageHide);
   }
 
   public destroy() {
     window.removeEventListener("popstate", this.handlePopState);
+    window.removeEventListener("pagehide", this.handlePageHide);
   }
 
   public pushState(changeStateOptions: KitChangeStateOptions) {
-    this.beforePushState();
-    const state = buildState(changeStateOptions);
+    const index = this.activeIndex();
+    this.setScrollData(this.states[index]);
+    const state = buildState({
+      ...changeStateOptions,
+      url: resolveHref(changeStateOptions.url),
+    });
     this.setSessionData({
-      states: [...this.states, state],
+      // Drops states after the current one (went back, then pushed)
+      states: [...this.states.slice(0, index + 1), state],
       currentStateId: state.id,
-      currentTempData: {
-        move: "push",
-        event: undefined,
-      },
+      currentTempData: { move: "push" },
     });
     history.pushState(
       { id: state.id },
       changeStateOptions.title ?? document.title,
-      changeStateOptions.url
+      state.url
     );
     this.locationChanged();
   }
   public replaceState(changeStateOptions: KitChangeStateOptions) {
-    this.beforePushState();
-    const state = buildState(changeStateOptions);
-    this.setSessionData({
-      states: [...this.states.slice(0, -1), state],
-      currentStateId: state.id,
-      currentTempData: {
-        move: "replace",
-        event: undefined,
-      },
+    const index = this.activeIndex();
+    const state = buildState({
+      ...changeStateOptions,
+      url: resolveHref(changeStateOptions.url),
+      // Replacing the init entry leaves nothing to go back to
+      isInit: this.states[index].isInit,
     });
-    this._replaceState(changeStateOptions.url, changeStateOptions.title, {
+    this.setSessionData({
+      // Forward states stay, as they do in the browser
+      states: this.states.toSpliced(index, 1, state),
+      currentStateId: state.id,
+      currentTempData: { move: "replace" },
+    });
+    this._replaceState(state.url, changeStateOptions.title, {
       id: state.id,
     });
   }
@@ -207,19 +257,13 @@ export class KitRouter {
     this.locationChanged();
   }
   public canGoBack() {
-    const activeStateIndex = this.getStateIndex(history.state?.id);
-    if (activeStateIndex > 0) {
-      return true;
-    } else {
-      const activeState = this.getActiveState(activeStateIndex);
-      // Past `MAX_STATES` the oldest (init) state is gone; back still works, just without metadata.
-      return !activeState.isInit;
-    }
+    const index = this.currentIndex();
+    // Past `MAX_STATES` the oldest (init) state is gone; back still works, just without metadata.
+    return index > 0 || (index === 0 && !this.states[0].isInit);
   }
   public canGoForward() {
-    const activeStateIndex = this.getStateIndex(history.state?.id);
-    const nextState = this.getNextState(activeStateIndex);
-    return !!nextState;
+    const index = this.currentIndex();
+    return index > -1 && index < this.states.length - 1;
   }
   public back(stateIndex = -1) {
     history.go(stateIndex);
@@ -239,18 +283,17 @@ export class KitRouter {
         pathname.slice(0, pathname.length - 1) + search + hash
       );
     } else {
-      const activeStateIndex = this.getStateIndex(history.state?.id);
-      const previous = this.getPreviousState(activeStateIndex);
-      const active = this.getActiveState(activeStateIndex);
-      const next = this.getNextState(activeStateIndex);
+      const index = this.activeIndex();
+      const query = Object.fromEntries(new URLSearchParams(search));
       routes.forEach((route) => {
         const { match, params } = route.match(pathname);
         const data: KitRouteData = {
-          previous,
-          active,
-          next,
+          previous: this.states[index - 1] ?? null,
+          active: this.states[index],
+          next: this.states[index + 1] ?? null,
           all: this.states,
           params,
+          query,
           match,
           move: this.currentTempData.move,
           event: this.currentTempData.event,
@@ -283,52 +326,64 @@ export class KitRouter {
     return null;
   }
 
-  private beforePushState() {
+  public get previousStates() {
+    const index = this.currentIndex();
+    return index < 0 ? [] : this.states.slice(0, index);
+  }
+
+  public get nextStates() {
+    const index = this.currentIndex();
+    return index < 0 ? [] : this.states.slice(index + 1);
+  }
+
+  /**
+   * Index of the entry the browser is on. Outside `popstate`, a missing id
+   * means foreign code replaced the current entry.
+   */
+  private currentIndex() {
     const index = this.getStateIndex(history.state?.id);
-    const currentState = this.getActiveState(index);
-    this.setScrollData(currentState);
-    // Drop states after the current one (went back, then pushed a new one)
+    return index < 0 ? this.getStateIndex(this.currentStateId) : index;
+  }
+
+  /** `currentIndex`, stamping a lost id and the new URL back onto the entry. */
+  private activeIndex() {
+    // No current entry either (trimmed by `MAX_STATES`)
+    if (this.currentIndex() < 0) this.track();
+    const index = this.currentIndex();
+    const state = this.states[index];
+    if (history.state?.id !== state.id) {
+      state.url = getUrl();
+      history.replaceState({ ...history.state, id: state.id }, "");
+      this.setSessionData({});
+    }
+    return index;
+  }
+
+  /**
+   * Adds the entry the browser is on after the current one, dropping later
+   * ones as the browser did, and stamps its id.
+   */
+  private track(isInit = false) {
+    const state = buildState({ isInit });
     this.setSessionData({
-      states: this.states.slice(0, index + 1),
+      states: [
+        ...this.states.slice(0, this.getStateIndex(this.currentStateId) + 1),
+        state,
+      ],
+      currentStateId: state.id,
+      currentTempData: { move: null },
     });
+    history.replaceState({ ...history.state, id: state.id }, "");
   }
 
   private setScrollData(state: KitRouteState) {
-    if (window.scrollY) {
-      // Non-zero: keep `scrollY`
-      state.scrollY = window.scrollY;
-    }
-    if (window.scrollX) {
-      // Non-zero: keep `scrollX`
-      state.scrollX = window.scrollX;
-    }
+    state.scrollX = window.scrollX;
+    state.scrollY = window.scrollY;
   }
 
-  private getStateIndex(id) {
-    if (!id) return 0;
-    else {
-      // Search from the end in case two states share an id
-      const foundState = this.states
-        .slice()
-        .reverse()
-        .find((s) => s.id === id);
-      const foundIndex = this.states.findIndex((s) => s === foundState);
-      return foundIndex > -1 ? foundIndex : 0;
-    }
-  }
-
-  private getPreviousState(activeStateIndex) {
-    if (activeStateIndex < 1) return null;
-    else return this.states[activeStateIndex - 1];
-  }
-
-  private getActiveState(activeStateIndex) {
-    return this.states[activeStateIndex]!;
-  }
-
-  private getNextState(activeStateIndex) {
-    if (activeStateIndex >= this.states.length - 1) return null;
-    else return this.states[activeStateIndex + 1];
+  /** `-1` when the id is missing or unknown. */
+  private getStateIndex(id?: string | null) {
+    return id ? this.states.findIndex((s) => s.id === id) : -1;
   }
 
   private shouldStripSlash(pathname) {
@@ -353,66 +408,65 @@ export class KitRouter {
   }: {
     states?: KitRouteState[];
     currentStateId?: string | null;
-    currentTempData?: {
-      move: null | "push" | "replace" | "back" | "forward";
-      event?: {
-        hasUAVisualTransition: boolean;
-      };
-    };
+    currentTempData?: KitRouter["currentTempData"];
   }) {
     this.states = (states ?? this.states).slice(-this.MAX_STATES);
     this.currentStateId = currentStateId ?? this.currentStateId;
     this.currentTempData = currentTempData ?? this.currentTempData;
-    requestIdleCb(() => {
-      // Idle write is enough; no need to block here
-      try {
-        sessionStorage.setItem(
-          "__spa_router_data__",
-          JSON.stringify({
-            states: this.states,
-            currentStateId: this.currentStateId,
-            currentTempData: this.currentTempData,
-          })
-        );
-      } catch (e) {
-        KitLogger.error("Error setting session data", e);
-      }
-    }, 0);
+    // Idle write is enough: `pagehide` flushes
+    requestIdleCb(() => this.writeSession(), 0);
   }
-  private getInitSessionData() {
-    let sessionStorageData;
+  private writeSession() {
     try {
-      sessionStorageData = JSON.parse(
-        sessionStorage.getItem("__spa_router_data__") || "null"
+      sessionStorage.setItem(
+        this.sessionKey,
+        JSON.stringify({
+          states: this.states,
+          currentStateId: this.currentStateId,
+        })
       );
+    } catch (e) {
+      KitLogger.error("Error setting session data", e);
+    }
+  }
+  private getInitSessionData(): {
+    states: KitRouteState[];
+    currentStateId: string | null;
+  } {
+    try {
+      const stored = JSON.parse(
+        sessionStorage.getItem(this.sessionKey) || "null"
+      );
+      if (
+        Array.isArray(stored?.states) &&
+        stored.states.every((state) => state?.id)
+      ) {
+        return stored;
+      }
     } catch (e) {
       KitLogger.error("Error getting session data", e);
     }
-    return (
-      // Restore session data, or start fresh
-      sessionStorageData || {
-        states: [buildState({ isInit: true })],
-        currentStateId: null,
-        currentTempData: {
-          move: null,
-        },
-      }
-    );
+    return { states: [], currentStateId: null };
   }
 }
 
+/**
+ * Unique in the tab, across page loads. `randomUUID` is missing in insecure
+ * contexts.
+ */
+const newId = () =>
+  crypto.randomUUID?.() ??
+  `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+
 function buildState(obj: Partial<KitRouteState> = {}): KitRouteState {
-  const newState: Partial<KitRouteState> = Object.assign(
-    {},
-    { url: obj.url ?? getUrl() },
+  return Object.assign(
+    { id: newId(), url: obj.url ?? getUrl() },
     obj.title && { title: obj.title },
-    obj.scrollY && { scrollY: obj.scrollY },
-    obj.scrollX && { scrollX: obj.scrollX },
     obj.isInit && { isInit: obj.isInit },
-    obj.ttypes && obj.ttypes?.length > 0 && { ttypes: obj.ttypes }
+    obj.scrollX != null && { scrollX: obj.scrollX },
+    obj.scrollY != null && { scrollY: obj.scrollY },
+    obj.ttypes && obj.ttypes.length > 0 && { ttypes: obj.ttypes }
   );
-  newState.id = hashObject(newState);
-  return newState as KitRouteState;
 }
 
 function getUrl() {

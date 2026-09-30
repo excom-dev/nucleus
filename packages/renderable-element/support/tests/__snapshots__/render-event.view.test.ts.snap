@@ -1,0 +1,23 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`render-event view > renders and unrenders inside a view transition > complexity 1`] = `
+{
+  "attributeRuns": 1,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 2,
+  "listenerRuns": 0,
+  "matches": 2,
+  "parentElement": 0,
+  "quarkRuns": 1,
+  "queryScopeCost": 6,
+  "querySelectorAll": 2,
+  "removeAttribute": 3,
+  "ruleRuns": 2,
+  "schedulePaint": 1,
+  "setAttribute": 5,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;

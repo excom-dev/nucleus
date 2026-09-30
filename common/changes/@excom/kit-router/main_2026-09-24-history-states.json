@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/kit-router",
+      "comment": "Add `previousStates` / `nextStates` getters to `KitRouter`, listing the tracked history states before and after the active entry",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@excom/kit-router",
+  "email": "133191653+excom-dev@users.noreply.github.com"
+}

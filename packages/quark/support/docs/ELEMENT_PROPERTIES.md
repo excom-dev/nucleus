@@ -26,9 +26,10 @@ provider-fetch[is-success] { $todos: prop("provision").body; }
 
 ## `element`
 
-`element` is the matched element itself — the way to hand the node to a module function (a handler factory, a chart mount) without a selector walk. Reads through it are not observed; use `attr()` / `prop()` for those:
+`element` is the matched element itself (inside an `@on` block the listening element; `target` is the delegate). It reaches a neighbour without a selector. Reads through it are not observed; use `attr()` / `prop()` for those:
 
 ```quark
-[data-chart] { $chart: mountChart(element, $series); }
-button[data-sku] { @on click (handle: addToCart(element, event)); } /* evaluated per click */
+button[data-help] {
+  @on click { @command toggle-popover (target: element.nextElementSibling); }
+}
 ```

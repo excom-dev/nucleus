@@ -49,7 +49,9 @@
         "use",
         "on",
         "dispatch",
-        "view_transition"
+        "delay",
+        "view_transition",
+        "diagnostics"
       ]
     },
     {

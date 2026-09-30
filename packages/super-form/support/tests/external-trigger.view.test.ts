@@ -51,7 +51,16 @@ describe("external-trigger view", () => {
     const budget = meter.take();
     meter.stop();
     expect(form.hasAttribute("is-success")).toBe(true);
-    expect(root.querySelector("ul")?.textContent).toMatch(/Ada/);
+    const rows = (list: string) =>
+      [...root.querySelectorAll(`${list} li`)].map((li) => li.textContent);
+    // rows print `index: to-json(item)`: strings quoted, objects as JSON
+    expect(rows("ul:first-of-type")).toEqual(['nickname: "Ada"']);
+    expect(rows("ul:last-of-type")).toEqual(
+      expect.arrayContaining([
+        "status: 200",
+        'body: {"json":{"nickname":"Ada"}}',
+      ]),
+    );
     expectComplexity(budget);
   });
 });

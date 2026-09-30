@@ -1,4 +1,5 @@
 import { ListenableElement } from "../../index";
+import { KitLogger } from "@excom/kit-logger";
 import { Neutron } from "@excom/neutron";
 import {
   afterEach,
@@ -96,6 +97,38 @@ describe("ListenableElement keycode-filter matrix", () => {
     el.handleEvent(key("Control", { ctrlKey: true }));
     expect(handler).toHaveBeenCalledTimes(1);
     el.handleEvent(key("Shift", { shiftKey: true }));
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
+
+  it("names the space bar and the plus key", () => {
+    const el = fixture<any>(
+      `<${TAG} keycode-filter="Space shift+spacebar plus"></${TAG}>`,
+    );
+    const handler = vi.fn();
+    el.actionHandler = handler;
+    el.handleEvent(key(" "));
+    el.handleEvent(key(" ", { shiftKey: true }));
+    el.handleEvent(key("+", { shiftKey: true }));
+    expect(handler).toHaveBeenCalledTimes(3);
+    el.handleEvent(key("s"));
+    el.handleEvent(key("="));
+    expect(handler).toHaveBeenCalledTimes(3);
+  });
+
+  it("matches no key when the filter holds only spaces, and warns once", () => {
+    const warn = vi.spyOn(KitLogger, "warn").mockImplementation(() => {});
+    const el = fixture<any>(`<${TAG} keycode-filter=" "></${TAG}>`);
+    const handler = vi.fn();
+    el.actionHandler = handler;
+    el.handleEvent(key(" "));
+    el.handleEvent(key("a"));
+    expect(handler).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0][0])).toMatch(/"space"/);
+
+    // an empty filter is no filter
+    el.setAttribute("keycode-filter", "");
+    el.handleEvent(key("a"));
     expect(handler).toHaveBeenCalledTimes(1);
   });
 

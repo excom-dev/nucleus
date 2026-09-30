@@ -51,9 +51,9 @@ Invalid input throws `QuarkParseError` (from `@excom/quark-parser`) with the lin
 - Lines wrap at 80 columns the way prettier wraps CSS: maps, call arguments, `if()` arms, `@on` / `@dispatch` / `@command` / `@view-transition` options and `@delay` durations that overflow break one item per line, operator chains wrap like text, a comma list of multi-word values breaks one value per line
 
 ```quark
-dataset: (
-  trip: event.target.form.elements["data-trip"].value,
-  outbound: event.target.form.elements["data-outbound"].value
+content: formatPrice(
+  pricing.total($items, $tax-rate) - pricing.discount($items, $coupon-code),
+  $currency
 );
 data-mode: if(
   event.target.name == "data-mode": event.target.value;
@@ -61,9 +61,9 @@ data-mode: if(
 );
 ```
 
-Strings, selectors and interpolations never wrap, so a long `content: "…#{…}…"` stays on one line. Listener at-rules print as `@on input, change (debounce: 300, handle: save) {` — the event list as written, the options group like a map — and `@dispatch` / `@command` statements the same way; `@view-transition (types: "todo-change") {` prints its options like `@on`'s and always opens a block, as does `@scope {`.
+Strings, selectors and interpolations never wrap, so a long `content: "…#{…}…"` stays on one line. Listener at-rules print as `@on input, change (target: "[name]", debounce: 300) {` — the event list as written, the options group like a map — and `@dispatch` / `@command` statements the same way; `@view-transition (types: "todo-change") {` prints its options like `@on`'s and always opens a block, as does `@scope {`.
 
-Quark is a derivative of CSS, not a superset: the formatter prints Quark's own at-rules — `@use`, `@scope`, `@on`, `@dispatch`, `@command`, `@view-transition`, `@delay`, `@warn`, `@debug`, `@error` — and nothing else. Anything the parser rejects (`@media` and the other CSS at-rules, SCSS's `@if` / `@each` / `@mixin`, `%placeholder` selectors, `#{…}` outside a string, `!important` / `!default`, nested property blocks, `@use … with (…)`) throws rather than being reformatted.
+Quark is a derivative of CSS with at-rules of its own, and the formatter prints those — `@use`, `@scope`, `@on`, `@dispatch`, `@command`, `@view-transition`, `@delay`, `@warn`, `@debug`, `@error` — and nothing else. A sheet the parser rejects, such as one holding `@media` or `!important`, throws rather than being reformatted.
 
 ### In the editor
 

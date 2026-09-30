@@ -42,7 +42,7 @@ Pure helpers for numbers, lists, maps, strings and dates, imported like JS modul
 | Name | Description |
 | --- | --- |
 | `count(list, "path"?, value?)` | The number of items; with a path, the items whose value at it is non-empty; with a value too, the items equal to it. `0` for a missing list. |
-| `find(list, "path", value)` | The first item whose value at the path equals `value`, else `undefined` (was a global built-in before 2026-09-13). |
+| `find(list, "path", value)` | The first item whose value at the path equals `value`, else `undefined`. |
 | `filter(list, "path", value?)` | The items whose value at the path equals `value` — or is non-empty when `value` is omitted. |
 | `reject(list, "path", value?)` | The complement of `filter`. |
 | `pluck(list, "path")` | The value at the path of every item. |
@@ -53,7 +53,7 @@ Pure helpers for numbers, lists, maps, strings and dates, imported like JS modul
 | `group-by(list, "path")` | A map from each distinct value at the path to the items carrying it. |
 | `first(list)` | The first item, or `undefined`. |
 | `last(list)` | The last item, or `undefined`. |
-| `reverse(list)` | A reversed copy (was a global built-in before 2026-09-13). |
+| `reverse(list)` | A reversed copy. |
 | `compact(list)` | A copy without `null`, `undefined`, `""`, empty lists and empty maps. |
 
 **`quark:map`** — Plain objects (`(key: value)` literals, provisions, `dataset`-shaped data). Never mutates; returns copies.

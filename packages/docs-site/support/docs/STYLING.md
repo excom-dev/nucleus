@@ -58,7 +58,7 @@ The payoff: one attribute drives CSS, Quark, and assistive technology together, 
 
 Every element ships its styles next to its script and documents its CSS hooks on its package page: exposed variables, style classes (`content-tabs.underline`, `content-tabs.file-tabs`), and aliases. Override with your own selectors; nothing is locked behind a shadow root.
 
-Write modern CSS in your stylesheets. Nesting, `@scope`, `:has()`, `color-mix()`, container queries, and view transitions are all fair game there; a Quark sheet is a different language and takes only Quark's own at-rules. Quark observes `:has()` too; interaction pseudo-classes (`:hover`, `:focus`) stay CSS-only (first run in a sheet).
+Write modern CSS in your stylesheets. Nesting, `@scope`, `:has()`, `color-mix()`, container queries, and view transitions are all fair game there. A Quark sheet is a derivative of CSS with a different runtime, so media queries, keyframes and the rest of the style engine stay in the stylesheet. Quark observes `:has()` too; interaction pseudo-classes (`:hover`, `:focus`) stay CSS-only (first run in a sheet).
 
 ## Quark and CSS together
 
@@ -88,3 +88,14 @@ Quark writes are batched and not frame-aligned, so it is the wrong tool for per-
 ## Views
 
 Each view owns its stylesheet, loaded by a `<link>` at the top of the fragment. Scope view CSS to the view's root element and keep shared layout in one site-wide stylesheet. See [Building Views](/nucleus/docs/building_views).
+
+## Next steps
+
+- [Quick Start - A working page, in five minutes.](/nucleus/docs/quick_start)
+- [Core Concepts - The mental model, in one sitting.](/nucleus/docs/core_concepts)
+- [Using Elements - The Nucleus Kit catalog and how elements behave.](/nucleus/docs/using_elements)
+- [Orchestrating - Get familiar with Quark.](/nucleus/docs/orchestrating)
+- [Styling - Valence.css themes, tokens, and state-driven CSS.](/nucleus/docs/styling)
+- [Building Views - Structure a real app: routes, views, lazy loading.](/nucleus/docs/building_views)
+- Other Guides - [Business Logic](/nucleus/docs/business_logic), [Creating Elements](/nucleus/docs/creating_elements), [Best Practices](/nucleus/docs/best_practices), [Troubleshooting](/nucleus/docs/troubleshooting), [Debugging with Agents](/nucleus/docs/debugging_with_agents)
+- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](/nucleus/docs/diving_deeper)

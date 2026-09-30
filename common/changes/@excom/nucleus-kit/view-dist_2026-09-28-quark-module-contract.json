@@ -1,0 +1,15 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Remove promise support from `content:` in Quark sheets: a module function returns a value or a node (see `Asynchronous work` in the Quark docs)",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Update `handle:` in `@on`: `event` and `target` are not in scope inside a `handle:` expression, and the listener receives the event",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@excom/nucleus-kit"
+}

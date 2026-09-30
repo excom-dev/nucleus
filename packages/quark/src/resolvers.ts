@@ -1,6 +1,12 @@
 import type { ListenerOptionSource } from "./ast";
 import type { DiagnosticLevel } from "./ast";
-import { isNoop, isWipe, SYMBOL_NOOP } from "./constants";
+import {
+  isNoop,
+  isRenderPromise,
+  isThenable,
+  isWipe,
+  SYMBOL_NOOP,
+} from "./constants";
 import { getDevtoolsHook, publicize } from "./devtools-hook";
 import { evaluateExpression, getExpressionAst } from "./evaluator";
 import { isFormControlAttribute, syncTextControl } from "./form-controls";
@@ -459,11 +465,6 @@ export const reportDiagnostic = (
   });
 };
 
-const isThenable = (value: unknown): value is PromiseLike<unknown> =>
-  !!value &&
-  typeof value === "object" &&
-  typeof (value as PromiseLike<unknown>).then === "function";
-
 /** The value an author intended, stripped of Quark's render plumbing. */
 const presentResult = (result: unknown): unknown => {
   if (typeof NodeList !== "undefined" && result instanceof NodeList) {
@@ -708,6 +709,17 @@ export const FIELD_RESOLVERS = {
     if (isNoop(result)) {
       return result;
     }
+    // only the render built-ins' promises are awaited
+    if (isThenable(result) && !isRenderPromise(result)) {
+      QuarkLogger.error({
+        method: "content",
+        message:
+          "Quark: content does not await a promise from a module function — return a value or a node",
+        element,
+        script: value,
+      });
+      return SYMBOL_NOOP;
+    }
     // `@view-transition`: evaluated now, in this run's scope, for any branch
     const transition = paintTransition(args);
     if (isWipe(result)) {
@@ -746,8 +758,7 @@ export const FIELD_RESOLVERS = {
         .onResolved((state) => {
           const res = state.value as ExpressionResult | Node;
           // iterate() / template() / dangerous-html() settle to
-          // {type, value, after?}, or a wipe / no-op value
-          if (isNoop(res)) return;
+          // {type, value, after?}, or a wipe value
           if (isWipe(res)) {
             schedulePaint(
               () => {

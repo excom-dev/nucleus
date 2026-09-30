@@ -576,3 +576,10 @@ export const formatTsType = (_type: string, tag: string): string => {
 };
 
 export const focusInput = (e) => e.target.querySelector("input")?.focus();
+
+export const didCompleteLink = (element: Element): boolean => {
+  const past = element.closest("spa-manager")?.router?.previousStates;
+  return !!past?.find(
+    (state) => state.url === element.getAttribute("route-href")
+  );
+};

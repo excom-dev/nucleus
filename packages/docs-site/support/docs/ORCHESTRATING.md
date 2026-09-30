@@ -1,6 +1,6 @@
 # Orchestrating
 
-Quark is the Orchestrator — a derivative of CSS that observes the document and writes back into it. Anyone who can write a stylesheet can write a Quark sheet: the same rules, selectors and declarations. It is not a superset of CSS, though. The at-rules are Quark's own — `@use`, `@scope`, `@on`, `@dispatch`, `@command`, `@view-transition`, `@delay`, `@warn`, `@debug`, `@error` — and any other one (`@media`, `@keyframes`, `@supports`, SCSS's `@mixin` and friends) is a parse error, not a block Quark passes over.
+Quark is the Orchestrator: it observes the document and writes back into it. It is a derivative of CSS, written in CSS syntax. Selectors, nesting, declarations and comments are CSS's own. The few additions Quark makes — variables, expressions, and at-rules of its own (`@use`, `@scope`, `@on`, `@dispatch`, `@command`, `@view-transition`, `@delay`, `@warn`, `@debug`, `@error`) — stay compatible with that syntax, so anyone who can read a stylesheet can read a sheet. What differs is the runtime: a stylesheet paints, a Quark sheet writes State. Features of the browser's style engine, such as media queries and keyframes, stay in your stylesheet.
 
 ## A sheet and its host
 
@@ -76,20 +76,24 @@ form[data-reset] input[type="checkbox"] { checked: none; } /* attribute removed,
 ```
 
 - The sync happens only when the rule writes. An edited control stays edited until a rule matching it re-runs; a re-run that resolves to the value the attribute already holds still restores the control.
-- It is one-way. Typing never touches an attribute, so nothing re-runs on keystrokes. Reflect what you need as state through events (an `@on input { data-draft: event.target.value; }` block writing a `data-*` attribute is the idiom, see [Events](#events)) and select on that.
+- It is one-way. Typing never touches an attribute, so nothing re-runs on keystrokes. Reflect what you need as state through events (an `@on input { data-draft: event.target.value; }` block writing a `data-*` attribute is the idiom, see [Events](#md-events)) and select on that.
 - Custom elements are not touched; they own their own reflection. `<select>` has no `value` attribute: write `selected:` on its options.
 
 ## Content
 
 ```quark
-[bind-title] { content: $article.title; }          /* text */
-article { content: template("#article-tmpl"); }    /* clone a <template> */
-aside { content: template("/views/aside.html"); } /* fetch a fragment */
-header { content: dangerous-html(getHeader()); }   /* trusted HTML string */
-details:not([open]) p { content: none; }           /* clear */
+[bind-title] { content: $article.title; }                         /* text */
+article { content: template("#article-tmpl"); }                   /* clone a <template> */
+aside { content: template("/views/aside.html"); }                 /* fetch a fragment */
+[bind-body] { content: dangerous-html(markdown($article.body)); } /* trusted HTML string */
+details:not([open]) p { content: none; }                          /* clear */
 ```
 
-A module function may also return a `Node` or `NodeList`.
+A module function may also return a `Node` or `NodeList` it built. That is how a chart or another third-party widget reaches the page: the function creates its own element, renders into it and returns it. It needs no matched element: it creates its own.
+
+```quark
+[bind-chart] { content: createChart($series); }
+```
 
 ## Variables
 
@@ -105,7 +109,7 @@ main {
 
 Storage is per element, so writers that share a name collide (last writer wins). Namespace application variables: `$app-theme`, `$cart-total`.
 
-A declaration on a descendant shadows the ancestor's binding rather than updating it. To raise state, write it on the owner: an `@on` block on the owner rule with `target:` delegation (see [Events](#events)), or, from JavaScript, `element.quark.setProperty(name, value)` on the owner element — every element has `element.quark`, shaped like `element.style` (`setProperty`, `setProperties`, `removeProperty`, `getPropertyValue`). The element written to becomes the owner; readers below it re-run in every sheet. It is State, not an event: a value written before a sheet registers is read on its first run. Keep one writer per name per element, and reflect primitives that CSS or a selector should see into attributes instead.
+A declaration on a descendant shadows the ancestor's binding rather than updating it. To raise state, write it on the owner: an `@on` block on the owner rule with `target:` delegation (see [Events](#md-events)), or, from JavaScript, `element.quark.setProperty(name, value)` on the owner element — every element has `element.quark`, shaped like `element.style` (`setProperty`, `setProperties`, `removeProperty`, `getPropertyValue`). The element written to becomes the owner; readers below it re-run in every sheet. It is State, not an event: a value written before a sheet registers is read on its first run. Keep one writer per name per element, and reflect primitives that CSS or a selector should see into attributes instead.
 
 Keywords:
 
@@ -116,7 +120,7 @@ Keywords:
 
 ## Expressions
 
-Values are Quark expressions, not JavaScript. They are derived from CSS expressions. Quote strings; numbers may carry units; `+ - * / %` and comparisons behave as you would expect; `and` / `or` short-circuit; member access on a missing value yields `undefined` instead of throwing. Prefer `#{$x}` interpolation over `+` when building strings.
+Values are Quark expressions, not JavaScript. They are derived from CSS expressions. Quote strings; a number with a unit (`10px`) is a string; `+ - * / %` and comparisons behave as you would expect; `and` / `or` short-circuit; member access on a missing value yields `undefined` instead of throwing. Prefer `#{$x}` interpolation over `+` when building strings.
 
 ```quark
 [bind-count] { content: "Items: #{$items.length}"; }
@@ -126,7 +130,7 @@ Values are Quark expressions, not JavaScript. They are derived from CSS expressi
 
 Use `if()` for a one-off value. When several rules would branch on the same condition, write the condition to the document once (`data-is-empty: $n == 0;` — a boolean writes `""` or removes the attribute) and select on `[data-is-empty]` instead; see [Best Practices](/nucleus/docs/best_practices).
 
-Method calls on values are limited to a read-only allowlist (`toUpperCase`, `slice`, `join`, `toFixed`, `getAttribute`, `closest`, …). Expressions may compute and read; they may not cause side effects. Anything imperative belongs in a module function.
+Method calls on values are limited to a read-only allowlist (`toUpperCase`, `slice`, `join`, `toFixed`, `getAttribute`, `closest`, …). Expressions may compute and read; they may not cause side effects. Logic they cannot express belongs in a module function (see [Modules](#md-modules)); anything that reaches the network, storage or the clock belongs in an Adapter.
 
 ## Element properties
 
@@ -141,7 +145,7 @@ provider-fetch[is-success] {
 
 A rule that reads a literal `prop("x")` re-runs when JS assigns `element.x` (assignments coalesce per microtask). In-place mutation of an object is not observed — assign a new one. Changes the browser makes without a JS assignment (typing into an `<input>`'s `value`, a `<details>` toggling `open`) are not observed either: select on the reflected attribute / listen for the event. `prop($name)` reads but does not subscribe.
 
-`element` is the matched element itself. Use it to hand the node to a module function — `button { @on click addToCart(element); }`, `[data-chart] { $chart: mountChart(element); }` — the way `event` and `target` hand over the event inside an `@on` block. Reads through it are not observed.
+`element` is the matched element itself, for the rare expression that needs the node: `@command toggle-popover (target: element.nextElementSibling)` in an `@on` block toggles the popover that follows it. Reads through it are not observed.
 
 `prop()` reads the matched element only. To read an ancestor provider, publish it as a binding from a rule that matches the provider — in a parent sheet whose host contains it (preferred) or an `is-global` sheet — and read the `$binding` from descendants:
 
@@ -178,8 +182,8 @@ provider-fetch[is-success] {
 `@on <events> [(options)] { … }` inside a rule listens on the matched elements — one event name, or a comma list — and applies the block once per event. With options the block is optional; the flags `prevent-default` and `stop-propagation` are options, and JS handlers are the `handle:` option.
 
 ```quark
-form { @on submit (prevent-default, handle: saveDraft); }
-a[data-external] { @on click (stop-propagation); }
+form { @on submit (prevent-default) { is-submitted: ""; } }   /* the flag, then the writes */
+a[data-external] { @on click (stop-propagation); }            /* options alone */
 ```
 
 The block makes the event a one-shot transaction: a normal rule body, applied when the event fires instead of when the rule matches. Declarations write the matched element, nested rules write its matching descendants, and `event` is the DOM event. This is how user input becomes State without JavaScript:
@@ -190,7 +194,6 @@ The block makes the event a one-shot transaction: a normal rule body, applied wh
   @on counter-increment { data-count: $count + 1; }            /* event → attribute */
   @on input, change { data-draft: event.target.value; }          /* typing → attribute */
   @on change { #panel { is-active: if(event.target.checked: ""; else: none); } }
-  @on submit (prevent-default) { is-submitted: ""; }             /* the flag, then writes */
 }
 ```
 
@@ -204,7 +207,7 @@ The options group after the events is a map — `name: value` entries and bare f
 ul { @on click (target: "li[data-id]") { data-selected: target.getAttribute("data-id"); } }  /* delegation */
 dialog[is-open] { @on keydown (key: "Escape", host: window) { is-open: none; } }             /* global key */
 form { @on input (debounce: 300) { data-query: event.target.value; } }                        /* typing settles */
-main { @on scroll (throttle: 100, passive, handle: trackScroll); }
+main { @on scroll (throttle: 100, passive) { data-is-scrolled: event.target.scrollTop > 0; } }
 a[data-external] { @on click (self, once, prevent-default); }
 ```
 
@@ -215,33 +218,43 @@ a[data-external] { @on click (self, once, prevent-default); }
 | `key: "Escape"` / `"Shift+K"` | Keyboard chord; space-separated tokens are alternatives. |
 | `prevent-default` / `stop-propagation` / `stop-immediate-propagation` | Act on the event once it passes the filters. |
 | `debounce: <ms>` / `throttle: <ms>` | Wait for a pause / at most once per window. |
-| `handle: fn` | A JS function (or a list `(a, b)`) called with the event before the block. |
+| `handle: fn` | A JS listener: a function, a list `(a, b)`, or a call that returns one. Called with the event before the block, `this` being the element. |
 | `once` | Detach after the first event that passes the filters. |
 | `passive` / `capture` | Native listener options. |
 | `host: window` / `host: document` | Listen there while the element is in the document. |
 
-`target`, `key`, `debounce`, `throttle` and `handle` are evaluated when the event fires, in the block's scope, so `handle: save($draft, event)` always reads the current `$draft`. Two `@on`s for one event may coexist when their options differ. There is no `@off`: rather than removing a listener, gate it — with options, or with `event` data and `preserve` inside its block.
+`target`, `key`, `debounce` and `throttle` are evaluated when the event fires, in the block's scope: `event`, `target`, `element` and the element's current `$bindings`. `handle:` is evaluated on every event too, so it reads current `$bindings`, but its value is the listener itself: `event` and `target` are not in its scope, because the listener receives the event. A call in `handle:` is a factory that must return the listener, and it runs on every event. Keep `handle:` for imperative DOM work Quark has no declaration for, such as moving focus once content renders:
+
+```quark
+include-content { @on include-content-did-render (handle: focusInput); }
+```
+
+Two `@on`s for one event may coexist when their options differ. There is no `@off`: rather than removing a listener, gate it — with options, or with `event` data and `preserve` inside its block.
 
 ### Dispatching events and commands
 
 `@dispatch` and `@command` inside an `@on` block send an event or a command from it — the outgoing half of `@on`, and what `<event-handler>`'s `fire-event` / `command-name` do:
 
 ```quark
-provider-fetch { @on super-form-success { @dispatch provider-fetch-trigger; } }
+provider-fetch { @on super-form-success { @command --fetch; } }
 todo-item { @on click (target: "[data-remove]") { @dispatch todo-remove (detail: (id: attr("data-id"))); } }
 [data-help] { @on click { @command toggle-popover (target: element.nextElementSibling); } }
 ```
 
 `detail:`, `target:` (a selector resolved like `<event-handler target-ref>` — `:scope` is the block's element, not the sheet's host — or an element from an expression), `host: window | document`, `form:` and the flags `bubbles` / `cancelable` / `composed` are the `@dispatch` options; `@command` takes `target:` and invokes native (`show-modal`, `close`, `toggle-popover`, …) or custom `--commands`. Both run at the end of the block, after its writes are queued — the event is an occurrence, not a delivery of State, so a recipient that needs the new State should select on it. Not allowed at rule level: a rule matching is not an occurrence.
 
-Handlers come from modules imported with `@use`. Imports begin as soon as the sheet parses, load in parallel, and the first rule run waits for them.
+## Modules
+
+Functions come from modules imported with `@use`, for expressions and for `handle:`. Imports begin as soon as the sheet parses, load in parallel, and the first rule run waits for them.
 
 ```quark
 @use "/helpers.js" as *;    /* bare exports */
 @use "/utils.js" as utils;  /* namespaced */
 
-[bind-total] { content: formatPrice(utils.getAmount()); }
+[bind-total] { content: formatPrice(utils.total($items)); }
 ```
+
+A module should be pure business logic: values in, a value out. It is also the exit for anything Quark cannot yet declare. Bridging a protocol, such as the network, storage, the clock or a person, belongs to an Adapter, which carries the result as attributes and a provision. Quark leans that way on purpose: it calls module functions synchronously and does not await what they return, so a fetch inside a module is deliberately awkward. A function may build and return a node it owns, like the chart under [Content](#md-content), and fill it once its work finishes (see [Asynchronous work](/nucleus/packages/quark/use#md-asynchronous-work)); it should still leave the document around it alone.
 
 Before writing a helper, check the built-in modules: `@use "quark:math"`, `quark:list`, `quark:map`, `quark:string`, `quark:date`, `quark:url` and `quark:util` ship pure functions for the derivations views need most — clamping, sorting and grouping a list by a dot path, counting, plurals, dates, query strings — imported like any module and never global:
 
@@ -344,6 +357,17 @@ Load a sheet before the elements it listens to begin their lifecycles: put `<qua
 - Assigning an unused `$variable` purely to invoke a side-effecting function is an anti-pattern. Give the behavior a real element and a real event.
 - Changes more than a tick apart are separate runs; encode a transition as a single write when coherence matters, or wrap the writes in `@view-transition` when the change should animate.
 - A `@view-transition` block holding only `$variable` writes never animates: variables do not paint. Put the declarations that write attributes and content inside the block.
-- A Quark sheet is not a place to park CSS. `@media`, `@supports`, `@keyframes`, `!important`, and SCSS constructs (`@mixin`, `%placeholder`, `#{}` outside a string) are parse errors and leave the sheet `is-error`. Keep them in the stylesheet and have both sides select on the same attributes.
+- A Quark sheet is not a place to park CSS. A sheet that holds an at-rule Quark does not have (`@media`, `@supports`, `@keyframes`, …) or an `!important` fails to load and is left `is-error`. Keep those in the stylesheet and have both sides select on the same attributes.
 
 More in [Troubleshooting](/nucleus/docs/troubleshooting). The complete language reference lives on the [quark](/nucleus/packages/quark) package page.
+
+## Next steps
+
+- [Quick Start - A working page, in five minutes.](/nucleus/docs/quick_start)
+- [Core Concepts - The mental model, in one sitting.](/nucleus/docs/core_concepts)
+- [Using Elements - The Nucleus Kit catalog and how elements behave.](/nucleus/docs/using_elements)
+- [Orchestrating - Get familiar with Quark.](/nucleus/docs/orchestrating)
+- [Styling - Valence.css themes, tokens, and state-driven CSS.](/nucleus/docs/styling)
+- [Building Views - Structure a real app: routes, views, lazy loading.](/nucleus/docs/building_views)
+- Other Guides - [Business Logic](/nucleus/docs/business_logic), [Creating Elements](/nucleus/docs/creating_elements), [Best Practices](/nucleus/docs/best_practices), [Troubleshooting](/nucleus/docs/troubleshooting), [Debugging with Agents](/nucleus/docs/debugging_with_agents)
+- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](/nucleus/docs/diving_deeper)

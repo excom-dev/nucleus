@@ -60,7 +60,7 @@
                         <dialog-anchor role="button" rel="prev"></dialog-anchor>
                         <p>All exported dist files:</p>
                     </header>
-                    <!-- to see this feature in dev site, run build then apply-exports. Make sure to clean it up afterwards. -->
+                    <!-- Populated from the package's built `dist/exports.generated.json` (or `exports` once applied), so the package must be built. -->
                     <div bind-export-files class="height-constrained show-scrollbar">
                         <template>
                             <details class="accordion">

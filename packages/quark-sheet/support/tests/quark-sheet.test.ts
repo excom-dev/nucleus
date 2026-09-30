@@ -32,7 +32,7 @@ describe("quark-sheet", () => {
     );
 
     expect(el).dom.to.equalTag(
-      `<quark-sheet is-success></quark-sheet>`,
+      `<quark-sheet is-success did-load></quark-sheet>`,
     );
     expect(el.quarkInstance).toBeDefined();
   });
@@ -51,6 +51,7 @@ describe("quark-sheet", () => {
       .spyOn(globalThis, "fetch")
       .mockImplementation(() =>
         Promise.resolve({
+          ok: true,
           text: () => Promise.resolve(quarkSrc),
         } as Response),
       );
@@ -70,7 +71,7 @@ describe("quark-sheet", () => {
       expect.any(Object),
     );
     expect(el).dom.to.equalTag(
-      `<quark-sheet is-success src-url="/public/my-sheet"></quark-sheet>`,
+      `<quark-sheet is-success did-load src-url="/public/my-sheet"></quark-sheet>`,
     );
     expect(el.quarkInstance).toBeDefined();
   });
@@ -80,6 +81,7 @@ describe("quark-sheet", () => {
     vi.spyOn(globalThis, "fetch").mockImplementation(() => {
       calls++;
       return Promise.resolve({
+        ok: true,
         text: () => Promise.resolve(quarkSrc),
       } as Response);
     });
@@ -98,7 +100,7 @@ describe("quark-sheet", () => {
     expect(calls).toBe(2);
     expect(el.quarkInstance).not.toBe(first);
     expect(el).dom.to.equalTag(
-      `<quark-sheet is-success src-url="/public/reload-sheet"></quark-sheet>`,
+      `<quark-sheet is-success did-load src-url="/public/reload-sheet"></quark-sheet>`,
     );
 
     // without src-url the command is a no-op
@@ -121,6 +123,7 @@ describe("quark-sheet", () => {
 
     vi.spyOn(globalThis, "fetch").mockImplementation(() =>
       Promise.resolve({
+        ok: true,
         text: () =>
           Promise.resolve(quarkSrc + " extra-rule { autofocus: ''; }"),
       } as Response),
@@ -153,6 +156,30 @@ describe("quark-sheet", () => {
     expect(el).dom.to.equalTag(
       `<quark-sheet is-error src-url="/bad-url"></quark-sheet>`,
     );
+  });
+
+  it("a non-ok src-url sets is-error, logs once, and is fetched again later", async () => {
+    const lines = vi.spyOn(console, "error").mockImplementation(() => {});
+    let status = 404;
+    const fetchSpy = spyFetch(() => ({ status, body: quarkSrc }));
+    const first = fixture<HTMLQuarkSheetElement>(
+      `<quark-sheet src-url="/public/missing-sheet"></quark-sheet>`,
+    );
+    await waitForEvent(first, "quark-sheet-error");
+
+    expect(first).dom.to.equalTag(
+      `<quark-sheet is-error src-url="/public/missing-sheet"></quark-sheet>`,
+    );
+    expect(first.quarkInstance).toBeFalsy();
+    expect(lines).toHaveBeenCalledTimes(1);
+
+    status = 200;
+    const second = fixture<HTMLQuarkSheetElement>(
+      `<quark-sheet src-url="/public/missing-sheet"></quark-sheet>`,
+    );
+    await waitForEvent(second, "quark-sheet-success");
+    expect(second.quarkInstance).toBeDefined();
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
   });
 
   it("emits quark-sheet-loading when loading starts", async () => {
@@ -312,7 +339,7 @@ describe("quark-sheet", () => {
     expect(global.options.isScoped).toBe(false);
     expect(global.isRegistered).toBe(true);
     expect(el).dom.to.equalTag(
-      `<quark-sheet is-global is-success></quark-sheet>`,
+      `<quark-sheet is-global is-success did-load></quark-sheet>`,
     );
 
     el.isGlobal = false;

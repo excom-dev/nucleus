@@ -8,8 +8,8 @@ A rule runs when an element matches it and re-runs when something its selector o
 - a literal `attr("x")` in one of its values, when `x` changes on the matched element;
 - a `$binding` one of its values reads, when that binding changes on an ancestor-or-self owner (the nearest owner wins, so a farther change is ignored);
 - a literal `prop("x")` in one of its values, when JS assigns `element.x`;
-- elements being inserted anywhere under the host, whether by Quark, an element, or app JS (a `childList` MutationObserver): rules matching the new elements run, `content` rules below the insertion point re-run, and `:has()` / `:empty` candidates above it are re-checked;
-- elements being removed, only while some rule's match depends on children or sibling position (`:has()`, `:empty`, `:nth-child()`, `a + b`): the same re-runs as an insertion at that parent. Text-only changes are never observed.
+- elements being inserted anywhere under the host, whether by Quark, an element, or app JS (a `childList` MutationObserver): rules run for the inserted elements and their descendants, not the rest of the parent's subtree, plus existing elements whose match depends on children or sibling position (`:has()` / `:empty` candidates above the insertion, `:nth-child()` / `a + b` / `a ~ b` subjects under its parent); an element inserted and removed again before Quark runs costs nothing;
+- elements being removed, only while some rule's match depends on children or sibling position (`:has()`, `:empty`, `:nth-child()`, `a + b`): those rules re-run under that parent. Text-only changes are never observed.
 
 ## Not observed
 

@@ -107,7 +107,7 @@ Property and method names must not collide with anything on `HTMLElement`, now o
 
 ## Don't
 
-- **Don't use shadow DOM** unless isolation is absolutely necessary. It blocks the state-driven CSS and Quark rules the whole stack depends on and severely hampers composability even with slots.
+- **Don't use shadow DOM** unless isolation is absolutely necessary, as around a region a rendering framework owns ([Handing rendering to a framework](/nucleus/packages/quark/use#md-handing-rendering-to-a-framework)). It blocks the state-driven CSS and Quark rules the whole stack depends on and severely hampers composability even with slots.
 - **Don't hold hard references to other elements.** Use `WeakRef` / `WeakSet`, and clear any parent reference in `onDisconnected`.
 - **Don't render or mutate children** beyond the caveat above. If a parent must coordinate, fire events at children.
 - **Don't add cross-cutting features.** `super-form` should not grow a `success-scroll-to` attribute; it should fire `super-form-success` and let `scroll-into-view` do the scrolling.

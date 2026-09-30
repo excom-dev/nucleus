@@ -14,7 +14,7 @@ Your HTML __*is*__ the app! Drop-in custom elements that each have a single resp
 
 - **Back to the future 🚗⚡️** Welcome back to building static HTML5 apps. A break from complex JavaScript apps that compile to HTML.
 - **Little to no JavaScript** You no longer need to write JS for the vast majority of UI cases. You may still call-out to your own pure functions for complex cases.
-- **Native++** Just HTML with a derivative of CSS, named Quark, sprinked on top.
+- **Native++** It's real HTML. With a separate, synergistic guest: Quark.
 - **No magic** No special frameworks, build processes, rendering wizardry, or "HTML-in-my-JS" / "JS-in-my-HTML" DSLs.
 - **Progressively enhanced** Drop into existing static/server-side-rendered sites. Neutron and Quark can also be used independently.
 - **Fully composable** Templates, templating, behavior, and custom logic are all decoupled & robust.
@@ -45,7 +45,7 @@ Every piece stands alone. Use one element on an existing site, or compose the wh
 
 Content-rich sites, complex data-driven business rules, progressive enhancement of static/server-rendered pages, embedded user experiences. See [Limitations](/nucleus/docs/limitations) for the edges.
 
-The Nucleus Stack also opens up novel possibilities that were not easily served by any UI technology before: zero-build-tool UIs (e.g. on-the-fly generation), declarative & auditable target for LLM UI building, plain text assembly to rich UX (like a CMS), incremental upgrading of static/legacy SSR sites, resource-constrained web UIs (especially where scripting needs to be validated or limited, like an ATM), embedded UX (such as upgrading markdown with embedded functionality).
+The Nucleus Stack also opens up new possibilities that were not easily served by any UI technology before: zero-build-tool UIs (e.g. on-the-fly generation), declarative & auditable target for LLM UI building, plain text assembly to rich UX (like a CMS), incremental upgrading of static/legacy SSR sites, resource-constrained web UIs (especially where scripting needs to be validated or limited, like an ATM), embedded UX (such as upgrading markdown with embedded functionality).
 
 ## Dogfood is nutritious
 
@@ -55,7 +55,7 @@ The Nucleus Stack is currently being used in production by partnering companies.
 
 ## Free & open source
 
-The Nucleus Stack is MIT licensed and will remain free and open source. This is made possible by its contributors and sponsors.
+The Nucleus Stack is MIT licensed and will remain free and open source, with long-term support. This is made possible by its contributors and sponsors.
 
 <section class="sponsors">
   <a role="button" href="https://github.com/sponsors/excom-dev">Become a sponsor</a>
@@ -70,7 +70,11 @@ The Nucleus Stack is MIT licensed and will remain free and open source. This is 
 
 ## Start here
 
-1. [Quick Start](/nucleus/docs/quick_start) A working page, in five minutes.
-2. [Core Concepts](/nucleus/docs/core_concepts) The mental model, in one sitting.
-3. [Using Elements](/nucleus/docs/using_elements) and [Orchestrating](/nucleus/docs/orchestrating) The two skills you'll use daily.
-4. [Diving Deeper](/nucleus/docs/diving_deeper) The architecture behind it all, for the curious and the skeptical.
+- [Quick Start - A working page, in five minutes.](/nucleus/docs/quick_start)
+- [Core Concepts - The mental model, in one sitting.](/nucleus/docs/core_concepts)
+- [Using Elements - The Nucleus Kit catalog and how elements behave.](/nucleus/docs/using_elements)
+- [Orchestrating - Get familiar with Quark.](/nucleus/docs/orchestrating)
+- [Styling - Valence.css themes, tokens, and state-driven CSS.](/nucleus/docs/styling)
+- [Building Views - Structure a real app: routes, views, lazy loading.](/nucleus/docs/building_views)
+- Other Guides - [Business Logic](/nucleus/docs/business_logic), [Creating Elements](/nucleus/docs/creating_elements), [Best Practices](/nucleus/docs/best_practices), [Troubleshooting](/nucleus/docs/troubleshooting), [Debugging with Agents](/nucleus/docs/debugging_with_agents)
+- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](/nucleus/docs/diving_deeper)

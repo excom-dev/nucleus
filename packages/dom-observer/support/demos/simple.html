@@ -6,13 +6,13 @@
       <p>Toggling this
         fired <code>dom-observer-change</code>.</p>
     </details>
-    <output class="tag-pre" style="white-space: pre;"></output>
+    <output></output>
   </section>
   <quark-sheet>
-    @use "/demo-utils" as *;
-
     section {
-      @on dom-observer-change (handle: appendOutputFromDetail);
+      @on dom-observer-change {
+        output { content: "#{event.detail.mutations.length} mutation(s), open: #{event.detail.target.open}"; }
+      }
     }
   </quark-sheet>
 </div>

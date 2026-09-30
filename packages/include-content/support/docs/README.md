@@ -35,7 +35,7 @@ Put a `<template>` inside (or set `template-ref`) and pick when it should appear
 
 #### Template include
 
-Break your app into smaller views. Point `template-ref` at a `<template>` or a URL with `is-active` to render it immediately. This demo does both.
+Break your app into smaller views. Point `template-ref` at a `<template>` or a URL with `is-active` to render it immediately. This demo does both. A `<script>` inside a URL template does not run; stylesheets, `<style>` and `<quark-sheet>` do.
 
 <include-content data-demo="template-include"></include-content>
 

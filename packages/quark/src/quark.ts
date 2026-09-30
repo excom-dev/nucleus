@@ -26,6 +26,7 @@ import { Rule, transitionSpec } from "./rule";
 import { acquireScopeId, releaseScopeId } from "./scope-id";
 import { addBusyCheck, whenSettled } from "./settle";
 import type {
+  InsertedNodes,
   MutationMap,
   QuarkListenerConfig,
   QuarkOptions,
@@ -140,8 +141,9 @@ export const DEFAULT_OPTIONS = {
 let quarkIdTotal = 0;
 export class Quark {
   /**
-   * Loads a `@use "url"` JS module. Resolves against the document origin.
-   * Overridable (stubbed in tests, or a bundler-aware loader).
+   * Loads a `@use "url"` JS module. A path resolves against the document
+   * origin; an absolute `http(s)` URL loads as it is. Overridable (stubbed
+   * in tests, or a bundler-aware loader).
    */
   static moduleLoader: (url: string) => Promise<Vars> = resolveModuleReference;
   /**
@@ -171,6 +173,8 @@ export class Quark {
   /** `prop()` subscriptions this sheet holds, released on unregister. */
   private propSubscriptions: Map<Element, Map<string, () => void>> = new Map();
   ELEMENTS_TO_MATCH: MutationMap = new Map();
+  /** `content` parent → nodes inserted this batch (`null`: queued without them, whole subtree) */
+  ADDED_NODES: Map<HTMLElement, Set<Element> | null> = new Map();
   allAttrs: string[] = [];
   /**
    * `$name` → properties in this sheet that reference it. Bindings
@@ -265,11 +269,21 @@ export class Quark {
         mapToRun.delete(element);
       }
     });
+    // nodes gone again (a proxy button in and out in one tick) add nothing
+    const inserted: InsertedNodes = new Map(
+      [...this.ADDED_NODES]
+        .filter((entry): entry is [HTMLElement, Set<Element>] => !!entry[1])
+        .map(([parent, nodes]) => [
+          parent,
+          [...nodes].filter((node) => parent.contains(node)),
+        ])
+    );
+    this.ADDED_NODES.clear();
     // the causal depth the queued changes inherited (see queueRunRules)
     const depth = this.pendingDepth;
     this.pendingDepth = 0;
     if (mapToRun.size) {
-      LoopGuard.run(depth, () => this.run(mapToRun));
+      LoopGuard.run(depth, () => this.run(mapToRun, {}, inserted));
     }
   }
   /**
@@ -282,9 +296,12 @@ export class Quark {
   queueRunRules = ({
     element,
     attribute,
+    added,
   }: {
     element: HTMLElement;
     attribute: string;
+    /** `content`: the inserted elements (observer); omitted → whole subtree. */
+    added?: Element[];
   }) => {
     this.pendingDepth = Math.max(
       this.pendingDepth,
@@ -295,6 +312,12 @@ export class Quark {
       this.ELEMENTS_TO_MATCH.get(element)?.add(attribute);
     } else {
       this.ELEMENTS_TO_MATCH.set(element, new Set([attribute]));
+    }
+    if (attribute === "content") {
+      const known = this.ADDED_NODES.get(element);
+      if (!added || known === null) this.ADDED_NODES.set(element, null);
+      else if (known) added.forEach((node) => known.add(node));
+      else this.ADDED_NODES.set(element, new Set(added));
     }
     if (!this.isRunningRules) {
       this.isRunningRules = true;
@@ -438,7 +461,12 @@ export class Quark {
     });
   }
 
-  run(mutationMap: MutationMap, options: QuarkOptions = {}) {
+  /** `inserted` scopes `content` entries to the nodes the observer saw arrive. */
+  run(
+    mutationMap: MutationMap,
+    options: QuarkOptions = {},
+    inserted?: InsertedNodes
+  ) {
     const host = this.host.deref();
     if (!host) return QuarkLogger.error("Quark: Host not found");
     const runId = options?.runId || generateID();
@@ -474,6 +502,7 @@ export class Quark {
           ) {
             rule.run(mutationMap, {
               host,
+              inserted,
               options: {
                 runId,
                 ...this.options,
@@ -628,6 +657,7 @@ export class Quark {
     // a delayed block must not fire into a sheet that let go
     this.delayTimers.forEach((timer) => clearTimeout(timer));
     this.delayTimers.clear();
+    this.ADDED_NODES.clear();
     unobserve(this.observer, this.listenerConfig);
     this.observer = null;
     this.propSubscriptions.forEach((byName) =>
@@ -759,7 +789,7 @@ function wrapInScope(min: string): string {
 }
 
 /**
- * `"/mods/string-utils.js"` -> `"string-utils"` (SCSS-style default ns);
+ * `"/mods/string-utils.js"` -> `"string-utils"` (default ns);
  * `"quark:math"` -> `"math"`.
  */
 function deriveUseNamespace(url: string): string {

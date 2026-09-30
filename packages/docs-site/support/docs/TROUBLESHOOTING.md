@@ -4,6 +4,8 @@ Symptom first, then cause, then fix. Nearly every problem comes from one of thre
 
 ## A rule doesn't run
 
+**The Quark sheet did not load.** A sheet that holds an at-rule Quark does not have (`@media`, `@keyframes`, `@supports`, …) or an `!important` fails to load: the console names the offender (`@media is not a Quark at-rule`), the sheet gets an `is-error` attribute, and none of its rules run. Keep those in the stylesheet.
+
 **It's outside the host.** A sheet matches only strict descendants of its parent element. Move the sheet, target the host with `:scope`, or use `is-global` if the rule truly must reach the whole document.
 
 **It targets the host without `:scope`.** `section { … }` inside a sheet whose host is that section will not match it. Write `:scope { … }`.
@@ -39,6 +41,14 @@ The expression resolved to `null` / `undefined`, which wipes the target. Keep th
 #title { content: $todo.title or preserve; }
 ```
 
+## Content from a module function never appears
+
+The target keeps what it had, and the console says `Quark: content does not await a promise from a module function — return a value or a node`. The function returned a promise: it is `async`, or it hands back the result of `fetch()` or another asynchronous API. Quark calls module functions synchronously on purpose.
+
+- **Data from a server or a store** belongs to an Adapter: `provider-fetch` publishes the response, and a rule reads it with `prop("provision")`.
+- **A library that has to load first:** `await` it at the top level of the module. The first rule run waits for `@use` imports.
+- **Work that depends on the arguments:** create the element, return it at once, and fill it when the work finishes. See [Asynchronous work](/nucleus/packages/quark/use#md-asynchronous-work).
+
 ## "Loop guard: …" in the console
 
 Two participants keep re-triggering each other and the stack cut the chain. Causes, in order of likelihood:
@@ -68,7 +78,15 @@ The loop guard stops this after 50 nested paints, but the fix is the selector: m
 
 **It doesn't bubble that far.** Check the element's package page for the event's flags. Native events like `submit` are not composed, so they never cross a shadow root. Some events do not bubble at all.
 
-**The handler name is wrong.** `@on click (handle: handleClick);` refers to an export of a module imported with `@use`. Check the export name and the `as *` / `as name` namespace.
+## A `handle:` function never runs
+
+`handle:` takes the listener itself, and Quark calls it with the event, `this` being the element. When the value is something else, the console shows the listener's key followed by `handle: needs a function or a list of functions, got <typeof>`, naming the type it received. An empty value (`null`, `undefined`, `preserve`) is skipped without a message.
+
+**A quoted name.** `handle: "focusInput"` is a string, and the console says so in its own words. Write the bare name: `handle: focusInput`.
+
+**A call.** `handle: focusInput()` runs `focusInput` on every event, without the event, and hands Quark its return value as the listener. A function that returns nothing leaves no listener to call, and nothing is logged. Drop the parentheses, unless the call is a factory that returns the listener. `event` and `target` are not in scope there: the listener receives the event.
+
+**The name is wrong.** `handle:` refers to an export of a module imported with `@use`. Check the export name and the `as *` / `as name` namespace.
 
 ## An element ignores its attributes
 
@@ -111,4 +129,5 @@ The loop guard stops this after 50 nested paints, but the fix is the selector: m
 - **Custom debugging** `Neutron.attachDevtools()` is available.
 - **`QuarkRegistry`** is exposed on `window` in development. `QuarkRegistry.findRules("bind-title")` returns the rules that touch a selector; each rule tracks `numberOfRuns`.
 - **`is-error` attributes** on sheets, providers, forms, and includes reflect failures, and matching `*-error` events carry the detail.
+- **Log level** Nucleus Kit elements log only errors by default. `import { KitLogger } from "@excom/nucleus-kit"; KitLogger.level = 2;` adds warnings, such as a request that failed with an error status (`0` silent, `1` errors, `2` warnings, `3` debug, `4` info). Quark logs through its own `QuarkLogger`, exported next to it, with the same levels set independently. The progressive entry exports `KitLogger` only.
 - **Serialize the state.** `document.documentElement.outerHTML` is a complete, shareable snapshot of the app at the moment of a bug. It will not include data provisions or Quark `$variables`.

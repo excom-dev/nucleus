@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/super-input",
+      "comment": "Update the demos and their tests",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/super-input"
+}

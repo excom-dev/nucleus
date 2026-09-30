@@ -1,31 +1,33 @@
-const searchParamsMatch = (
-  searchParamsA: URLSearchParams,
-  searchParamsB: URLSearchParams
-) => {
-  if (searchParamsA.size !== searchParamsB.size) {
-    return false;
-  }
-  for (const [key, value] of searchParamsA.entries()) {
-    if (searchParamsB.get(key) !== value) {
-      return false;
-    }
-  }
-  return true;
-};
+import { resolveHref } from "@excom/kit-router";
 
+/** Every `key=value` of `some` is also in `all`. */
+const hasParams = (all: URLSearchParams, some: URLSearchParams) =>
+  [...some].every(([key, value]) => all.getAll(key).includes(value));
+
+/**
+ * `url` has the path and query of `href`. `nested`: the path of `href` or a
+ * child of it, and at least the query of `href`.
+ */
 export const urlMatchesHref = (
   url: string,
   href: string,
-  { ignoreHash = false }: { ignoreHash?: boolean } = {}
+  {
+    ignoreHash = false,
+    nested = false,
+  }: { ignoreHash?: boolean; nested?: boolean } = {}
 ) => {
   if (url === href) {
     return true;
   }
-  const urlObj = new URL(url, location.origin);
-  const hrefObj = new URL(href, location.origin);
+  const { pathname, searchParams, hash } = new URL(url, location.origin);
+  const target = new URL(resolveHref(href), location.origin);
+  const base = target.pathname.replace(/\/$/, "");
   return (
-    urlObj.pathname === hrefObj.pathname &&
-    searchParamsMatch(urlObj.searchParams, hrefObj.searchParams) &&
-    (ignoreHash || urlObj.hash === hrefObj.hash)
+    (nested
+      ? pathname === base || pathname.startsWith(`${base}/`)
+      : pathname === target.pathname &&
+        searchParams.size === target.searchParams.size) &&
+    hasParams(searchParams, target.searchParams) &&
+    (ignoreHash || hash === target.hash)
   );
 };

@@ -31,8 +31,7 @@ Wrap `<content-carousel-slide>` elements in a `<content-carousel>`. Mark one
 </content-carousel>
 ```
 
-`.provision` is `{ index, count, lastMove }` — set on connect and after
-every move, counting only this carousel's own slides. A "2 / 3" readout:
+`.provision` is `{ index, count, lastMove }` — set on connect and after every slide change (a command, auto-play, a slide added / removed, `is-active` written on a slide), counting only this carousel's own slides. A "2 / 3" readout:
 
 ```quark
 content-carousel {

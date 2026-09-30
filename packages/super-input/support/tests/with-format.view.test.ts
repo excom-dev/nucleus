@@ -16,5 +16,6 @@ describe("with-format view", () => {
     const { root } = await mountView(readDemo(import.meta.url, "with-format"));
     const input = root.querySelector("input")!;
     expect(input.value).toMatch(/\(\d{3}\)/);
+    expect(input.inputMode).toBe("numeric");
   });
 });

@@ -34,11 +34,23 @@ import {
   type SelectorAnalysis,
   splitScopePrefix,
 } from "./selector-utils";
-import type { MutationMap, QuarkOptions, TransitionSpec } from "./types";
+import type {
+  InsertedNodes,
+  MutationMap,
+  QuarkOptions,
+  TransitionSpec,
+} from "./types";
 import { isInfoLogging, QuarkLogger } from "./utils";
 import { selectAll, tc } from "@excom/kit-utils";
 
 let quarkRuleIdCounter = 0;
+
+const byDocumentOrder = (a: Node, b: Node) =>
+  a === b
+    ? 0
+    : a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING
+      ? -1
+      : 1;
 
 /**
  * Elements not contained by another in the list, in the list's own
@@ -50,15 +62,7 @@ let quarkRuleIdCounter = 0;
  */
 export const outermostElements = (elements: HTMLElement[]): HTMLElement[] => {
   if (elements.length < 2) return elements;
-  const sorted = elements
-    .slice()
-    .sort((a, b) =>
-      a === b
-        ? 0
-        : a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING
-          ? -1
-          : 1
-    );
+  const sorted = elements.slice().sort(byDocumentOrder);
   const kept = new Set<HTMLElement>();
   let last: HTMLElement | undefined;
   for (const el of sorted) {
@@ -68,6 +72,53 @@ export const outermostElements = (elements: HTMLElement[]): HTMLElement[] => {
     }
   }
   return elements.filter((el) => kept.has(el));
+};
+
+/** A query after a batch: its root, and for an insertion scan what it keeps. */
+export type Scan = { root: HTMLElement; accept: Map<Element, boolean> | null };
+
+/**
+ * Queries a rule makes after a batch: `full` roots scan their whole subtree,
+ * insertion parents scan once and keep matches inside their inserted nodes
+ * (`accept`: node -> counts itself). Nested parents merge into the outermost;
+ * a full root under a scanned parent rides along, descendants only.
+ */
+export const planScans = (
+  full: HTMLElement[],
+  inserted: Map<HTMLElement, Element[]>
+): Scan[] => {
+  const scans = outermostElements(
+    [...inserted.keys()].filter((p) => !full.some((r) => r.contains(p)))
+  )
+    .map((root) => {
+      const accept = new Map<Element, boolean>();
+      inserted.forEach((nodes, p) => {
+        if (root.contains(p)) nodes.forEach((n) => accept.set(n, true));
+      });
+      return { root, accept };
+    })
+    .filter(({ accept }) => accept.size);
+  const rest = full.filter((r) => {
+    const scan = scans.find(({ root }) => root.contains(r));
+    if (scan && !scan.accept.has(r)) scan.accept.set(r, false);
+    return !scan;
+  });
+  return [...rest.map((root) => ({ root, accept: null })), ...scans];
+};
+
+/**
+ * Up to this many outermost inserted nodes are queried directly; more share
+ * one parent-wide query filtered by `isAccepted` (a 1000-row `iterate()` stays one query).
+ */
+export const DIRECT_SCAN_MAX = 8;
+
+/** `el` is an accepted node or below one (see `planScans`), up to `root`. */
+const isAccepted = (el: Element, accept: Map<Element, boolean>, root: Node) => {
+  for (let n: Node | null = el; n && n !== root; n = n.parentNode) {
+    const self = accept.get(n as Element);
+    if (self || (self === false && n !== el)) return true;
+  }
+  return false;
 };
 
 /**
@@ -446,15 +497,18 @@ export class Rule {
     {
       host,
       options,
+      inserted,
     }: {
       host: HTMLElement;
       options: QuarkOptions;
+      inserted?: InsertedNodes;
     }
   ) {
     const propertiesToRun = this.filterPropertiesToRun(options);
     if (propertiesToRun.length > 0) {
       this._run(mutationMap, {
         host,
+        inserted,
         options: { ...options, propertiesToRun },
       });
     }
@@ -464,9 +518,11 @@ export class Rule {
     {
       host,
       options,
+      inserted,
     }: {
       host: HTMLElement;
       options: QuarkOptions;
+      inserted?: InsertedNodes;
     }
   ) {
     const elementsToMutate = new Set<HTMLElement>();
@@ -504,9 +560,20 @@ export class Rule {
       `outermostElements`.
     */
     const roots = new Set<HTMLElement>();
-    const fanOut = (root: HTMLElement | null) => {
-      if (root) roots.add(root);
+    /*
+      Reached through a selector dependency (a gate attribute, or a child
+      under a `:has()` / `:empty` subject): the match may have just
+      started, so binding reads re-run (`runProps`).
+    */
+    const rematchRoots = new Set<HTMLElement>();
+    const rematched = new Set<HTMLElement>();
+    const fanOut = (root: HTMLElement | null, rematch = false) => {
+      if (!root) return;
+      roots.add(root);
+      if (rematch) rematchRoots.add(root);
     };
+    /** Insertion parents → the nodes inserted below them (see `planScans`). */
+    const insertions = new Map<HTMLElement, Element[]>();
     const rootFor = (el: HTMLElement, where: FanOutRoot) =>
       where === "parent" ? (el.parentElement ?? el) : el;
     /**
@@ -530,7 +597,8 @@ export class Rule {
     };
     mutationMap?.forEach((attrs, element) => {
       let addedSelf = false;
-      const mutateSelf = (el: HTMLElement = element) => {
+      const mutateSelf = (el: HTMLElement = element, rematch = false) => {
+        if (rematch) rematched.add(el);
         if (el === element) {
           if (addedSelf) return;
           addedSelf = true;
@@ -541,21 +609,25 @@ export class Rule {
         elementsToMutate.add(el);
       };
       /** Compound `c`'s element `el` was affected: it is a subject, or subjects sit below / beside it. */
-      const reach = (el: HTMLElement, c: CompoundDependency) => {
-        if (c.isSubject) mutateSelf(el);
-        else fanOut(rootFor(el, c.root));
+      const reach = (
+        el: HTMLElement,
+        c: CompoundDependency,
+        rematch = false
+      ) => {
+        if (c.isSubject) mutateSelf(el, rematch);
+        else fanOut(rootFor(el, c.root), rematch);
       };
       /**
        * Elements came or went below `el`: `:has()` / `:empty` candidates
-       * on the way up may have flipped.
+       * on the way up may have flipped (a rematch, like a gate attribute).
        */
       const childrenChanged = (el: HTMLElement) => {
         for (const c of compounds) {
           if (!c.reactsToChildren) continue;
-          if (c.broad) fanOut(host);
-          else matchingAncestors(el, c).forEach((a) => reach(a, c));
+          if (c.broad) fanOut(host, true);
+          else matchingAncestors(el, c).forEach((a) => reach(a, c, true));
         }
-        if (hostReactsToChildren) fanOut(host);
+        if (hostReactsToChildren) fanOut(host, true);
       };
       [...attrs].sort(kindOrder).forEach((attr) => {
         if (attr === "RUN_ALL") {
@@ -569,8 +641,11 @@ export class Rule {
         } else if (attr === "content" || attr === CHILD_REMOVED) {
           if (attr === CHILD_REMOVED && !this.reactsToRemovals) return;
           if (!host.contains(element)) return;
-          // matching children were added / removed below `element`
-          fanOut(element);
+          // inserted nodes only, unless position deps (`:nth-child()`, `+` / `~`),
+          // removals or a caller without nodes need the whole subtree
+          const nodes = attr === "content" && inserted?.get(element);
+          if (!nodes || this.deps.positional) fanOut(element);
+          else if (!targetsHost) insertions.set(element, nodes);
           if (usesHas || hostReactsToChildren) childrenChanged(element);
         } else if (attr === "PROP") {
           // a JS property changed on `element`; `prop()` reads are on
@@ -603,13 +678,15 @@ export class Rule {
                 ? matchesRule(element)
                 : this.matchesPrefix(element, c))
             ) {
-              reach(element, c);
+              reach(element, c, true);
             }
-            if (c.looseAttrs.has(attr)) fanOut(rootFor(element, c.looseRoot));
+            if (c.looseAttrs.has(attr)) {
+              fanOut(rootFor(element, c.looseRoot), true);
+            }
             if (c.hasAttrs.has(attr)) {
-              matchingAncestors(element, c).forEach((a) => reach(a, c));
+              matchingAncestors(element, c).forEach((a) => reach(a, c, true));
             }
-            if (c.broadAttrs.has(attr)) fanOut(host);
+            if (c.broadAttrs.has(attr)) fanOut(host, true);
           }
           if (hostDeps) {
             /*
@@ -621,37 +698,73 @@ export class Rule {
               element === host
                 ? hostDeps.selfAttrs.has(attr) || hostDeps.looseAttrs.has(attr)
                 : hostDeps.hasAttrs.has(attr) || hostDeps.broadAttrs.has(attr);
-            if (affected) fanOut(host);
+            if (affected) fanOut(host, true);
           }
         }
       });
     });
     // find the most distant ancestors
-    outermostElements([...roots]).forEach((ancestor) => {
-      /*
-       * Scoped rules clamp to the host so fan-out from an ancestor
-       * above it (cross-sheet binding owners, providers above scope)
-       * never leaks into sibling scopes. Unscoped rules run in the
-       * root context, so a host-level fan-out (RUN_ALL) expands to the
-       * root.
-       */
-      const queryRoot = this.isScoped
-        ? host.contains(ancestor)
-          ? ancestor
-          : host
-        : ancestor === host
-          ? (host.getRootNode() as Document | HTMLElement)
-          : ancestor;
-      if (targetsHost) {
-        if (queryRoot.contains(host)) elementsToMutate.add(host);
-      } else {
-        if (queryRoot instanceof Element) coverage?.add(queryRoot);
-        queryRoot.querySelectorAll(runSelector).forEach((el) => {
-          elementsToMutate.add(el as HTMLElement);
-        });
+    planScans(outermostElements([...roots]), insertions).forEach(
+      ({ root: ancestor, accept }) => {
+        // `null`: every match here is a rematch; else those in the rematch
+        // roots this root absorbed (a root counting itself costs one run)
+        const within = rematchRoots.has(ancestor)
+          ? null
+          : [...rematchRoots].filter((r) => ancestor.contains(r));
+        const add = (el: HTMLElement) => {
+          elementsToMutate.add(el);
+          if (!within || within.some((r) => r.contains(el))) rematched.add(el);
+        };
+        if (accept) {
+          // an insertion scan visits every match in its accepted nodes
+          accept.forEach((_, node) => coverage?.add(node));
+          const direct =
+            accept.size <= DIRECT_SCAN_MAX
+              ? outermostElements([...accept.keys()] as HTMLElement[]).sort(
+                  byDocumentOrder
+                )
+              : null;
+          if (direct) {
+            // a node counts itself only when inserted (a merged full root does not)
+            direct.forEach((node) => {
+              if (accept.get(node) && node.matches(runSelector)) add(node);
+              node.querySelectorAll(runSelector).forEach((el) => {
+                add(el as HTMLElement);
+              });
+            });
+          } else {
+            ancestor.querySelectorAll(runSelector).forEach((el) => {
+              if (isAccepted(el, accept, ancestor)) add(el as HTMLElement);
+            });
+          }
+          this.numberOfRuns++;
+          return;
+        }
+        /*
+         * Scoped rules clamp to the host so fan-out from an ancestor
+         * above it (cross-sheet binding owners, providers above scope)
+         * never leaks into sibling scopes. Unscoped rules run in the
+         * root context, so a host-level fan-out (RUN_ALL) expands to the
+         * root.
+         */
+        const queryRoot = this.isScoped
+          ? host.contains(ancestor)
+            ? ancestor
+            : host
+          : ancestor === host
+            ? (host.getRootNode() as Document | HTMLElement)
+            : ancestor;
+        if (targetsHost) {
+          if (queryRoot.contains(host)) add(host);
+        } else {
+          if (queryRoot instanceof Element) coverage?.add(queryRoot);
+          queryRoot.querySelectorAll(runSelector).forEach((el) => {
+            add(el as HTMLElement);
+          });
+        }
+        this.numberOfRuns++;
       }
-      this.numberOfRuns++;
-    });
+    );
     // execute mutations
     if (elementsToMutate.size > 0 && isInfoLogging()) {
       QuarkLogger.info({
@@ -664,7 +777,7 @@ export class Rule {
       });
     }
     elementsToMutate.forEach((element) => {
-      this.runProps(mutationMap, element, options);
+      this.runProps(mutationMap, element, options, rematched.has(element));
     });
   }
   /**
@@ -727,10 +840,14 @@ export class Rule {
     );
   }
 
+  /**
+   * `rematch`: reached through a selector dependency (see `Property.run`).
+   */
   runProps(
     mutationMap: MutationMap,
     element: HTMLElement,
-    options: QuarkOptions
+    options: QuarkOptions,
+    rematch = false
   ) {
     const { propertiesToRun } = options;
     const mutatedProperties = Array.from(
@@ -738,8 +855,8 @@ export class Rule {
     );
 
     const trace = this.quarkInstance.runTrace;
-    const shouldRunProperty = (property: Variable | Attribute | Listener) => {
-      if (propertiesToRun && !propertiesToRun.includes(property)) return false;
+    const runProperty = (property: Variable | Attribute | Listener) => {
+      if (propertiesToRun && !propertiesToRun.includes(property)) return;
       // this second check ensures that we avoid running a given property if
       // that property is what triggered the change to begin with. `class`
       // is exempt: its tokens are separate facts (`.a { class: (b: true) }`
@@ -750,38 +867,25 @@ export class Rule {
       ) {
         // not refreshed by this run: a deferred write it reads must reach it
         if (trace) recordSeq(trace.visited, element, property, 0);
-        return false;
+        return;
       }
-      return true;
+      property.run(
+        element,
+        options,
+        rematch ||
+          property.referencedAttrNames.some((name) =>
+            mutatedProperties.includes(name)
+          )
+      );
     };
 
-    this.variables.forEach((v) => {
-      if (shouldRunProperty(v)) {
-        v.run(element, options);
-      }
-    });
-    this.listeners.forEach((l) => {
-      if (shouldRunProperty(l)) {
-        l.run(element, options);
-      }
-    });
-    this.attributes.forEach((a) => {
-      if (shouldRunProperty(a)) {
-        a.run(element, options);
-      }
-    });
+    this.variables.forEach(runProperty);
+    this.listeners.forEach(runProperty);
+    this.attributes.forEach(runProperty);
     // after the writes: a diagnostic reads what this pass set; a delay
     // restarts on every application of the rule
-    this.diagnostics.forEach((d) => {
-      if (shouldRunProperty(d)) {
-        d.run(element, options);
-      }
-    });
-    this.delays.forEach((d) => {
-      if (shouldRunProperty(d)) {
-        d.run(element, options);
-      }
-    });
+    this.diagnostics.forEach(runProperty);
+    this.delays.forEach(runProperty);
   }
   filterPropertiesToRun(options: QuarkOptions) {
     const allProps = [

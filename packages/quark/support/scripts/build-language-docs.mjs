@@ -9,14 +9,40 @@
  * Regions are fenced by `<!-- generated:<name> -->` / `<!-- /generated -->`
  * markers; everything between them is replaced. `language-docs.test.ts`
  * fails when a page is out of date, so run this after editing the
- * metadata. Plain Node imports the `.ts` module (type stripping); the test
- * imports this file under Vite.
+ * metadata. Plain Node (24+) loads the `.ts` source by type stripping plus
+ * a resolve hook for its extensionless imports; the test imports this file
+ * under Vite.
  */
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { realpathSync } from "node:fs";
-import {
+import { registerHooks } from "node:module";
+
+const isCli = (() => {
+  try {
+    return (
+      realpathSync(path.resolve(process.cwd(), process.argv[1] ?? "")) ===
+      realpathSync(fileURLToPath(import.meta.url))
+    );
+  } catch {
+    return false;
+  }
+})();
+
+// Node needs the `.ts` the package's relative imports omit; Vite does not.
+if (isCli)
+  registerHooks({
+    resolve: (specifier, context, next) =>
+      next(
+        specifier.startsWith(".") && !path.extname(specifier)
+          ? `${specifier}.ts`
+          : specifier,
+        context
+      ),
+  });
+
+const {
   ALLOWED_METHODS,
   AT_RULES,
   BUILTIN_FUNCTIONS,
@@ -25,7 +51,7 @@ import {
   DECLARATION_KINDS,
   PSEUDO_CLASSES,
   VALUE_KEYWORDS,
-} from "../../src/language.ts";
+} = await import("../../src/language.ts");
 
 const DOCS_DIR = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -168,18 +194,7 @@ export const readLanguageDocs = (markdown) => {
   return regions;
 };
 
-const isCli = () => {
-  try {
-    return (
-      realpathSync(path.resolve(process.cwd(), process.argv[1] ?? "")) ===
-      realpathSync(fileURLToPath(import.meta.url))
-    );
-  } catch {
-    return false;
-  }
-};
-
-if (isCli()) {
+if (isCli) {
   const regions = renderLanguageDocs();
   let updated = 0;
   for (const [name, file] of Object.entries(REGION_FILES)) {

@@ -62,7 +62,7 @@ describe("FetchableElement fetch lifecycle", () => {
     await loading;
     await provisioned;
 
-    expect(el).dom.to.equalTag(`<${TAG} is-success></${TAG}>`);
+    expect(el).dom.to.equalTag(`<${TAG} is-success did-load></${TAG}>`);
     expect(el.isLoading).toBe(false);
     expect(el.fetchPromise).toBeNull();
     expect(el.provision.status).toBe(200);
@@ -196,7 +196,7 @@ describe("FetchableElement fetch lifecycle", () => {
     expect(fetchSpy).toHaveBeenCalledTimes(2);
     expect(firstSignal.aborted).toBe(true);
     expect(el.provision.body).toEqual({ call: 2 });
-    expect(el).dom.to.equalTag(`<${TAG} is-success></${TAG}>`);
+    expect(el).dom.to.equalTag(`<${TAG} is-success did-load></${TAG}>`);
   });
 
   it("aborts the in-flight request when disconnected", async () => {
@@ -216,6 +216,47 @@ describe("FetchableElement fetch lifecycle", () => {
     expect(el.fetchPromise).toBeNull();
     expect(el.isLoading).toBe(false);
     expect(onError).not.toHaveBeenCalled();
+  });
+
+  it("a refresh keeps did-load and the previous provision until it answers", async () => {
+    let answer!: (response: Response) => void;
+    vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(jsonResponse({ n: 1 }))
+      .mockImplementationOnce(
+        () => new Promise((resolve) => (answer = resolve)),
+      );
+    const el = fixture<any>(`<${TAG}></${TAG}>`);
+    await waitForEvent(el, EVT("success"), () => {
+      el.doFetch(["/api/list", {}]);
+    });
+
+    el.doFetch(["/api/list", {}]);
+    expect(el).dom.to.equalTag(`<${TAG} is-loading did-load></${TAG}>`);
+    expect(el.provision.body).toEqual({ n: 1 });
+
+    await waitForEvent(el, EVT("success"), () => {
+      answer(jsonResponse({ n: 2 }));
+    });
+    expect(el).dom.to.equalTag(`<${TAG} is-success did-load></${TAG}>`);
+    expect(el.provision.body).toEqual({ n: 2 });
+  });
+
+  it("a failure after success clears did-load and publishes the error", async () => {
+    KitLogger.suppress();
+    vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(jsonResponse({ n: 1 }))
+      .mockResolvedValueOnce(jsonResponse({ reason: "down" }, 503));
+    const el = fixture<any>(`<${TAG}></${TAG}>`);
+    await waitForEvent(el, EVT("success"), () => {
+      el.doFetch(["/api/list", {}]);
+    });
+    await waitForEvent(el, EVT("error"), () => {
+      el.doFetch(["/api/list", {}]);
+    });
+
+    expect(el).dom.to.equalTag(`<${TAG} is-error></${TAG}>`);
+    expect(el.provision.status).toBe(503);
+    expect(el.provision.body).toEqual({ reason: "down" });
   });
 
   it("serialises the body and forwards method, headers and signal to fetch", async () => {
@@ -252,6 +293,91 @@ describe("FetchableElement fetch lifecycle", () => {
 
     const [, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
     expect(init.body).toBeUndefined();
+  });
+});
+
+describe("FetchableElement console output", () => {
+  const level = KitLogger.level;
+  const spyConsole = () => ({
+    error: vi.spyOn(console, "error").mockImplementation(() => {}),
+    warn: vi.spyOn(console, "warn").mockImplementation(() => {}),
+    log: vi.spyOn(console, "log").mockImplementation(() => {}),
+  });
+
+  afterEach(() => {
+    document.body.innerHTML = "";
+    vi.restoreAllMocks();
+    KitLogger.level = level;
+  });
+
+  it.each([404, 422, 500])(
+    "a %i response logs one warning and nothing else",
+    async (status) => {
+      KitLogger.level = 2;
+      const lines = spyConsole();
+      spyFetch({ status, body: JSON.stringify({ reason: "no" }) });
+      const el = fixture<any>(`<${TAG}></${TAG}>`);
+      await waitForEvent(el, EVT("error"), () => {
+        el.doFetch(["/api/status", {}]);
+      });
+
+      expect(lines.warn).toHaveBeenCalledTimes(1);
+      expect(lines.warn.mock.calls[0]).toContainEqual(
+        expect.objectContaining({ status }),
+      );
+      expect(lines.error).not.toHaveBeenCalled();
+      expect(lines.log).not.toHaveBeenCalled();
+    },
+  );
+
+  it("an error status is silent at the default level", async () => {
+    KitLogger.level = 1;
+    const lines = spyConsole();
+    spyFetch({ status: 404, body: "{}" });
+    const el = fixture<any>(`<${TAG}></${TAG}>`);
+    await waitForEvent(el, EVT("error"), () => {
+      el.doFetch(["/api/missing", {}]);
+    });
+
+    expect(lines.warn).not.toHaveBeenCalled();
+    expect(lines.error).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["network", async () => Promise.reject(new TypeError("Failed to fetch"))],
+    [
+      "parse",
+      async () =>
+        new Response("{broken", {
+          headers: { "content-type": "application/json" },
+        }),
+    ],
+  ])("a %s failure logs one error", async (_, respond) => {
+    KitLogger.level = 2;
+    const lines = spyConsole();
+    vi.spyOn(globalThis, "fetch").mockImplementation(respond);
+    const el = fixture<any>(`<${TAG}></${TAG}>`);
+    await waitForEvent(el, EVT("error"), () => {
+      el.doFetch(["/api/broken", {}]);
+    });
+
+    expect(lines.error).toHaveBeenCalledTimes(1);
+    expect(lines.warn).not.toHaveBeenCalled();
+    expect(el.provision.message).toBeTruthy();
+  });
+
+  it("an abort logs nothing", async () => {
+    KitLogger.level = 2;
+    const lines = spyConsole();
+    spyAbortableFetch();
+    const el = fixture<any>(`<${TAG}></${TAG}>`);
+    el.doFetch(["/api/cancel-me", {}]);
+    el.setCanceledState();
+    await wait(10);
+
+    expect(lines.error).not.toHaveBeenCalled();
+    expect(lines.warn).not.toHaveBeenCalled();
+    expect(lines.log).not.toHaveBeenCalled();
   });
 });
 

@@ -18,7 +18,6 @@
     "coverage": "node node_modules/@excom/heft-rig/scripts/coverage.mjs"
   },
   "dependencies": {
-    "@excom/hash-object": "workspace:^",
     "@excom/kit-logger": "workspace:^",
     "@excom/kit-shims": "workspace:^"
   },

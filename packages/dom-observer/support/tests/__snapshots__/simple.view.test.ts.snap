@@ -1,8 +1,8 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`simple view > logs attribute mutations on the details element > complexity 1`] = `
+exports[`simple view > reports each mutation of the details element > complexity 1`] = `
 {
-  "attributeRuns": 0,
+  "attributeRuns": 1,
   "closest": 0,
   "getVar": 0,
   "importNode": 0,
@@ -11,10 +11,10 @@ exports[`simple view > logs attribute mutations on the details element > complex
   "parentElement": 0,
   "quarkRuns": 0,
   "queryScopeCost": 0,
-  "querySelectorAll": 0,
+  "querySelectorAll": 1,
   "removeAttribute": 0,
   "ruleRuns": 0,
-  "schedulePaint": 0,
+  "schedulePaint": 1,
   "setAttribute": 1,
   "setVar": 0,
   "textContent": 1,

@@ -2,7 +2,7 @@
 
 One HTML file is enough. No install, no build, no framework.
 
-What follows is our [Todo App example](/nucleus/examples/todos), verbatim, with one deliberate change — it reads from the public [JSONPlaceholder](https://jsonplaceholder.typicode.com) API and sorts through a JS function. Open the example to edit any of it live.
+What follows is our [Todo App example](/nucleus/examples/todos), verbatim, with one deliberate change — it reads from the public [JSONPlaceholder](https://jsonplaceholder.typicode.com) API and sorts the list with a built-in module. Open the example to edit any of it live.
 
 ## 1. Load Nucleus Kit
 
@@ -27,7 +27,7 @@ Want a package manager instead? `npm install @excom/nucleus-kit`, then `import "
 
 ## 2. The markup
 
-Drop this `<article>` into the `<main>`, and save the three files beside it. It is the whole app: a provider that fetches, a `<template>` describing one row, and a form per action. No ids, no classes, nothing dynamic — every fact arrives later, as an attribute.
+Drop this `<article>` into the `<main>`, and save the two files beside it. It is the whole app: a provider that fetches, a `<template>` describing one row, and a form per action. No ids, no classes, nothing dynamic — every fact arrives later, as an attribute.
 
 ```html
 <article>
@@ -70,12 +70,12 @@ JSONPlaceholder returns `{ userId, id, title, completed }` — the same field na
 A `<quark-sheet>` observes its parent and applies rules to everything inside it. Read it like CSS: *when the provider succeeds, take its body, stamp one `<li>` per todo, and fill each row from the item.*
 
 ```quark
-@use "./utils.js" as utils;
+@use "quark:list" as list;
 
 provider-fetch[is-success] {
   $todos: prop("provision").body;
   ul {
-    content: iterate(utils.mySort($todos), none, "id");
+    content: iterate(list.sort-by($todos, "title"), none, "id");
     form {
       action: "https://jsonplaceholder.typicode.com/todos/#{item.id}";
     }
@@ -97,15 +97,11 @@ provider-fetch[is-success] {
 
 Nine declarations carry the entire app. `iterate()` is keyed on `"id"`, so a re-read reuses the rows it already has. Every row's `action` is written from its own item, which is why one `<template>` serves every todo. The two `@on` blocks close the loop: a changed field submits its form, and any form that succeeds tells the provider to read the list again.
 
-### Calling out to JS
+### Calling a module
 
-The one deviation from the example app is `utils.mySort($todos)`. It is contrived — Quark could render the array as it arrives — but it shows the boundary exactly.
+The one deviation from the example app is `list.sort-by($todos, "title")`. `@use "quark:list" as list;` imports one of Quark's [built-in modules](/nucleus/packages/quark/modules), with no file and no fetch, and namespaces its functions under `list`; `sort-by` returns a sorted copy for Quark to render.
 
-```js
-export const mySort = (todos) => [...todos].sort((a, b) => a.title.localeCompare(b.title));
-```
-
-`@use "./utils.js" as utils;` loads the module beside the sheet and namespaces its exports under `utils`. The function is pure: it receives the data as an argument, returns a sorted array for Quark to render, and has no idea a document exists. It never queries the DOM and never writes to it — that is the Orchestrator's job, and Quark is already doing it. [Business Logic](/nucleus/docs/business_logic) covers where that line sits and why calculations belong on this side of it.
+Your own module loads the same way (`@use "./utils.js" as utils;`) and should hold the same kind of function: one that receives values as arguments, returns a value for Quark to write, and has no idea a document exists. Querying the DOM and writing to it is the Orchestrator's job, and Quark is already doing it. Reach for a module of your own only when the built-in modules fall short. [Business Logic](/nucleus/docs/business_logic) covers where that line sits and why calculations belong on this side of it.
 
 ## 4. The styling
 
@@ -144,7 +140,7 @@ That is the API being honest about being a fixture, not the app being broken. Po
 
 - Tick a todo, then watch the network panel: one PATCH, one GET, and the row restored.
 - Add "Write tests" and watch it vanish on the re-read.
-- Reverse the sort in `utils.js` — the rows reorder without re-fetching, because `iterate()` is keyed on `id`.
+- Reverse the order with `list.sort-by($todos, "title", "desc")`.
 - Drop `?_limit=5` to render all 200 rows, and note that nothing else has to change.
 
 ## What just happened
@@ -157,7 +153,11 @@ That loop is the entire architecture. [Core Concepts](/nucleus/docs/core_concept
 
 ## Next steps
 
-- [Using Elements](/nucleus/docs/using_elements) — the Nucleus Kit catalog and how every element behaves.
-- [Orchestrating](/nucleus/docs/orchestrating) — everything Quark can do.
-- [Building Views](/nucleus/docs/building_views) — structure a real app: routes, views, lazy loading.
-- [Styling](/nucleus/docs/styling) — Valence.css themes, tokens, and state-driven CSS.
+- [Quick Start - A working page, in five minutes.](/nucleus/docs/quick_start)
+- [Core Concepts - The mental model, in one sitting.](/nucleus/docs/core_concepts)
+- [Using Elements - The Nucleus Kit catalog and how elements behave.](/nucleus/docs/using_elements)
+- [Orchestrating - Get familiar with Quark.](/nucleus/docs/orchestrating)
+- [Styling - Valence.css themes, tokens, and state-driven CSS.](/nucleus/docs/styling)
+- [Building Views - Structure a real app: routes, views, lazy loading.](/nucleus/docs/building_views)
+- Other Guides - [Business Logic](/nucleus/docs/business_logic), [Creating Elements](/nucleus/docs/creating_elements), [Best Practices](/nucleus/docs/best_practices), [Troubleshooting](/nucleus/docs/troubleshooting), [Debugging with Agents](/nucleus/docs/debugging_with_agents)
+- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](/nucleus/docs/diving_deeper)
