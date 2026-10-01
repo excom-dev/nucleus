@@ -22,7 +22,7 @@ describe("stage", () => {
   it("copies each directory and file whole", async () => {
     await stage({ out, kitVersion: "1.0.0" });
     for (const dir of ["backend", "data", "img", "models", "views"]) expect(await tree(join(out, dir))).toEqual(await tree(join(PACKAGE, dir)));
-    for (const file of ["_headers", "manifest.webmanifest", "shell.css", "shell.quark", "sw.js"]) expect(await read(out, file)).toBe(await read(PACKAGE, file));
+    for (const file of ["_headers", "manifest.webmanifest", "shell.quark", "sw.js"]) expect(await read(out, file)).toBe(await read(PACKAGE, file));
   });
 
   it("leaves no stale file behind", async () => {
@@ -31,21 +31,30 @@ describe("stage", () => {
     expect(await entries(out)).not.toContain("stale.txt");
   });
 
-  it("pins both Kit URLs to the workspace version", async () => {
+  it("pins Kit imports to the workspace version", async () => {
     const { version } = JSON.parse(await read(PACKAGE, "../nucleus-kit/package.json"));
     expect(await stage({ out })).toBe(version);
-    const pinned = (await read(out, "index.html")).match(/unpkg\.com\/@excom\/nucleus-kit@[^/]+\//g);
-    expect(pinned).toEqual(Array(2).fill(`unpkg.com/@excom/nucleus-kit@${version}/`));
+    const html = await read(out, "index.html");
+    const css = await read(out, "shell.css");
+    const htmlPinned = html.match(/unpkg\.com\/@excom\/nucleus-kit@[^/]+\//g);
+    const cssPinned = css.match(/unpkg\.com\/@excom\/nucleus-kit@[^/]+\//g);
+    expect(htmlPinned).toEqual([`unpkg.com/@excom/nucleus-kit@${version}/`]);
+    expect(cssPinned).toEqual([`unpkg.com/@excom/nucleus-kit@${version}/`]);
   });
 
-  it("rewrites the Kit URLs and no other line", async () => {
+  it("rewrites bare Kit imports and no other line", async () => {
     await stage({ out, kitVersion: "1.0.0-rc.1" });
-    const before = (await read(PACKAGE, "index.html")).split("\n");
-    const after = (await read(out, "index.html")).split("\n");
-    expect(after).toHaveLength(before.length);
-    expect(after.filter((line, i) => line !== before[i])).toEqual([
-      expect.stringContaining("unpkg.com/@excom/nucleus-kit@1.0.0-rc.1/dist/basic.bundle.min.css"),
-      expect.stringContaining("unpkg.com/@excom/nucleus-kit@1.0.0-rc.1/dist/nucleus-kit.progressive.min.js"),
+    const beforeHtml = (await read(PACKAGE, "index.html")).split("\n");
+    const afterHtml = (await read(out, "index.html")).split("\n");
+    expect(afterHtml).toHaveLength(beforeHtml.length);
+    expect(afterHtml.filter((line, i) => line !== beforeHtml[i])).toEqual([
+      expect.stringContaining("unpkg.com/@excom/nucleus-kit@1.0.0-rc.1/nucleus-kit.progressive"),
+    ]);
+    const beforeCss = (await read(PACKAGE, "shell.css")).split("\n");
+    const afterCss = (await read(out, "shell.css")).split("\n");
+    expect(afterCss).toHaveLength(beforeCss.length);
+    expect(afterCss.filter((line, i) => line !== beforeCss[i])).toEqual([
+      expect.stringContaining("unpkg.com/@excom/nucleus-kit@1.0.0-rc.1/basic.css"),
     ]);
   });
 
@@ -57,9 +66,9 @@ describe("stage", () => {
     for (const link of links) expect(staged).toContain(link.slice(1));
   });
 
-  it("refuses a page with no Kit URL to pin", async () => {
+  it("refuses a page with no Kit import to rewrite", async () => {
     const root = join(scratch, "app");
     await Promise.all(SHIPPED.map((name) => write(join(root, name), "<title>No Kit</title>")));
-    await expect(stage({ root, out, kitVersion: "1.0.0" })).rejects.toThrow("no unpkg Kit URL");
+    await expect(stage({ root, out, kitVersion: "1.0.0" })).rejects.toThrow("No bare @excom/nucleus-kit imports");
   });
 });

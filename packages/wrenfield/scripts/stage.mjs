@@ -18,7 +18,8 @@ const PUBLIC = [
   "models",
   "data",
 ];
-const KIT_URL = /(unpkg\.com\/@excom\/nucleus-kit@)[^/]+/g;
+const BARE_KIT_IMPORT = /"@excom\/nucleus-kit\//g;
+const REWRITTEN_FILES = ["index.html", "shell.css"];
 
 export const stage = async ({
   root = ROOT,
@@ -37,11 +38,19 @@ export const stage = async ({
       cp(join(root, name), join(out, name), { recursive: true })
     )
   );
-  const page = join(out, "index.html");
-  const html = await readFile(page, "utf8");
-  if (html.search(KIT_URL) < 0)
-    throw new Error("index.html has no unpkg Kit URL to pin");
-  await writeFile(page, html.replaceAll(KIT_URL, `$1${version}`));
+  const cdnPrefix = `"https://unpkg.com/@excom/nucleus-kit@${version}/`;
+  let rewrites = 0;
+  for (const file of REWRITTEN_FILES) {
+    const filePath = join(out, file);
+    const content = await readFile(filePath, "utf8");
+    const matches = content.match(BARE_KIT_IMPORT);
+    if (matches) {
+      rewrites += matches.length;
+      await writeFile(filePath, content.replaceAll(BARE_KIT_IMPORT, cdnPrefix));
+    }
+  }
+  if (rewrites === 0)
+    throw new Error("No bare @excom/nucleus-kit imports found to rewrite");
   return version;
 };
 
