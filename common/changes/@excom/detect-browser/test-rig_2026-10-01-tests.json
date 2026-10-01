@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/detect-browser",
+      "comment": "Add `@excom/nucleus-test` and update test imports",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/detect-browser"
+}

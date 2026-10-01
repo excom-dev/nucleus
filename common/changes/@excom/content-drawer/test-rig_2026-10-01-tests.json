@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/content-drawer",
+      "comment": "Add `@excom/nucleus-test` and update test imports",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/content-drawer"
+}
