@@ -1,6 +1,6 @@
 {
   "name": "@excom/quark-formatter",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Opinionated CSS-style formatter for the Quark language, built on the quark-parser AST",
   "license": "MIT",
   "engines": {

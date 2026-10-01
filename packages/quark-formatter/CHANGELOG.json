@@ -2,6 +2,34 @@
   "name": "@excom/quark-formatter",
   "entries": [
     {
+      "version": "0.1.3",
+      "tag": "@excom/quark-formatter_v0.1.3",
+      "date": "Thu, 01 Oct 2026 17:34:22 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix the published type declarations: `index.d.ts` pointed at a folder that is not in the tarball, so consumers got `any` for named re-exports and missing-member errors for `export *` instead of the real types"
+          }
+        ],
+        "none": [
+          {
+            "comment": "Set `excom.navGroup: \"libraries\"` so the docs site lists the package in its Libraries group"
+          },
+          {
+            "comment": "Update the README samples, the package description and keywords"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/nucleus-test\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/quark-parser\" to `^0.1.3`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.2",
       "tag": "@excom/quark-formatter_v0.1.2",
       "date": "Wed, 23 Sep 2026 11:22:24 GMT",

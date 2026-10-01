@@ -2,6 +2,29 @@
   "name": "@excom/web-authn",
   "entries": [
     {
+      "version": "0.1.4",
+      "tag": "@excom/web-authn_v0.1.4",
+      "date": "Thu, 01 Oct 2026 17:34:22 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "A failed ceremony or options request now clears is-loading and sets is-error with the message in provision"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/fetchable-element\" to `^0.2.1`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.1.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/nucleus-test\" to `^0.2.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.3",
       "tag": "@excom/web-authn_v0.1.3",
       "date": "Wed, 30 Sep 2026 00:32:38 GMT",

@@ -2,6 +2,23 @@
   "name": "@excom/kit-utils",
   "entries": [
     {
+      "version": "0.2.1",
+      "tag": "@excom/kit-utils_v0.2.1",
+      "date": "Thu, 01 Oct 2026 17:34:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add `@excom/nucleus-test` and update test imports"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/nucleus-test\" to `^0.2.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.2.0",
       "tag": "@excom/kit-utils_v0.2.0",
       "date": "Wed, 30 Sep 2026 00:32:38 GMT",

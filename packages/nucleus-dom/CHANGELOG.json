@@ -1,0 +1,20 @@
+{
+  "name": "@excom/nucleus-dom",
+  "entries": [
+    {
+      "version": "0.1.0",
+      "tag": "@excom/nucleus-dom_v0.1.0",
+      "date": "Thu, 01 Oct 2026 17:34:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Initial release of `@excom/nucleus-dom`: happy-dom pinned exactly, the browser-parity shims (document-wide queries with `:scope`, MutationObserver pin, the Command API, `checkVisibility`, `ServiceWorkerContainer`) and `createDom()`"
+          },
+          {
+            "comment": "Set `excom.navGroup: \"libraries\"` so the docs site lists the package in its Libraries group"
+          }
+        ]
+      }
+    }
+  ]
+}

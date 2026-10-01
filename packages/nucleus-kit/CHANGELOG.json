@@ -2,6 +2,127 @@
   "name": "@excom/nucleus-kit",
   "entries": [
     {
+      "version": "0.3.0",
+      "tag": "@excom/nucleus-kit_v0.3.0",
+      "date": "Thu, 01 Oct 2026 17:34:22 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add `Quark.meter`, the engine's work counters (`counts`, `reset()`, `scopeSelectors()`), always on, for complexity snapshots with `@excom/nucleus-test`"
+          },
+          {
+            "comment": "Add a warning when a `spa-manager` update settles by `render-timeout` while a route is still pending, so an empty first paint has a cause in the console at log level 2"
+          },
+          {
+            "comment": "Update `content-carousel` in `slide-animation=\"track\"` to render only the active slide and its two DOM neighbours (a wrap with three or more slides cuts instead of sliding), and to animate nothing before the first move, so an initial `is-active` appears in place"
+          },
+          {
+            "comment": "Update `gesture-handler` `pan-x` / `pan-y` handlers to hold the page still for the rest of a touch whose first 3 px run along the handler's axis, through a non-passive `touchmove` listener; `touch-action` is unchanged, a touch that starts across the axis scrolls as before, and a same-axis scroller under the finger keeps scrolling"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "Fix `web-authn` after a failed ceremony or options request: `is-loading` is cleared, `is-error` is set with the message in `provision`, and a retry clears `is-error`"
+          },
+          {
+            "comment": "Fix an issue where an `is-fallback` route stayed off after leaving a nested route for a URL no route matches: the fallback now checks which routes match the path, so its position among its siblings no longer matters, a page without a `spa-manager` gets a working fallback, and a fallback inside a layout can activate on the layout's unmatched child paths"
+          },
+          {
+            "comment": "Fix the published type declarations of `neutron`, `quark`, `quark-parser`, `quark-formatter` and `kit-devtools`, which pointed at a folder outside their tarballs, so the Kit's re-exported types resolve instead of `any`"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/content-carousel\" to `^0.1.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/content-drawer\" to `^0.2.1`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/content-tabs\" to `^0.1.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/data-table\" to `^0.1.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/detect-browser\" to `^0.1.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/detect-features\" to `^0.1.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/detect-media\" to `^0.1.5`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/dialog-anchor\" to `^0.1.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/dismiss-watcher\" to `^0.1.5`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/dom-observer\" to `^0.1.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/event-handler\" to `^0.1.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/gesture-handler\" to `^0.2.1`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/include-content\" to `^0.1.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-logger\" to `^0.1.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/network-status\" to `^0.1.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.1.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/provider-fetch\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/provider-geolocation\" to `^0.1.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/provider-orientation\" to `^0.1.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/provider-storage\" to `^0.1.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/quark\" to `^0.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/quark-sheet\" to `^0.1.5`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/scroll-into-view\" to `^0.1.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/service-worker\" to `^0.1.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/spa-route\" to `^0.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/super-form\" to `^0.1.5`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/super-input\" to `^0.1.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/web-authn\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/nucleus-test\" to `^0.2.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.2.0",
       "tag": "@excom/nucleus-kit_v0.2.0",
       "date": "Wed, 30 Sep 2026 00:32:38 GMT",

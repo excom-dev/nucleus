@@ -2,6 +2,23 @@
   "name": "@excom/hash-object",
   "entries": [
     {
+      "version": "0.1.2",
+      "tag": "@excom/hash-object_v0.1.2",
+      "date": "Thu, 01 Oct 2026 17:34:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add `@excom/nucleus-test` and update test imports"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/nucleus-test\" to `^0.2.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@excom/hash-object_v0.1.1",
       "date": "Wed, 23 Sep 2026 06:16:11 GMT",

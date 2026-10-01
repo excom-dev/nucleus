@@ -1,6 +1,6 @@
 {
   "name": "@excom/fetchable-element",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "FetchableElement base for Neutron elements",
   "license": "MIT",
   "engines": {

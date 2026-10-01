@@ -1,0 +1,22 @@
+{
+  "name": "@excom/nucleus-test",
+  "entries": [
+    {
+      "version": "0.2.0",
+      "tag": "@excom/nucleus-test_v0.2.0",
+      "date": "Thu, 01 Oct 2026 17:34:22 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "measureComplexity, expectComplexity and trackComplexity snapshot Quark and DOM work per test"
+          }
+        ],
+        "none": [
+          {
+            "comment": "Initial release of `@excom/nucleus-test`: the vitest setup (shims, listener registry, `equalTag`, `toMatchListeners`, `toContainListeners`, the HTML snapshot serializer, the console node guard) and the test utilities (`fixture`, `click`, `wait`, `waitForEvent`, `spyFetch`)"
+          }
+        ]
+      }
+    }
+  ]
+}
