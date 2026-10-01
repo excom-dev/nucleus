@@ -32,7 +32,7 @@ import {
 const g = globalThis as Record<string, unknown>;
 
 const settle = async () => {
-  for (let i = 0; i < 8; i++) await wait(0);
+  for (let i = 0; i < 16; i++) await wait(0);
 };
 
 type Tools = Record<string, (input?: Record<string, unknown>) => unknown>;

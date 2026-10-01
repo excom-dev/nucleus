@@ -54,7 +54,7 @@ const makeChrome = (info: SelectionInfo) => {
 };
 
 const settle = async () => {
-  for (let i = 0; i < 4; i++) await wait(0);
+  for (let i = 0; i < 16; i++) await wait(0);
 };
 
 const mount = async () => {
