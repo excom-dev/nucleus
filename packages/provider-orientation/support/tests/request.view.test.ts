@@ -6,14 +6,14 @@ import {
   describe,
   expect,
   it,
+  readDemo,
   waitForEvent,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import {
   expectComplexity,
   flush,
   measureComplexity,
   mountView,
-  readDemo,
 } from "@excom/quark/support/tests/view-helpers";
 
 /** What an Android sensor reports: `alpha` from north, `absolute` set. */

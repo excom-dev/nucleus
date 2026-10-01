@@ -210,6 +210,75 @@ describe("verifyPublishOutputs", () => {
     ]);
   });
 
+  describe("declaration paths", () => {
+    const withDeclarations = (dts: Record<string, string>) => ({
+      ...completePackage("lib"),
+      ...Object.fromEntries(
+        Object.entries(dts).map(([file, source]) => [`packages/lib/dist/${file}`, source]),
+      ),
+    });
+
+    it("passes a tree whose relative paths land on files or directory indexes", async () => {
+      const problems = await run(
+        "dts-ok",
+        withDeclarations({
+          "index.d.ts": `export { a } from './src/a';\nexport type * from "./types";\nexport type B = import("./src/a").A;\n`,
+          "src/a.d.ts": `import type { T } from '../types';\nexport type A = T;\nexport declare const a: A;\n`,
+          "types/index.d.ts": "export type T = string;\n",
+        }),
+      );
+      expect(problems).toEqual([]);
+    });
+
+    it("names the package and the first dangling path", async () => {
+      const problems = await run(
+        "dts-dangling",
+        withDeclarations({
+          "index.d.ts": `export { x } from './src/x';\nexport { y } from './src/y';\nexport { ok } from './ok';\n`,
+          "ok.d.ts": "export declare const ok: 1;\n",
+        }),
+      );
+      expect(problems).toEqual([
+        "@excom/lib: dangling declaration path ./src/x in dist/index.d.ts (2 dangling in total)",
+      ]);
+      expect(error).toHaveBeenCalledWith(problems[0]);
+    });
+
+    it("omits the total for a single dangling path, in nested declarations too", async () => {
+      const problems = await run(
+        "dts-nested",
+        withDeclarations({
+          "index.d.ts": `export { a } from './src/a';\n`,
+          "src/a.d.ts": `export { b } from './b';\n`,
+        }),
+      );
+      expect(problems).toEqual([
+        "@excom/lib: dangling declaration path ./b in dist/src/a.d.ts",
+      ]);
+    });
+
+    it("rejects a path that leaves dist even when the source file exists", async () => {
+      const problems = await run("dts-escape", {
+        ...withDeclarations({ "index.d.ts": `export { a } from '../src/a';\n` }),
+        "packages/lib/src/a.ts": "export const a = 1;\n",
+      });
+      expect(problems).toEqual([
+        "@excom/lib: dangling declaration path ../src/a in dist/index.d.ts",
+      ]);
+    });
+
+    it("leaves a package without declarations alone", async () => {
+      const files = completePackage("lib", {
+        exports: { ".": { default: "./dist/index.js" } },
+      });
+      delete files["packages/lib/dist/index.d.ts"];
+      // Only `.d.ts` files are inspected: JavaScript and source maps may point anywhere.
+      files["packages/lib/dist/index.js"] = `export { a } from "./src/a.js";\n`;
+      files["packages/lib/dist/index.js.map"] = `{"sources":["./src/a.ts"]}`;
+      expect(await run("dts-none", files)).toEqual([]);
+    });
+  });
+
   it("skips private packages entirely", async () => {
     const files = completePackage("tooling", { private: true });
     delete files["packages/tooling/dist/exports.generated.json"];

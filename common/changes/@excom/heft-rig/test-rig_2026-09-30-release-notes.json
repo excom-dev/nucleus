@@ -1,0 +1,20 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/heft-rig",
+      "comment": "Add release notes: `build-package-metas.mjs` appends the `CHANGELOG.json` notes (minus dependency and `none` comments) to the README HTML as a closing `<details>`, and `build-docs.mjs` adds the three newest releases as `## Release notes` to the primary element's Markdown, so they reach the site and the LLM docs",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/heft-rig",
+      "comment": "Fix the library build's type declarations, which pointed at a folder outside the tarball; `verify-publish-outputs.mjs` now fails a publish when a declaration path dangles",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/heft-rig",
+      "comment": "Add `excom.umd: false` to skip the UMD bundle of a Node-only library (no CDN script in its install snippet), the `app` package type and unscoped names in `format-package-json`, and the test layer moved to `@excom/nucleus-dom` and `@excom/nucleus-test`",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@excom/heft-rig"
+}

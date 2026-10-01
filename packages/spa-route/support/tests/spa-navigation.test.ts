@@ -7,9 +7,10 @@ import {
   vi,
   wait,
   waitForEvent,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import { urlMatchesHref } from "../../src/utils";
 import "../../index";
+import { navigate, popstate, resetRouter } from "../../testing";
 import { KitLogger } from "@excom/kit-logger";
 import { kitRouter } from "@excom/kit-router";
 
@@ -40,39 +41,11 @@ type RouterState = {
 };
 type RouterInternals = {
   states: RouterState[];
-  currentStateId: string | null;
-  currentTempData: { move: null | string; event?: unknown };
   routes: unknown[];
 };
 const router = kitRouter as unknown as RouterInternals & typeof kitRouter;
 
-/** Put the singleton router back to a cold-load state. */
-const resetRouter = () => {
-  history.replaceState({ id: "init" }, "", "/");
-  router.states = [{ id: "init", url: "/", isInit: true }];
-  router.currentStateId = "init";
-  router.currentTempData = { move: null };
-  router.MAX_STATES = router.DEFAULT_MAX_STATES;
-};
-
-/** Emulate the browser landing on a known history entry (back / forward). */
-const popstate = (state: RouterState, hasUAVisualTransition = false) => {
-  history.replaceState({ id: state.id }, "", state.url);
-  const e = new PopStateEvent("popstate");
-  Object.defineProperty(e, "hasUAVisualTransition", {
-    value: hasUAVisualTransition,
-  });
-  window.dispatchEvent(e);
-};
-
 const click = (el: Element) => el.dispatchEvent(new Event("click"));
-
-/**
- * Navigate and wait for the manager to settle: every nav, the first paint
- * included, runs one batched update that ends in `spa-manager-rendered`.
- */
-const navigate = (manager: Element, trigger: () => void) =>
-  waitForEvent(manager, "spa-manager-rendered", trigger);
 
 const captureEvent = <T = unknown>(target: EventTarget, type: string) => {
   const events: CustomEvent<T>[] = [];
@@ -99,7 +72,7 @@ const touch = (
 };
 
 describe("spa-a actions", () => {
-  beforeEach(resetRouter);
+  beforeEach(() => resetRouter());
   afterEach(() => {
     document.body.innerHTML = "";
     router.routes = [];
@@ -439,7 +412,7 @@ describe("spa-a actions", () => {
 });
 
 describe("spa-route", () => {
-  beforeEach(resetRouter);
+  beforeEach(() => resetRouter());
   afterEach(() => {
     document.body.innerHTML = "";
     router.routes = [];
@@ -620,6 +593,250 @@ describe("spa-route", () => {
     expect(fallback.isActive).toBe(false);
   });
 
+  describe("is-fallback", () => {
+    // Nested routes render with the layout: settle the inner manager too
+    const go = async (manager: Element, trigger: () => void) => {
+      await navigate(manager, trigger);
+      await wait(5);
+    };
+
+    it("decides from the URL when leaving a nested route (README example)", async () => {
+      document.body.innerHTML = `
+        <spa-manager>
+          <nav>
+            <spa-a route-href="/users">Users list</spa-a>
+            <spa-a route-href="/users/42">User 42</spa-a>
+            <spa-a route-href="/missing">Missing page</spa-a>
+          </nav>
+          <spa-route route-href="/users" match-nested>
+            <template>
+              <section>
+                <h3>Users layout</h3>
+                <spa-manager>
+                  <spa-route route-href="/users">
+                    <template><p>List of users.</p></template>
+                  </spa-route>
+                  <spa-route route-href="/users/:id">
+                    <template><p id="detail">Detail for a single user.</p></template>
+                  </spa-route>
+                </spa-manager>
+              </section>
+            </template>
+          </spa-route>
+          <spa-route route-regex="^/(?:admin|staff)(?:/|$)" template-ref="/views/admin-sidebar.html"></spa-route>
+          <spa-route route-regex=".*" is-fallback>
+            <template>
+              <section>
+                <h3>404</h3>
+                <p>Catch-all — only when no other route matches.</p>
+              </section>
+            </template>
+          </spa-route>
+        </spa-manager>
+      `;
+      const manager = q<HTMLSpaManagerElement>("spa-manager");
+      const [layout, , fallback] = qa<HTMLSpaRouteElement>("spa-route");
+      const [, toUser, toMissing] = qa<HTMLSpaAElement>("spa-a");
+      const detail = () =>
+        qa<HTMLSpaRouteElement>("section spa-route")[1] ?? null;
+      await wait(5);
+      expect(fallback.isActive).toBe(true);
+      expect(layout.isActive).toBe(false);
+
+      await go(manager, () => click(toUser));
+      const leftDetail = detail()!;
+      expect(layout.isActive).toBe(true);
+      expect(leftDetail.isActive).toBe(true);
+      expect(fallback.isActive).toBe(false);
+      expect(q("#detail")).not.toBeNull();
+
+      await go(manager, () => click(toMissing));
+      expect(fallback.isActive).toBe(true);
+      expect(fallback.textContent).toContain("404");
+      expect(layout.isActive).toBe(false);
+      expect(leftDetail.isActive).toBe(false);
+      expect(q("#detail")).toBeNull();
+
+      await go(manager, () => kitRouter.pushState({ url: "/missing-too" }));
+      expect(fallback.isActive).toBe(true);
+      expect(fallback.textContent).toContain("404");
+
+      await go(manager, () => popstate(router.states[1]));
+      expect(layout.isActive).toBe(true);
+      expect(detail()?.isActive).toBe(true);
+      expect(fallback.isActive).toBe(false);
+      expect(q("#detail")).not.toBeNull();
+      expect(fallback.textContent).not.toContain("404");
+    });
+
+    it("ignores its position among siblings", async () => {
+      document.body.innerHTML = `
+        <spa-manager>
+          <spa-route route-regex=".*" is-fallback><template>404</template></spa-route>
+          <spa-route route-href="/a"><template>A</template></spa-route>
+        </spa-manager>
+      `;
+      const manager = q<HTMLSpaManagerElement>("spa-manager");
+      const [fallback, routeA] = qa<HTMLSpaRouteElement>("spa-route");
+      await wait(5);
+      expect(fallback.isActive).toBe(true);
+
+      await go(manager, () => kitRouter.pushState({ url: "/a" }));
+      expect(routeA.isActive).toBe(true);
+      expect(fallback.isActive).toBe(false);
+
+      await go(manager, () => kitRouter.pushState({ url: "/nowhere" }));
+      expect(routeA.isActive).toBe(false);
+      expect(fallback.isActive).toBe(true);
+    });
+
+    it("scopes to the document without a manager", async () => {
+      document.body.innerHTML = `
+        <spa-route route-href="/a"><template>A</template></spa-route>
+        <spa-route route-regex=".*" is-fallback><template>404</template></spa-route>
+      `;
+      const [routeA, fallback] = qa<HTMLSpaRouteElement>("spa-route");
+
+      kitRouter.pushState({ url: "/a" });
+      await wait(5);
+      expect(routeA.isActive).toBe(true);
+      expect(fallback.isActive).toBe(false);
+      expect(hasRenderedContent(fallback)).toBe(false);
+
+      kitRouter.pushState({ url: "/nowhere" });
+      await wait(5);
+      expect(routeA.isActive).toBe(false);
+      expect(fallback.isActive).toBe(true);
+      expect(fallback.textContent).toContain("404");
+    });
+
+    it("scopes a nested fallback to its own manager, and never counts other fallbacks", async () => {
+      document.body.innerHTML = `
+        <spa-manager>
+          <spa-route route-href="/users" match-nested>
+            <template>
+              <spa-manager>
+                <spa-route route-href="/users/:id"><template>User</template></spa-route>
+                <spa-route route-regex="^/users/" is-fallback><template>No such user page</template></spa-route>
+              </spa-manager>
+            </template>
+          </spa-route>
+          <spa-route route-regex=".*" is-fallback><template>404</template></spa-route>
+        </spa-manager>
+      `;
+      const manager = q<HTMLSpaManagerElement>("spa-manager");
+      const [layout, outerFallback] = qa<HTMLSpaRouteElement>(
+        "body > spa-manager > spa-route"
+      );
+      const inner = () =>
+        qa<HTMLSpaRouteElement>("spa-manager spa-manager > spa-route");
+      await wait(5);
+      expect(outerFallback.isActive).toBe(true);
+
+      await go(manager, () => kitRouter.pushState({ url: "/users/42" }));
+      const [user, innerFallback] = inner();
+      expect(layout.isActive).toBe(true);
+      expect(user.isActive).toBe(true);
+      expect(innerFallback.isActive).toBe(false);
+      expect(outerFallback.isActive).toBe(false);
+
+      // the layout matches, but sits outside the inner fallback's manager
+      await go(manager, () => kitRouter.pushState({ url: "/users/42/x" }));
+      expect(layout.isActive).toBe(true);
+      expect(user.isActive).toBe(false);
+      expect(innerFallback.isActive).toBe(true);
+      expect(outerFallback.isActive).toBe(false);
+
+      // the active inner fallback does not hold the outer one off
+      await go(manager, () => kitRouter.pushState({ url: "/missing" }));
+      expect(layout.isActive).toBe(false);
+      expect(innerFallback.isActive).toBe(false);
+      expect(outerFallback.isActive).toBe(true);
+      expect(outerFallback.textContent).toContain("404");
+    });
+
+    it("is not held off by the layout that contains it", async () => {
+      document.body.innerHTML = `
+        <spa-manager>
+          <spa-route route-href="/users" match-nested>
+            <template>
+              <spa-route route-href="/users/:id"><template>User</template></spa-route>
+              <spa-route route-regex="^/users/" is-fallback><template>No such user page</template></spa-route>
+            </template>
+          </spa-route>
+          <spa-route route-regex=".*" is-fallback><template>404</template></spa-route>
+        </spa-manager>
+      `;
+      const manager = q<HTMLSpaManagerElement>("spa-manager");
+      const [layout, outerFallback] = qa<HTMLSpaRouteElement>(
+        "spa-manager > spa-route"
+      );
+      await wait(5);
+
+      await go(manager, () => kitRouter.pushState({ url: "/users/42/x" }));
+      const [user, innerFallback] = qa<HTMLSpaRouteElement>(
+        "spa-route spa-route"
+      );
+      expect(layout.isActive).toBe(true);
+      expect(user.isActive).toBe(false);
+      expect(innerFallback.isActive).toBe(true);
+      expect(innerFallback.textContent).toContain("No such user page");
+      expect(outerFallback.isActive).toBe(false);
+
+      await go(manager, () => kitRouter.pushState({ url: "/users/42" }));
+      expect(user.isActive).toBe(true);
+      expect(innerFallback.isActive).toBe(false);
+      expect(outerFallback.isActive).toBe(false);
+    });
+
+    it("is not held off by a route inside its own template", async () => {
+      document.body.innerHTML = `
+        <spa-manager>
+          <spa-route route-href="/a"><template>A</template></spa-route>
+          <spa-route route-regex=".*" is-fallback>
+            <template>
+              <p>404</p>
+              <spa-route route-regex=".*"><template><p id="hint">Check the address</p></template></spa-route>
+            </template>
+          </spa-route>
+        </spa-manager>
+      `;
+      const manager = q<HTMLSpaManagerElement>("spa-manager");
+      const fallback = q<HTMLSpaRouteElement>("[is-fallback]");
+      await wait(5);
+      expect(fallback.isActive).toBe(true);
+      expect(q("#hint")).not.toBeNull();
+
+      await go(manager, () => kitRouter.pushState({ url: "/nowhere" }));
+      expect(fallback.isActive).toBe(true);
+      expect(fallback.textContent).toContain("404");
+      expect(q("#hint")).not.toBeNull();
+    });
+
+    it("scopes to its shadow root without a manager", async () => {
+      const host = document.createElement("div");
+      document.body.append(host);
+      const root = host.attachShadow({ mode: "open" });
+      root.innerHTML = `
+        <spa-route route-href="/a"><template>A</template></spa-route>
+        <spa-route route-regex=".*" is-fallback><template>404</template></spa-route>
+      `;
+      const [routeA, fallback] = Array.from(
+        root.querySelectorAll<HTMLSpaRouteElement>("spa-route")
+      );
+
+      kitRouter.pushState({ url: "/a" });
+      await wait(5);
+      expect(routeA.isActive).toBe(true);
+      expect(fallback.isActive).toBe(false);
+
+      kitRouter.pushState({ url: "/nowhere" });
+      await wait(5);
+      expect(routeA.isActive).toBe(false);
+      expect(fallback.isActive).toBe(true);
+    });
+  });
+
   it("re-registers links, routes and managers inside persist-content on re-attach", async () => {
     // As in browsers: an effect key the element does not declare throws
     const errorSpy = vi.spyOn(KitLogger, "error");
@@ -732,7 +949,7 @@ describe("spa-route", () => {
 });
 
 describe("spa-manager", () => {
-  beforeEach(resetRouter);
+  beforeEach(() => resetRouter());
   afterEach(() => {
     document.body.innerHTML = "";
     router.routes = [];
@@ -814,7 +1031,7 @@ describe("spa-manager", () => {
 
     /* Queue A -> B, then flip back to A synchronously. Route B's render
        callback is in the batch, but B is inactive by the time it runs.
-       `waitForEvent` rejects after 1s, well before `render-timeout`. */
+       `navigate` rejects after 1s, well before `render-timeout`. */
     const settled = vi.fn();
     await navigate(manager, () => {
       click(linkB);

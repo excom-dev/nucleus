@@ -1,0 +1,24 @@
+<section id="checkout-payment">
+  <quark-sheet src-url="/views/checkout/payment.quark"></quark-sheet>
+  <h2 id="payment-title">Payment</h2>
+  <p>Nothing to enter here: we never ask for a card.</p>
+  <spa-a route-href="/bag/checkout/review" listen-for="super-form-success">
+    <super-form>
+      <form action="/api/checkout" method="patch">
+        <fieldset class="choices" aria-labelledby="payment-title" bind-options>
+          <template>
+            <label>
+              <input type="radio" name="payment">
+              <strong bind-item="name"></strong>
+              <small bind-item="blurb"></small>
+            </label>
+          </template>
+        </fieldset>
+        <p role="alert"></p>
+        <footer class="actions">
+          <button type="submit">Review order</button>
+        </footer>
+      </form>
+    </super-form>
+  </spa-a>
+</section>

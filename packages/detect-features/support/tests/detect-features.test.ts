@@ -5,7 +5,7 @@ import {
   expect,
   it,
 } from "@excom/heft-rig/node_modules/vitest";
-import { fixture } from "@excom/heft-rig/profiles/default/config/test-utils";
+import { fixture } from "@excom/nucleus-test";
 
 const FEATURES = [
   "geolocation",

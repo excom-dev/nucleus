@@ -180,8 +180,6 @@
               100%
           )
         );
-        transition: transform var(--content-carousel-slide-animation-duration)
-          var(--content-carousel-transition-ease);
         &:--content-carousel-slide--is-active {
           --content-carousel-slot: 0;
           z-index: 2;
@@ -189,11 +187,20 @@
         &:has(~ :--content-carousel-slide--is-active) {
           --content-carousel-slot: -1;
         }
-        &:is(&:--content-carousel-slide--is-active + & + &),
-        &:has(+ & + &:--content-carousel-slide--is-active) {
-          /* hide slides that are two slides away */
+        /* Neighbours are DOM siblings; a slide further out would share their
+           ±100% slot and paint over them. Tests assert this sibling contract. */
+        &:not(
+          :--content-carousel-slide--is-active,
+          :--content-carousel-slide--is-active + *,
+          :has(+ :--content-carousel-slide--is-active)
+        ) {
           display: none !important;
         }
+      }
+      /* Only after a move: the initial `is-active` lands without sliding in */
+      &:--content-carousel--last-move :--content-carousel-slide {
+        transition: transform var(--content-carousel-slide-animation-duration)
+          var(--content-carousel-transition-ease);
       }
       &:--content-carousel--is-scrubbing {
         --content-carousel-progress: var(--gesture-progress, 0);

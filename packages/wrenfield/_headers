@@ -1,0 +1,19 @@
+# Staged into dist/ by scripts/stage.mjs. Code and pages revalidate; media and data cache for a day.
+/
+  Cache-Control: no-cache
+/sw.js
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+/backend/*
+  Cache-Control: no-cache
+/views/*
+  Cache-Control: no-cache
+/shell.*
+  Cache-Control: no-cache
+/img/*
+  Cache-Control: public, max-age=86400
+/models/*
+  Cache-Control: public, max-age=86400
+/data/*
+  Cache-Control: public, max-age=86400

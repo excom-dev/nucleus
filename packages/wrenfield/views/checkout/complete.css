@@ -1,0 +1,70 @@
+@scope {
+  header:not(.bar) {
+    display: grid;
+    justify-items: center;
+    margin-top: 1rem;
+    text-align: center;
+
+    svg {
+      width: 3rem;
+      height: 3rem;
+      margin-bottom: 1rem;
+      color: var(--v-primary);
+      stroke-width: 1.25;
+    }
+    h1 {
+      margin: 0 0 0.5rem;
+    }
+    p:last-child {
+      max-width: 26rem;
+      color: var(--v-muted-color);
+    }
+  }
+  section:not(.error) {
+    margin-block: 2.5rem;
+
+    h2 {
+      --v-font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+  }
+  section:has([bind-next]:not(:has(li))) {
+    display: none;
+  }
+  [bind-next] {
+    margin: 0;
+    padding: 0;
+    counter-reset: next;
+
+    li {
+      display: grid;
+      grid-template-columns: 2rem 1fr;
+      column-gap: 0.75rem;
+      margin: 0 0 1rem;
+      list-style: none;
+      counter-increment: next;
+
+      &::before {
+        content: counter(next);
+        grid-row: span 2;
+        display: grid;
+        place-content: center;
+        width: 2rem;
+        height: 2rem;
+        border: 1px solid var(--v-muted-border-color);
+        border-radius: 50%;
+        color: var(--v-muted-color);
+        font-size: 0.8125rem;
+        font-variant-numeric: tabular-nums;
+      }
+    }
+    p {
+      margin: 0;
+      color: var(--v-muted-color);
+      font-size: 0.875rem;
+    }
+  }
+  [data-layout="regular"] & header {
+    margin-top: 4rem;
+  }
+}

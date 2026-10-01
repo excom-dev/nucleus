@@ -16,7 +16,7 @@ import {
   spyFetch,
   vi,
   wait,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import { clearFetchCaches } from "@excom/kit-utils";
 import { createSheet, flush, mount, unregisterAll } from "./helpers";
 

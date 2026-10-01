@@ -1,0 +1,5 @@
+{
+  "extends": "@excom/heft-rig/profiles/default/config/tsconfig.json",
+  "include": ["./support/tests/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}

@@ -8,11 +8,11 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+  readDemo,
+} from "@excom/nucleus-test";
 import {
   flush,
   mountView,
-  readDemo,
 } from "@excom/quark/support/tests/view-helpers";
 
 const outsideMouseup = (target: EventTarget) =>

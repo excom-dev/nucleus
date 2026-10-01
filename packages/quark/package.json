@@ -30,6 +30,7 @@
   "peerDependencies": {},
   "devDependencies": {
     "@excom/heft-rig": "workspace:^",
+    "@excom/nucleus-test": "workspace:^",
     "@excom/provider-fetch": "workspace:^",
     "@excom/provider-storage": "workspace:^"
   },

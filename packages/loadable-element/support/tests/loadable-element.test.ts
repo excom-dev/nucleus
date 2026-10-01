@@ -6,7 +6,7 @@ import {
   fixture,
   it,
   vi,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 const TAG = "loadable-element-test";
 if (!customElements.get(TAG)) {

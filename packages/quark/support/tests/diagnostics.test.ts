@@ -21,7 +21,7 @@ import {
   expect,
   it,
   vi,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import { createSheet, flush, mount, unregisterAll } from "./helpers";
 
 type Spy = ReturnType<typeof vi.spyOn>;

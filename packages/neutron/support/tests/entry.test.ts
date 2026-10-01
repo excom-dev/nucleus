@@ -5,7 +5,7 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import { NUCLEUS_DEVTOOLS_HOOK_KEY } from "@excom/kit-devtools";
 
 describe("Package entry", () => {

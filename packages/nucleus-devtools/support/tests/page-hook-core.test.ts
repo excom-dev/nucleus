@@ -13,7 +13,7 @@ import {
   expect,
   it,
   vi,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 const fakeHeatmap = (): Heatmap & { recorded: Element[]; enabled: boolean[] } => {
   const recorded: Element[] = [];

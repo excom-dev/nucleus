@@ -1,0 +1,53 @@
+<section id="checkout-complete" class="narrow">
+  <link rel="stylesheet" href="/views/checkout/complete.css">
+  <quark-sheet src-url="/views/checkout/complete.quark"></quark-sheet>
+  <provider-fetch api-url="/api/orders/latest" class="abstract">
+    <header class="bar">
+      <strong aria-hidden="true">Order placed</strong>
+    </header>
+
+    <header>
+      <svg aria-hidden="true"><use href="/img/icons.svg#circle-check"/></svg>
+      <p class="eyebrow">Order <span bind-order="id"></span></p>
+      <h1 bind-thanks></h1>
+      <p bind-confirmation></p>
+    </header>
+
+    <section>
+      <h2>What happens next</h2>
+      <ol bind-next>
+        <template>
+          <li>
+            <strong bind-item="label"></strong>
+            <p bind-item="detail"></p>
+          </li>
+        </template>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Payment</h2>
+      <p bind-order="payment.instructions"></p>
+      <dl class="schedule">
+        <dt>Due today</dt><dd bind-bag="dueToday"></dd>
+        <dt>Due when ready</dt><dd bind-bag="dueLater"></dd>
+      </dl>
+      <p role="note">
+        <svg aria-hidden="true"><use href="/img/icons.svg#info"/></svg>
+        This is a demo, so nothing is charged or shipped.
+      </p>
+    </section>
+
+    <footer class="actions">
+      <spa-a role="button" bind-order-link>View order</spa-a>
+      <spa-a route-href="/shop" role="button" class="secondary" transition-types="tab">Keep shopping</spa-a>
+    </footer>
+
+    <section class="error">
+      <svg aria-hidden="true"><use href="/img/icons.svg#receipt"/></svg>
+      <h2>No order to show</h2>
+      <p bind-error></p>
+      <spa-a route-href="/shop" role="button" transition-types="tab">Browse the collection</spa-a>
+    </section>
+  </provider-fetch>
+</section>

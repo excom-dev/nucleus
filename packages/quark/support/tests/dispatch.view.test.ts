@@ -5,7 +5,8 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+  readDemo,
+} from "@excom/nucleus-test";
 import {
   click,
   expectComplexity,
@@ -13,7 +14,6 @@ import {
   installDemoModules,
   measureComplexity,
   mountView,
-  readDemo,
   restoreDemoModules,
 } from "./view-helpers";
 

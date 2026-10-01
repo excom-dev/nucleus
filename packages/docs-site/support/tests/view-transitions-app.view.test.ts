@@ -7,7 +7,8 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+  readFileRelative,
+} from "@excom/nucleus-test";
 import { installViewTransitionStub } from "@excom/quark/support/tests/helpers";
 import {
   bypassSelectorCache,
@@ -16,11 +17,10 @@ import {
   flush,
   measureComplexity,
   mountView,
-  readViewFile,
 } from "@excom/quark/support/tests/view-helpers";
 
-const html = readViewFile(import.meta.url, "../../public/views/view-transitions-app/view-transitions-app.html");
-const quarkSrc = readViewFile(import.meta.url, "../../public/views/view-transitions-app/view-transitions-app.quark");
+const html = readFileRelative(import.meta.url, "../../public/views/view-transitions-app/view-transitions-app.html");
+const quarkSrc = readFileRelative(import.meta.url, "../../public/views/view-transitions-app/view-transitions-app.quark");
 
 /** Past the first render, whose paints never transition. */
 const settle = async () => {

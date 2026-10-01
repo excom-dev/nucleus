@@ -5,7 +5,8 @@
  *   1. `support/custom-elements.json` via `build-cem.mjs` when the package
  *      defines Neutron elements.
  *   2. `support/package-meta.json` for documented packages — the docs-site
- *      bundle (flattened APIs, demos, README HTML, installation, exports).
+ *      bundle (flattened APIs, demos, README HTML ending with the release
+ *      notes from `CHANGELOG.json`, installation, exports).
  *
  * `excom.documented: false` (or no `excom`) skips the full meta, except
  * site packages with `support/docs/*.md` — those emit a slim meta (`docs`,
@@ -27,6 +28,7 @@ import {
 } from "./cem-analyze-css.mjs";
 import { renderMarkdown, renderMarkdownInline } from "./render-markdown.mjs";
 import { titleFromDocHtml, titleCaseKey } from "./build-search-docs.mjs";
+import { readReleaseNotes } from "./release-notes.mjs";
 import { SITE_BASE, SITE_HOME_DOC } from "./site-base.mjs";
 import { umdExternals } from "./vite-config.mjs";
 
@@ -79,6 +81,7 @@ export async function buildPackageMetas(packageRoot = process.cwd()) {
   const rootFiles = await listRootFiles(packageRoot);
   const cssFiles = rootFiles.filter((name) => name.endsWith(".css"));
   const demos = await readDemos(packageRoot);
+  const releases = await readReleaseNotes(packageRoot, pkg.name);
 
   const elementApis = htmlifyApiDescriptions(
     cem
@@ -90,12 +93,14 @@ export async function buildPackageMetas(packageRoot = process.cwd()) {
     shortName,
     package: packageBlock,
     demos,
-    ...(docs.readme !== undefined ? { readme: docs.readme } : {}),
+    ...(docs.readme !== undefined
+      ? { readme: docs.readme + releaseNotesHtml(releases) }
+      : {}),
     ...(Object.keys(docs).length ? { docs } : {}),
     ...(docSections ? { docSections } : {}),
     installation: buildInstallation(pkg, cssFiles, {
       packageRoot,
-      hasUmdEntry: rootFiles.includes(UMD_ENTRY_SOURCE),
+      hasUmdEntry: pkg.excom?.umd !== false && rootFiles.includes(UMD_ENTRY_SOURCE),
     }),
     elementApis,
     exportedFiles: buildExportedFiles(exportsMap),
@@ -192,6 +197,20 @@ async function readDocSections(packageRoot, docs) {
   return out;
 }
 
+const releaseHtml = ({ version, day, notes }) => {
+  const items = notes.map((note) => `<li>${renderMarkdownInline(note)}</li>`);
+  return `<h3>${version}${day && ` <time>${day}</time>`}</h3>\n<ul>\n${items.join("\n")}\n</ul>\n`;
+};
+
+/**
+ * The closing `<details>` of the README: per release an `<h3>` with version
+ * and date, then a `<ul>` of its notes. Empty string without releases.
+ */
+const releaseNotesHtml = (releases) =>
+  releases.length
+    ? `<details class="release-notes">\n<summary>Release notes</summary>\n${releases.map(releaseHtml).join("")}</details>\n`
+    : "";
+
 function resolveMixinCem(packageRoot) {
   return (ref) => {
     const base = path.resolve(packageRoot, "node_modules", ref);
@@ -234,8 +253,8 @@ function htmlifyApiDescriptions(apis) {
 }
 
 /**
- * Root source file `vite-build.mjs` turns into `dist/index.umd.min.js`. Root
- * entries are discovered from the package folder, never from `dist/` — metas
+ * Root source file `vite-build.mjs` turns into `dist/index.umd.min.js`,
+ * unless the package sets `excom.umd: false`. Root entries are discovered from the package folder, never from `dist/` — metas
  * are often generated in dev before anything has been built.
  */
 const UMD_ENTRY_SOURCE = "index.ts";

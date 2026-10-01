@@ -9,14 +9,14 @@ import {
   describe,
   expect,
   it,
+  readFileRelative,
   vi,
   waitForEvent,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import { Quark } from "@excom/quark";
 import {
   bypassSelectorCache,
   flush,
-  readViewFile,
 } from "@excom/quark/support/tests/view-helpers";
 import { renderMarkdown } from "@excom/heft-rig/scripts/render-markdown.mjs";
 import {
@@ -28,11 +28,11 @@ import {
   type PackageMeta,
 } from "../../shell";
 
-const html = readViewFile(
+const html = readFileRelative(
   import.meta.url,
   "../../public/views/package/package.html",
 );
-const quarkSrc = readViewFile(
+const quarkSrc = readFileRelative(
   import.meta.url,
   "../../public/views/package/package.quark",
 );
@@ -49,7 +49,7 @@ const shellStub = {
 
 /** One `## <heading>` section of a site guide, rendered like the site meta. */
 const guideSection = (file: string, heading: string) => {
-  const md = readViewFile(import.meta.url, `../docs/${file}`);
+  const md = readFileRelative(import.meta.url, `../docs/${file}`);
   const section = md
     .split(/\n(?=## )/)
     .find((s) => s.startsWith(`## ${heading}\n`));
@@ -121,6 +121,18 @@ const siteMeta = {
   exportedFiles: {},
 };
 
+/** The closing details `build-package-metas` appends to a README with release notes. */
+const releaseNotes =
+  '<details class="release-notes">\n<summary>Release notes</summary>\n' +
+  "<h3>1.0.0 <time>2026-09-30</time></h3>\n<ul>\n<li>Add <code>x</code></li>\n</ul>\n" +
+  "</details>\n";
+
+const notedMeta: PackageMeta = {
+  ...neutronMeta,
+  shortName: "noted",
+  readme: `${neutronMeta.readme}${releaseNotes}`,
+};
+
 const requested: string[] = [];
 
 const mockFetch = () =>
@@ -129,9 +141,11 @@ const mockFetch = () =>
     requested.push(url);
     const body = url.endsWith("/neutron.json")
       ? neutronMeta
-      : url.endsWith("/docs-site.json")
-        ? siteMeta
-        : null;
+      : url.endsWith("/noted.json")
+        ? notedMeta
+        : url.endsWith("/docs-site.json")
+          ? siteMeta
+          : null;
     return new Response(JSON.stringify(body), {
       status: body ? 200 : 404,
       headers: { "content-type": "application/json" },
@@ -317,6 +331,29 @@ describe("package view", () => {
     expect(requested).toEqual([]);
     expect(page.hasAttribute("is-success")).toBe(false);
     expect(page.querySelector(".md-content")?.innerHTML).toBe("");
+  });
+
+  it("ends the README article with the release notes its meta carries, closed", async () => {
+    const { page } = await mountPage({ packageName: "noted" });
+
+    const notes = page.querySelector<HTMLDetailsElement>(
+      ".md-content > details.release-notes:last-child",
+    )!;
+    expect(notes.open).toBe(false);
+    expect(notes.querySelector("summary")?.textContent).toBe("Release notes");
+    expect(notes.querySelector("h3")?.textContent).toBe("1.0.0 2026-09-30");
+    expect(notes.querySelector("li")?.innerHTML).toBe("Add <code>x</code>");
+    expect(page.querySelectorAll(".release-notes")).toHaveLength(1);
+  });
+
+  it("keeps release notes off the doc pages of that package", async () => {
+    const { page } = await mountPage({
+      packageName: "noted",
+      docName: "props",
+    });
+
+    expect(page.querySelector(".md-content h1")?.textContent).toBe("Props");
+    expect(page.querySelector(".release-notes")).toBeNull();
   });
 
   it("marks guide links the router has a past visit to", async () => {

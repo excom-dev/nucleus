@@ -1,0 +1,28 @@
+<section id="checkout-details">
+  <quark-sheet src-url="/views/checkout/details.quark"></quark-sheet>
+  <h2>Your details</h2>
+  <spa-a route-href="/bag/checkout/delivery" listen-for="super-form-success">
+    <super-form>
+      <form action="/api/checkout" method="patch" novalidate>
+        <fieldset>
+          <legend>Contact</legend>
+          <label>Full name <input name="contact.name" autocomplete="name" required><small></small></label>
+          <label>Email <input type="email" name="contact.email" autocomplete="email" required><small></small></label>
+          <label>Phone <input type="tel" name="contact.phone" autocomplete="tel" required><small></small></label>
+        </fieldset>
+        <fieldset>
+          <legend>Delivery address</legend>
+          <label>Street address <input name="address.line1" autocomplete="shipping address-line1" required><small></small></label>
+          <label>Apartment or suite, optional <input name="address.line2" autocomplete="shipping address-line2"><small></small></label>
+          <label>City <input name="address.city" autocomplete="shipping address-level2" required><small></small></label>
+          <label>State or region <input name="address.region" autocomplete="shipping address-level1" required><small></small></label>
+          <label>Postcode <input name="address.postcode" autocomplete="shipping postal-code" required><small></small></label>
+          <label>Country <input name="address.country" autocomplete="shipping country-name" required><small></small></label>
+        </fieldset>
+        <footer class="actions">
+          <button type="submit">Continue to delivery</button>
+        </footer>
+      </form>
+    </super-form>
+  </spa-a>
+</section>

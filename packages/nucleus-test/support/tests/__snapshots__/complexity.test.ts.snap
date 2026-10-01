@@ -1,0 +1,45 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`trackComplexity > snapshots each test's work > complexity 1`] = `
+{
+  "attributeRuns": 0,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 0,
+  "parentElement": 0,
+  "quarkRuns": 2,
+  "queryScopeCost": 0,
+  "querySelectorAll": 0,
+  "removeAttribute": 0,
+  "ruleRuns": 0,
+  "schedulePaint": 0,
+  "setAttribute": 2,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;
+
+exports[`trackComplexity > starts every test from zero > complexity 1`] = `
+{
+  "attributeRuns": 0,
+  "closest": 0,
+  "getVar": 0,
+  "importNode": 0,
+  "listenerRuns": 0,
+  "matches": 0,
+  "parentElement": 0,
+  "quarkRuns": 0,
+  "queryScopeCost": 0,
+  "querySelectorAll": 0,
+  "removeAttribute": 0,
+  "ruleRuns": 0,
+  "schedulePaint": 0,
+  "setAttribute": 1,
+  "setVar": 0,
+  "textContent": 0,
+  "variableRuns": 0,
+}
+`;

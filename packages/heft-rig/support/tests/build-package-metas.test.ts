@@ -3,7 +3,13 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { buildPackageMetas, rewriteDocLinks } from "../../scripts/build-package-metas.mjs";
 import { SITE_BASE } from "../../scripts/site-base.mjs";
-import { makeTempDir, packageJson, removeDir, writeFiles } from "./docs-pipeline-fixtures";
+import {
+  changelogJson,
+  makeTempDir,
+  packageJson,
+  removeDir,
+  writeFiles,
+} from "./docs-pipeline-fixtures";
 
 const readMeta = (root: string) =>
   JSON.parse(readFileSync(path.join(root, "support/package-meta.json"), "utf8"));
@@ -310,6 +316,22 @@ describe("buildPackageMetas", () => {
     });
   });
 
+  it("carries excom.navGroup in the package block for the catalog to read", async () => {
+    const root = path.join(tmp, "grouped-lib");
+    writeFiles(root, {
+      "package.json": packageJson("@excom/grouped-lib", {
+        excom: { documented: true, navGroup: "libraries", packageType: "library" },
+      }),
+      "index.ts": "export const x = 1;",
+    });
+    await buildPackageMetas(root);
+    expect(readMeta(root).package.excom).toEqual({
+      documented: true,
+      navGroup: "libraries",
+      packageType: "library",
+    });
+  });
+
   it("gives a library the prerequisite UMDs its own dependencies reach", async () => {
     const root = path.join(tmp, "tiny-lib");
     writeFiles(root, {
@@ -395,6 +417,35 @@ describe("buildPackageMetas", () => {
     );
   });
 
+  it("lists no UMD script for a package that sets excom.umd to false", async () => {
+    const withCss = path.join(tmp, "no-umd-css");
+    writeFiles(withCss, {
+      "package.json": packageJson("@excom/no-umd-css", {
+        excom: { documented: true, packageType: "library", umd: false },
+        dependencies: { "@excom/neutron": "workspace:^" },
+      }),
+      "index.ts": "export const x = 1;",
+      "basic.css": ".b {}",
+      "node_modules/@excom/neutron/package.json": packageJson("@excom/neutron", {
+        version: "2.0.0",
+      }),
+    });
+    await buildPackageMetas(withCss);
+    expect(readMeta(withCss).installation.cdn).toBe(
+      '<link rel="stylesheet" href="https://unpkg.com/@excom/no-umd-css@1.2.3/dist/basic.css">',
+    );
+
+    const scriptOnly = path.join(tmp, "no-umd");
+    writeFiles(scriptOnly, {
+      "package.json": packageJson("@excom/no-umd", {
+        excom: { documented: true, packageType: "library", umd: false },
+      }),
+      "index.ts": "export const x = 1;",
+    });
+    await buildPackageMetas(scriptOnly);
+    expect(readMeta(scriptOnly).installation.cdn).toBeUndefined();
+  });
+
   it("leaves an uninstalled prerequisite unpinned and skips CDN for private packages", async () => {
     const root = path.join(tmp, "uninstalled");
     writeFiles(root, {
@@ -461,6 +512,103 @@ describe("buildPackageMetas", () => {
     ]);
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('"missing"'));
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('"gone"'));
+  });
+
+  it("ends the README with the release notes as a closed details, not the doc pages", async () => {
+    const name = "@excom/noted-lib";
+    const root = path.join(tmp, "noted-lib");
+    writeFiles(root, {
+      "package.json": packageJson(name, {
+        excom: { documented: true, packageType: "library" },
+      }),
+      "index.ts": "export const x = 1;",
+      "support/docs/README.md": "# noted-lib\n\nIntro.",
+      "support/docs/PROPS.md": "# Props",
+      "CHANGELOG.json": changelogJson(name, [
+        {
+          version: "0.2.0",
+          date: "Thu, 01 Oct 2026 23:59:59 GMT",
+          comments: {
+            minor: ["Add `newApi()`"],
+            dependency: ["Bump `@excom/other` to 9.9.9"],
+          },
+        },
+        { version: "0.1.0", comments: { patch: ["Fix a crash"] } },
+      ]),
+    });
+    await buildPackageMetas(root);
+    const meta = readMeta(root);
+
+    expect(meta.readme).toBe(
+      '<h1 id="md-noted-lib">noted-lib</h1>\n<p>Intro.</p>\n' +
+        '<details class="release-notes">\n' +
+        "<summary>Release notes</summary>\n" +
+        "<h3>0.2.0 <time>2026-10-01</time></h3>\n<ul>\n<li>Add <code>newApi()</code></li>\n</ul>\n" +
+        "<h3>0.1.0 <time>2026-09-30</time></h3>\n<ul>\n<li>Fix a crash</li>\n</ul>\n" +
+        "</details>\n",
+    );
+    expect(meta.docs.readme).not.toContain("release-notes");
+    expect(meta.docs.props).toBe('<h1 id="md-props">Props</h1>\n');
+    expect(meta).not.toHaveProperty("changelog");
+  });
+
+  it("adds no details without CHANGELOG.json or when nothing survives the filter", async () => {
+    const readme = '<h1 id="md-lib">lib</h1>\n';
+    const none = path.join(tmp, "no-notes");
+    writeFiles(none, {
+      "package.json": packageJson("@excom/no-notes", {
+        excom: { documented: true, packageType: "library" },
+      }),
+      "index.ts": "export const x = 1;",
+      "support/docs/README.md": "# lib",
+    });
+    await buildPackageMetas(none);
+    expect(readMeta(none).readme).toBe(readme);
+
+    const noise = path.join(tmp, "noise-only");
+    writeFiles(noise, {
+      "package.json": packageJson("@excom/noise-only", {
+        excom: { documented: true, packageType: "library" },
+      }),
+      "index.ts": "export const x = 1;",
+      "support/docs/README.md": "# lib",
+      "CHANGELOG.json": changelogJson("@excom/noise-only", [
+        { version: "0.1.1", comments: { dependency: ["Bump `@excom/other`"], none: ["Tidy"] } },
+        { version: "0.1.0", comments: {} },
+      ]),
+    });
+    await buildPackageMetas(noise);
+    expect(readMeta(noise).readme).toBe(readme);
+  });
+
+  it("keeps release notes out of the slim meta of a site package", async () => {
+    const root = path.join(tmp, "site-with-notes");
+    writeFiles(root, {
+      "package.json": packageJson("@excom/site-with-notes", {
+        excom: { documented: false, packageType: "site" },
+      }),
+      "support/docs/README.md": "# Site",
+      "CHANGELOG.json": changelogJson("@excom/site-with-notes", [
+        { version: "0.1.0", comments: { minor: ["Add a page"] } },
+      ]),
+    });
+    await buildPackageMetas(root);
+    expect(JSON.stringify(readMeta(root))).not.toContain("release-notes");
+  });
+
+  it("names the package and CHANGELOG.json when the file is malformed", async () => {
+    const name = "@excom/broken-notes";
+    const root = path.join(tmp, "broken-notes");
+    writeFiles(root, {
+      "package.json": packageJson(name, {
+        excom: { documented: true, packageType: "library" },
+      }),
+      "index.ts": "export const x = 1;",
+      "CHANGELOG.json": `{ "name": "${name}", "entries": [{ "version": "0.1.0"`,
+    });
+    await expect(buildPackageMetas(root)).rejects.toThrow(
+      /@excom\/broken-notes: invalid CHANGELOG\.json/,
+    );
   });
 
   it("rewriteDocLinks routes site-package links under SITE_BASE on href and route-href, leaves other hrefs alone", () => {

@@ -8,7 +8,7 @@ import {
   it,
   waitForEvent,
   wait,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import {
   startRegistration,
   startAuthentication,
@@ -33,6 +33,38 @@ function mockOptionsEndpoint(options = { challenge: "abc123" }) {
       }),
     ),
   );
+}
+
+/** Submits a fixture and settles on its `web-authn-error`; mocks are set by the caller. */
+async function submitFailing(startMethod = "register") {
+  const el = fixture<HTMLWebAuthnElement>(
+    `<web-authn options-url="/api/options" verify-url="/api/verify" start-method="${startMethod}">
+      <form><input name="username" value="alice"></form>
+    </web-authn>`,
+  );
+  const errorSpy = vi.fn();
+  el.addEventListener("web-authn-error", errorSpy);
+
+  await waitForEvent(el, "web-authn-error", () => {
+    el.querySelector("form")!.dispatchEvent(
+      new Event("submit", { cancelable: true, bubbles: true }),
+    );
+  });
+  return { el, errorSpy };
+}
+
+/** A failed ceremony/options request ends where a failed verify does. */
+function expectFailedState(
+  el: HTMLWebAuthnElement,
+  errorSpy: any,
+  message: string,
+) {
+  expect(el.hasAttribute("is-loading")).toBe(false);
+  expect(el.hasAttribute("is-error")).toBe(true);
+  expect(el.hasAttribute("is-success")).toBe(false);
+  expect(el.provision).toEqual({ message });
+  expect(errorSpy).toHaveBeenCalledTimes(1);
+  expect(errorSpy.mock.calls[0][0].detail).toBe(el.provision);
 }
 
 describe("web-authn", () => {
@@ -149,38 +181,38 @@ describe("web-authn", () => {
       ),
     );
 
-    const el = fixture<HTMLWebAuthnElement>(
-      `<web-authn options-url="/api/options" verify-url="/api/verify" start-method="register">
-        <form><input name="username" value="alice"></form>
-      </web-authn>`,
+    const { el, errorSpy } = await submitFailing();
+
+    expectFailedState(
+      el,
+      errorSpy,
+      "Failed to fetch options: Internal Server Error",
+    );
+  });
+
+  it("emits error when options fetch throws", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(
+      new TypeError("Failed to fetch"),
     );
 
-    const errorPromise = waitForEvent(el, "web-authn-error");
+    const { el, errorSpy } = await submitFailing();
 
-    el.querySelector("form")!.dispatchEvent(
-      new Event("submit", { cancelable: true, bubbles: true }),
-    );
-
-    await errorPromise;
+    expectFailedState(el, errorSpy, "Failed to fetch");
+    expect(mockStartRegistration).not.toHaveBeenCalled();
   });
 
   it("emits error when startMethod is invalid", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     mockOptionsEndpoint();
 
-    const el = fixture<HTMLWebAuthnElement>(
-      `<web-authn options-url="/api/options" verify-url="/api/verify" start-method="invalid">
-        <form><input name="username" value="alice"></form>
-      </web-authn>`,
+    const { el, errorSpy } = await submitFailing("invalid");
+
+    expectFailedState(
+      el,
+      errorSpy,
+      "Invalid startMethod: invalid. Must be 'register' or 'authenticate'",
     );
-
-    const errorPromise = waitForEvent(el, "web-authn-error");
-
-    el.querySelector("form")!.dispatchEvent(
-      new Event("submit", { cancelable: true, bubbles: true }),
-    );
-
-    await errorPromise;
   });
 
   it("emits error when startRegistration rejects", async () => {
@@ -188,19 +220,9 @@ describe("web-authn", () => {
     mockOptionsEndpoint();
     mockStartRegistration.mockRejectedValue(new Error("User canceled"));
 
-    const el = fixture<HTMLWebAuthnElement>(
-      `<web-authn options-url="/api/options" verify-url="/api/verify" start-method="register">
-        <form><input name="username" value="alice"></form>
-      </web-authn>`,
-    );
+    const { el, errorSpy } = await submitFailing();
 
-    const errorPromise = waitForEvent(el, "web-authn-error");
-
-    el.querySelector("form")!.dispatchEvent(
-      new Event("submit", { cancelable: true, bubbles: true }),
-    );
-
-    await errorPromise;
+    expectFailedState(el, errorSpy, "User canceled");
   });
 
   it("sends form data as JSON in the options fetch body", async () => {
@@ -469,12 +491,16 @@ describe("web-authn", () => {
         </web-authn>`,
       );
 
+      const errorSpy = vi.fn();
+      el.addEventListener("web-authn-error", errorSpy);
+
       await waitForEvent(el, "web-authn-error", () => {
         el.querySelector("form")!.dispatchEvent(
           new Event("submit", { cancelable: true, bubbles: true }),
         );
       });
 
+      expect(errorSpy).toHaveBeenCalledTimes(1);
       expect(el.hasAttribute("is-error")).toBe(true);
       expect(el.hasAttribute("is-success")).toBe(false);
       expect(el.hasAttribute("is-loading")).toBe(false);
@@ -493,21 +519,12 @@ describe("web-authn", () => {
       mockOptionsEndpoint();
       mockStartRegistration.mockRejectedValue(new Error("User canceled"));
 
-      const el = fixture<HTMLWebAuthnElement>(
-        `<web-authn options-url="/api/options" verify-url="/api/verify" start-method="register">
-          <form><input name="username" value="alice"></form>
-        </web-authn>`,
-      );
-      const spy = vi.fn();
-      el.addEventListener("web-authn-error", spy);
+      const { el, errorSpy } = await submitFailing();
 
-      await waitForEvent(el, "web-authn-error", () => {
-        el.querySelector("form")!.dispatchEvent(
-          new Event("submit", { cancelable: true, bubbles: true }),
-        );
+      expect(errorSpy.mock.calls[0][0].detail).toEqual({
+        message: "User canceled",
       });
-
-      expect(spy.mock.calls[0][0].detail).toEqual({ message: "User canceled" });
+      expectFailedState(el, errorSpy, "User canceled");
     });
 
     it("reports a generic message when the ceremony rejects with a non-Error", async () => {
@@ -515,24 +532,12 @@ describe("web-authn", () => {
       mockOptionsEndpoint();
       mockStartAuthentication.mockRejectedValue({ name: "NotAllowedError" });
 
-      const el = fixture<HTMLWebAuthnElement>(
-        `<web-authn options-url="/api/options" verify-url="/api/verify" start-method="authenticate">
-          <form><input name="username" value="alice"></form>
-        </web-authn>`,
-      );
-      const spy = vi.fn();
-      el.addEventListener("web-authn-error", spy);
+      const { el, errorSpy } = await submitFailing("authenticate");
 
-      await waitForEvent(el, "web-authn-error", () => {
-        el.querySelector("form")!.dispatchEvent(
-          new Event("submit", { cancelable: true, bubbles: true }),
-        );
-      });
-
-      expect(spy.mock.calls[0][0].detail).toEqual({
+      expect(errorSpy.mock.calls[0][0].detail).toEqual({
         message: "WebAuthn operation failed",
       });
-      expect(el.hasAttribute("is-success")).toBe(false);
+      expectFailedState(el, errorSpy, "WebAuthn operation failed");
     });
 
     it("reports the status text when the options fetch is not ok", async () => {
@@ -543,24 +548,34 @@ describe("web-authn", () => {
         ),
       );
 
-      const el = fixture<HTMLWebAuthnElement>(
-        `<web-authn options-url="/api/options" verify-url="/api/verify" start-method="register">
-          <form><input name="username" value="alice"></form>
-        </web-authn>`,
-      );
-      const spy = vi.fn();
-      el.addEventListener("web-authn-error", spy);
+      const { el, errorSpy } = await submitFailing();
 
-      await waitForEvent(el, "web-authn-error", () => {
-        el.querySelector("form")!.dispatchEvent(
-          new Event("submit", { cancelable: true, bubbles: true }),
-        );
-      });
-
-      expect(spy.mock.calls[0][0].detail.message).toBe(
+      expect(errorSpy.mock.calls[0][0].detail.message).toBe(
         "Failed to fetch options: Forbidden",
       );
+      expectFailedState(el, errorSpy, "Failed to fetch options: Forbidden");
       expect(mockStartRegistration).not.toHaveBeenCalled();
+    });
+
+    it("clears is-error when a retry starts", async () => {
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      mockOptionsEndpoint();
+      mockStartRegistration
+        .mockRejectedValueOnce(new Error("User canceled"))
+        .mockResolvedValue({ id: "cred-1" });
+
+      const { el } = await submitFailing();
+      expect(el.hasAttribute("is-error")).toBe(true);
+
+      const succeeded = waitForEvent(el, "web-authn-success");
+      invokeCommand(el, "--submit");
+      await Promise.resolve();
+      expect(el.hasAttribute("is-loading")).toBe(true);
+      expect(el.hasAttribute("is-error")).toBe(false);
+
+      await succeeded;
+      expect(el.hasAttribute("is-success")).toBe(true);
+      expect(el.hasAttribute("is-error")).toBe(false);
     });
   });
 });

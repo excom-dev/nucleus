@@ -5,8 +5,9 @@ import {
   describe,
   expect,
   it,
+  readDemo,
   waitForEvent,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import { DEMO_FLAGS } from "../../../docs-site/public/demo-utils";
 import {
   click,
@@ -15,7 +16,6 @@ import {
   installDemoModules,
   measureComplexity,
   mountView,
-  readDemo,
   restoreDemoModules,
 } from "./view-helpers";
 

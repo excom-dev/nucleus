@@ -1,0 +1,2659 @@
+{
+  "collections": [
+    {
+      "slug": "seating",
+      "name": "Seating",
+      "blurb": "Lounge chairs, sofas and dining chairs made to order, beside restored period seating.",
+      "image": "/img/products/lamorna-swivel-lounge-chair/main.webp"
+    },
+    {
+      "slug": "tables",
+      "name": "Tables",
+      "blurb": "Coffee, writing and dining tables in stone, oak and old elm.",
+      "image": "/img/products/eddystone-coffee-table/main.webp"
+    },
+    {
+      "slug": "storage",
+      "name": "Storage",
+      "blurb": "Sideboards, chests and cabinets, new and old.",
+      "image": "/img/products/fretwork-bookcase-cabinet/main.webp"
+    },
+    {
+      "slug": "lighting",
+      "name": "Lighting",
+      "blurb": "Chandeliers, pendants and wall lights, rewired and ready to hang.",
+      "image": "/img/products/two-tier-brass-chandelier/main.webp"
+    },
+    {
+      "slug": "objects",
+      "name": "Objects",
+      "blurb": "Vases, bronzes and marble for the table and the mantel.",
+      "image": "/img/products/grand-tour-marble-bust/main.webp"
+    }
+  ],
+  "products": [
+    {
+      "sku": "WF-1001",
+      "slug": "lamorna-swivel-lounge-chair",
+      "name": "Lamorna Swivel Lounge Chair",
+      "maker": "Oficina Lagoa",
+      "origin": "Made to order in Portugal",
+      "category": "seating",
+      "era": "contemporary",
+      "price": 6400,
+      "materials": [
+        "leather",
+        "walnut",
+        "steel"
+      ],
+      "blurb": "A moulded walnut shell with deep leather cushions, on a swivel base.",
+      "description": "A lounge chair built around a single moulded shell of walnut veneer, lined with loose cushions in full-grain leather that soften and darken with use. The four-star base turns through a full circle on a sealed bearing.",
+      "details": [
+        "Moulded walnut veneer shell",
+        "Full-grain aniline leather cushions, hand-stitched",
+        "Powder-coated steel four-star swivel base",
+        "Seat height 42 cm",
+        "Cushions detach for re-covering"
+      ],
+      "dimensions": {
+        "width": 86,
+        "depth": 101,
+        "height": 99,
+        "weight": 32
+      },
+      "image": "/img/products/lamorna-swivel-lounge-chair/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/lamorna-swivel-lounge-chair/main.webp",
+          "alt": "Swivel lounge chair with a moulded walnut shell, brown leather cushions and a four-star steel base"
+        },
+        {
+          "src": "/img/products/lamorna-swivel-lounge-chair/front.webp",
+          "alt": "Lamorna Swivel Lounge Chair from the front"
+        },
+        {
+          "src": "/img/products/lamorna-swivel-lounge-chair/side.webp",
+          "alt": "Lamorna Swivel Lounge Chair in profile"
+        },
+        {
+          "src": "/img/products/lamorna-swivel-lounge-chair/top.webp",
+          "alt": "Lamorna Swivel Lounge Chair from above"
+        }
+      ],
+      "model": "/models/lamorna-swivel-lounge-chair.glb",
+      "finishes": [
+        {
+          "id": "cognac-walnut",
+          "name": "Cognac leather, walnut",
+          "swatch": "#8a5a3b",
+          "leadWeeks": 8,
+          "priceDelta": 0
+        },
+        {
+          "id": "black-walnut",
+          "name": "Black leather, walnut",
+          "swatch": "#2b2522",
+          "leadWeeks": 8,
+          "priceDelta": 0
+        },
+        {
+          "id": "tan-oak",
+          "name": "Tan leather, oak",
+          "swatch": "#b0814f",
+          "leadWeeks": 10,
+          "priceDelta": 250
+        }
+      ],
+      "delivery": "white-glove",
+      "isFeatured": true,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1002",
+      "slug": "mylor-armchair",
+      "name": "Mylor Armchair",
+      "maker": "Vester & Holm",
+      "origin": "Made to order in Denmark",
+      "category": "seating",
+      "era": "contemporary",
+      "price": 3900,
+      "materials": [
+        "oak",
+        "leather"
+      ],
+      "blurb": "A solid oak frame with loose leather cushions, sized for reading.",
+      "description": "A low armchair with a solid oak frame, joined by hand and finished in hard wax oil. The seat and back cushions are loose, filled with feather and foam, and covered in thick semi-aniline leather.",
+      "details": [
+        "Solid oak frame with mortise-and-tenon joints",
+        "Semi-aniline leather cushions",
+        "Feather and foam fill",
+        "Seat height 40 cm",
+        "Hard wax oil finish"
+      ],
+      "dimensions": {
+        "width": 72,
+        "depth": 87,
+        "height": 90,
+        "weight": 18
+      },
+      "image": "/img/products/mylor-armchair/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/mylor-armchair/main.webp",
+          "alt": "Oak-framed armchair with loose black leather seat and back cushions"
+        },
+        {
+          "src": "/img/products/mylor-armchair/front.webp",
+          "alt": "Mylor Armchair from the front"
+        },
+        {
+          "src": "/img/products/mylor-armchair/side.webp",
+          "alt": "Mylor Armchair in profile"
+        },
+        {
+          "src": "/img/products/mylor-armchair/top.webp",
+          "alt": "Mylor Armchair from above"
+        }
+      ],
+      "model": null,
+      "finishes": [
+        {
+          "id": "oak-black",
+          "name": "Oiled oak, black leather",
+          "swatch": "#1f1c1a",
+          "leadWeeks": 6,
+          "priceDelta": 0
+        },
+        {
+          "id": "oak-cognac",
+          "name": "Oiled oak, cognac leather",
+          "swatch": "#8a5a3b",
+          "leadWeeks": 6,
+          "priceDelta": 0
+        },
+        {
+          "id": "walnut-black",
+          "name": "Walnut, black leather",
+          "swatch": "#4a3426",
+          "leadWeeks": 8,
+          "priceDelta": 320
+        }
+      ],
+      "delivery": "white-glove",
+      "isFeatured": false,
+      "isNew": true
+    },
+    {
+      "sku": "WF-1003",
+      "slug": "tresco-sofa",
+      "name": "Tresco Sofa",
+      "maker": "Treloar & Keast",
+      "origin": "Made to order in England",
+      "category": "seating",
+      "era": "contemporary",
+      "price": 9800,
+      "materials": [
+        "leather",
+        "walnut"
+      ],
+      "blurb": "A deep-buttoned leather sofa on slim walnut legs.",
+      "description": "A three-seat sofa whose deep-buttoned back rolls outward into curved arms, set on tapered walnut legs. Each button is hand-tied through layers of horsehair and cotton, so the back holds its shape for decades.",
+      "details": [
+        "Kiln-dried beech frame, glued and dowelled",
+        "Hand-tied deep buttoning",
+        "Full-grain leather with a waxed finish",
+        "Tapered walnut legs",
+        "Seat height 42 cm"
+      ],
+      "dimensions": {
+        "width": 181,
+        "depth": 82,
+        "height": 71,
+        "weight": 58
+      },
+      "image": "/img/products/tresco-sofa/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/tresco-sofa/main.webp",
+          "alt": "Three-seat sofa in deep-buttoned black leather on slim walnut legs"
+        },
+        {
+          "src": "/img/products/tresco-sofa/front.webp",
+          "alt": "Tresco Sofa from the front"
+        },
+        {
+          "src": "/img/products/tresco-sofa/side.webp",
+          "alt": "Tresco Sofa in profile"
+        },
+        {
+          "src": "/img/products/tresco-sofa/top.webp",
+          "alt": "Tresco Sofa from above"
+        }
+      ],
+      "model": "/models/tresco-sofa.glb",
+      "finishes": [
+        {
+          "id": "black-leather",
+          "name": "Black leather",
+          "swatch": "#1d1b1a",
+          "leadWeeks": 10,
+          "priceDelta": 0
+        },
+        {
+          "id": "oxblood-leather",
+          "name": "Oxblood leather",
+          "swatch": "#5a1f1c",
+          "leadWeeks": 10,
+          "priceDelta": 450
+        },
+        {
+          "id": "moss-velvet",
+          "name": "Moss velvet",
+          "swatch": "#5b6147",
+          "leadWeeks": 12,
+          "priceDelta": 300
+        }
+      ],
+      "delivery": "white-glove",
+      "isFeatured": true,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1004",
+      "slug": "zennor-dining-chair",
+      "name": "Zennor Dining Chair",
+      "maker": "Treloar & Keast",
+      "origin": "Made to order in England",
+      "category": "seating",
+      "era": "contemporary",
+      "price": 1150,
+      "materials": [
+        "leather",
+        "oak"
+      ],
+      "blurb": "A tall-backed dining chair in buttoned leather.",
+      "description": "A dining chair with a high, gently scrolled back finished in diamond buttoning. The ebonised oak legs are tenoned into a hardwood seat frame, and the seat is sprung for long dinners.",
+      "details": [
+        "Diamond-buttoned back",
+        "Full-grain leather upholstery",
+        "Ebonised solid oak legs",
+        "Seat height 48 cm",
+        "Sold individually"
+      ],
+      "dimensions": {
+        "width": 43,
+        "depth": 58,
+        "height": 97,
+        "weight": 8
+      },
+      "image": "/img/products/zennor-dining-chair/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/zennor-dining-chair/main.webp",
+          "alt": "Tall-backed dining chair in diamond-buttoned brown leather with ebonised legs"
+        },
+        {
+          "src": "/img/products/zennor-dining-chair/front.webp",
+          "alt": "Zennor Dining Chair from the front"
+        },
+        {
+          "src": "/img/products/zennor-dining-chair/side.webp",
+          "alt": "Zennor Dining Chair in profile"
+        },
+        {
+          "src": "/img/products/zennor-dining-chair/top.webp",
+          "alt": "Zennor Dining Chair from above"
+        }
+      ],
+      "model": null,
+      "finishes": [
+        {
+          "id": "espresso",
+          "name": "Espresso leather",
+          "swatch": "#3b2d27",
+          "leadWeeks": 6,
+          "priceDelta": 0
+        },
+        {
+          "id": "stone",
+          "name": "Stone leather",
+          "swatch": "#b9ab98",
+          "leadWeeks": 6,
+          "priceDelta": 0
+        },
+        {
+          "id": "ink",
+          "name": "Ink leather",
+          "swatch": "#23262e",
+          "leadWeeks": 8,
+          "priceDelta": 60
+        }
+      ],
+      "delivery": "parcel",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1005",
+      "slug": "porthallow-ottoman",
+      "name": "Porthallow Ottoman",
+      "maker": "Oficina Lagoa",
+      "origin": "Made to order in Portugal",
+      "category": "seating",
+      "era": "contemporary",
+      "price": 2400,
+      "materials": [
+        "leather"
+      ],
+      "blurb": "A stacked leather ottoman that doubles as a low table.",
+      "description": "Three stitched tiers of leather over a hardwood frame, set on short ebonised feet. The top is firm enough to take a tray.",
+      "details": [
+        "Pebble-grain leather",
+        "Hardwood frame with high-density foam",
+        "Ebonised beech feet",
+        "Contrast top-stitching",
+        "Wipe clean with a dry cloth"
+      ],
+      "dimensions": {
+        "width": 71,
+        "depth": 50,
+        "height": 50,
+        "weight": 14
+      },
+      "image": "/img/products/porthallow-ottoman/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/porthallow-ottoman/main.webp",
+          "alt": "Stacked dark brown leather ottoman on short black feet"
+        },
+        {
+          "src": "/img/products/porthallow-ottoman/front.webp",
+          "alt": "Porthallow Ottoman from the front"
+        },
+        {
+          "src": "/img/products/porthallow-ottoman/side.webp",
+          "alt": "Porthallow Ottoman in profile"
+        },
+        {
+          "src": "/img/products/porthallow-ottoman/top.webp",
+          "alt": "Porthallow Ottoman from above"
+        }
+      ],
+      "model": null,
+      "finishes": [
+        {
+          "id": "espresso",
+          "name": "Espresso leather",
+          "swatch": "#3a2e28",
+          "leadWeeks": 5,
+          "priceDelta": 0
+        },
+        {
+          "id": "cognac",
+          "name": "Cognac leather",
+          "swatch": "#8a5a3b",
+          "leadWeeks": 5,
+          "priceDelta": 0
+        }
+      ],
+      "delivery": "parcel",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1006",
+      "slug": "ebonised-bergere",
+      "name": "Ebonised Bergère",
+      "maker": "Atelier Vautrin",
+      "origin": "France, c. 1880",
+      "category": "seating",
+      "era": "antique",
+      "price": 5800,
+      "materials": [
+        "beech",
+        "linen"
+      ],
+      "blurb": "A carved rococo-revival bergère, newly upholstered in dove linen.",
+      "description": "A deep bergère with a carved and ebonised beech frame, cabriole legs and a carved cresting to the back. We re-upholstered it the traditional way, in horsehair and a dove-grey linen, and kept the original frame finish.",
+      "details": [
+        "Carved and ebonised beech frame",
+        "Re-upholstered in traditional horsehair",
+        "Dove-grey linen cover",
+        "Seat height 44 cm",
+        "Light wear to the finish, consistent with age"
+      ],
+      "dimensions": {
+        "width": 76,
+        "depth": 69,
+        "height": 96,
+        "weight": 17
+      },
+      "image": "/img/products/ebonised-bergere/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/ebonised-bergere/main.webp",
+          "alt": "Carved ebonised bergère upholstered in pale grey linen"
+        },
+        {
+          "src": "/img/products/ebonised-bergere/front.webp",
+          "alt": "Ebonised Bergère from the front"
+        },
+        {
+          "src": "/img/products/ebonised-bergere/side.webp",
+          "alt": "Ebonised Bergère in profile"
+        },
+        {
+          "src": "/img/products/ebonised-bergere/top.webp",
+          "alt": "Ebonised Bergère from above"
+        }
+      ],
+      "model": "/models/ebonised-bergere.glb",
+      "finishes": [],
+      "delivery": "white-glove",
+      "isFeatured": false,
+      "isNew": true
+    },
+    {
+      "sku": "WF-1007",
+      "slug": "moss-velvet-fauteuil",
+      "name": "Moss Velvet Fauteuil",
+      "maker": "Maison Rouvière",
+      "origin": "France, c. 1870",
+      "category": "seating",
+      "era": "antique",
+      "price": 4600,
+      "materials": [
+        "walnut",
+        "velvet"
+      ],
+      "blurb": "An open-armed walnut fauteuil in moss-green velvet.",
+      "description": "A walnut fauteuil with a carved cresting rail, padded arm rests and scrolled feet. The frame was cleaned and waxed in our workshop and the seat and back re-covered in a cotton velvet.",
+      "details": [
+        "Carved solid walnut frame",
+        "Cotton velvet in moss green",
+        "Padded arm rests",
+        "Seat height 45 cm",
+        "Restored in our workshop"
+      ],
+      "dimensions": {
+        "width": 64,
+        "depth": 63,
+        "height": 101,
+        "weight": 12
+      },
+      "image": "/img/products/moss-velvet-fauteuil/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/moss-velvet-fauteuil/main.webp",
+          "alt": "Carved walnut open armchair upholstered in moss-green velvet"
+        },
+        {
+          "src": "/img/products/moss-velvet-fauteuil/front.webp",
+          "alt": "Moss Velvet Fauteuil from the front"
+        },
+        {
+          "src": "/img/products/moss-velvet-fauteuil/side.webp",
+          "alt": "Moss Velvet Fauteuil in profile"
+        },
+        {
+          "src": "/img/products/moss-velvet-fauteuil/top.webp",
+          "alt": "Moss Velvet Fauteuil from above"
+        }
+      ],
+      "model": null,
+      "finishes": [],
+      "delivery": "white-glove",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1008",
+      "slug": "carved-walnut-canape",
+      "name": "Carved Walnut Canapé",
+      "maker": "Atelier Vautrin",
+      "origin": "France, c. 1880",
+      "category": "seating",
+      "era": "antique",
+      "price": 8900,
+      "materials": [
+        "walnut",
+        "linen"
+      ],
+      "blurb": "A serpentine-backed canapé in oyster linen.",
+      "description": "A two-seat canapé with a serpentine back rail, a carved apron and cabriole legs. The walnut frame is original; the cushions and cover are new, in a heavy oyster linen.",
+      "details": [
+        "Carved solid walnut frame",
+        "New feather-wrapped seat cushions",
+        "Oyster linen upholstery",
+        "Seat height 44 cm",
+        "An old, sound repair to one rear leg"
+      ],
+      "dimensions": {
+        "width": 157,
+        "depth": 66,
+        "height": 80,
+        "weight": 38
+      },
+      "image": "/img/products/carved-walnut-canape/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/carved-walnut-canape/main.webp",
+          "alt": "Two-seat canapé with a serpentine carved walnut frame and oyster linen cushions"
+        },
+        {
+          "src": "/img/products/carved-walnut-canape/front.webp",
+          "alt": "Carved Walnut Canapé from the front"
+        },
+        {
+          "src": "/img/products/carved-walnut-canape/side.webp",
+          "alt": "Carved Walnut Canapé in profile"
+        },
+        {
+          "src": "/img/products/carved-walnut-canape/top.webp",
+          "alt": "Carved Walnut Canapé from above"
+        }
+      ],
+      "model": null,
+      "finishes": [],
+      "delivery": "white-glove",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1009",
+      "slug": "yoke-back-armchair",
+      "name": "Yoke-Back Armchair",
+      "maker": "Tingsong Hall",
+      "origin": "China, c. 1850",
+      "category": "seating",
+      "era": "antique",
+      "price": 7200,
+      "materials": [
+        "elm"
+      ],
+      "blurb": "A tall yoke-back armchair with a carved splat.",
+      "description": "A formal armchair whose yoke-shaped crest rail sweeps past the back posts, over a single curved splat carved with a medallion. It is joined with mortise and tenon throughout, with a footrest stretcher at the front.",
+      "details": [
+        "Solid elm with a lacquered finish",
+        "Carved medallion to the back splat",
+        "Mortise-and-tenon joinery throughout",
+        "Framed panel seat",
+        "Seat height 50 cm"
+      ],
+      "dimensions": {
+        "width": 63,
+        "depth": 59,
+        "height": 118,
+        "weight": 11
+      },
+      "image": "/img/products/yoke-back-armchair/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/yoke-back-armchair/main.webp",
+          "alt": "Tall Chinese elm armchair with a yoke-shaped crest rail and carved back splat"
+        },
+        {
+          "src": "/img/products/yoke-back-armchair/front.webp",
+          "alt": "Yoke-Back Armchair from the front"
+        },
+        {
+          "src": "/img/products/yoke-back-armchair/side.webp",
+          "alt": "Yoke-Back Armchair in profile"
+        },
+        {
+          "src": "/img/products/yoke-back-armchair/top.webp",
+          "alt": "Yoke-Back Armchair from above"
+        }
+      ],
+      "model": "/models/yoke-back-armchair.glb",
+      "finishes": [],
+      "delivery": "white-glove",
+      "isFeatured": true,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1010",
+      "slug": "luohan-daybed",
+      "name": "Luohan Daybed",
+      "maker": "Jinxi Workshop",
+      "origin": "China, c. 1880",
+      "category": "seating",
+      "era": "antique",
+      "price": 16500,
+      "materials": [
+        "elm",
+        "rattan"
+      ],
+      "blurb": "A low elmwood daybed with a woven seat and a three-sided rail.",
+      "description": "A daybed of the kind once used for receiving guests, with a low rail on three sides and a woven seat set into the frame. It stands on short legs with scrolled feet, joined by a plain apron.",
+      "details": [
+        "Solid elm frame",
+        "Woven rattan seat",
+        "Three-sided rail",
+        "Seat height 46 cm",
+        "Supplied with a made-to-measure linen mattress"
+      ],
+      "dimensions": {
+        "width": 213,
+        "depth": 90,
+        "height": 80,
+        "weight": 64
+      },
+      "image": "/img/products/luohan-daybed/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/luohan-daybed/main.webp",
+          "alt": "Low Chinese elm daybed with a three-sided rail and woven seat"
+        },
+        {
+          "src": "/img/products/luohan-daybed/front.webp",
+          "alt": "Luohan Daybed from the front"
+        },
+        {
+          "src": "/img/products/luohan-daybed/side.webp",
+          "alt": "Luohan Daybed in profile"
+        },
+        {
+          "src": "/img/products/luohan-daybed/top.webp",
+          "alt": "Luohan Daybed from above"
+        }
+      ],
+      "model": null,
+      "finishes": [],
+      "delivery": "white-glove",
+      "isFeatured": true,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1011",
+      "slug": "square-elmwood-stool",
+      "name": "Square Elmwood Stool",
+      "maker": "Jinxi Workshop",
+      "origin": "China, c. 1880",
+      "category": "seating",
+      "era": "antique",
+      "price": 1850,
+      "materials": [
+        "elm"
+      ],
+      "blurb": "A square stool with round legs and humpbacked stretchers.",
+      "description": "A square stool with a mitred panel top, rounded legs and humpbacked stretchers with short pillar struts beneath the apron. Sturdy enough to serve as a side table.",
+      "details": [
+        "Solid elm",
+        "Mitred frame with a floating panel top",
+        "Humpbacked stretchers with pillar struts",
+        "Waxed finish",
+        "Light wear to the top, consistent with age"
+      ],
+      "dimensions": {
+        "width": 49,
+        "depth": 41,
+        "height": 52,
+        "weight": 6
+      },
+      "image": "/img/products/square-elmwood-stool/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/square-elmwood-stool/main.webp",
+          "alt": "Square Chinese elm stool with round legs and humpbacked stretchers"
+        },
+        {
+          "src": "/img/products/square-elmwood-stool/front.webp",
+          "alt": "Square Elmwood Stool from the front"
+        },
+        {
+          "src": "/img/products/square-elmwood-stool/side.webp",
+          "alt": "Square Elmwood Stool in profile"
+        },
+        {
+          "src": "/img/products/square-elmwood-stool/top.webp",
+          "alt": "Square Elmwood Stool from above"
+        }
+      ],
+      "model": null,
+      "finishes": [],
+      "delivery": "parcel",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1012",
+      "slug": "gothic-revival-hall-chair",
+      "name": "Gothic Revival Hall Chair",
+      "maker": "Ashcombe & Sons",
+      "origin": "England, c. 1850",
+      "category": "seating",
+      "era": "antique",
+      "price": 6800,
+      "materials": [
+        "oak"
+      ],
+      "blurb": "A tall hall chair with a pierced tracery back.",
+      "description": "A tall-backed hall chair with pinnacle finials and a pointed-arch back pierced with tracery around a carved rosette. The oak has a deep, even colour from a century and a half of wax.",
+      "details": [
+        "Carved oak",
+        "Pierced tracery back with rosette",
+        "Pinnacle finials",
+        "Turned legs and stretchers",
+        "Seat height 46 cm"
+      ],
+      "dimensions": {
+        "width": 48,
+        "depth": 46,
+        "height": 160,
+        "weight": 14
+      },
+      "image": "/img/products/gothic-revival-hall-chair/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/gothic-revival-hall-chair/main.webp",
+          "alt": "Tall oak hall chair with a pointed-arch tracery back and pinnacle finials"
+        },
+        {
+          "src": "/img/products/gothic-revival-hall-chair/front.webp",
+          "alt": "Gothic Revival Hall Chair from the front"
+        },
+        {
+          "src": "/img/products/gothic-revival-hall-chair/side.webp",
+          "alt": "Gothic Revival Hall Chair in profile"
+        }
+      ],
+      "model": null,
+      "finishes": [],
+      "delivery": "white-glove",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1013",
+      "slug": "orford-coffee-table",
+      "name": "Orford Coffee Table",
+      "maker": "Atelier Brison",
+      "origin": "Made to order in Belgium",
+      "category": "tables",
+      "era": "contemporary",
+      "price": 5400,
+      "materials": [
+        "marble",
+        "steel"
+      ],
+      "blurb": "A round marble top on looping bands of blackened steel.",
+      "description": "A round coffee table with a thick marble top resting on looping bands of blackened steel. The marble is honed and sealed, so it keeps a soft sheen rather than a gloss.",
+      "details": [
+        "Honed marble top, 3 cm thick",
+        "Blackened steel base",
+        "Sealed against stains",
+        "Each top cut from a single slab",
+        "Felt pads to protect floors"
+      ],
+      "dimensions": {
+        "width": 115,
+        "depth": 115,
+        "height": 43,
+        "weight": 90
+      },
+      "image": "/img/products/orford-coffee-table/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/orford-coffee-table/main.webp",
+          "alt": "Round white marble coffee table on looping blackened steel legs"
+        },
+        {
+          "src": "/img/products/orford-coffee-table/front.webp",
+          "alt": "Orford Coffee Table from the front"
+        },
+        {
+          "src": "/img/products/orford-coffee-table/top.webp",
+          "alt": "Orford Coffee Table from above"
+        }
+      ],
+      "model": "/models/orford-coffee-table.glb",
+      "finishes": [
+        {
+          "id": "white-marble",
+          "name": "White marble, blackened steel",
+          "swatch": "#e6e4e0",
+          "leadWeeks": 8,
+          "priceDelta": 0
+        },
+        {
+          "id": "grey-marble",
+          "name": "Grey marble, blackened steel",
+          "swatch": "#9c9a96",
+          "leadWeeks": 8,
+          "priceDelta": 0
+        },
+        {
+          "id": "green-marble",
+          "name": "Green marble, bronzed steel",
+          "swatch": "#3f5a4c",
+          "leadWeeks": 10,
+          "priceDelta": 600
+        }
+      ],
+      "delivery": "white-glove",
+      "isFeatured": false,
+      "isNew": true
+    },
+    {
+      "sku": "WF-1014",
+      "slug": "thorpe-coffee-table",
+      "name": "Thorpe Coffee Table",
+      "maker": "Wrenfield Workshop",
+      "origin": "Made to order in England",
+      "category": "tables",
+      "era": "contemporary",
+      "price": 3600,
+      "materials": [
+        "limestone",
+        "oak"
+      ],
+      "blurb": "A limestone slab set into an oak frame with chevron inlays.",
+      "description": "A low table with a grey limestone top framed in solid oak, the joint marked by chevron inlays at each end. It stands on open sled legs.",
+      "details": [
+        "Honed grey limestone top",
+        "Solid oak frame and sled legs",
+        "Chevron oak inlays",
+        "Hard wax oil finish",
+        "Made in our Somerset workshop"
+      ],
+      "dimensions": {
+        "width": 120,
+        "depth": 60,
+        "height": 39,
+        "weight": 62
+      },
+      "image": "/img/products/thorpe-coffee-table/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/thorpe-coffee-table/main.webp",
+          "alt": "Rectangular coffee table with a grey limestone top and oak sled legs"
+        },
+        {
+          "src": "/img/products/thorpe-coffee-table/front.webp",
+          "alt": "Thorpe Coffee Table from the front"
+        },
+        {
+          "src": "/img/products/thorpe-coffee-table/side.webp",
+          "alt": "Thorpe Coffee Table in profile"
+        },
+        {
+          "src": "/img/products/thorpe-coffee-table/top.webp",
+          "alt": "Thorpe Coffee Table from above"
+        }
+      ],
+      "model": null,
+      "finishes": [
+        {
+          "id": "stone-oak",
+          "name": "Grey limestone, natural oak",
+          "swatch": "#8f8a82",
+          "leadWeeks": 8,
+          "priceDelta": 0
+        },
+        {
+          "id": "stone-walnut",
+          "name": "Grey limestone, walnut",
+          "swatch": "#5a4030",
+          "leadWeeks": 8,
+          "priceDelta": 280
+        }
+      ],
+      "delivery": "white-glove",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1015",
+      "slug": "eddystone-coffee-table",
+      "name": "Eddystone Coffee Table",
+      "maker": "Wrenfield Workshop",
+      "origin": "Made to order in England",
+      "category": "tables",
+      "era": "contemporary",
+      "price": 7800,
+      "materials": [
+        "oak",
+        "walnut"
+      ],
+      "blurb": "An ebonised block cut through with rings of walnut fretwork.",
+      "description": "A square coffee table with an ebonised oak case, cut through the top with a nest of concentric walnut polygons that step down towards the centre. Each ring is cut and fitted by hand.",
+      "details": [
+        "Ebonised oak case",
+        "Hand-fitted walnut fretwork",
+        "Glass top insert available on request",
+        "Hard wax oil finish",
+        "Made in our Somerset workshop"
+      ],
+      "dimensions": {
+        "width": 120,
+        "depth": 120,
+        "height": 37,
+        "weight": 48
+      },
+      "image": "/img/products/eddystone-coffee-table/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/eddystone-coffee-table/main.webp",
+          "alt": "Square ebonised coffee table cut through with concentric walnut fretwork"
+        },
+        {
+          "src": "/img/products/eddystone-coffee-table/front.webp",
+          "alt": "Eddystone Coffee Table from the front"
+        },
+        {
+          "src": "/img/products/eddystone-coffee-table/top.webp",
+          "alt": "Eddystone Coffee Table from above"
+        }
+      ],
+      "model": null,
+      "finishes": [
+        {
+          "id": "ebonised-walnut",
+          "name": "Ebonised oak, walnut",
+          "swatch": "#1c1a19",
+          "leadWeeks": 10,
+          "priceDelta": 0
+        },
+        {
+          "id": "natural-walnut",
+          "name": "Natural oak, walnut",
+          "swatch": "#b89a74",
+          "leadWeeks": 10,
+          "priceDelta": 0
+        },
+        {
+          "id": "ebonised-brass",
+          "name": "Ebonised oak, brass",
+          "swatch": "#b08d57",
+          "leadWeeks": 12,
+          "priceDelta": 600
+        }
+      ],
+      "delivery": "white-glove",
+      "isFeatured": true,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1016",
+      "slug": "wenlock-writing-table",
+      "name": "Wenlock Writing Table",
+      "maker": "Wrenfield Workshop",
+      "origin": "Made to order in England",
+      "category": "tables",
+      "era": "contemporary",
+      "price": 4200,
+      "materials": [
+        "cherry"
+      ],
+      "blurb": "A plain writing table in oiled cherry.",
+      "description": "A writing table with a breadboard-ended top on square tapered legs, and nothing more. The cherry deepens from pale pink to a warm red-brown within the first year.",
+      "details": [
+        "Solid cherry throughout",
+        "Breadboard-end top",
+        "Square tapered legs",
+        "Hand-rubbed oil finish",
+        "Made in our Somerset workshop"
+      ],
+      "dimensions": {
+        "width": 107,
+        "depth": 66,
+        "height": 75,
+        "weight": 26
+      },
+      "image": "/img/products/wenlock-writing-table/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/wenlock-writing-table/main.webp",
+          "alt": "Plain cherry writing table on four square tapered legs"
+        },
+        {
+          "src": "/img/products/wenlock-writing-table/front.webp",
+          "alt": "Wenlock Writing Table from the front"
+        },
+        {
+          "src": "/img/products/wenlock-writing-table/side.webp",
+          "alt": "Wenlock Writing Table in profile"
+        },
+        {
+          "src": "/img/products/wenlock-writing-table/top.webp",
+          "alt": "Wenlock Writing Table from above"
+        }
+      ],
+      "model": null,
+      "finishes": [
+        {
+          "id": "cherry",
+          "name": "Oiled cherry",
+          "swatch": "#9a5b3a",
+          "leadWeeks": 6,
+          "priceDelta": 0
+        },
+        {
+          "id": "oak",
+          "name": "Oiled oak",
+          "swatch": "#b98f5e",
+          "leadWeeks": 6,
+          "priceDelta": 0
+        },
+        {
+          "id": "walnut",
+          "name": "Oiled walnut",
+          "swatch": "#5b3f2e",
+          "leadWeeks": 6,
+          "priceDelta": 240
+        }
+      ],
+      "delivery": "white-glove",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1017",
+      "slug": "carved-ebonised-console",
+      "name": "Carved Ebonised Console",
+      "maker": "Bottega Casolari",
+      "origin": "Italy, c. 1880",
+      "category": "tables",
+      "era": "antique",
+      "price": 9400,
+      "materials": [
+        "walnut"
+      ],
+      "blurb": "A serpentine console with a pierced apron and carved cabriole legs.",
+      "description": "A serpentine-fronted console with a deeply pierced apron of scrolling foliage on four carved cabriole legs. The ebonised finish has worn slightly at the high points, showing the walnut beneath.",
+      "details": [
+        "Carved and ebonised walnut",
+        "Pierced foliate apron",
+        "Shaped serpentine top",
+        "Four carved cabriole legs",
+        "Old surface, cleaned and waxed"
+      ],
+      "dimensions": {
+        "width": 139,
+        "depth": 53,
+        "height": 85,
+        "weight": 34
+      },
+      "image": "/img/products/carved-ebonised-console/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/carved-ebonised-console/main.webp",
+          "alt": "Carved ebonised console table with a pierced foliate apron and cabriole legs"
+        },
+        {
+          "src": "/img/products/carved-ebonised-console/front.webp",
+          "alt": "Carved Ebonised Console from the front"
+        },
+        {
+          "src": "/img/products/carved-ebonised-console/side.webp",
+          "alt": "Carved Ebonised Console in profile"
+        },
+        {
+          "src": "/img/products/carved-ebonised-console/top.webp",
+          "alt": "Carved Ebonised Console from above"
+        }
+      ],
+      "model": null,
+      "finishes": [],
+      "delivery": "white-glove",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1018",
+      "slug": "recessed-leg-altar-table",
+      "name": "Recessed-Leg Altar Table",
+      "maker": "Tingsong Hall",
+      "origin": "China, c. 1860",
+      "category": "tables",
+      "era": "antique",
+      "price": 12800,
+      "materials": [
+        "elm"
+      ],
+      "blurb": "A long altar table with upturned ends and carved end panels.",
+      "description": "A long, narrow table with upturned flanges at each end of the top, carved spandrels and pierced panels between the legs. Tables of this form stood against a wall to hold scrolls, incense and flowers.",
+      "details": [
+        "Solid elm",
+        "Everted flanges to the top",
+        "Carved spandrels",
+        "End panels with a pierced medallion",
+        "Old surface, cleaned and waxed"
+      ],
+      "dimensions": {
+        "width": 208,
+        "depth": 41,
+        "height": 80,
+        "weight": 36
+      },
+      "image": "/img/products/recessed-leg-altar-table/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/recessed-leg-altar-table/main.webp",
+          "alt": "Long, narrow elm altar table with upturned ends and carved end panels"
+        },
+        {
+          "src": "/img/products/recessed-leg-altar-table/front.webp",
+          "alt": "Recessed-Leg Altar Table from the front"
+        },
+        {
+          "src": "/img/products/recessed-leg-altar-table/side.webp",
+          "alt": "Recessed-Leg Altar Table in profile"
+        },
+        {
+          "src": "/img/products/recessed-leg-altar-table/top.webp",
+          "alt": "Recessed-Leg Altar Table from above"
+        }
+      ],
+      "model": null,
+      "finishes": [],
+      "delivery": "white-glove",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1019",
+      "slug": "elmwood-tea-table",
+      "name": "Elmwood Tea Table",
+      "maker": "Jinxi Workshop",
+      "origin": "China, c. 1900",
+      "category": "tables",
+      "era": "antique",
+      "price": 3800,
+      "materials": [
+        "elm"
+      ],
+      "blurb": "A low square table with a moulded top and humpbacked stretchers.",
+      "description": "A low square table with a moulded panel top on straight round legs, braced by humpbacked stretchers beneath the apron. Low enough to sit in front of a sofa.",
+      "details": [
+        "Solid elm",
+        "Moulded panel top",
+        "Humpbacked stretchers",
+        "Waxed finish",
+        "Minor shrinkage to the top panel"
+      ],
+      "dimensions": {
+        "width": 84,
+        "depth": 84,
+        "height": 50,
+        "weight": 16
+      },
+      "image": "/img/products/elmwood-tea-table/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/elmwood-tea-table/main.webp",
+          "alt": "Low square elm tea table with humpbacked stretchers"
+        },
+        {
+          "src": "/img/products/elmwood-tea-table/front.webp",
+          "alt": "Elmwood Tea Table from the front"
+        },
+        {
+          "src": "/img/products/elmwood-tea-table/top.webp",
+          "alt": "Elmwood Tea Table from above"
+        }
+      ],
+      "model": null,
+      "finishes": [],
+      "delivery": "white-glove",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1020",
+      "slug": "gothic-revival-low-table",
+      "name": "Gothic Revival Low Table",
+      "maker": "Ashcombe & Sons",
+      "origin": "England, c. 1870",
+      "category": "tables",
+      "era": "antique",
+      "price": 6200,
+      "materials": [
+        "oak"
+      ],
+      "blurb": "A square low table with a pierced, arcaded apron.",
+      "description": "Cut down from a library table in the 1930s, it keeps its original arcaded apron with pendant drops and a raised, moulded edge to the top. The oak has a dark, even patina.",
+      "details": [
+        "Solid oak",
+        "Pierced arcaded apron with pendant drops",
+        "Raised moulded edge",
+        "Reduced in height in the 1930s",
+        "Old surface, cleaned and waxed"
+      ],
+      "dimensions": {
+        "width": 118,
+        "depth": 118,
+        "height": 46,
+        "weight": 38
+      },
+      "image": "/img/products/gothic-revival-low-table/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/gothic-revival-low-table/main.webp",
+          "alt": "Square dark oak low table with a pierced Gothic arcaded apron"
+        },
+        {
+          "src": "/img/products/gothic-revival-low-table/front.webp",
+          "alt": "Gothic Revival Low Table from the front"
+        },
+        {
+          "src": "/img/products/gothic-revival-low-table/top.webp",
+          "alt": "Gothic Revival Low Table from above"
+        }
+      ],
+      "model": null,
+      "finishes": [],
+      "delivery": "white-glove",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1021",
+      "slug": "mahogany-jardiniere-stand",
+      "name": "Mahogany Jardinière Stand",
+      "maker": "Pellam Brothers",
+      "origin": "England, c. 1900",
+      "category": "tables",
+      "era": "antique",
+      "price": 1450,
+      "materials": [
+        "mahogany",
+        "brass"
+      ],
+      "blurb": "A slender mahogany stand with splayed legs and an under-tier.",
+      "description": "A tall circular stand with a small brass medallion set into the frieze, four slender splayed legs and an under-tier. Made to carry a fern or a lamp.",
+      "details": [
+        "Solid mahogany",
+        "Brass medallion to the frieze",
+        "Splayed legs with an under-tier",
+        "French polished",
+        "Light wear to the polish"
+      ],
+      "dimensions": {
+        "width": 38,
+        "depth": 38,
+        "height": 76,
+        "weight": 5
+      },
+      "image": "/img/products/mahogany-jardiniere-stand/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/mahogany-jardiniere-stand/main.webp",
+          "alt": "Tall round mahogany stand with splayed legs and an under-tier"
+        },
+        {
+          "src": "/img/products/mahogany-jardiniere-stand/front.webp",
+          "alt": "Mahogany Jardinière Stand from the front"
+        },
+        {
+          "src": "/img/products/mahogany-jardiniere-stand/top.webp",
+          "alt": "Mahogany Jardinière Stand from above"
+        }
+      ],
+      "model": null,
+      "finishes": [],
+      "delivery": "parcel",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1022",
+      "slug": "mahogany-breakfast-table",
+      "name": "Mahogany Breakfast Table",
+      "maker": "Pellam Brothers",
+      "origin": "England, c. 1840",
+      "category": "tables",
+      "era": "antique",
+      "price": 7400,
+      "materials": [
+        "mahogany"
+      ],
+      "blurb": "A round mahogany table on a turned column and four splayed legs.",
+      "description": "A round breakfast table with a figured mahogany top on a turned column and four sabre legs. It seats four comfortably, and the single column leaves room for knees.",
+      "details": [
+        "Solid mahogany with a figured top",
+        "Turned baluster column",
+        "Four sabre legs",
+        "Seats four",
+        "French polished"
+      ],
+      "dimensions": {
+        "width": 105,
+        "depth": 105,
+        "height": 75,
+        "weight": 40
+      },
+      "image": "/img/products/mahogany-breakfast-table/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/mahogany-breakfast-table/main.webp",
+          "alt": "Round mahogany breakfast table on a turned column with four splayed legs"
+        },
+        {
+          "src": "/img/products/mahogany-breakfast-table/front.webp",
+          "alt": "Mahogany Breakfast Table from the front"
+        },
+        {
+          "src": "/img/products/mahogany-breakfast-table/top.webp",
+          "alt": "Mahogany Breakfast Table from above"
+        }
+      ],
+      "model": null,
+      "finishes": [],
+      "delivery": "white-glove",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1023",
+      "slug": "hartland-sideboard",
+      "name": "Hartland Sideboard",
+      "maker": "Vester & Holm",
+      "origin": "Made to order in Denmark",
+      "category": "storage",
+      "era": "contemporary",
+      "price": 8600,
+      "materials": [
+        "oak",
+        "ash",
+        "steel"
+      ],
+      "blurb": "A long, low sideboard with slatted sliding doors.",
+      "description": "A long, low sideboard with two sliding doors faced in vertical ash slats, on slim steel legs that leave a shadow gap beneath. Inside are adjustable shelves and a cable outlet for a record player or speakers.",
+      "details": [
+        "Smoked oak case",
+        "Sliding doors of solid ash slats",
+        "Adjustable internal shelves",
+        "Blackened steel sled legs",
+        "Cable outlet to the back panel"
+      ],
+      "dimensions": {
+        "width": 244,
+        "depth": 52,
+        "height": 68,
+        "weight": 86
+      },
+      "image": "/img/products/hartland-sideboard/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/hartland-sideboard/main.webp",
+          "alt": "Long low sideboard with slatted sliding doors on slim steel legs"
+        },
+        {
+          "src": "/img/products/hartland-sideboard/front.webp",
+          "alt": "Hartland Sideboard from the front"
+        },
+        {
+          "src": "/img/products/hartland-sideboard/side.webp",
+          "alt": "Hartland Sideboard in profile"
+        },
+        {
+          "src": "/img/products/hartland-sideboard/top.webp",
+          "alt": "Hartland Sideboard from above"
+        }
+      ],
+      "model": null,
+      "finishes": [
+        {
+          "id": "smoked-ash",
+          "name": "Smoked oak, ash slats",
+          "swatch": "#3e2e24",
+          "leadWeeks": 10,
+          "priceDelta": 0
+        },
+        {
+          "id": "walnut-oak",
+          "name": "Walnut, oak slats",
+          "swatch": "#5b3f2e",
+          "leadWeeks": 10,
+          "priceDelta": 400
+        },
+        {
+          "id": "ebonised",
+          "name": "Ebonised oak, ebonised slats",
+          "swatch": "#1b1a19",
+          "leadWeeks": 12,
+          "priceDelta": 200
+        }
+      ],
+      "delivery": "white-glove",
+      "isFeatured": true,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1024",
+      "slug": "coldharbour-etagere",
+      "name": "Coldharbour Étagère",
+      "maker": "Wrenfield Workshop",
+      "origin": "Made to order in England",
+      "category": "storage",
+      "era": "contemporary",
+      "price": 4800,
+      "materials": [
+        "walnut",
+        "steel"
+      ],
+      "blurb": "Blackened steel and walnut shelving with a bank of drawers.",
+      "description": "An open étagère of welded, blackened steel with solid walnut shelves at staggered heights and a bank of three shallow drawers. Built for books, and just as good for objects.",
+      "details": [
+        "Welded blackened steel frame",
+        "Solid walnut shelves",
+        "Three shallow drawers",
+        "Fixes to the wall for stability",
+        "Made in our Somerset workshop"
+      ],
+      "dimensions": {
+        "width": 172,
+        "depth": 53,
+        "height": 169,
+        "weight": 52
+      },
+      "image": "/img/products/coldharbour-etagere/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/coldharbour-etagere/main.webp",
+          "alt": "Open blackened steel shelving with walnut shelves and three drawers"
+        },
+        {
+          "src": "/img/products/coldharbour-etagere/front.webp",
+          "alt": "Coldharbour Étagère from the front"
+        },
+        {
+          "src": "/img/products/coldharbour-etagere/side.webp",
+          "alt": "Coldharbour Étagère in profile"
+        },
+        {
+          "src": "/img/products/coldharbour-etagere/top.webp",
+          "alt": "Coldharbour Étagère from above"
+        }
+      ],
+      "model": null,
+      "finishes": [
+        {
+          "id": "walnut-black",
+          "name": "Walnut, blackened steel",
+          "swatch": "#5b3f2e",
+          "leadWeeks": 8,
+          "priceDelta": 0
+        },
+        {
+          "id": "oak-black",
+          "name": "Oak, blackened steel",
+          "swatch": "#b98f5e",
+          "leadWeeks": 8,
+          "priceDelta": 0
+        },
+        {
+          "id": "walnut-bronze",
+          "name": "Walnut, bronzed steel",
+          "swatch": "#7a5a3a",
+          "leadWeeks": 10,
+          "priceDelta": 450
+        }
+      ],
+      "delivery": "white-glove",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1025",
+      "slug": "amble-chest-of-drawers",
+      "name": "Amble Chest of Drawers",
+      "maker": "Wrenfield Workshop",
+      "origin": "Made to order in England",
+      "category": "storage",
+      "era": "contemporary",
+      "price": 5200,
+      "materials": [
+        "oak",
+        "brass"
+      ],
+      "blurb": "A low six-drawer chest with brass label pulls.",
+      "description": "A low chest of six deep drawers, each fitted with a cast brass label pull, on a plain plinth. The drawers are dovetailed by hand and run on hardwood runners.",
+      "details": [
+        "Solid oak with dovetailed drawers",
+        "Cast brass label pulls",
+        "Hardwood runners",
+        "Hard wax oil finish",
+        "Made in our Somerset workshop"
+      ],
+      "dimensions": {
+        "width": 86,
+        "depth": 46,
+        "height": 55,
+        "weight": 38
+      },
+      "image": "/img/products/amble-chest-of-drawers/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/amble-chest-of-drawers/main.webp",
+          "alt": "Low oak chest of six drawers with brass label pulls"
+        },
+        {
+          "src": "/img/products/amble-chest-of-drawers/front.webp",
+          "alt": "Amble Chest of Drawers from the front"
+        },
+        {
+          "src": "/img/products/amble-chest-of-drawers/side.webp",
+          "alt": "Amble Chest of Drawers in profile"
+        },
+        {
+          "src": "/img/products/amble-chest-of-drawers/top.webp",
+          "alt": "Amble Chest of Drawers from above"
+        }
+      ],
+      "model": null,
+      "finishes": [
+        {
+          "id": "honey-oak",
+          "name": "Honey oak, brass pulls",
+          "swatch": "#a8753f",
+          "leadWeeks": 8,
+          "priceDelta": 0
+        },
+        {
+          "id": "smoked-oak",
+          "name": "Smoked oak, brass pulls",
+          "swatch": "#4a3a2e",
+          "leadWeeks": 8,
+          "priceDelta": 0
+        },
+        {
+          "id": "walnut",
+          "name": "Walnut, brass pulls",
+          "swatch": "#5b3f2e",
+          "leadWeeks": 9,
+          "priceDelta": 350
+        }
+      ],
+      "delivery": "white-glove",
+      "isFeatured": false,
+      "isNew": true
+    },
+    {
+      "sku": "WF-1026",
+      "slug": "gothic-revival-cupboard",
+      "name": "Gothic Revival Cupboard",
+      "maker": "Ashcombe & Sons",
+      "origin": "England, c. 1860",
+      "category": "storage",
+      "era": "antique",
+      "price": 14500,
+      "materials": [
+        "oak",
+        "iron"
+      ],
+      "blurb": "A two-stage oak cupboard with tracery doors and iron strap hinges.",
+      "description": "A two-stage cupboard with four doors, the upper pair carved with pointed-arch tracery and the lower pair with linenfold panels, all hung on iron strap hinges. It separates into two sections for delivery.",
+      "details": [
+        "Carved oak",
+        "Tracery and linenfold door panels",
+        "Wrought-iron strap hinges",
+        "Shelved interior",
+        "Separates into two sections"
+      ],
+      "dimensions": {
+        "width": 129,
+        "depth": 62,
+        "height": 177,
+        "weight": 110
+      },
+      "image": "/img/products/gothic-revival-cupboard/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/gothic-revival-cupboard/main.webp",
+          "alt": "Two-stage carved oak cupboard with tracery doors and iron strap hinges"
+        },
+        {
+          "src": "/img/products/gothic-revival-cupboard/front.webp",
+          "alt": "Gothic Revival Cupboard from the front"
+        },
+        {
+          "src": "/img/products/gothic-revival-cupboard/side.webp",
+          "alt": "Gothic Revival Cupboard in profile"
+        },
+        {
+          "src": "/img/products/gothic-revival-cupboard/top.webp",
+          "alt": "Gothic Revival Cupboard from above"
+        }
+      ],
+      "model": null,
+      "finishes": [],
+      "delivery": "white-glove",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1027",
+      "slug": "gothic-revival-chest-of-drawers",
+      "name": "Gothic Revival Chest of Drawers",
+      "maker": "Ashcombe & Sons",
+      "origin": "England, c. 1860",
+      "category": "storage",
+      "era": "antique",
+      "price": 7900,
+      "materials": [
+        "mahogany"
+      ],
+      "blurb": "A mahogany chest with an arcaded top drawer.",
+      "description": "A chest of three long drawers, the top one carved with a row of pointed arches, between chamfered corner posts on a moulded plinth. The sides are panelled with a single lancet arch, and the turned knobs are original.",
+      "details": [
+        "Solid mahogany",
+        "Carved arcaded top drawer",
+        "Lancet-arch side panels",
+        "Original turned knobs",
+        "Oak-lined drawers"
+      ],
+      "dimensions": {
+        "width": 106,
+        "depth": 51,
+        "height": 107,
+        "weight": 58
+      },
+      "image": "/img/products/gothic-revival-chest-of-drawers/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/gothic-revival-chest-of-drawers/main.webp",
+          "alt": "Mahogany chest of three drawers, the top drawer carved with pointed arches"
+        },
+        {
+          "src": "/img/products/gothic-revival-chest-of-drawers/front.webp",
+          "alt": "Gothic Revival Chest of Drawers from the front"
+        },
+        {
+          "src": "/img/products/gothic-revival-chest-of-drawers/side.webp",
+          "alt": "Gothic Revival Chest of Drawers in profile"
+        },
+        {
+          "src": "/img/products/gothic-revival-chest-of-drawers/top.webp",
+          "alt": "Gothic Revival Chest of Drawers from above"
+        }
+      ],
+      "model": null,
+      "finishes": [],
+      "delivery": "white-glove",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1028",
+      "slug": "fretwork-bookcase-cabinet",
+      "name": "Fretwork Bookcase Cabinet",
+      "maker": "Tingsong Hall",
+      "origin": "China, c. 1880",
+      "category": "storage",
+      "era": "antique",
+      "price": 11800,
+      "materials": [
+        "elm",
+        "brass"
+      ],
+      "blurb": "Open shelves with fretwork galleries over drawers and a cupboard.",
+      "description": "A tall cabinet with two open shelves edged in key-fret and cloud-scroll galleries, over a pair of drawers and a two-door cupboard with a round brass plate. Made to display books and scholars' objects.",
+      "details": [
+        "Solid elm",
+        "Key-fret and cloud-scroll galleries",
+        "Two drawers over a two-door cupboard",
+        "Round brass face plate",
+        "Old surface, cleaned and waxed"
+      ],
+      "dimensions": {
+        "width": 84,
+        "depth": 36,
+        "height": 190,
+        "weight": 62
+      },
+      "image": "/img/products/fretwork-bookcase-cabinet/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/fretwork-bookcase-cabinet/main.webp",
+          "alt": "Tall Chinese elm cabinet with fretwork-edged open shelves over drawers and doors"
+        },
+        {
+          "src": "/img/products/fretwork-bookcase-cabinet/front.webp",
+          "alt": "Fretwork Bookcase Cabinet from the front"
+        },
+        {
+          "src": "/img/products/fretwork-bookcase-cabinet/side.webp",
+          "alt": "Fretwork Bookcase Cabinet in profile"
+        },
+        {
+          "src": "/img/products/fretwork-bookcase-cabinet/top.webp",
+          "alt": "Fretwork Bookcase Cabinet from above"
+        }
+      ],
+      "model": "/models/fretwork-bookcase-cabinet.glb",
+      "finishes": [],
+      "delivery": "white-glove",
+      "isFeatured": false,
+      "isNew": true
+    },
+    {
+      "sku": "WF-1029",
+      "slug": "elmwood-altar-coffer",
+      "name": "Elmwood Altar Coffer",
+      "maker": "Jinxi Workshop",
+      "origin": "China, c. 1880",
+      "category": "storage",
+      "era": "antique",
+      "price": 9800,
+      "materials": [
+        "elm",
+        "brass"
+      ],
+      "blurb": "A long coffer with three drawers, upturned ends and round brass plates.",
+      "description": "A long coffer with upturned ends, three drawers with round brass back plates and two closed panels below that hide a deep storage well. Coffers like this served as both side table and strongbox.",
+      "details": [
+        "Solid elm",
+        "Three drawers over a hidden storage well",
+        "Round brass back plates",
+        "Everted flanges to the top",
+        "Old surface, cleaned and waxed"
+      ],
+      "dimensions": {
+        "width": 187,
+        "depth": 49,
+        "height": 84,
+        "weight": 60
+      },
+      "image": "/img/products/elmwood-altar-coffer/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/elmwood-altar-coffer/main.webp",
+          "alt": "Long elm altar coffer with three drawers and round brass pulls"
+        },
+        {
+          "src": "/img/products/elmwood-altar-coffer/front.webp",
+          "alt": "Elmwood Altar Coffer from the front"
+        },
+        {
+          "src": "/img/products/elmwood-altar-coffer/side.webp",
+          "alt": "Elmwood Altar Coffer in profile"
+        },
+        {
+          "src": "/img/products/elmwood-altar-coffer/top.webp",
+          "alt": "Elmwood Altar Coffer from above"
+        }
+      ],
+      "model": null,
+      "finishes": [],
+      "delivery": "white-glove",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1030",
+      "slug": "ebonised-bedside-cabinet",
+      "name": "Ebonised Bedside Cabinet",
+      "maker": "Atelier Vautrin",
+      "origin": "France, c. 1890",
+      "category": "storage",
+      "era": "antique",
+      "price": 2600,
+      "materials": [
+        "beech"
+      ],
+      "blurb": "An open bedside cabinet with a carved apron and cabriole legs.",
+      "description": "A small bedside cabinet with an open compartment, carved corner brackets and a shell-carved apron over short cabriole legs. The ebonised finish has been cleaned and rewaxed.",
+      "details": [
+        "Carved and ebonised beech",
+        "Open compartment",
+        "Shell-carved apron",
+        "Carved corner brackets",
+        "Cleaned and rewaxed"
+      ],
+      "dimensions": {
+        "width": 57,
+        "depth": 42,
+        "height": 70,
+        "weight": 13
+      },
+      "image": "/img/products/ebonised-bedside-cabinet/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/ebonised-bedside-cabinet/main.webp",
+          "alt": "Small carved ebonised bedside cabinet with an open compartment"
+        },
+        {
+          "src": "/img/products/ebonised-bedside-cabinet/front.webp",
+          "alt": "Ebonised Bedside Cabinet from the front"
+        },
+        {
+          "src": "/img/products/ebonised-bedside-cabinet/side.webp",
+          "alt": "Ebonised Bedside Cabinet in profile"
+        },
+        {
+          "src": "/img/products/ebonised-bedside-cabinet/top.webp",
+          "alt": "Ebonised Bedside Cabinet from above"
+        }
+      ],
+      "model": null,
+      "finishes": [],
+      "delivery": "parcel",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1031",
+      "slug": "selsey-globe-pendant",
+      "name": "Selsey Globe Pendant",
+      "maker": "Fonderia Castagna",
+      "origin": "Made to order in Italy",
+      "category": "lighting",
+      "era": "contemporary",
+      "price": 780,
+      "materials": [
+        "glass",
+        "nickel"
+      ],
+      "blurb": "An opal glass globe on a fine cord.",
+      "description": "A mouth-blown opal glass globe under a spun metal cap, hung on a fabric cord. It gives an even, diffuse light with no glare from any angle.",
+      "details": [
+        "Mouth-blown opal glass",
+        "Spun metal cap and ceiling canopy",
+        "Cord length adjustable to 150 cm",
+        "Takes one standard bulb",
+        "Hardwired installation"
+      ],
+      "dimensions": {
+        "width": 43,
+        "depth": 43,
+        "height": 95,
+        "weight": 3.5
+      },
+      "image": "/img/products/selsey-globe-pendant/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/selsey-globe-pendant/main.webp",
+          "alt": "Opal glass globe pendant with a satin nickel cap on a fine cord"
+        },
+        {
+          "src": "/img/products/selsey-globe-pendant/front.webp",
+          "alt": "Selsey Globe Pendant from the front"
+        },
+        {
+          "src": "/img/products/selsey-globe-pendant/top.webp",
+          "alt": "Selsey Globe Pendant from above"
+        }
+      ],
+      "model": null,
+      "finishes": [
+        {
+          "id": "opal-nickel",
+          "name": "Opal glass, satin nickel",
+          "swatch": "#c9c9c6",
+          "leadWeeks": 4,
+          "priceDelta": 0
+        },
+        {
+          "id": "opal-brass",
+          "name": "Opal glass, satin brass",
+          "swatch": "#b59a62",
+          "leadWeeks": 4,
+          "priceDelta": 60
+        }
+      ],
+      "delivery": "parcel",
+      "isFeatured": false,
+      "isNew": true
+    },
+    {
+      "sku": "WF-1032",
+      "slug": "ravenglass-wall-light",
+      "name": "Ravenglass Wall Light",
+      "maker": "Fonderia Castagna",
+      "origin": "Made to order in Italy",
+      "category": "lighting",
+      "era": "contemporary",
+      "price": 620,
+      "materials": [
+        "brass",
+        "steel"
+      ],
+      "blurb": "A swan-neck wall light on an aged brass backplate.",
+      "description": "A swan-neck arm on a panelled brass backplate, ending in a black conical shade that throws light downward. Suited to a reading chair, a picture or either side of a doorway.",
+      "details": [
+        "Solid brass backplate and arm",
+        "Hand-aged patina",
+        "Black enamelled steel shade",
+        "Hardwired installation",
+        "Sold individually"
+      ],
+      "dimensions": {
+        "width": 15,
+        "depth": 25,
+        "height": 34,
+        "weight": 2.4
+      },
+      "image": "/img/products/ravenglass-wall-light/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/ravenglass-wall-light/main.webp",
+          "alt": "Wall light with a swan-neck arm, aged brass backplate and black conical shade"
+        },
+        {
+          "src": "/img/products/ravenglass-wall-light/front.webp",
+          "alt": "Ravenglass Wall Light from the front"
+        },
+        {
+          "src": "/img/products/ravenglass-wall-light/side.webp",
+          "alt": "Ravenglass Wall Light in profile"
+        },
+        {
+          "src": "/img/products/ravenglass-wall-light/top.webp",
+          "alt": "Ravenglass Wall Light from above"
+        }
+      ],
+      "model": null,
+      "finishes": [
+        {
+          "id": "aged-brass",
+          "name": "Aged brass, black shade",
+          "swatch": "#7a6242",
+          "leadWeeks": 6,
+          "priceDelta": 0
+        },
+        {
+          "id": "bronze",
+          "name": "Dark bronze, black shade",
+          "swatch": "#3d3228",
+          "leadWeeks": 6,
+          "priceDelta": 0
+        },
+        {
+          "id": "nickel",
+          "name": "Polished nickel, black shade",
+          "swatch": "#b8b8b4",
+          "leadWeeks": 8,
+          "priceDelta": 90
+        }
+      ],
+      "delivery": "parcel",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1033",
+      "slug": "bosham-chandelier",
+      "name": "Bosham Chandelier",
+      "maker": "Fonderia Castagna",
+      "origin": "Made to order in Italy",
+      "category": "lighting",
+      "era": "contemporary",
+      "price": 2400,
+      "materials": [
+        "brass",
+        "linen"
+      ],
+      "blurb": "Six brass arms with pleated ivory shades.",
+      "description": "A six-arm chandelier in solid brass, with scrolled arms around a central stem that ends in a frosted glass bowl. The drop is cut to your ceiling height before it leaves the workshop.",
+      "details": [
+        "Solid turned and cast brass",
+        "Six hand-pleated linen shades",
+        "Frosted glass bowl",
+        "Drop made to your ceiling height",
+        "Takes six candelabra bulbs"
+      ],
+      "dimensions": {
+        "width": 68,
+        "depth": 62,
+        "height": 85,
+        "weight": 9
+      },
+      "image": "/img/products/bosham-chandelier/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/bosham-chandelier/main.webp",
+          "alt": "Six-arm polished brass chandelier with pleated ivory shades"
+        },
+        {
+          "src": "/img/products/bosham-chandelier/front.webp",
+          "alt": "Bosham Chandelier from the front"
+        },
+        {
+          "src": "/img/products/bosham-chandelier/top.webp",
+          "alt": "Bosham Chandelier from above"
+        }
+      ],
+      "model": null,
+      "finishes": [
+        {
+          "id": "brass-ivory",
+          "name": "Polished brass, ivory shades",
+          "swatch": "#c8a45a",
+          "leadWeeks": 8,
+          "priceDelta": 0
+        },
+        {
+          "id": "antique-brass-linen",
+          "name": "Antiqued brass, flax shades",
+          "swatch": "#8c6d3f",
+          "leadWeeks": 8,
+          "priceDelta": 0
+        },
+        {
+          "id": "nickel-ivory",
+          "name": "Nickel, ivory shades",
+          "swatch": "#bdbdb8",
+          "leadWeeks": 10,
+          "priceDelta": 380
+        }
+      ],
+      "delivery": "white-glove",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1034",
+      "slug": "brass-chandelier-with-glass-drops",
+      "name": "Brass Chandelier with Glass Drops",
+      "maker": "Maison Thibaud-Roche",
+      "origin": "France, c. 1920",
+      "category": "lighting",
+      "era": "antique",
+      "price": 2900,
+      "materials": [
+        "brass",
+        "glass"
+      ],
+      "blurb": "Six scrolled brass arms with pleated shades and glass drops.",
+      "description": "A six-arm brass chandelier with a glass central column, scrolled arms and short strings of glass drops beneath each light. Rewired to current standards and fitted with new pleated shades.",
+      "details": [
+        "Cast and turned brass",
+        "Glass column and drops",
+        "New pleated fabric shades",
+        "Rewired and tested",
+        "Supplied with chain and ceiling rose"
+      ],
+      "dimensions": {
+        "width": 75,
+        "depth": 82,
+        "height": 80,
+        "weight": 11
+      },
+      "image": "/img/products/brass-chandelier-with-glass-drops/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/brass-chandelier-with-glass-drops/main.webp",
+          "alt": "Six-arm brass chandelier with pleated shades, a glass column and glass drops"
+        },
+        {
+          "src": "/img/products/brass-chandelier-with-glass-drops/front.webp",
+          "alt": "Brass Chandelier with Glass Drops from the front"
+        },
+        {
+          "src": "/img/products/brass-chandelier-with-glass-drops/top.webp",
+          "alt": "Brass Chandelier with Glass Drops from above"
+        }
+      ],
+      "model": null,
+      "finishes": [],
+      "delivery": "white-glove",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1035",
+      "slug": "two-tier-brass-chandelier",
+      "name": "Two-Tier Brass Chandelier",
+      "maker": "Gebroeders Hesselink",
+      "origin": "Netherlands, c. 1900",
+      "category": "lighting",
+      "era": "antique",
+      "price": 3200,
+      "materials": [
+        "brass",
+        "glass"
+      ],
+      "blurb": "Two tiers of scrolled brass arms with cut-glass bobèches.",
+      "description": "A large brass chandelier of eighteen lights in two tiers, each set in a cut-glass bobèche, on scrolled arms around a turned baluster stem. It has been rewired and fitted for candle bulbs.",
+      "details": [
+        "Cast brass arms and baluster stem",
+        "Eighteen lights in two tiers",
+        "Cut-glass bobèches",
+        "Rewired and tested",
+        "Supplied with chain and ceiling rose"
+      ],
+      "dimensions": {
+        "width": 78,
+        "depth": 79,
+        "height": 104,
+        "weight": 16
+      },
+      "image": "/img/products/two-tier-brass-chandelier/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/two-tier-brass-chandelier/main.webp",
+          "alt": "Large brass chandelier with two tiers of candle lights in cut-glass dishes"
+        },
+        {
+          "src": "/img/products/two-tier-brass-chandelier/front.webp",
+          "alt": "Two-Tier Brass Chandelier from the front"
+        },
+        {
+          "src": "/img/products/two-tier-brass-chandelier/top.webp",
+          "alt": "Two-Tier Brass Chandelier from above"
+        }
+      ],
+      "model": null,
+      "finishes": [],
+      "delivery": "white-glove",
+      "isFeatured": true,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1036",
+      "slug": "octagonal-palace-lantern",
+      "name": "Octagonal Palace Lantern",
+      "maker": "Tingsong Hall",
+      "origin": "China, c. 1900",
+      "category": "lighting",
+      "era": "antique",
+      "price": 2800,
+      "materials": [
+        "elm",
+        "silk"
+      ],
+      "blurb": "An octagonal hanging lantern with painted silk panels.",
+      "description": "An octagonal hanging lantern with a carved elm frame, dragon-head brackets and silk panels painted with plum blossom, hung with red silk tassels. It has been wired for a single diffused light inside.",
+      "details": [
+        "Carved elm frame",
+        "Hand-painted silk panels",
+        "Dragon-head corner brackets",
+        "Red silk tassels",
+        "Wired for one bulb"
+      ],
+      "dimensions": {
+        "width": 88,
+        "depth": 88,
+        "height": 75,
+        "weight": 9
+      },
+      "image": "/img/products/octagonal-palace-lantern/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/octagonal-palace-lantern/main.webp",
+          "alt": "Octagonal hanging lantern with painted silk panels and red tassels"
+        },
+        {
+          "src": "/img/products/octagonal-palace-lantern/front.webp",
+          "alt": "Octagonal Palace Lantern from the front"
+        },
+        {
+          "src": "/img/products/octagonal-palace-lantern/top.webp",
+          "alt": "Octagonal Palace Lantern from above"
+        }
+      ],
+      "model": null,
+      "finishes": [],
+      "delivery": "white-glove",
+      "isFeatured": false,
+      "isNew": true
+    },
+    {
+      "sku": "WF-1037",
+      "slug": "painted-porcelain-oil-lamp",
+      "name": "Painted Porcelain Oil Lamp",
+      "maker": "Harwell & Finch",
+      "origin": "England, c. 1890",
+      "category": "lighting",
+      "era": "antique",
+      "price": 680,
+      "materials": [
+        "porcelain",
+        "brass",
+        "glass"
+      ],
+      "blurb": "A rose-painted porcelain font on a stepped brass base.",
+      "description": "An oil lamp with a spherical porcelain font painted with roses, a stepped brass base and a tall glass chimney. The burner is original and in working order.",
+      "details": [
+        "Hand-painted porcelain font",
+        "Brass base and burner",
+        "Tall glass chimney",
+        "In working order",
+        "Supplied with a new wick"
+      ],
+      "dimensions": {
+        "width": 22,
+        "depth": 22,
+        "height": 80,
+        "weight": 3.1
+      },
+      "image": "/img/products/painted-porcelain-oil-lamp/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/painted-porcelain-oil-lamp/main.webp",
+          "alt": "Oil lamp with a rose-painted porcelain font, brass base and tall glass chimney"
+        },
+        {
+          "src": "/img/products/painted-porcelain-oil-lamp/front.webp",
+          "alt": "Painted Porcelain Oil Lamp from the front"
+        },
+        {
+          "src": "/img/products/painted-porcelain-oil-lamp/top.webp",
+          "alt": "Painted Porcelain Oil Lamp from above"
+        }
+      ],
+      "model": null,
+      "finishes": [],
+      "delivery": "parcel",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1038",
+      "slug": "tamar-bottle-vase",
+      "name": "Tamar Bottle Vase",
+      "maker": "Polgarrow Pottery",
+      "origin": "Made to order in England",
+      "category": "objects",
+      "era": "contemporary",
+      "price": 240,
+      "materials": [
+        "porcelain"
+      ],
+      "blurb": "A thrown bottle vase with a pinched lip, in a milk glaze.",
+      "description": "A tall bottle vase thrown on the wheel, its throwing rings left visible under a soft milk-white glaze. The lip is pinched by hand, so no two are quite the same.",
+      "details": [
+        "Wheel-thrown porcelain",
+        "Milk-white glaze",
+        "Hand-pinched lip",
+        "Watertight",
+        "Each piece varies slightly"
+      ],
+      "dimensions": {
+        "width": 20,
+        "depth": 20,
+        "height": 40,
+        "weight": 2.1
+      },
+      "image": "/img/products/tamar-bottle-vase/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/tamar-bottle-vase/main.webp",
+          "alt": "Tall white bottle vase with a pinched lip"
+        },
+        {
+          "src": "/img/products/tamar-bottle-vase/front.webp",
+          "alt": "Tamar Bottle Vase from the front"
+        },
+        {
+          "src": "/img/products/tamar-bottle-vase/top.webp",
+          "alt": "Tamar Bottle Vase from above"
+        }
+      ],
+      "model": "/models/tamar-bottle-vase.glb",
+      "finishes": [
+        {
+          "id": "white",
+          "name": "Milk glaze",
+          "swatch": "#eeeae3",
+          "leadWeeks": 4,
+          "priceDelta": 0
+        },
+        {
+          "id": "celadon",
+          "name": "Celadon glaze",
+          "swatch": "#a9bca6",
+          "leadWeeks": 4,
+          "priceDelta": 0
+        },
+        {
+          "id": "iron",
+          "name": "Iron glaze",
+          "swatch": "#3a2a22",
+          "leadWeeks": 5,
+          "priceDelta": 30
+        }
+      ],
+      "delivery": "parcel",
+      "isFeatured": false,
+      "isNew": true
+    },
+    {
+      "sku": "WF-1039",
+      "slug": "fowey-stoneware-jar",
+      "name": "Fowey Stoneware Jar",
+      "maker": "Polgarrow Pottery",
+      "origin": "Made to order in England",
+      "category": "objects",
+      "era": "contemporary",
+      "price": 190,
+      "materials": [
+        "stoneware"
+      ],
+      "blurb": "A broad-shouldered jar in a dry chalk slip.",
+      "description": "A wide-shouldered jar in stoneware, finished with a chalky slip that lets the texture of the clay show through. Use it for branches, or leave it empty.",
+      "details": [
+        "Wheel-thrown stoneware",
+        "Matt chalk slip",
+        "Glazed interior, watertight",
+        "Each piece varies slightly",
+        "Made in Cornwall"
+      ],
+      "dimensions": {
+        "width": 22,
+        "depth": 22,
+        "height": 31,
+        "weight": 2.6
+      },
+      "image": "/img/products/fowey-stoneware-jar/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/fowey-stoneware-jar/main.webp",
+          "alt": "Broad-shouldered stoneware jar in a chalky white finish"
+        },
+        {
+          "src": "/img/products/fowey-stoneware-jar/front.webp",
+          "alt": "Fowey Stoneware Jar from the front"
+        },
+        {
+          "src": "/img/products/fowey-stoneware-jar/top.webp",
+          "alt": "Fowey Stoneware Jar from above"
+        }
+      ],
+      "model": null,
+      "finishes": [
+        {
+          "id": "chalk",
+          "name": "Chalk slip",
+          "swatch": "#e7e2d8",
+          "leadWeeks": 4,
+          "priceDelta": 0
+        },
+        {
+          "id": "ash",
+          "name": "Ash glaze",
+          "swatch": "#9d9587",
+          "leadWeeks": 4,
+          "priceDelta": 0
+        }
+      ],
+      "delivery": "parcel",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1040",
+      "slug": "uffington-horse-head",
+      "name": "Uffington Horse Head",
+      "maker": "Fonderia Castagna",
+      "origin": "Made to order in Italy",
+      "category": "objects",
+      "era": "contemporary",
+      "price": 780,
+      "materials": [
+        "bronze"
+      ],
+      "blurb": "A cast bronze horse head on a square plinth.",
+      "description": "A horse head with a windblown mane, cast in bronze by the lost-wax method and patinated by hand. It is mounted on a square bronze plinth with felt beneath.",
+      "details": [
+        "Lost-wax cast bronze",
+        "Hand-applied patina",
+        "Bronze plinth with a felt base",
+        "Cast in an edition of 50",
+        "Signed and numbered"
+      ],
+      "dimensions": {
+        "width": 22,
+        "depth": 33,
+        "height": 42,
+        "weight": 9.5
+      },
+      "image": "/img/products/uffington-horse-head/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/uffington-horse-head/main.webp",
+          "alt": "Bronze horse head with a windblown mane on a square plinth"
+        },
+        {
+          "src": "/img/products/uffington-horse-head/front.webp",
+          "alt": "Uffington Horse Head from the front"
+        },
+        {
+          "src": "/img/products/uffington-horse-head/side.webp",
+          "alt": "Uffington Horse Head in profile"
+        }
+      ],
+      "model": null,
+      "finishes": [
+        {
+          "id": "dark-bronze",
+          "name": "Dark bronze patina",
+          "swatch": "#3b2c21",
+          "leadWeeks": 10,
+          "priceDelta": 0
+        },
+        {
+          "id": "verdigris",
+          "name": "Verdigris patina",
+          "swatch": "#5d8a78",
+          "leadWeeks": 10,
+          "priceDelta": 0
+        },
+        {
+          "id": "gilt",
+          "name": "Gilt bronze",
+          "swatch": "#c19a4f",
+          "leadWeeks": 12,
+          "priceDelta": 240
+        }
+      ],
+      "delivery": "parcel",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1041",
+      "slug": "hambledon-chess-set",
+      "name": "Hambledon Chess Set",
+      "maker": "Atelier Brison",
+      "origin": "Made to order in Belgium",
+      "category": "objects",
+      "era": "contemporary",
+      "price": 640,
+      "materials": [
+        "marble"
+      ],
+      "blurb": "A bevelled marble board with hand-turned marble pieces.",
+      "description": "A chess set in two marbles, with a bevelled board and a full set of hand-turned pieces. The board is backed with felt so it can sit on any table.",
+      "details": [
+        "Black and white marble",
+        "Hand-turned pieces",
+        "Bevelled board, 55 cm square",
+        "Felt-backed board",
+        "King height 10 cm"
+      ],
+      "dimensions": {
+        "width": 55,
+        "depth": 55,
+        "height": 11,
+        "weight": 11
+      },
+      "image": "/img/products/hambledon-chess-set/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/hambledon-chess-set/main.webp",
+          "alt": "Black and white marble chess set with the pieces in their starting positions"
+        },
+        {
+          "src": "/img/products/hambledon-chess-set/front.webp",
+          "alt": "Hambledon Chess Set from the front"
+        },
+        {
+          "src": "/img/products/hambledon-chess-set/side.webp",
+          "alt": "Hambledon Chess Set in profile"
+        },
+        {
+          "src": "/img/products/hambledon-chess-set/top.webp",
+          "alt": "Hambledon Chess Set from above"
+        }
+      ],
+      "model": null,
+      "finishes": [
+        {
+          "id": "black-white",
+          "name": "Black and white marble",
+          "swatch": "#1f1f1f",
+          "leadWeeks": 6,
+          "priceDelta": 0
+        },
+        {
+          "id": "green-white",
+          "name": "Green and white marble",
+          "swatch": "#3f5a4c",
+          "leadWeeks": 8,
+          "priceDelta": 120
+        }
+      ],
+      "delivery": "parcel",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1042",
+      "slug": "grand-tour-marble-bust",
+      "name": "Grand Tour Marble Bust",
+      "maker": "Bottega Lanfredi",
+      "origin": "Italy, c. 1860",
+      "category": "objects",
+      "era": "antique",
+      "price": 900,
+      "materials": [
+        "marble"
+      ],
+      "blurb": "A carved bust of a young man after the antique, on a turned socle.",
+      "description": "A carved marble bust of a young man after a Roman original, the kind of piece brought home from Italy in the nineteenth century. It stands on a turned marble socle, and the surface has a light, even weathering.",
+      "details": [
+        "Carved white marble",
+        "Turned marble socle",
+        "After a Roman original",
+        "Light surface weathering",
+        "Socle fixed with a bronze dowel"
+      ],
+      "dimensions": {
+        "width": 27,
+        "depth": 30,
+        "height": 51,
+        "weight": 24
+      },
+      "image": "/img/products/grand-tour-marble-bust/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/grand-tour-marble-bust/main.webp",
+          "alt": "White marble bust of a young man on a round socle"
+        },
+        {
+          "src": "/img/products/grand-tour-marble-bust/front.webp",
+          "alt": "Grand Tour Marble Bust from the front"
+        },
+        {
+          "src": "/img/products/grand-tour-marble-bust/side.webp",
+          "alt": "Grand Tour Marble Bust in profile"
+        }
+      ],
+      "model": "/models/grand-tour-marble-bust.glb",
+      "finishes": [],
+      "delivery": "white-glove",
+      "isFeatured": true,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1043",
+      "slug": "blue-and-white-transferware-vase",
+      "name": "Blue and White Transferware Vase",
+      "maker": "Ellcombe Pottery",
+      "origin": "England, c. 1890",
+      "category": "objects",
+      "era": "antique",
+      "price": 420,
+      "materials": [
+        "earthenware"
+      ],
+      "blurb": "An ovoid earthenware vase printed with blue flowers.",
+      "description": "An ovoid vase transfer-printed with scattered blue flowers and leaves, with a banded rim and foot. The glaze has a fine, even crackle.",
+      "details": [
+        "Transfer-printed earthenware",
+        "Fine crackle to the glaze",
+        "Banded rim and foot",
+        "No chips or restoration",
+        "Not watertight; use a liner for flowers"
+      ],
+      "dimensions": {
+        "width": 26,
+        "depth": 26,
+        "height": 44,
+        "weight": 2.4
+      },
+      "image": "/img/products/blue-and-white-transferware-vase/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/blue-and-white-transferware-vase/main.webp",
+          "alt": "Ovoid vase printed with blue flowers on a white ground"
+        },
+        {
+          "src": "/img/products/blue-and-white-transferware-vase/front.webp",
+          "alt": "Blue and White Transferware Vase from the front"
+        },
+        {
+          "src": "/img/products/blue-and-white-transferware-vase/top.webp",
+          "alt": "Blue and White Transferware Vase from above"
+        }
+      ],
+      "model": null,
+      "finishes": [],
+      "delivery": "parcel",
+      "isFeatured": false,
+      "isNew": false
+    },
+    {
+      "sku": "WF-1044",
+      "slug": "engraved-brass-floor-vase",
+      "name": "Engraved Brass Floor Vase",
+      "maker": "Qadir Brass Works",
+      "origin": "India, c. 1910",
+      "category": "objects",
+      "era": "antique",
+      "price": 560,
+      "materials": [
+        "brass"
+      ],
+      "blurb": "A tall trumpet-necked vase with engraved bands.",
+      "description": "A tall brass vase with a flared trumpet neck, a bulbous body on a slender stem and bands of fine engraving. The patina has been left as found.",
+      "details": [
+        "Spun and engraved brass",
+        "Hand-engraved bands",
+        "Patina left as found",
+        "Weighted foot",
+        "Stands on the floor or a low table"
+      ],
+      "dimensions": {
+        "width": 23,
+        "depth": 23,
+        "height": 69,
+        "weight": 4.2
+      },
+      "image": "/img/products/engraved-brass-floor-vase/main.webp",
+      "gallery": [
+        {
+          "src": "/img/products/engraved-brass-floor-vase/main.webp",
+          "alt": "Tall brass vase with a trumpet neck and engraved bands"
+        },
+        {
+          "src": "/img/products/engraved-brass-floor-vase/front.webp",
+          "alt": "Engraved Brass Floor Vase from the front"
+        },
+        {
+          "src": "/img/products/engraved-brass-floor-vase/top.webp",
+          "alt": "Engraved Brass Floor Vase from above"
+        }
+      ],
+      "model": null,
+      "finishes": [],
+      "delivery": "parcel",
+      "isFeatured": false,
+      "isNew": false
+    }
+  ]
+}

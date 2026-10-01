@@ -7,15 +7,15 @@ import {
   describe,
   expect,
   it,
+  readDemo,
   vi,
   waitForEvent,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import {
   expectComplexity,
   flush,
   measureComplexity,
   mountView,
-  readDemo,
 } from "@excom/quark/support/tests/view-helpers";
 
 const position = {

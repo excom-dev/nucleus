@@ -10,7 +10,7 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 describe("quark-modules loader", () => {
   it("resolves the pane's helper module from the bundle", async () => {

@@ -27,7 +27,7 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import { parse } from "@excom/quark-parser";
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";

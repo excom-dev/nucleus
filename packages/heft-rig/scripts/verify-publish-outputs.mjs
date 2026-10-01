@@ -23,6 +23,10 @@
  *     fallback arrays alike. This is what catches a `types` condition
  *     pointing at a `.d.ts` the build never emits.
  *   - `files` is present and includes `dist`, so npm packs the build output
+ *   - every relative specifier in a `.d.ts` under `dist` resolves to an emitted
+ *     `.d.ts` (or `<spec>/index.d.ts`) inside `dist`, so consumers do not see
+ *     `any` for exports whose declarations the tarball lacks. Packages with no
+ *     declarations are left alone.
  *
  * Wildcard (`*`) subpath targets are reported as-is only when their literal
  * prefix directory is missing — a pattern cannot be resolved to one file.
@@ -34,7 +38,7 @@
  * — a per-package Rush phase would not see the siblings. Node built-ins only.
  */
 import { readFile } from "node:fs/promises";
-import { existsSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { realpath } from "node:fs/promises";
@@ -81,7 +85,7 @@ export async function verifyPublishOutputs(repoRoot = findRepoRoot()) {
 
   console.log(
     `OK: ${checked} publishable package(s) have dist/exports.generated.json, ` +
-      `a resolvable exports map and "dist" in files.`,
+      `a resolvable exports map, "dist" in files and resolving declarations.`,
   );
   return problems;
 }
@@ -117,6 +121,7 @@ function checkProject(projectRoot, pkg) {
 
   problems.push(...checkExports(projectRoot, pkg.exports));
   problems.push(...checkFiles(pkg.files));
+  problems.push(...checkDeclarations(projectRoot));
 
   return problems;
 }
@@ -197,6 +202,40 @@ function checkFiles(files) {
     return normalized === "dist" || normalized.startsWith("dist/");
   });
   return packsDist ? [] : [`"files" does not include "dist" (has: ${files.join(", ")})`];
+}
+
+const DECLARATION_IMPORT = /(?:from\s*|import\(\s*|import\s+)["'](\.{1,2}\/[^"']+)["']/g;
+
+/** Names the first relative specifier in a `dist` `.d.ts` with no declaration behind it. */
+function checkDeclarations(projectRoot) {
+  const dist = path.resolve(projectRoot, "dist");
+  if (!existsSync(dist)) return [];
+  const dangling = readdirSync(dist, { recursive: true })
+    .filter((file) => file.endsWith(".d.ts"))
+    .sort()
+    .flatMap((file) => {
+      const dir = path.dirname(path.join(dist, file));
+      const source = readFileSync(path.join(dist, file), "utf8");
+      return [...source.matchAll(DECLARATION_IMPORT)]
+        .filter(([, spec]) => !resolvesToDeclaration(dist, dir, spec))
+        .map(([, spec]) => ({ file, spec }));
+    });
+  if (!dangling.length) return [];
+  const [{ file, spec }] = dangling;
+  return [
+    `dangling declaration path ${spec} in dist/${file}` +
+      (dangling.length > 1 ? ` (${dangling.length} dangling in total)` : ""),
+  ];
+}
+
+function resolvesToDeclaration(dist, dir, spec) {
+  return [`${spec}.d.ts`, path.join(spec, "index.d.ts")].some((candidate) => {
+    const resolved = path.resolve(dir, candidate);
+    return (
+      !path.relative(dist, resolved).startsWith("..") &&
+      statSync(resolved, { throwIfNoEntry: false })?.isFile()
+    );
+  });
 }
 
 function findRepoRoot() {

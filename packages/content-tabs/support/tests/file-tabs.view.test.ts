@@ -4,9 +4,10 @@ import {
   describe,
   expect,
   it,
+  readDemo,
   wait,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
-import { mountView, readDemo } from "@excom/quark/support/tests/view-helpers";
+} from "@excom/nucleus-test";
+import { mountView } from "@excom/quark/support/tests/view-helpers";
 
 describe("file-tabs view", () => {
   afterEach(() => {

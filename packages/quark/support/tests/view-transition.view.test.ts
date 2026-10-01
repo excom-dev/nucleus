@@ -5,7 +5,8 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+  readDemo,
+} from "@excom/nucleus-test";
 import { installViewTransitionStub } from "./helpers";
 import {
   click,
@@ -13,7 +14,6 @@ import {
   flush,
   measureComplexity,
   mountView,
-  readDemo,
 } from "./view-helpers";
 
 const names = (root: Element) =>

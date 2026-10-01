@@ -4,7 +4,7 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 const key = (k: string, init: KeyboardEventInit = {}) =>
   new KeyboardEvent("keydown", { key: k, ...init });

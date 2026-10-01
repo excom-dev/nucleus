@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/docs-site",
+      "comment": "Fix happy-dom iframe throw in live-app test and correct nav order assertion in site-nav test",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/docs-site"
+}

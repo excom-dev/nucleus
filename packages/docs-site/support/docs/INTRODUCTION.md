@@ -16,11 +16,11 @@ Your HTML __*is*__ the app! Drop-in custom elements that each have a single resp
 - **Little to no JavaScript** You no longer need to write JS for the vast majority of UI cases. You may still call-out to your own pure functions for complex cases.
 - **Native++** It's real HTML. With a separate, synergistic guest: Quark.
 - **No magic** No special frameworks, build processes, rendering wizardry, or "HTML-in-my-JS" / "JS-in-my-HTML" DSLs.
-- **Progressively enhanced** Drop into existing static/server-side-rendered sites. Neutron and Quark can also be used independently.
+- **Progressively enhanced** Drop into existing static/server-side-rendered sites. Nucleus elements and Quark can also be used independently.
 - **Fully composable** Templates, templating, behavior, and custom logic are all decoupled & robust.
 - **Reactive State Machine** A simple, reliable, declarative syntax for your business logic - Quark.
 - **No reconciliation tax** No large memory copies of state/DOM to be rebuilt, diffed against the DOM, recompiled with every state change.
-- **Lightweight** All Nucleus Kit elements + Quark + Neutron have a smaller footprint (just over ~50kb compressed) than some UI framework cores alone.
+- **Lightweight** All Nucleus elements + Quark + Neutron have a smaller footprint (just over ~50kb compressed) than some UI framework cores alone.
 
 ## What's in the stack
 
@@ -45,7 +45,13 @@ Every piece stands alone. Use one element on an existing site, or compose the wh
 
 Content-rich sites, complex data-driven business rules, progressive enhancement of static/server-rendered pages, embedded user experiences. See [Limitations](/nucleus/docs/limitations) for the edges.
 
-The Nucleus Stack also opens up new possibilities that were not easily served by any UI technology before: zero-build-tool UIs (e.g. on-the-fly generation), declarative & auditable target for LLM UI building, plain text assembly to rich UX (like a CMS), incremental upgrading of static/legacy SSR sites, resource-constrained web UIs (especially where scripting needs to be validated or limited, like an ATM), embedded UX (such as upgrading markdown with embedded functionality).
+The Nucleus Stack also opens up new possibilities that were not easily served by any UI technology before:
+- zero-build-tool UIs (e.g. on-the-fly generation)
+- declarative & auditable target for LLM UI building
+- programmatic assembly of rich UX (like a CMS)
+- incremental upgrading of static/legacy SSR sites
+- resource-constrained, secure, or sandboxed web UIs (especially where scripting needs to be validated or limited, like an ATM)
+- embedded UX (such as upgrading markdown with embedded functionality)
 
 ## Dogfood is nutritious
 

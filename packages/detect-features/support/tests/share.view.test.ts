@@ -4,8 +4,9 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
-import { mountView, readDemo } from "@excom/quark/support/tests/view-helpers";
+  readDemo,
+} from "@excom/nucleus-test";
+import { mountView } from "@excom/quark/support/tests/view-helpers";
 
 describe("share view", () => {
   afterEach(() => {

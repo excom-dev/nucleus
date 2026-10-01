@@ -4,9 +4,10 @@ import {
   describe,
   expect,
   it,
+  readDemo,
   wait,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
-import { click, flush, mountView, readDemo } from "@excom/quark/support/tests/view-helpers";
+} from "@excom/nucleus-test";
+import { click, flush, mountView } from "@excom/quark/support/tests/view-helpers";
 
 const rowOrder = (tr: HTMLElement) =>
   parseInt(tr.style.getPropertyValue("--data-tr-order") || "0", 10);

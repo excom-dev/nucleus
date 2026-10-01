@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/quark-formatter",
+      "comment": "Set `excom.navGroup: \"libraries\"` so the docs site lists the package in its Libraries group",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/quark-formatter"
+}

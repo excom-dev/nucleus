@@ -680,20 +680,6 @@ async function getConfig(
               entryRoot: packageRoot,
               insertTypesEntry: false,
               tsconfigPath: resolve(packageRoot, "./tsconfig.json"),
-              beforeWriteFile(filePath, content) {
-                if (!filePath.endsWith(".d.ts")) {
-                  return null;
-                }
-                // `./src/` → `../src/` in dist/ `.d.ts` (source imports `./src/`).
-                // Matches import/export from `"./src/..."` or `'./src/...'`.
-                const adjusted = content.replace(
-                  /((?:import|export)(?:\s+.*?)?\s+from\s+['"])(\.\/src\/)/g,
-                  "$1../src/",
-                );
-                return adjusted === content
-                  ? null
-                  : { filePath, content: adjusted };
-              },
             }),
           ]
         : [],

@@ -31,6 +31,7 @@
     "@excom/content-drawer": "workspace:^",
     "@excom/event-handler": "workspace:^",
     "@excom/heft-rig": "workspace:^",
+    "@excom/nucleus-test": "workspace:^",
     "@excom/quark": "workspace:^",
     "@excom/quark-sheet": "workspace:^"
   },

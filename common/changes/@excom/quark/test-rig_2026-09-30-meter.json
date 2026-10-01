@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/quark",
+      "comment": "Quark.meter exposes the engine's work counters for complexity snapshots",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@excom/quark"
+}

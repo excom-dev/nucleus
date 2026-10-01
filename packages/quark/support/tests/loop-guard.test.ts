@@ -26,7 +26,7 @@ import {
   fixture,
   it,
   vi,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import "@excom/provider-storage";
 import { LoopGuard, type LoopGuardTrip } from "@excom/kit-utils";
 import { flush, mount, unregisterAll } from "./helpers";

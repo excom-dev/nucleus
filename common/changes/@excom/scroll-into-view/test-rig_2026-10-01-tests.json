@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/scroll-into-view",
+      "comment": "Add `@excom/nucleus-test` and update test imports",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/scroll-into-view"
+}

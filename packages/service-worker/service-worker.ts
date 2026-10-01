@@ -1,9 +1,4 @@
-import {
-  ConstructorType,
-  Neutron,
-  TEvent,
-  TokenList,
-} from "@excom/neutron";
+import { ConstructorType, Neutron, TEvent, TokenList } from "@excom/neutron";
 
 const SW_EVENTS = ["message", "messageerror", "controllerchange"];
 

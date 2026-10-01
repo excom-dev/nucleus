@@ -14,6 +14,7 @@ import {
 import { warnStaticCycles } from "./cycle-check";
 import { attachDevtools, publicize } from "./devtools-hook";
 import { installElementApi } from "./element-api";
+import { counts, type QuarkMeter, resetCounts } from "./meter";
 import { listen, observe, unobserve } from "./observer";
 import type { Attribute, Listener, Variable } from "./properties";
 import {
@@ -159,6 +160,24 @@ export class Quark {
    * `"timeout"`. For tests and tools; sheets have no after-render hook.
    */
   static whenSettled = whenSettled;
+  /**
+   * Work counters for complexity snapshots, engine-wide and always on; see
+   * `measureComplexity` / `trackComplexity` in `@excom/nucleus-test`.
+   */
+  static readonly meter: QuarkMeter = {
+    counts,
+    reset: resetCounts,
+    scopeSelectors: () =>
+      QuarkRegistry.sheets.flatMap(
+        (ref) =>
+          ref
+            .deref()
+            ?.rules.flatMap((rule) => [
+              rule.matchSelector,
+              rule.scopedSelector(),
+            ]) ?? []
+      ),
+  };
   id: number;
   rules: Rule[] = [];
   host: WeakRef<HTMLElement>;
@@ -467,6 +486,7 @@ export class Quark {
     options: QuarkOptions = {},
     inserted?: InsertedNodes
   ) {
+    counts.quarkRuns++;
     const host = this.host.deref();
     if (!host) return QuarkLogger.error("Quark: Host not found");
     const runId = options?.runId || generateID();

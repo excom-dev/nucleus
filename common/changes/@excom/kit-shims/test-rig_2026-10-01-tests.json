@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/kit-shims",
+      "comment": "Add `@excom/nucleus-test` and update test imports",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/kit-shims"
+}

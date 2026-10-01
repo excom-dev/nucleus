@@ -11,10 +11,11 @@ import {
   describe,
   expect,
   it,
+  readFileRelative,
   vi,
   wait,
   waitForEvent,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import { Quark } from "@excom/quark";
 import {
   bypassSelectorCache,
@@ -22,11 +23,10 @@ import {
   expectComplexity,
   flush,
   measureComplexity,
-  readViewFile,
 } from "@excom/quark/support/tests/view-helpers";
 
-const html = readViewFile(import.meta.url, "../../public/views/live-app/live-app.html");
-const quarkSrc = readViewFile(
+const html = readFileRelative(import.meta.url, "../../public/views/live-app/live-app.html");
+const quarkSrc = readFileRelative(
   import.meta.url,
   "../../public/views/live-app/live-app.quark",
 );
@@ -147,9 +147,18 @@ describe("live-app view", () => {
   beforeEach(() => {
     calls.length = 0;
     overrides.clear();
-    // happy-dom would try to navigate the preview iframe
-    const settings = (window as any).happyDOM?.settings;
-    if (settings) settings.disableIframePageLoading = true;
+    // happy-dom 20.x throws when an iframe connects to the document;
+    // suppress it so the rest of the test (which never needs the iframe
+    // content) proceeds normally.
+    const origAppendChild = Element.prototype.appendChild;
+    vi.spyOn(Element.prototype, "appendChild").mockImplementation(function (this: Element, node: Node) {
+      try {
+        return origAppendChild.call(this, node);
+      } catch (e) {
+        if (e instanceof DOMException && e.message.includes("Iframe")) return node as any;
+        throw e;
+      }
+    });
     Quark.moduleLoader = async (url: string) => {
       if (url.includes("shell")) return shellStub;
       throw new Error(`unexpected @use module: ${url}`);

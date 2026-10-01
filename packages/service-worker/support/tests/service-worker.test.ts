@@ -8,7 +8,7 @@ import {
   it,
   vi,
   wait,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 /*
  * Like a real `EventTarget`: several listeners per type, de-duplicated

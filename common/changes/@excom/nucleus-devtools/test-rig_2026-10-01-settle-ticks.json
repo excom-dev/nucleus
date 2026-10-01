@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/nucleus-devtools",
+      "comment": "Increase settle ticks in element view test to avoid CI timer race",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/nucleus-devtools"
+}

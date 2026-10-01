@@ -6,7 +6,8 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+  readDemo,
+} from "@excom/nucleus-test";
 import { installViewTransitionStub } from "@excom/quark/support/tests/helpers";
 import {
   expectComplexity,
@@ -14,7 +15,6 @@ import {
   installDemoModules,
   measureComplexity,
   mountView,
-  readDemo,
   restoreDemoModules,
 } from "@excom/quark/support/tests/view-helpers";
 

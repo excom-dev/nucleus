@@ -1,0 +1,27 @@
+<section id="checkout-delivery">
+  <quark-sheet src-url="/views/checkout/delivery.quark"></quark-sheet>
+  <h2 id="delivery-title">Delivery</h2>
+  <p bind-zone></p>
+  <spa-a route-href="/bag/checkout/payment" listen-for="super-form-success">
+    <super-form>
+      <form action="/api/checkout" method="patch">
+        <fieldset class="choices" aria-labelledby="delivery-title" bind-options>
+          <template>
+            <label>
+              <input type="radio" name="delivery" disabled>
+              <strong bind-item="name"></strong>
+              <data></data>
+              <small bind-item="blurb"></small>
+              <small bind-item="eta"></small>
+              <small bind-item="reason"></small>
+            </label>
+          </template>
+        </fieldset>
+        <p role="alert"></p>
+        <footer class="actions">
+          <button type="submit">Continue to payment</button>
+        </footer>
+      </form>
+    </super-form>
+  </spa-a>
+</section>

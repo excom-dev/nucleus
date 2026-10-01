@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/quark",
+      "comment": "Fix the published type declarations: `index.d.ts` pointed at a folder that is not in the tarball, so consumers got `any` for named re-exports and missing-member errors for `export *` instead of the real types",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/quark"
+}

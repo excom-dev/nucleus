@@ -1,0 +1,125 @@
+<article id="home">
+  <link rel="stylesheet" href="/views/home/home.css">
+  <quark-sheet src-url="/views/home/home.quark"></quark-sheet>
+  <provider-fetch api-url="/api/home" class="abstract">
+    <header class="bar">
+      <p class="wordmark">Wrenfield</p>
+    </header>
+
+    <div class="wf-skeleton" bind-skeleton="hero" aria-hidden="true">
+      <div class="stage"></div>
+      <div style="width: 30%"></div>
+      <div style="width: 80%"></div>
+      <div style="width: 60%"></div>
+    </div>
+    <data-product bind-hero hidden>
+      <spa-a bind-product-link aria-hidden="true">
+        <figure class="stage"><img alt="" bind-product-image></figure>
+      </spa-a>
+      <hgroup>
+        <p class="eyebrow" bind-product="origin"></p>
+        <h1 bind-product="name"></h1>
+        <p bind-product="blurb"></p>
+      </hgroup>
+      <spa-a role="button" bind-product-link>View the piece</spa-a>
+    </data-product>
+
+    <section>
+      <header>
+        <p class="eyebrow">The collection</p>
+        <h2>Everything in the house</h2>
+        <spa-a route-href="/shop" role="link" transition-types="tab">Shop all</spa-a>
+      </header>
+      <ul bind-collections class="rail">
+        <template>
+          <li>
+            <spa-a role="link">
+              <figure class="stage"><img alt="" loading="lazy"></figure>
+              <h3 bind-item="name"></h3>
+              <p bind-count></p>
+            </spa-a>
+          </li>
+        </template>
+      </ul>
+      <div bind-skeleton="collections" role="list" class="rail" aria-hidden="true">
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+      </div>
+    </section>
+
+    <section bind-rail="featured">
+      <header>
+        <p class="eyebrow">This season</p>
+        <h2>Featured pieces</h2>
+        <spa-a route-href="/shop" role="link" transition-types="tab">See all</spa-a>
+      </header>
+      <div bind-products role="list" class="rail" hidden></div>
+      <div bind-skeleton role="list" class="rail" aria-hidden="true">
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+      </div>
+    </section>
+
+    <section bind-rail="antiques">
+      <header>
+        <p class="eyebrow">The antiques room</p>
+        <h2>Restored by hand, one of each</h2>
+        <spa-a route-href="/shop?era=antique" role="link" transition-types="tab">Enter the room</spa-a>
+      </header>
+      <div bind-products role="list" class="rail" hidden></div>
+      <div bind-skeleton role="list" class="rail" aria-hidden="true">
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+      </div>
+    </section>
+
+    <section bind-rail="arrivals">
+      <header>
+        <p class="eyebrow">Just in</p>
+        <h2>New arrivals</h2>
+        <spa-a route-href="/shop?sort=newest" role="link" transition-types="tab">See all</spa-a>
+      </header>
+      <div bind-products role="list" class="rail" hidden></div>
+      <div bind-skeleton role="list" class="rail" aria-hidden="true">
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+      </div>
+    </section>
+
+    <section bind-rail="recent">
+      <header>
+        <p class="eyebrow">Where you left off</p>
+        <h2>Recently viewed</h2>
+      </header>
+      <div bind-products role="list" class="rail" hidden></div>
+      <div bind-skeleton role="list" class="rail" aria-hidden="true">
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+        <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+      </div>
+    </section>
+
+    <aside class="trade card">
+      <p class="eyebrow">For designers and architects</p>
+      <h2>The trade programme</h2>
+      <p>Fifteen per cent off every piece, invoices on request and one person to call for the whole project.</p>
+      <spa-a route-href="/account" role="button" class="outline" transition-types="tab">Switch on trade pricing</spa-a>
+      <strong>Trade pricing is on.</strong>
+    </aside>
+
+    <section class="error">
+      <svg aria-hidden="true"><use href="/img/icons.svg#circle-alert"/></svg>
+      <h2>We could not open the showroom</h2>
+      <p bind-error></p>
+    </section>
+  </provider-fetch>
+</article>

@@ -151,11 +151,12 @@ export const AT_RULES: readonly AtRuleDoc[] = [
   {
     syntax: '@use "url" [as name | as *];',
     description:
-      "Imports a JS module of pure functions anywhere in the sheet. The " +
-      "namespace defaults to the URL's last path segment without its " +
-      "extension; `as *` merges exports into the bare scope, last import " +
-      "winning. The first rule run waits for the imports. A path resolves " +
-      "against the site root; an absolute `http(s)` URL loads as it is.",
+      "Imports a JS module of pure functions (a default export as " +
+      "`default`) anywhere in the sheet. The namespace defaults to the " +
+      "URL's last path segment without its extension; `as *` merges " +
+      "exports into the bare scope, last import winning. The first rule " +
+      "run waits for the imports. A path resolves against the site root; " +
+      "an absolute `http(s)` URL loads as it is.",
   },
   {
     syntax: "@scope { … }",

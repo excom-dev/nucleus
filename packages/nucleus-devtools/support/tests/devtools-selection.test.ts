@@ -19,7 +19,7 @@ import {
   it,
   vi,
   wait,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import { createFakeAdapter, infoFor } from "./fake-adapter";
 
 defineDevtoolsSelection();
@@ -54,7 +54,7 @@ const makeChrome = (info: SelectionInfo) => {
 };
 
 const settle = async () => {
-  for (let i = 0; i < 4; i++) await wait(0);
+  for (let i = 0; i < 16; i++) await wait(0);
 };
 
 const mount = async () => {

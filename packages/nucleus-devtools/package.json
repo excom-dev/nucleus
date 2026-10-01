@@ -31,6 +31,7 @@
   "peerDependencies": {},
   "devDependencies": {
     "@excom/heft-rig": "workspace:^",
+    "@excom/nucleus-test": "workspace:^",
     "typescript": "^5.9.2",
     "wxt": "^0.20.5"
   },

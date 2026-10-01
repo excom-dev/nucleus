@@ -2,10 +2,7 @@ import { Quark } from "../../index";
 import {
   fixture,
   waitForEvent,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
-import { readFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+} from "@excom/nucleus-test";
 import * as demoUtils from "../../../docs-site/public/demo-utils";
 import { flush } from "./helpers";
 
@@ -37,15 +34,6 @@ export const installDemoModules = (extra?: Record<string, unknown>) => {
 export const restoreDemoModules = () => {
   Quark.moduleLoader = originalLoader;
 };
-
-export const readViewFile = (fromImportMetaUrl: string, relPath: string) =>
-  readFileSync(
-    resolve(dirname(fileURLToPath(fromImportMetaUrl)), relPath),
-    "utf8"
-  );
-
-export const readDemo = (fromImportMetaUrl: string, name: string) =>
-  readViewFile(fromImportMetaUrl, `../demos/${name}.html`);
 
 const stripAssets = (html: string) =>
   html.replace(/<link[\s\S]*?>/g, "").replace(/\s+src-url="[^"]*"/g, "");

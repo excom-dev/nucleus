@@ -10,7 +10,7 @@ import {
   vi,
   wait,
   waitForEvent,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 describe("include-content", () => {
   afterEach(() => {

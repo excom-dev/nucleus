@@ -10,6 +10,8 @@
  *     upstream CEMs via `mixins[].package` (flatten composition)
  *   - `support/docs/README.md` — prose, primary element only; skeleton
  *     with placeholders expanded in place (mirrors the docs site)
+ *   - `CHANGELOG.json` — release notes, primary only: the newest
+ *     `RELEASE_NOTES_LIMIT` releases, then a link to the rest on the site
  *   - `support/demos/*.html` (not index) — snippets, primary only
  *
  * README placeholders (same as the docs site):
@@ -20,8 +22,8 @@
  *
  * Output names: tag (`spa-a.md`) or kebab declaration (`listenable-element.md`
  * for `ListenableElement`). Primary = filename matching the package shortname
- * (`spa-route.md` in `spa-route`), else first decl. Only primary gets README
- * and demos.
+ * (`spa-route.md` in `spa-route`), else first decl. Only primary gets README,
+ * release notes and demos.
  *
  * Mixin attributes/events/slots fold into the API table with `Inherited from`.
  * No CEM → silent skip (Rush bulk stays runnable).
@@ -31,6 +33,12 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { realpath } from "node:fs/promises";
+
+import { packageUrl } from "./build-npm-readmes.mjs";
+import { readReleaseNotes } from "./release-notes.mjs";
+
+/** Newest releases inlined in the primary element's docs. */
+export const RELEASE_NOTES_LIMIT = 3;
 
 export async function buildDocs(packageRoot = process.cwd()) {
   const pkg = JSON.parse(
@@ -59,6 +67,10 @@ export async function buildDocs(packageRoot = process.cwd()) {
   );
   const demos = await readDemos(path.resolve(packageRoot, "support/demos"));
   const installation = buildInstallation(pkg, packageRoot);
+  const releaseNotes = renderReleaseNotes(
+    await readReleaseNotes(packageRoot, pkg.name),
+    shortName,
+  );
 
   const named = flats.map((decl) => ({
     decl,
@@ -79,6 +91,7 @@ export async function buildDocs(packageRoot = process.cwd()) {
       readme: isPrimary ? readme : undefined,
       demos: isPrimary ? demos : [],
       installation: isPrimary ? installation : undefined,
+      releaseNotes: isPrimary ? releaseNotes : [],
     });
     await writeFile(path.resolve(outDir, `${fileName}.md`), md, "utf8");
   }
@@ -324,7 +337,7 @@ function mergeInherited(target, source, fromPackage) {
 
 // --- Markdown rendering -------------------------------------------------
 
-function renderElementMarkdown({ decl, readme, demos, installation }) {
+function renderElementMarkdown({ decl, readme, demos, installation, releaseNotes }) {
   const demoList = demos ?? [];
 
   // README is the skeleton (same as the docs site). Unreferenced install /
@@ -341,6 +354,7 @@ function renderElementMarkdown({ decl, readme, demos, installation }) {
     if (!usedApi) {
       renderDeclSections(lines, decl, { headingLevel: 2 });
     }
+    lines.push(...releaseNotes);
     const unusedDemos = demoList.filter((d) => !usedDemos.has(d.name));
     if (unusedDemos.length) {
       lines.push("## Demo sources", "");
@@ -366,6 +380,7 @@ function renderElementMarkdown({ decl, readme, demos, installation }) {
     renderInstallationSection(lines, installation);
   }
   renderDeclSections(lines, decl, { headingLevel: 2 });
+  lines.push(...releaseNotes);
   if (demoList.length) {
     lines.push("## Demo sources", "");
     for (const d of demoList) {
@@ -373,6 +388,30 @@ function renderElementMarkdown({ decl, readme, demos, installation }) {
     }
   }
   return lines.join("\n");
+}
+
+/**
+ * `## Release notes`: the newest `RELEASE_NOTES_LIMIT` releases as bullets,
+ * then a link to the package page when older ones exist. No lines without
+ * releases.
+ */
+function renderReleaseNotes(releases, shortName) {
+  if (!releases.length) return [];
+  return [
+    "## Release notes",
+    "",
+    ...releases
+      .slice(0, RELEASE_NOTES_LIMIT)
+      .flatMap(({ version, day, notes }) => [
+        `### ${version}${day && ` (${day})`}`,
+        "",
+        ...notes.map((note) => `- ${note}`),
+        "",
+      ]),
+    ...(releases.length > RELEASE_NOTES_LIMIT
+      ? [`Older releases: ${packageUrl(shortName)}`, ""]
+      : []),
+  ];
 }
 
 /**

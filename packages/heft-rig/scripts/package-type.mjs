@@ -31,3 +31,11 @@ export async function getPackageType(packageRoot) {
 export async function isSitePackage(packageRoot) {
   return (await getPackageType(packageRoot)) === "site";
 }
+
+/**
+ * @param {string} packageRoot
+ * @returns {Promise<boolean>}
+ */
+export async function isAppPackage(packageRoot) {
+  return (await getPackageType(packageRoot)) === "app";
+}

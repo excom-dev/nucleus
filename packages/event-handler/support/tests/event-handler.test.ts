@@ -6,7 +6,7 @@ import {
   it,
   vi,
   wait,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import "../../index";
 
 if (!navigator.vibrate) {

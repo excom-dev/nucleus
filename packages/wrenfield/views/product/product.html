@@ -1,0 +1,140 @@
+<article id="product">
+  <link rel="stylesheet" href="/views/product/product.css">
+  <quark-sheet src-url="/views/product/product.quark"></quark-sheet>
+  <provider-fetch class="abstract">
+    <header class="bar">
+      <spa-a route-action="back" route-href="/shop" role="link" bind-back>
+        <svg aria-hidden="true"><use href="/img/icons.svg#chevron-left"/></svg><span>Shop</span>
+      </spa-a>
+      <strong aria-hidden="true" bind-name></strong>
+    </header>
+
+    <div class="wf-skeleton" aria-hidden="true"><div class="stage"></div><div style="width: 60%"></div><div style="width: 30%"></div></div>
+
+    <data-product>
+      <content-tabs>
+        <content-tabs-header tab-name="photos" is-open>
+          <button type="button"><svg aria-hidden="true"><use href="/img/icons.svg#image"/></svg>Photos</button>
+        </content-tabs-header>
+        <content-tabs-header tab-name="model">
+          <button type="button"><svg aria-hidden="true"><use href="/img/icons.svg#rotate-3d"/></svg>3D</button>
+        </content-tabs-header>
+        <content-tabs-body tab-name="photos" is-open>
+          <gesture-handler gesture-types="pan-x swipe" pointer-types="touch pen mouse" progress-axis="left"
+            range-ref=":scope > content-carousel" progress-min="-1" progress-max="1" snap-points="-1 0 1" overshoot-resistance="0.2">
+            <content-carousel id="gallery" slide-animation="track">
+              <button type="button" class="icon" rel="prev" command="--back" commandfor="gallery" aria-label="Previous image">
+                <svg aria-hidden="true"><use href="/img/icons.svg#chevron-left"/></svg>
+              </button>
+              <button type="button" class="icon" rel="next" command="--next" commandfor="gallery" aria-label="Next image">
+                <svg aria-hidden="true"><use href="/img/icons.svg#chevron-right"/></svg>
+              </button>
+              <div class="abstract" bind-gallery>
+                <template>
+                  <content-carousel-slide>
+                    <figure class="stage"><img alt="" draggable="false"></figure>
+                  </content-carousel-slide>
+                </template>
+              </div>
+            </content-carousel>
+            <p bind-dots aria-hidden="true"><template><i></i></template></p>
+          </gesture-handler>
+        </content-tabs-body>
+        <content-tabs-body tab-name="model">
+          <model-viewer camera-controls touch-action="none" environment-image="neutral" shadow-intensity="1" shadow-softness="1"
+            ar ar-modes="webxr scene-viewer quick-look">
+            <figure class="stage" slot="poster"><img alt="" bind-product-image></figure>
+            <button type="button" slot="ar-button" class="secondary">
+              <svg aria-hidden="true"><use href="/img/icons.svg#box"/></svg>View in your room
+            </button>
+          </model-viewer>
+        </content-tabs-body>
+      </content-tabs>
+
+      <header>
+        <hgroup>
+          <p class="eyebrow" bind-eyebrow></p>
+          <h1 bind-product="name"></h1>
+          <p><strong bind-product="maker"></strong> <span bind-product="origin"></span></p>
+        </hgroup>
+        <super-form>
+          <form bind-save>
+            <button type="submit" class="icon"><svg aria-hidden="true"><use href="/img/icons.svg#heart"/></svg></button>
+          </form>
+        </super-form>
+      </header>
+
+      <p class="price"><data bind-price></data> <data bind-trade-price></data></p>
+      <p class="badges">
+        <small class="badge" data-badge="sold">Sold</small>
+        <small class="badge" data-badge="in-bag">In your bag</small>
+        <small class="badge" data-badge="new">New</small>
+        <small class="badge" data-badge="unique">One of a kind</small>
+        <small class="badge" data-badge="made-to-order">Made to order</small>
+      </p>
+      <p bind-product="blurb"></p>
+
+      <super-form>
+        <form action="/api/bag" method="post">
+          <input type="hidden" name="sku" bind-sku>
+          <fieldset>
+            <legend>Finish <span bind-finish-name></span> <small bind-finish-delta></small></legend>
+            <p bind-finishes>
+              <template>
+                <label><input type="radio" name="finish"></label>
+              </template>
+            </p>
+          </fieldset>
+          <footer class="actions">
+            <output bind-add-error></output>
+            <button type="submit" bind-add disabled>Add to bag</button>
+          </footer>
+        </form>
+      </super-form>
+
+      <ul class="notes">
+        <li data-note="lead"><svg aria-hidden="true"><use href="/img/icons.svg#clock"/></svg><span bind-lead></span></li>
+        <li data-note="deposit"><svg aria-hidden="true"><use href="/img/icons.svg#receipt"/></svg>A 50% deposit secures your place in the workshop. The balance is due when your piece is ready.</li>
+        <li data-note="ready"><svg aria-hidden="true"><use href="/img/icons.svg#badge-check"/></svg>Restored in our workshop and ready to deliver.</li>
+        <li data-note="hold"><svg aria-hidden="true"><use href="/img/icons.svg#hourglass"/></svg>There is only one. Adding it to your bag holds it for you for 15 minutes.</li>
+        <li data-note="held"><svg aria-hidden="true"><use href="/img/icons.svg#hourglass"/></svg><span bind-held></span></li>
+        <li data-note="sold"><svg aria-hidden="true"><use href="/img/icons.svg#info"/></svg>This piece has found a new home. The pieces below share its character.</li>
+        <li data-note="white-glove"><svg aria-hidden="true"><use href="/img/icons.svg#truck"/></svg>White-glove delivery: two people carry it to the room you choose and take the packaging away.</li>
+        <li data-note="parcel"><svg aria-hidden="true"><use href="/img/icons.svg#package"/></svg>Sent by insured, tracked parcel in 3 to 5 working days.</li>
+      </ul>
+
+      <details open>
+        <summary>Description</summary>
+        <p bind-product="description"></p>
+      </details>
+      <details>
+        <summary>Details</summary>
+        <ul bind-details><template><li></li></template></ul>
+      </details>
+      <details>
+        <summary>Dimensions</summary>
+        <dl>
+          <dt>Width</dt><dd bind-dimension="width"></dd>
+          <dt>Depth</dt><dd bind-dimension="depth"></dd>
+          <dt>Height</dt><dd bind-dimension="height"></dd>
+          <dt>Weight</dt><dd bind-dimension="weight"></dd>
+        </dl>
+      </details>
+    </data-product>
+
+    <section bind-related>
+      <header>
+        <p class="eyebrow">You may also like</p>
+        <h2>Pieces that sit well with it</h2>
+      </header>
+      <div bind-products role="list" class="rail"></div>
+    </section>
+
+    <section class="error">
+      <svg aria-hidden="true"><use href="/img/icons.svg#circle-alert"/></svg>
+      <h2>Piece not found</h2>
+      <p bind-error></p>
+      <spa-a route-href="/shop" role="button" transition-types="tab">Browse the collection</spa-a>
+    </section>
+  </provider-fetch>
+</article>

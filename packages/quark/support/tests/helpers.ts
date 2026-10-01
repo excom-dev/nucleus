@@ -1,16 +1,13 @@
 import { Quark } from "../../index";
-import * as paint from "../../src/paint";
 import { QuarkRegistry } from "../../src/quark";
 import { isQuarkBusy } from "../../src/settle";
-import { Attribute, Listener, Variable } from "../../src/properties";
-import { QuarkInternal } from "../../src/quark-internal";
 import type { QuarkOptions } from "../../src/types";
 import {
-  expect,
   fixture,
+  measureComplexity as measureEngine,
   vi,
   wait,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 /**
  * Sheet + targets must share a parent (Quark host = sheetElement.parent).
@@ -77,135 +74,39 @@ export const flush = async () => {
   for (let i = 0; i < 16 && isQuarkBusy(); i++) await wait(0);
 };
 
-export type ComplexityBudget = {
-  quarkRuns: number;
-  ruleRuns: number;
-  variableRuns: number;
-  attributeRuns: number;
-  listenerRuns: number;
-  setVar: number;
-  getVar: number;
-  schedulePaint: number;
-  querySelectorAll: number;
-  /**
-   * Weighted cost of rule fan-out queries
-   * (`ancestor.querySelectorAll(sel)` in Rule._run): each call adds the
-   * number of elements in the scanned subtree. Lower means the
-   * nearest-common-ancestor logic rooted queries deeper.
-   */
-  queryScopeCost: number;
-  matches: number;
-  closest: number;
-  parentElement: number;
-  setAttribute: number;
-  removeAttribute: number;
-  textContent: number;
-  importNode: number;
-};
+export { type ComplexityBudget, expectComplexity } from "@excom/nucleus-test";
 
 /**
- * Count Quark work units (not wall-clock). Snapshots are the regression
- * baseline.
- *
- * Start measuring before the work under test; call `take()` after it
- * settles. For observer-driven cases, apply triggering DOM writes
- * *before* measuring so harness mutations are not counted.
+ * `measureComplexity` from `@excom/nucleus-test`, scoped to one sheet.
+ * `Quark.meter` is engine-wide, but these snapshots were taken per sheet:
+ * `quarkRuns`, `ruleRuns` and the subtree-query selectors stay this sheet's.
  *
  * Do not spy `queueRunRules` after `register()`: MutationObserver
  * closes over the original function at observe time.
  */
-/** Elements in `el`'s subtree, the scan breadth of a query rooted there. */
-const countDescendants = (el: Element): number => {
-  let count = 0;
-  for (const child of el.children) count += 1 + countDescendants(child);
-  return count;
-};
-
 export const measureComplexity = (quark: Quark) => {
-  const ruleRunsBefore = quark.rules.reduce((n, r) => n + r.numberOfRuns, 0);
-  /*
-   * Fan-out queries are identifiable by selector: scoped rules query
-   * with their `[q-scope="<id>"]`-prefixed selector (id exists only
-   * after register, so collect lazily in take()); unscoped with the
-   * bare one.
-   */
-  const ruleSelectors = () =>
-    new Set(quark.rules.flatMap((r) => [r.matchSelector, r.scopedSelector()]));
-
+  const ruleRuns = () => quark.rules.reduce((n, r) => n + r.numberOfRuns, 0);
+  const ruleRunsBefore = ruleRuns();
   const runSpy = vi.spyOn(quark, "run");
-  // Property executions by kind, the primary "work done" regression signal.
-  const variableRunSpy = vi.spyOn(Variable.prototype, "_run");
-  const attributeRunSpy = vi.spyOn(Attribute.prototype, "_run");
-  const listenerRunSpy = vi.spyOn(Listener.prototype, "_run");
-  // Element-state traffic (_q_): variable binding writes and reads.
-  const setVarSpy = vi.spyOn(QuarkInternal.prototype, "setVar");
-  const getVarSpy = vi.spyOn(QuarkInternal.prototype, "getVar");
-  const paintSpy = vi.spyOn(paint, "schedulePaint");
-  const qsaSpy = vi.spyOn(Element.prototype, "querySelectorAll");
-  const matchesSpy = vi.spyOn(Element.prototype, "matches");
-  const closestSpy = vi.spyOn(Element.prototype, "closest");
-  // upward traversal cost, binding resolution walks ancestors via
-  // `el.parentElement` (findBindingOwner in src/bindings.ts)
-  const parentElementSpy = vi.spyOn(Node.prototype, "parentElement", "get");
-  const setAttrSpy = vi.spyOn(Element.prototype, "setAttribute");
-  const removeAttrSpy = vi.spyOn(Element.prototype, "removeAttribute");
-  const textContentSpy = vi.spyOn(Element.prototype, "textContent", "set");
-  const importNodeSpy = vi.spyOn(document, "importNode");
-
+  const meter = measureEngine({
+    get counts() {
+      return {
+        ...Quark.meter.counts,
+        quarkRuns: runSpy.mock.calls.length,
+        ruleRuns: ruleRuns() - ruleRunsBefore,
+      };
+    },
+    reset: Quark.meter.reset,
+    scopeSelectors: () =>
+      quark.rules.flatMap((r) => [r.matchSelector, r.scopedSelector()]),
+  });
   return {
-    take: (): ComplexityBudget => ({
-      quarkRuns: runSpy.mock.calls.length,
-      ruleRuns:
-        quark.rules.reduce((n, r) => n + r.numberOfRuns, 0) - ruleRunsBefore,
-      variableRuns: variableRunSpy.mock.calls.length,
-      attributeRuns: attributeRunSpy.mock.calls.length,
-      listenerRuns: listenerRunSpy.mock.calls.length,
-      setVar: setVarSpy.mock.calls.length,
-      getVar: getVarSpy.mock.calls.length,
-      schedulePaint: paintSpy.mock.calls.length,
-      querySelectorAll: qsaSpy.mock.calls.length,
-      // subtree sizes are sampled at take() time (post-settle), so rendered
-      // rows count toward the scope they were rendered into
-      queryScopeCost: (() => {
-        const selectors = ruleSelectors();
-        return qsaSpy.mock.calls.reduce(
-          (total, [selector], i) =>
-            selectors.has(selector as string)
-              ? total + countDescendants(qsaSpy.mock.contexts[i] as Element)
-              : total,
-          0
-        );
-      })(),
-      matches: matchesSpy.mock.calls.length,
-      closest: closestSpy.mock.calls.length,
-      parentElement: parentElementSpy.mock.calls.length,
-      setAttribute: setAttrSpy.mock.calls.length,
-      removeAttribute: removeAttrSpy.mock.calls.length,
-      textContent: textContentSpy.mock.calls.length,
-      importNode: importNodeSpy.mock.calls.length,
-    }),
+    take: meter.take,
     stop: () => {
       runSpy.mockRestore();
-      variableRunSpy.mockRestore();
-      attributeRunSpy.mockRestore();
-      listenerRunSpy.mockRestore();
-      setVarSpy.mockRestore();
-      getVarSpy.mockRestore();
-      paintSpy.mockRestore();
-      qsaSpy.mockRestore();
-      matchesSpy.mockRestore();
-      closestSpy.mockRestore();
-      parentElementSpy.mockRestore();
-      setAttrSpy.mockRestore();
-      removeAttrSpy.mockRestore();
-      textContentSpy.mockRestore();
-      importNodeSpy.mockRestore();
+      meter.stop();
     },
   };
-};
-
-export const expectComplexity = (budget: ComplexityBudget) => {
-  expect(budget).toMatchSnapshot("complexity");
 };
 
 /**

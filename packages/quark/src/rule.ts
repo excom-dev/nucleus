@@ -13,6 +13,7 @@ import {
   viewBlock,
 } from "./ast";
 import { CHILD_REMOVED } from "./constants";
+import { counts } from "./meter";
 import {
   Attribute,
   Delay,
@@ -606,6 +607,7 @@ export class Rule {
           return;
         }
         this.numberOfRuns++;
+        counts.ruleRuns++;
         elementsToMutate.add(el);
       };
       /** Compound `c`'s element `el` was affected: it is a subject, or subjects sit below / beside it. */
@@ -738,6 +740,7 @@ export class Rule {
             });
           }
           this.numberOfRuns++;
+          counts.ruleRuns++;
           return;
         }
         /*
@@ -763,6 +766,7 @@ export class Rule {
           });
         }
         this.numberOfRuns++;
+        counts.ruleRuns++;
       }
     );
     // execute mutations

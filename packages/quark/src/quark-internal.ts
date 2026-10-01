@@ -1,4 +1,5 @@
 import { syncFormControlAttribute } from "./form-controls";
+import { counts } from "./meter";
 import type { UtilFn } from "./types";
 
 /** How an `@on` slot's functions are registered on the DOM (once per event type). */
@@ -122,6 +123,7 @@ export class QuarkInternal {
   }
   /** Write a binding. Returns `true` when the stored value actually changed. */
   setVar(varName: string, value: unknown): boolean {
+    counts.setVar++;
     const isComparable =
       value === null ||
       value === undefined ||
@@ -145,6 +147,7 @@ export class QuarkInternal {
     return true;
   }
   getVar(varName: string) {
+    counts.getVar++;
     return Array.isArray(this.vars[varName])
       ? this.vars[varName]?.[1]
       : this.vars[varName];

@@ -21,7 +21,7 @@ import {
   it,
   vi,
   wait,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 const g = globalThis as Record<string, unknown>;
 
@@ -35,7 +35,7 @@ type ContentScript = {
 type Background = { main: () => void };
 
 const flush = async () => {
-  for (let i = 0; i < 3; i++) await wait(0);
+  for (let i = 0; i < 8; i++) await wait(0);
 };
 
 beforeAll(() => {

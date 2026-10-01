@@ -10,6 +10,7 @@ import {
   collectVariableNames,
   getExpressionAst,
 } from "./evaluator";
+import { counts } from "./meter";
 import { getQuarkInternal, TQuarkElement } from "./quark-internal";
 import { reportDiagnostic, resolveExpression, resolveField } from "./resolvers";
 import type { Rule } from "./rule";
@@ -208,6 +209,7 @@ export const recordSeq = (
 
 export class Variable extends Property {
   _run(element: TQuarkElement, options: QuarkOptions) {
+    counts.variableRuns++;
     const resolved = super._run(element, options);
     // `preserve` leaves the existing binding untouched
     if (isNoop(resolved)) return false;
@@ -232,7 +234,12 @@ export class Variable extends Property {
   }
 }
 
-export class Attribute extends Property {}
+export class Attribute extends Property {
+  _run(element: TQuarkElement, options: QuarkOptions) {
+    counts.attributeRuns++;
+    return super._run(element, options);
+  }
+}
 
 /**
  * `--custom-prop: expr` writes a CSS custom property on matched elements
@@ -788,6 +795,7 @@ export class Listener extends Property {
     return entry.fn;
   }
   _run(element: TQuarkElement, options: QuarkOptions) {
+    counts.listenerRuns++;
     return resolveField({
       element,
       key: this.key,

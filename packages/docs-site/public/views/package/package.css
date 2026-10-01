@@ -59,6 +59,10 @@
       }
     }
   }
+
+  .release-notes h3 {
+    font-size: 1rem;
+  }
 }
 
 /* Pre-load placeholder for lazy live demos: must apply before the
@@ -367,6 +371,7 @@ include-content[data-demo] {
   counter-reset: start-here;
 
   > li {
+    list-style: none;
     counter-increment: start-here;
     margin: 0 0 0.55rem;
     padding: 0.85rem 1rem;

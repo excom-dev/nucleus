@@ -22,6 +22,9 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+const isBalanced = (script: string) =>
+  ['"', "'"].every((quote) => script.split(quote).length % 2 === 1);
+
 let counter = 0;
 const run = async (pkg: object) => {
   const dir = path.join(root, `pkg-${counter++}`);
@@ -29,7 +32,11 @@ const run = async (pkg: object) => {
   await writeFile(path.join(dir, "package.json"), JSON.stringify(pkg));
   await formatPackageJson(dir);
   const text = await readFile(path.join(dir, "package.json"), "utf8");
-  return { json: JSON.parse(text), text };
+  const json = JSON.parse(text);
+  for (const script of Object.values<string>(json.scripts ?? {})) {
+    expect(isBalanced(script), `unbalanced quotes: ${script}`).toBe(true);
+  }
+  return { json, text };
 };
 
 const RIG_SCRIPTS = {
@@ -118,6 +125,28 @@ describe("formatPackageJson", () => {
     expect(Object.keys(json.excom)).toEqual(["coverageThreshold", "documented", "packageType"]);
   });
 
+  it("accepts the libraries nav group and keeps it in sorted position", async () => {
+    const { json } = await run({
+      name: "@excom/nucleus-dom",
+      version: "1.0.0",
+      excom: { packageType: "library", navGroup: "libraries", documented: true },
+    });
+    expect(json.excom).toEqual({
+      documented: true,
+      navGroup: "libraries",
+      packageType: "library",
+    });
+    expect(Object.keys(json.excom)).toEqual(["documented", "navGroup", "packageType"]);
+  });
+
+  it("rejects a nav group the docs site does not know", async () => {
+    for (const navGroup of ["tools", "", null, 1]) {
+      await expect(
+        run({ name: "@excom/x", version: "1.0.0", excom: { packageType: "library", navGroup } }),
+      ).rejects.toThrow(`Invalid navGroup: ${navGroup} (allowed: libraries)`);
+    }
+  });
+
   it("applies element-base defaults with a PascalCase name", async () => {
     const { json } = await run({
       name: "@excom/fetchable-element",
@@ -172,6 +201,36 @@ describe("formatPackageJson", () => {
     expect(json.keywords).toEqual(["docs-site", "site"]);
   });
 
+  it("applies app defaults (no build output, nothing published)", async () => {
+    const { json } = await run({
+      name: "@excom/shop",
+      version: "1.0.0",
+      excom: { packageType: "app" },
+    });
+    expect(json.description).toBe("shop app");
+    expect(json.files).toEqual([]);
+    expect(json.scripts).toEqual({
+      build: `node -e "console.log('shop: no build output')"`,
+      format: RIG_SCRIPTS.format,
+      test: RIG_SCRIPTS.test,
+      coverage: RIG_SCRIPTS.coverage,
+    });
+    expect(json.devDependencies).toEqual({ "@excom/heft-rig": "workspace:^" });
+    expect(json.keywords).toEqual(["shop", "app"]);
+  });
+
+  it("derives the short name from an unscoped package name", async () => {
+    const { json, text } = await run({
+      name: "plain-lib",
+      version: "1.0.0",
+      excom: { packageType: "library" },
+    });
+    expect(json.description).toBe("plain-lib library");
+    expect(json.keywords).toEqual(["plain-lib"]);
+    expect(json.repository.directory).toBe("packages/plain-lib");
+    expect(text).not.toContain("undefined");
+  });
+
   it("applies heft-rig defaults and honours private packages", async () => {
     const { json } = await run({
       name: "@excom/heft-rig",
@@ -184,9 +243,9 @@ describe("formatPackageJson", () => {
     expect(json.private).toBe(true);
     expect(json.description).toBe("Heft Rig for Monorepo");
     expect(json.scripts).toEqual({
-      build: `node -e "console.log('heft-rig: no build output')`,
-      "build:watch": `node -e "console.log('heft-rig: no build watch')`,
-      format: `node -e "console.log('heft-rig: no format')`,
+      build: `node -e "console.log('heft-rig: no build output')"`,
+      "build:watch": `node -e "console.log('heft-rig: no build watch')"`,
+      format: `node -e "console.log('heft-rig: no format')"`,
       test: "node scripts/vitest.mjs",
       coverage: "node scripts/coverage.mjs",
     });
@@ -209,11 +268,11 @@ describe("formatPackageJson", () => {
     expect(Object.keys(json.engines)).toEqual(["node", "pnpm"]);
     expect("type" in json).toBe(false);
     expect(json.scripts).toEqual({
-      build: `node -e "console.log('misc: no build output')`,
-      "build:watch": `node -e "console.log('misc: no build watch')`,
-      format: `node -e "console.log('misc: no format')`,
-      test: `node -e "console.log('misc: no tests')`,
-      coverage: `node -e "console.log('misc: no coverage')`,
+      build: `node -e "console.log('misc: no build output')"`,
+      "build:watch": `node -e "console.log('misc: no build watch')"`,
+      format: `node -e "console.log('misc: no format')"`,
+      test: `node -e "console.log('misc: no tests')"`,
+      coverage: `node -e "console.log('misc: no coverage')"`,
     });
     expect(json.devDependencies).toEqual({ "@excom/heft-rig": "workspace:^" });
     expect(json.keywords).toEqual(["misc"]);

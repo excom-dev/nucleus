@@ -10,7 +10,7 @@ import {
   describe,
   expect,
   it,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 
 const sorted = (set: Set<string>) => [...set].sort();
 

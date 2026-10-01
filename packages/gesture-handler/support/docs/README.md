@@ -51,7 +51,7 @@ The handoff is one Quark commit: the block that writes the final state (`is-open
 
 Anything else follows the same recipe: read `--gesture-*` in your own CSS, gate the mapping on a fact your sheet writes on start and clears on end.
 
-Give a drag handle `touch-action: none` when using `from-ref`, so the browser does not scroll it away; without `from-ref` the element sets `touch-action` itself from `gesture-types`. Add `mouse` to `pointer-types` for desktop dragging.
+Give a drag handle `touch-action: none` when using `from-ref`, so the browser does not scroll it away; without `from-ref` the element sets `touch-action` itself from `gesture-types`. For `pan-x` / `pan-y`, a touch whose first 3 px run along the handler's axis holds the page still for the rest of that touch (a non-passive `touchmove` listener does this; `touch-action` is unchanged), while a touch that starts across the axis scrolls the page as before. Add `mouse` to `pointer-types` for desktop dragging.
 
 ### Scroll handoff
 

@@ -1,0 +1,38 @@
+{
+  "name": "wrenfield",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Wrenfield, a furniture house for made-to-order pieces, restored antiques, lighting and objects. Built on the Nucleus Stack with no build step and no backend: a service worker plays the API.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24.13.0"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "node -e \"console.log('wrenfield: no build output')\"",
+    "format": "node node_modules/@excom/heft-rig/scripts/format.mjs",
+    "test": "node node_modules/@excom/heft-rig/scripts/vitest.mjs",
+    "coverage": "node node_modules/@excom/heft-rig/scripts/coverage.mjs",
+    "stage": "node scripts/stage.mjs",
+    "deploy": "node scripts/stage.mjs && npx wrangler deploy",
+    "dev": "node node_modules/@excom/heft-rig/scripts/vite-dev.mjs"
+  },
+  "dependencies": {
+    "@excom/nucleus-kit": "workspace:^"
+  },
+  "peerDependencies": {},
+  "devDependencies": {
+    "@excom/heft-rig": "workspace:^",
+    "@excom/nucleus-test": "workspace:^",
+    "@excom/spa-route": "workspace:^"
+  },
+  "bugs": "https://github.com/excom-dev/nucleus/issues",
+  "keywords": [
+    "wrenfield",
+    "app"
+  ],
+  "excom": {
+    "documented": false,
+    "packageType": "app"
+  }
+}

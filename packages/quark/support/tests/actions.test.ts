@@ -20,7 +20,7 @@ import {
   expect,
   it,
   vi,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import { LoopGuard } from "@excom/kit-utils";
 import { createSheet, flush, mount, unregisterAll } from "./helpers";
 

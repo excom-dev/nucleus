@@ -14,7 +14,7 @@
   ],
   "scripts": {
     "build": "node -e \"console.log('heft-rig: no build output')\"",
-    "build:watch": "node -e \"console.log('heft-rig: no build watch')",
+    "build:watch": "node -e \"console.log('heft-rig: no build watch')\"",
     "format": "node -e \"console.log('heft-rig: no format')\"",
     "test": "node scripts/vitest.mjs",
     "coverage": "node scripts/coverage.mjs",
@@ -24,7 +24,6 @@
   },
   "dependencies": {
     "@microsoft/api-extractor": "^7.55.5",
-    "@open-wc/semantic-dom-diff": "^0.20.1",
     "@rushstack/heft": "^1.1.7",
     "@rushstack/heft-typescript-plugin": "^1.1.7",
     "@types/dom-view-transitions": "^1.0.5",

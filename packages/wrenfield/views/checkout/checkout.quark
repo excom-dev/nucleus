@@ -1,0 +1,33 @@
+:scope > provider-fetch {
+  @on super-form-success {
+    @command --fetch;
+  }
+  &[did-load] {
+    $checkout: prop("provision").body;
+    $bag: $checkout.bag;
+  }
+}
+
+nav spa-a[is-active] {
+  aria-current: "step";
+}
+nav spa-a:not([is-active]) {
+  aria-current: none;
+}
+:scope:has([route-href$="/review"][is-active]) details {
+  open: "";
+}
+:scope:not(:has([route-href$="/review"][is-active])) details {
+  open: none;
+}
+
+spa-route super-form {
+  $reply: prop("provision").body;
+  [name] {
+    aria-invalid: if(attr("name") == $reply.field: "true"; else: none);
+  }
+  input + small,
+  [role="alert"] {
+    content: $reply.message;
+  }
+}

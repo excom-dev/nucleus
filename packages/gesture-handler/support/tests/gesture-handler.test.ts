@@ -6,7 +6,7 @@ import {
   it,
   vi,
   wait,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import "../../index";
 
 type PointerInit = {
@@ -37,14 +37,23 @@ const up = (init?: PointerInit) =>
   window.dispatchEvent(pointerEvent("pointerup", init));
 const cancel = (init?: PointerInit) =>
   window.dispatchEvent(pointerEvent("pointercancel", init));
-/** One-finger `touchmove` on `target`; returns the event to read `defaultPrevented`. */
-const touchMove = (target: Element, x: number, y: number) => {
-  const touch = new Touch({ identifier: 1, target, clientX: x, clientY: y });
+/** A `touchmove` on `target` (one finger unless `fingers`); returns the event to read `defaultPrevented`. */
+const touchMove = (
+  target: Element,
+  x: number,
+  y: number,
+  { fingers = 1, cancelable = true } = {}
+) => {
+  const touches = Array.from(
+    { length: fingers },
+    (_, i) => new Touch({ identifier: i + 1, target, clientX: x + i * 50, clientY: y })
+  );
   const e = new TouchEvent("touchmove", {
-    touches: [touch],
-    changedTouches: [touch],
+    touches,
+    targetTouches: touches,
+    changedTouches: touches.slice(0, 1),
     bubbles: true,
-    cancelable: true,
+    cancelable,
   });
   target.dispatchEvent(e);
   return e;
@@ -275,6 +284,109 @@ describe("gesture-handler", () => {
     await pan(locked.el, 10, -40);
     expect(locked.el.getAttribute("gesture-type")).toBe("pan-y");
     expect(locked.el.getAttribute("gesture-direction")).toBe("up");
+    up();
+  });
+
+  it("pan-x / pan-y cancel the page's scroll from the first touch move along their axis", async () => {
+    const x = mount(`gesture-types="pan-x swipe"`);
+    const surface = x.el.querySelector("p")!;
+    down(x.el, { x: 100, y: 100 }, surface);
+    // too short to judge
+    expect(touchMove(surface, 101, 100).defaultPrevented).toBe(false);
+    // sideways: cancelled before threshold-px, then for the rest of the touch
+    expect(touchMove(surface, 104, 101).defaultPrevented).toBe(true);
+    expect(x.el.hasAttribute("gesture-type")).toBe(false);
+    expect(touchMove(surface, 104, 140).defaultPrevented).toBe(true);
+    up();
+    // downward first: the page scrolls, whatever follows
+    down(x.el, { x: 100, y: 100 }, surface);
+    expect(touchMove(surface, 101, 104).defaultPrevented).toBe(false);
+    expect(touchMove(surface, 140, 104).defaultPrevented).toBe(false);
+    up();
+
+    const y = mount(`gesture-types="pan-y"`);
+    const sheet = y.el.querySelector("p")!;
+    down(y.el, { x: 100, y: 100 }, sheet);
+    expect(touchMove(sheet, 100, 104).defaultPrevented).toBe(true);
+    up();
+    down(y.el, { x: 100, y: 100 }, sheet);
+    expect(touchMove(sheet, 104, 100).defaultPrevented).toBe(false);
+    up();
+    // no session, nothing to lock
+    expect(touchMove(sheet, 100, 110).defaultPrevented).toBe(false);
+  });
+
+  it("the pan scroll lock listens, non-passive, only while pan-x / pan-y is listed", () => {
+    const { el } = mount(`gesture-types="pan-y"`);
+    const add = vi.spyOn(el, "addEventListener");
+    const remove = vi.spyOn(el, "removeEventListener");
+    el.setAttribute("gesture-types", "pan");
+    expect(remove).toHaveBeenCalledWith("touchmove", el._lockScroll, { passive: false });
+    el.setAttribute("gesture-types", "pan-x swipe");
+    expect(add).toHaveBeenCalledWith("touchmove", el._lockScroll, { passive: false });
+  });
+
+  it("the pan scroll lock lets go once the pan is rejected", async () => {
+    const { el } = mount(`gesture-types="pan-x"`);
+    const surface = el.querySelector("p")!;
+    down(el, { x: 100, y: 100 }, surface);
+    expect(touchMove(surface, 104, 100).defaultPrevented).toBe(true);
+    // the finger turns down past threshold-px: pan-x rejects the gesture
+    move({ x: 104, y: 140 });
+    await frame();
+    expect(el.hasAttribute("gesture-type")).toBe(false);
+    expect(touchMove(surface, 104, 140).defaultPrevented).toBe(false);
+    up();
+  });
+
+  it("the pan scroll lock skips a second finger and a move it cannot cancel", () => {
+    const { el } = mount(`gesture-types="pan-x"`);
+    const surface = el.querySelector("p")!;
+    down(el, { x: 100, y: 100 }, surface);
+    // two fingers on the surface: not judged
+    expect(touchMove(surface, 110, 100, { fingers: 2 }).defaultPrevented).toBe(false);
+    // judged and locked, but the browser already owns this move
+    expect(touchMove(surface, 110, 100, { cancelable: false }).defaultPrevented).toBe(false);
+    expect(touchMove(surface, 120, 100).defaultPrevented).toBe(true);
+    up();
+  });
+
+  it("the pan scroll lock leaves a scroller under the finger that can still move that way", () => {
+    const { el } = mount(
+      `gesture-types="pan-x"`,
+      `<div data-rail style="overflow-x: auto"><p>card</p></div>`
+    );
+    const rail = el.querySelector<HTMLElement>("[data-rail]")!;
+    const card = rail.querySelector("p")!;
+    rail.scrollLeft = 30;
+    down(el, { x: 100, y: 100 }, card);
+    // rightward scrolls the rail back towards its start
+    expect(touchMove(card, 104, 100).defaultPrevented).toBe(false);
+    up();
+    rail.scrollLeft = 0;
+    down(el, { x: 100, y: 100 }, card);
+    expect(touchMove(card, 104, 100).defaultPrevented).toBe(true);
+    up();
+  });
+
+  it("the pan scroll lock waits for arm-after and skips a rejected pan", async () => {
+    const { el } = mount(`gesture-types="pan-x" arm-after="long-press" long-press-ms="20"`);
+    const surface = el.querySelector("p")!;
+    // not armed yet: the page may scroll
+    down(el, { x: 100, y: 100 }, surface);
+    expect(touchMove(surface, 110, 100).defaultPrevented).toBe(false);
+    up();
+    // held, then sideways: locked
+    down(el, { x: 100, y: 100 }, surface);
+    await wait(40);
+    expect(touchMove(surface, 106, 100).defaultPrevented).toBe(true);
+    up();
+
+    // a vertical move past threshold-px rejects the pan before any touch move
+    const plain = mount(`gesture-types="pan-x"`);
+    const p = plain.el.querySelector("p")!;
+    await pan(plain.el, 0, 40);
+    expect(touchMove(p, 140, 100).defaultPrevented).toBe(false);
     up();
   });
 

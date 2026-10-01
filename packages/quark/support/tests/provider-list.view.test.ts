@@ -5,15 +5,15 @@ import {
   describe,
   expect,
   it,
+  readDemo,
   spyFetch,
   waitForEvent,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import {
   expectComplexity,
   flush,
   measureComplexity,
   mountView,
-  readDemo,
 } from "./view-helpers";
 
 describe("provider-list view", () => {

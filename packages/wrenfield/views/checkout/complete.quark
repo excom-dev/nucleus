@@ -1,0 +1,23 @@
+@use "quark:list" as list;
+@use "quark:map" as map;
+
+provider-fetch[did-load] {
+  $order: prop("provision").body;
+  $bag: $order;
+
+  [bind-order] {
+    content: map.get($order, attr("bind-order"));
+  }
+  [bind-thanks] {
+    content: "Thank you, #{$order.contact.name.split(" ")[0]}";
+  }
+  [bind-confirmation] {
+    content: "Your order is in. A confirmation is on its way to #{$order.contact.email}.";
+  }
+  [bind-next] {
+    content: iterate(list.filter($order.timeline, "isDone", false), none, "id");
+  }
+  [bind-order-link] {
+    route-href: "/account/orders/#{$order.id}";
+  }
+}

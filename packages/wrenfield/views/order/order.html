@@ -1,0 +1,88 @@
+<section id="order" class="narrow">
+  <link rel="stylesheet" href="/views/order/order.css">
+  <quark-sheet src-url="/views/order/order.quark"></quark-sheet>
+  <provider-fetch id="order-record" class="abstract">
+    <header class="bar">
+      <spa-a route-action="back" route-href="/account" role="link">
+        <svg aria-hidden="true"><use href="/img/icons.svg#chevron-left"/></svg>Account
+      </spa-a>
+      <strong aria-hidden="true" bind-order="id"></strong>
+    </header>
+    <div class="wf-skeleton" aria-hidden="true"><div style="width: 60%"></div><div style="width: 35%"></div><div></div></div>
+    <h1>Order <span bind-order="id"></span></h1>
+    <p><span bind-placed></span> <small class="badge" bind-order="statusLabel"></small></p>
+
+    <section>
+      <header>
+        <h2>Status</h2>
+        <button type="button" class="plain" command="--fetch" commandfor="order-record">
+          <svg aria-hidden="true"><use href="/img/icons.svg#rotate-ccw"/></svg>Refresh
+        </button>
+      </header>
+      <ol bind-timeline>
+        <template>
+          <li>
+            <strong bind-item="label"></strong>
+            <p bind-item="detail"></p>
+            <time></time>
+          </li>
+        </template>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Pieces</h2>
+      <div bind-bag-lines role="list" class="summary"></div>
+      <dl class="totals">
+        <dt>Subtotal</dt><dd bind-bag="subtotal"></dd>
+        <dt>Trade discount</dt><dd bind-bag="tradeDiscount"></dd>
+        <dt>Delivery</dt><dd bind-bag="deliveryFee"></dd>
+        <dt>Total</dt><dd bind-bag="total"></dd>
+      </dl>
+    </section>
+
+    <section>
+      <h2>Delivery</h2>
+      <ul class="list">
+        <li>
+          <p>
+            <strong bind-order="delivery.name"></strong>
+            <span bind-order="delivery.eta"></span>
+          </p>
+        </li>
+        <li>
+          <address>
+            <span bind-order="contact.name"></span>
+            <span bind-order="address.line1"></span>
+            <span bind-order="address.line2"></span>
+            <span><span bind-order="address.city"></span>, <span bind-order="address.region"></span> <span bind-order="address.postcode"></span></span>
+            <span bind-order="address.country"></span>
+          </address>
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Payment</h2>
+      <ul class="list">
+        <li>
+          <p>
+            <strong bind-order="payment.name"></strong>
+            <span bind-order="payment.instructions"></span>
+          </p>
+        </li>
+      </ul>
+      <dl class="schedule">
+        <dt>Due today</dt><dd bind-bag="dueToday"></dd>
+        <dt>Due when ready</dt><dd bind-bag="dueLater"></dd>
+      </dl>
+    </section>
+
+    <section class="error">
+      <svg aria-hidden="true"><use href="/img/icons.svg#receipt"/></svg>
+      <h2>Order not found</h2>
+      <p bind-error></p>
+      <spa-a route-href="/account" role="button" transition-types="tab">Back to your account</spa-a>
+    </section>
+  </provider-fetch>
+</section>

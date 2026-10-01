@@ -6,7 +6,7 @@ import {
   fixture,
   it,
   wait,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 // `vi` must come from "vitest" itself so `vi.mock` is hoisted with it
 import { vi } from "vitest";
 import { scrollElementIntoView } from "@excom/kit-scroller";

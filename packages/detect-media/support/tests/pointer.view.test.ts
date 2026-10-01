@@ -6,9 +6,10 @@ import {
   describe,
   expect,
   it,
+  readDemo,
   vi,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
-import { flush, mountView, readDemo } from "@excom/quark/support/tests/view-helpers";
+} from "@excom/nucleus-test";
+import { flush, mountView } from "@excom/quark/support/tests/view-helpers";
 import { lastFake, resetFakes, stubMatchMedia } from "./fake-match-media";
 
 const COARSE = "(pointer: coarse)";

@@ -1,0 +1,52 @@
+<section id="checkout">
+  <link rel="stylesheet" href="/views/checkout/checkout.css">
+  <quark-sheet src-url="/views/checkout/checkout.quark"></quark-sheet>
+  <provider-fetch api-url="/api/checkout" class="abstract">
+    <header class="bar">
+      <spa-a route-action="back" route-href="/bag" role="link">
+        <svg aria-hidden="true"><use href="/img/icons.svg#chevron-left"/></svg>Back
+      </spa-a>
+      <strong aria-hidden="true">Checkout</strong>
+    </header>
+    <h1>Checkout</h1>
+    <nav aria-label="Checkout steps">
+      <ol>
+        <li><spa-a route-href="/bag/checkout/details" role="link" class="eyebrow">Details</spa-a></li>
+        <li><spa-a route-href="/bag/checkout/delivery" role="link" class="eyebrow">Delivery</spa-a></li>
+        <li><spa-a route-href="/bag/checkout/payment" role="link" class="eyebrow">Payment</spa-a></li>
+        <li><spa-a route-href="/bag/checkout/review" role="link" class="eyebrow">Review</spa-a></li>
+      </ol>
+    </nav>
+    <p role="note">
+      <svg aria-hidden="true"><use href="/img/icons.svg#info"/></svg>
+      A demo: your details are prefilled and any made-up ones work. Nothing is charged or shipped.
+    </p>
+
+    <details class="card">
+      <summary><h2>Order summary</h2> <data bind-bag="total"></data></summary>
+      <div bind-bag-lines role="list" class="summary"></div>
+      <dl class="totals">
+        <dt>Subtotal</dt><dd bind-bag="subtotal"></dd>
+        <dt>Trade discount</dt><dd bind-bag="tradeDiscount"></dd>
+        <dt>Delivery</dt><dd bind-bag="deliveryFee"></dd>
+        <dt>Total</dt><dd bind-bag="total"></dd>
+      </dl>
+      <dl class="schedule">
+        <dt>Due today</dt><dd bind-bag="dueToday"></dd>
+        <dt>Due when ready</dt><dd bind-bag="dueLater"></dd>
+      </dl>
+    </details>
+
+    <spa-route route-href="/bag/checkout/details" template-ref="/views/checkout/details.html" document-title="Your details · Wrenfield"></spa-route>
+    <spa-route route-href="/bag/checkout/delivery" template-ref="/views/checkout/delivery.html" document-title="Delivery · Wrenfield"></spa-route>
+    <spa-route route-href="/bag/checkout/payment" template-ref="/views/checkout/payment.html" document-title="Payment · Wrenfield"></spa-route>
+    <spa-route route-href="/bag/checkout/review" template-ref="/views/checkout/review.html" document-title="Review · Wrenfield"></spa-route>
+
+    <section class="error">
+      <svg aria-hidden="true"><use href="/img/icons.svg#circle-alert"/></svg>
+      <h2>We could not open checkout</h2>
+      <p bind-error></p>
+      <spa-a route-href="/bag" role="button" transition-types="tab">Back to your bag</spa-a>
+    </section>
+  </provider-fetch>
+</section>

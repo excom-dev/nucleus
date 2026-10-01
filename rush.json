@@ -25,6 +25,11 @@
       "projectFolder": "packages/nucleus-devtools"
     },
     {
+      "packageName": "@excom/nucleus-dom",
+      "projectFolder": "packages/nucleus-dom",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@excom/nucleus-kit",
       "projectFolder": "packages/nucleus-kit",
       "shouldPublish": true
@@ -34,8 +39,17 @@
       "projectFolder": "packages/docs-site"
     },
     {
+      "packageName": "wrenfield",
+      "projectFolder": "packages/wrenfield"
+    },
+    {
       "packageName": "@excom/nucleus-quark-highlighter",
       "projectFolder": "packages/nucleus-quark-highlighter",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@excom/nucleus-test",
+      "projectFolder": "packages/nucleus-test",
       "shouldPublish": true
     },
     {

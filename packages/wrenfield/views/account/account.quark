@@ -1,0 +1,123 @@
+@use "quark:date" as date;
+
+/* Neither card until $me lands: a signed-in user never sees the passkey buttons. */
+:scope {
+  is-signed-in: $me.user != null;
+  is-signed-out: $me != null and $me.user == null;
+}
+:scope[is-signed-in] [bind-signed-in],
+:scope[is-signed-out] [bind-signed-out] {
+  hidden: none;
+}
+:scope:not([is-signed-in]) [bind-signed-in],
+:scope:not([is-signed-out]) [bind-signed-out] {
+  hidden: "";
+}
+:scope[is-signed-in] {
+  [bind-signed-out] web-authn {
+    show-error: none;
+  }
+  [bind-user-name] {
+    content: $me.user.name;
+  }
+  [bind-user-since] {
+    datetime: $me.user.since;
+    content: date.format(
+      $me.user.since,
+      "en-GB",
+      (day: "numeric", month: "long", year: "numeric")
+    );
+  }
+}
+
+/* show-error keeps a failure from outliving the next success or sign-in. */
+web-authn {
+  @on web-authn-error {
+    show-error: "";
+  }
+  &[is-error][show-error] {
+    $failure: prop("provision");
+    output {
+      content: $failure.body.message or $failure.message or
+        "Passkeys are not available here.";
+    }
+  }
+  &:not([is-error][show-error]) output {
+    content: none;
+  }
+}
+/* One pending challenge: starting the other ceremony would expire this one. Busy from
+   a form's submit to the ceremony's one outcome event, both forms at once. */
+[bind-signed-out] {
+  @on submit (capture) {
+    is-busy: "";
+  }
+  @on web-authn-success {
+    is-busy: none;
+    web-authn {
+      show-error: none;
+    }
+    @command --fetch (target: "#account-orders");
+  }
+  @on web-authn-error {
+    is-busy: none;
+  }
+  &[is-busy] button {
+    disabled: "";
+  }
+  &:not([is-busy]) button {
+    disabled: none;
+  }
+}
+[bind-sign-out] {
+  @on super-form-success {
+    @command --fetch (target: "#account-orders");
+  }
+}
+
+#account-orders[did-load] > .wf-skeleton {
+  hidden: "";
+}
+#account-orders:not([did-load]) > .wf-skeleton {
+  hidden: none;
+}
+#account-orders[did-load] {
+  $orders: prop("provision").body;
+  order-count: $orders.length;
+
+  [bind-orders] {
+    content: iterate($orders, none, "id");
+    > li {
+      order-status: item.status;
+    }
+    spa-a {
+      route-href: "/account/orders/#{item.id}";
+    }
+    [bind-order-total] {
+      value: item.total;
+      content: item.totalText;
+    }
+    [bind-order-date] {
+      content: date.format(
+        item.createdAt,
+        "en-GB",
+        (day: "numeric", month: "long", year: "numeric")
+      );
+    }
+  }
+}
+
+[bind-trade] {
+  @on change {
+    @command --submit;
+  }
+  input {
+    checked: $me.isTrade;
+  }
+}
+[bind-reset] {
+  @on super-form-success {
+    @command --close (target: "#reset-demo");
+    @command --fetch (target: "#account-orders");
+  }
+}

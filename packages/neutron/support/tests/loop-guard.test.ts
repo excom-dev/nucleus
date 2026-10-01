@@ -13,7 +13,7 @@ import {
   fixture,
   it,
   wait,
-} from "@excom/heft-rig/profiles/default/config/test-utils";
+} from "@excom/nucleus-test";
 import { LoopGuard, type LoopGuardTrip } from "@excom/kit-utils";
 
 Neutron({

@@ -1,0 +1,7 @@
+# The root .gitignore drops packages/*/README.md (generated for published packages); this one is hand-written.
+!README.md
+support/tests/browser/shots
+# Opt-in complexity snapshots (NUCLEUS_COMPLEXITY=1 pnpm test), never committed
+support/tests/__snapshots__/
+# Staged deploy output (scripts/stage.mjs)
+dist/

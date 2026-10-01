@@ -1,11 +1,6 @@
 import { CloseWatcher } from "@excom/kit-shims";
 import { selectOne } from "@excom/kit-utils";
-import {
-  ConstructorType,
-  Neutron,
-  TEvent,
-  TokenList,
-} from "@excom/neutron";
+import { ConstructorType, Neutron, TEvent, TokenList } from "@excom/neutron";
 
 export type DismissWatcherReason = "escape" | "outside-click";
 
