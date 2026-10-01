@@ -1,0 +1,5 @@
+{
+  "packageName": "@excom/heft-rig",
+  "comment": "Support `app` packageType in vite-dev so app packages use the shared Vite dev server",
+  "type": "patch"
+}
