@@ -6,7 +6,7 @@ import {
   describe,
   expect,
   it,
-  wait,
+  vi,
 } from "@excom/nucleus-test";
 
 afterEach(() => {
@@ -58,16 +58,18 @@ describe("Quark.meter", () => {
   });
 
   it("leaves @delay block rules out of ruleRuns", async () => {
+    vi.useFakeTimers();
     const { root } = mount(`<p></p>`, `p { @delay 10 { data-late: ""; } }`);
-    await flush();
+    await vi.advanceTimersByTimeAsync(0);
     Quark.meter.reset();
-    await wait(20);
-    await flush();
+    await vi.advanceTimersByTimeAsync(20);
+    for (let i = 0; i < 8; i++) await vi.advanceTimersByTimeAsync(0);
     expect(root.querySelector("p[data-late]")).not.toBeNull();
     expect(Quark.meter.counts).toMatchObject({
       ruleRuns: 0,
       attributeRuns: 1,
     });
+    vi.useRealTimers();
   });
 
   it("names the subtree-query selectors of every registered sheet", async () => {
