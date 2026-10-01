@@ -36,10 +36,10 @@ describe("stage", () => {
     expect(await stage({ out })).toBe(version);
     const html = await read(out, "index.html");
     const css = await read(out, "shell.css");
-    const htmlPinned = html.match(/unpkg\.com\/@excom\/nucleus-kit@[^/]+\//g);
-    const cssPinned = css.match(/unpkg\.com\/@excom\/nucleus-kit@[^/]+\//g);
-    expect(htmlPinned).toEqual([`unpkg.com/@excom/nucleus-kit@${version}/`]);
-    expect(cssPinned).toEqual([`unpkg.com/@excom/nucleus-kit@${version}/`]);
+    const htmlPinned = html.match(/unpkg\.com\/@excom\/nucleus-kit@[^/]+\/dist\//g);
+    const cssPinned = css.match(/unpkg\.com\/@excom\/nucleus-kit@[^/]+\/dist\//g);
+    expect(htmlPinned).toEqual([`unpkg.com/@excom/nucleus-kit@${version}/dist/`]);
+    expect(cssPinned).toEqual([`unpkg.com/@excom/nucleus-kit@${version}/dist/`]);
   });
 
   it("rewrites bare Kit imports and no other line", async () => {
@@ -48,13 +48,13 @@ describe("stage", () => {
     const afterHtml = (await read(out, "index.html")).split("\n");
     expect(afterHtml).toHaveLength(beforeHtml.length);
     expect(afterHtml.filter((line, i) => line !== beforeHtml[i])).toEqual([
-      expect.stringContaining("unpkg.com/@excom/nucleus-kit@1.0.0-rc.1/nucleus-kit.progressive"),
+      expect.stringContaining("unpkg.com/@excom/nucleus-kit@1.0.0-rc.1/dist/nucleus-kit.progressive.min.js"),
     ]);
     const beforeCss = (await read(PACKAGE, "shell.css")).split("\n");
     const afterCss = (await read(out, "shell.css")).split("\n");
     expect(afterCss).toHaveLength(beforeCss.length);
     expect(afterCss.filter((line, i) => line !== beforeCss[i])).toEqual([
-      expect.stringContaining("unpkg.com/@excom/nucleus-kit@1.0.0-rc.1/basic.css"),
+      expect.stringContaining("unpkg.com/@excom/nucleus-kit@1.0.0-rc.1/dist/basic.css"),
     ]);
   });
 

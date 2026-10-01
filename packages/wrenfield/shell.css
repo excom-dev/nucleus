@@ -1007,7 +1007,7 @@ label {
   }
 }
 @keyframes wf-skeleton {
-  to {
+  from {
     opacity: 0.45;
   }
 }
