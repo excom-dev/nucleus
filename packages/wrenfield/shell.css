@@ -1,3 +1,5 @@
+@import "@excom/nucleus-kit/basic.css";
+
 :root {
   --v-font-size: 106.25%;
   --v-line-height: 1.45;
@@ -445,8 +447,12 @@ spa-manager > header {
   }
   [data-layout="compact"] & {
     position: fixed;
-    top: max(0.75rem, env(safe-area-inset-top));
-    right: max(0.75rem, env(safe-area-inset-right));
+    --offset: 0.75rem;
+    @media (width < 400px) {
+      --offset: 0.25rem;
+    }
+    top: max(var(--offset), env(safe-area-inset-top));
+    right: max(var(--offset), env(safe-area-inset-right));
     z-index: 11;
     background: var(--wf-glass);
     backdrop-filter: var(--wf-blur);

@@ -15,13 +15,14 @@
     "coverage": "node node_modules/@excom/heft-rig/scripts/coverage.mjs",
     "stage": "node scripts/stage.mjs",
     "deploy": "node scripts/stage.mjs && npx wrangler deploy",
-    "dev": "node serve.js"
+    "dev": "node node_modules/@excom/heft-rig/scripts/vite-dev.mjs"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@excom/nucleus-kit": "workspace:^"
+  },
   "peerDependencies": {},
   "devDependencies": {
     "@excom/heft-rig": "workspace:^",
-    "@excom/nucleus-kit": "workspace:^",
     "@excom/nucleus-test": "workspace:^",
     "@excom/spa-route": "workspace:^"
   },

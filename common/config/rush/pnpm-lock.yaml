@@ -1215,13 +1215,14 @@ importers:
         version: link:../nucleus-test
 
   ../../packages/wrenfield:
+    dependencies:
+      '@excom/nucleus-kit':
+        specifier: workspace:^
+        version: link:../nucleus-kit
     devDependencies:
       '@excom/heft-rig':
         specifier: workspace:^
         version: link:../heft-rig
-      '@excom/nucleus-kit':
-        specifier: workspace:^
-        version: link:../nucleus-kit
       '@excom/nucleus-test':
         specifier: workspace:^
         version: link:../nucleus-test
