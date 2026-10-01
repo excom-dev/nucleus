@@ -18,7 +18,7 @@ const PUBLIC = [
   "models",
   "data",
 ];
-const BARE_KIT_IMPORT = /"@excom\/nucleus-kit\//g;
+const BARE_KIT_IMPORT = /"@excom\/nucleus-kit\/([^"]+)"/g;
 const REWRITTEN_FILES = ["index.html", "shell.css"];
 
 export const stage = async ({
@@ -38,7 +38,7 @@ export const stage = async ({
       cp(join(root, name), join(out, name), { recursive: true })
     )
   );
-  const cdnPrefix = `"https://unpkg.com/@excom/nucleus-kit@${version}/`;
+  const cdnBase = `https://unpkg.com/@excom/nucleus-kit@${version}/dist`;
   let rewrites = 0;
   for (const file of REWRITTEN_FILES) {
     const filePath = join(out, file);
@@ -46,7 +46,13 @@ export const stage = async ({
     const matches = content.match(BARE_KIT_IMPORT);
     if (matches) {
       rewrites += matches.length;
-      await writeFile(filePath, content.replaceAll(BARE_KIT_IMPORT, cdnPrefix));
+      await writeFile(
+        filePath,
+        content.replaceAll(BARE_KIT_IMPORT, (_, path) => {
+          const cdnPath = /\.css$/.test(path) ? path : `${path}.min.js`;
+          return `"${cdnBase}/${cdnPath}"`;
+        })
+      );
     }
   }
   if (rewrites === 0)
