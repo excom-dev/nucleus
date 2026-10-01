@@ -41,6 +41,11 @@ const settle = async () => {
   for (let i = 0; i < 16; i++) await wait(0);
 };
 
+/** Poll until `condition` is true, up to `ticks` macrotask yields. */
+const waitFor = async (condition: () => boolean, ticks = 80) => {
+  for (let i = 0; i < ticks && !condition(); i++) await wait(0);
+};
+
 const mountPane = async (fake: ReturnType<typeof createFakeAdapter>) => {
   setDevtoolsAdapterFactory(() => fake.adapter);
   const host = document.createElement("div");
@@ -220,7 +225,10 @@ describe("Element pane view", () => {
     expect(rows(pane, "bind-neutron-log")).toHaveLength(1);
 
     fake.deliverRuntime(effect(2, "b", { b: 2 }));
-    await settle();
+    await waitFor(() => {
+      const r = rows(pane, "bind-neutron-log");
+      return r.length >= 2 && q(r[1], "[bind-signature]").textContent === "b";
+    });
     const items = rows(pane, "bind-neutron-log");
     expect(items).toHaveLength(2);
     expect(q(items[1], "[bind-signature]").textContent).toBe("b");
@@ -239,7 +247,10 @@ describe("Element pane view", () => {
     details.open = false;
 
     fake.deliverRuntime(effect(2, "b", { b: 2 }));
-    await settle();
+    await waitFor(() => {
+      const r = rows(pane, "bind-neutron-log");
+      return r.length >= 2 && q(r[1], "[bind-signature]").textContent !== "";
+    });
     const items = rows(pane, "bind-neutron-log");
     expect(items[0]).toBe(firstRow);
     expect(details.open).toBe(false);
