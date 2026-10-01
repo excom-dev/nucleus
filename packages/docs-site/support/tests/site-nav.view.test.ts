@@ -167,9 +167,9 @@ describe("site nav packages", () => {
       expect(order).toEqual([
         "hgroup",
         "bind-libraries",
-        "bind-library-group",
         "bind-elements",
         "bind-tools",
+        "bind-library-group",
         "bind-element-bases",
       ]);
 
