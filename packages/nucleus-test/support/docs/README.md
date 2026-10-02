@@ -107,4 +107,24 @@ meter.stop();
 expectComplexity(budget);
 ```
 
-A `ComplexityBudget` holds the engine counters (`quarkRuns`, `ruleRuns`, `variableRuns`, `attributeRuns`, `listenerRuns`, `setVar`, `getVar`, `schedulePaint`), the DOM calls (`querySelectorAll`, `matches`, `closest`, `parentElement`, `setAttribute`, `removeAttribute`, `textContent`, `importNode`) and `queryScopeCost`, the elements scanned by the engine's rule queries, sampled at `take()`. Any engine with `{ counts, reset() }` (`EngineMeter`) can be measured; without `scopeSelectors()`, `queryScopeCost` is 0. `Quark.meter` reads the selectors of the sheets registered at `take()`, so a sheet unregistered inside the measured window no longer counts there.
+A `ComplexityBudget` holds the engine counters (`quarkRuns`, `ruleRuns`, `variableRuns`, `attributeRuns`, `listenerRuns`, `setVar`, `getVar`, `schedulePaint`), the DOM calls (`querySelectorAll`, `matches`, `closest`, `parentElement`, `parentNode`, `setAttribute`, `removeAttribute`, `textContent`, `importNode`) and `queryScopeCost`, the elements scanned by the engine's rule queries, sampled at `take()`. `parentElement` and `parentNode` count the reads of each getter by the code under test, not the climbing the DOM emulation does to match a selector or build an event's path, which a browser does natively. Any engine with `{ counts, reset() }` (`EngineMeter`) can be measured; without `scopeSelectors()`, `queryScopeCost` is 0. `Quark.meter` reads the selectors of the sheets registered at `take()`, so a sheet unregistered inside the measured window no longer counts there.
+
+### Headless Chrome
+
+`@excom/nucleus-test/chrome.mjs` drives a page in headless Google Chrome from a Node script, for what happy-dom cannot show: layout, painted frames, a service worker. It needs Google Chrome on the machine, found in its usual place on macOS, Linux and Windows; `CHROME` overrides the path.
+
+```js
+import { open, serve, until } from "@excom/nucleus-test/chrome.mjs";
+
+const server = await serve({ root: "dist" });
+const page = await open({ port: server.port });
+await page.goto("/");
+await until(() => page.run(() => !document.querySelector("[is-loading]")), 5000);
+console.log(await page.run(() => document.title), page.issues());
+await page.close();
+server.close();
+```
+
+- `serve({ root?, port?, intercept? })` serves a directory (the working directory by default) on a free port, with `index.html` for an extensionless path without a file. `intercept(url)` sees each request first and answers it with `{ status, body, type }`, or with nothing to decline
+- `open({ port, size? })` opens a page. `goto(pathOrUrl)` loads it and waits until the network is quiet, `run(fn, ...args)` calls `fn` in the page with JSON arguments, `cdp(method, params)` sends a DevTools Protocol command, `shot(name)` saves a screenshot, `issues()` returns the console errors and warnings, exceptions and failed requests so far, `close()` ends Chrome. `size` is `"390x844"` by default; under 768 wide the page is mobile, with touch
+- `until(check, ms)` resolves `true` once `check()` is truthy, `false` after `ms`; `sleep(ms)` resolves after `ms`

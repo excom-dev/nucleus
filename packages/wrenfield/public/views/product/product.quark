@@ -1,0 +1,200 @@
+@use "quark:date" as date;
+@use "quark:list" as list;
+@use "quark:map" as map;
+
+provider-fetch {
+  api-url: "/api/products/#{$route.params.slug}";
+  @on provider-fetch-success {
+    @dispatch view-title (detail: event.detail.body.name);
+  }
+  @on provider-fetch-error {
+    @dispatch view-title (detail: "Piece not found");
+  }
+  @on super-form-error {
+    @command --fetch;
+  }
+}
+/* The skeleton (product.css) until the first load and again on an error: a prerendered page, written not loaded,
+   keeps its piece while it loads again. */
+provider-fetch[is-error] > .wf-skeleton {
+  hidden: none;
+}
+provider-fetch[did-load] {
+  $piece: prop("provision").body;
+
+  > .wf-skeleton {
+    hidden: "";
+  }
+
+  [bind-back] {
+    route-href: "/shop/#{$piece.category}";
+    span {
+      content: $piece.categoryName;
+    }
+  }
+  [bind-name] {
+    content: $piece.name;
+  }
+  > data-product:not([finish-id]) {
+    finish-id: $piece.finishes[0].id;
+  }
+  > data-product {
+    is-made-to-order: $piece.finishes.length > 0;
+    has-model: $piece.model != null;
+    delivery-method: $piece.delivery;
+    $finish: list.find($piece.finishes, "id", attr("finish-id"));
+    $product: map.merge($piece, $finish.prices);
+  }
+
+  [bind-gallery] {
+    content: iterate($piece.gallery, none, "src");
+    img {
+      src: item.src;
+      alt: item.alt;
+    }
+  }
+  [bind-dots] {
+    content: iterate($piece.gallery, none, "src");
+  }
+  model-viewer {
+    alt: "A 3D model of the #{$piece.name}";
+  }
+  /* The model loads when the 3D tab first opens and stays loaded, so there is no inverse. */
+  content-tabs-body[is-open] > model-viewer {
+    src: $piece.model;
+  }
+
+  [bind-eyebrow] {
+    content: "#{$piece.eraName} #{$piece.categoryName.toLowerCase()}";
+  }
+  [bind-sku] {
+    value: $piece.sku;
+  }
+  [bind-finishes] {
+    content: iterate($piece.finishes, none, "id");
+    label {
+      title: item.name;
+      --swatch: item.swatch;
+    }
+    input {
+      value: item.id;
+      aria-label: item.name;
+      checked: item.id == $finish.id;
+    }
+  }
+  [bind-details] {
+    content: iterate($piece.details);
+    li {
+      content: item;
+    }
+  }
+  [bind-dimension] {
+    content: $piece.dimensions[attr("bind-dimension")];
+  }
+  [bind-related] {
+    $products: $piece.related;
+    hidden: $piece.related.length == 0;
+  }
+}
+
+provider-fetch > data-product {
+  @on change (target: "[name='finish']") {
+    finish-id: target.value;
+  }
+
+  &[is-sold] {
+    add-state: "sold";
+  }
+  &[is-unique][is-in-bag]:not([is-sold]) {
+    add-state: "in-bag";
+  }
+  &[is-unique]:not([is-in-bag], [is-sold]) {
+    add-state: "unique";
+  }
+  &[is-made-to-order]:not([is-sold]) {
+    add-state: "order";
+  }
+  &[add-state="order"] [bind-add] {
+    disabled: none;
+    content: "Add to bag";
+  }
+  &[add-state="unique"] [bind-add] {
+    disabled: none;
+    content: "Reserve this piece";
+  }
+  &[add-state="in-bag"] [bind-add] {
+    disabled: "";
+    content: "In your bag";
+  }
+  &[add-state="sold"] [bind-add] {
+    disabled: "";
+    content: "Sold";
+  }
+
+  [bind-finish-name] {
+    content: $finish.name;
+  }
+  [bind-finish-delta] {
+    content: if(
+      $finish.priceDelta > 0: "+#{$finish.priceDeltaText}";
+      else: none
+    );
+  }
+  [bind-lead] {
+    content: "Made to order in about #{$finish.leadWeeks} weeks";
+  }
+  [bind-held] {
+    content: "Held for you until #{date.format(list.find($bag.items, "sku", $product.sku).heldUntil, "en-US", (timeStyle: "short"))}";
+  }
+  super-form {
+    $reply: prop("provision").body;
+    [bind-add-error] {
+      content: $reply.message;
+    }
+  }
+}
+
+[bind-gallery]:not(:has(> [is-active])) > content-carousel-slide:first-of-type {
+  is-active: "";
+}
+gesture-handler:has(> content-carousel) {
+  &:has(content-carousel-slide[is-active]:first-of-type) {
+    progress-min: 0;
+  }
+  &:not(:has(content-carousel-slide[is-active]:first-of-type)) {
+    progress-min: -1;
+  }
+  &:has(content-carousel-slide[is-active]:last-of-type) {
+    progress-max: 0;
+  }
+  &:not(:has(content-carousel-slide[is-active]:last-of-type)) {
+    progress-max: 1;
+  }
+  @on gesture-handler-start {
+    content-carousel {
+      is-scrubbing: "";
+    }
+  }
+  @on gesture-handler-snap {
+    $snap: event.detail.index;
+    content-carousel {
+      is-scrubbing: none;
+      content-carousel-slide[is-active] + content-carousel-slide {
+        is-active: $snap == 2 or preserve;
+      }
+      content-carousel-slide:has(+ content-carousel-slide[is-active]) {
+        is-active: $snap == 0 or preserve;
+      }
+      content-carousel-slide[is-active] {
+        is-active: $snap == 1 or none;
+      }
+    }
+  }
+}
+
+content-tabs-header[is-open] button {
+  aria-pressed: "true";
+}
+content-tabs-header:not([is-open]) button {
+  aria-pressed: "false";
+}

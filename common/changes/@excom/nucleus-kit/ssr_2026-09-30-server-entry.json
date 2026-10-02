@@ -2,12 +2,17 @@
   "changes": [
     {
       "packageName": "@excom/nucleus-kit",
-      "comment": "`@excom/nucleus-kit/server`: the Kit without the elements that read the device or the person, for prerendering with `@excom/nucleus-ssr`; `SERVER_EXCLUDED_TAGS` lists their tags",
+      "comment": "Add `@excom/nucleus-kit/server`: the Kit without the elements that read the device or the person, for prerendering with `@excom/nucleus-ssr`; `SERVER_EXCLUDED_TAGS` lists their tags",
       "type": "minor"
     },
     {
       "packageName": "@excom/nucleus-kit",
-      "comment": "The progressive entry keeps hydration open until the packages for the Kit tags present at startup are imported, so those elements keep their prerendered content",
+      "comment": "Improve the progressive entry for prerendered pages: hydration stays open until the packages for the Kit tags present at startup are imported, so those elements keep their prerendered content",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Add the `@excom/nucleus-kit/nucleus-kit.progressive` import path: the progressive entry is exported under its plain name as well as `nucleus-kit.progressive.min`",
       "type": "minor"
     }
   ],

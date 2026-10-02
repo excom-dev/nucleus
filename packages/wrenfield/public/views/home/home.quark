@@ -1,0 +1,42 @@
+/* The markup's defaults (skeleton shown) hold until the first load and come back on an error: a prerendered page,
+   written not loaded, keeps its content while it loads again. */
+provider-fetch[is-error] {
+  [bind-hero],
+  [bind-products] {
+    hidden: "";
+  }
+  [bind-skeleton] {
+    hidden: none;
+  }
+}
+provider-fetch[did-load] {
+  $home: prop("provision").body;
+
+  [bind-hero],
+  [bind-products] {
+    hidden: none;
+  }
+  [bind-skeleton] {
+    hidden: "";
+  }
+  [bind-hero] {
+    $product: $home.hero;
+  }
+  [bind-collections] {
+    content: iterate($home.collections, none, "slug");
+    li {
+      category-slug: item.slug;
+      $count: item.count;
+    }
+    spa-a {
+      route-href: item.href;
+    }
+    img {
+      src: item.image;
+    }
+  }
+  [bind-rail] {
+    $products: $home[attr("bind-rail")];
+    hidden: $home[attr("bind-rail")].length == 0;
+  }
+}

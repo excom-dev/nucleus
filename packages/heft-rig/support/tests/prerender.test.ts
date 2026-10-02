@@ -9,16 +9,24 @@ const SCRIPT = path.join(RIG_ROOT, "scripts/prerender.mjs");
 // inside the repo: the runner finds rush.json and aliases the real workspace
 const FIXTURE = path.join(__dirname, "fixtures/prerender");
 const originalArgv = process.argv;
+// a run starts a module runner here and one per worker: seconds each, more on a loaded machine
+const SLOW = 60_000;
 
 let out: string;
+// a cache and a saved shell of their own per test: never the fixture's, which other runs of this suite share
+let cacheDir: string;
+let shellFile: string;
 
 beforeEach(() => {
   out = mkdtempSync(path.join(os.tmpdir(), "rig-prerender-"));
+  cacheDir = mkdtempSync(path.join(os.tmpdir(), "rig-prerender-cache-"));
+  shellFile = path.join(cacheDir, "prerender-shell.html");
   process.env.RIG_PRERENDER_OUT = out;
 });
 
 afterEach(() => {
   rmSync(out, { recursive: true, force: true });
+  rmSync(cacheDir, { recursive: true, force: true });
   delete process.env.RIG_PRERENDER_OUT;
   process.argv = originalArgv;
   process.exitCode = undefined;
@@ -29,17 +37,6 @@ const load = async () => {
   process.argv = [process.execPath, "/elsewhere.mjs"];
   return import("../../scripts/prerender.mjs");
 };
-
-const diagnostics = (overrides = {}) => ({
-  errors: [],
-  warnings: [],
-  requests: [],
-  skippedProvisions: [],
-  neutralizedScripts: 0,
-  heldTimers: [],
-  islandBytes: 0,
-  ...overrides,
-});
 
 describe("createWorkspaceRunner", () => {
   it("loads workspace modules from source through the rig's aliases", async () => {
@@ -56,230 +53,92 @@ describe("createWorkspaceRunner", () => {
   });
 });
 
-describe("loadPrerenderConfig", () => {
-  const runner = (config: unknown) => ({ import: async () => ({ default: config }) });
-
-  it("takes the default export, or what a default-exported function returns", async () => {
-    const { loadPrerenderConfig } = await load();
-    expect(await loadPrerenderConfig(runner({ routes: ["/"] }), "a.ts")).toEqual({ routes: ["/"] });
-    expect(await loadPrerenderConfig(runner(async () => ({ routes: [] })), "b.ts")).toEqual({
-      routes: [],
-    });
-  });
-
-  it("refuses a config without routes", async () => {
-    const { loadPrerenderConfig } = await load();
-    await expect(loadPrerenderConfig(runner({ root: "dist" }), "c.ts")).rejects.toThrow(
-      "prerender: c.ts exports no options with routes",
-    );
-    await expect(loadPrerenderConfig(runner(undefined), "d.ts")).rejects.toThrow("d.ts");
-  });
-});
-
-describe("classifyPages", () => {
-  it("marks failures by the onError policy and routes whose file is missing", async () => {
-    const { classifyPages } = await load();
-    const written = mkdtempSync(path.join(os.tmpdir(), "rig-prerender-out-"));
+describe("workerKey", () => {
+  it("covers the versions, the code of every module the runner evaluated and the site's own modules", async () => {
+    const { createWorkspaceRunner } = await load();
+    const { repositoryOf, workerKey } = await import("../../scripts/prerender-worker.mjs");
+    const site = mkdtempSync(path.join(os.tmpdir(), "rig-prerender-site-"));
+    mkdirSync(path.join(site, "assets"));
+    writeFileSync(path.join(site, "index.html"), "<p>page</p>");
+    writeFileSync(path.join(site, "assets/shell.js"), "export const a = 1;");
+    const [one, two] = await Promise.all([createWorkspaceRunner(FIXTURE), createWorkspaceRunner(FIXTURE)]);
     try {
-      ["index.html", "a.html", "b.html"].forEach((file) => writeFileSync(path.join(written, file), ""));
-      const page = (url: string, file: string, errors: string[] = []) => ({
-        url,
-        file,
-        bytes: 1,
-        ms: 1,
-        diagnostics: diagnostics({ errors }),
-      });
-      const report = {
-        pages: [
-          page("/", "index.html"),
-          page("/a", "a.html", ["boom"]),
-          page("/b", "b.html", ["bang"]),
-          page("/gone", "gone.html"),
-        ],
-        failed: ["/a", "/b"],
-      };
-      const statuses = (onError?: unknown) =>
-        classifyPages(report, { out: written, onError }).map(({ status, problems }) => [status, problems]);
-      expect(statuses()).toEqual([
-        ["ok", []],
-        ["failed", ["boom"]],
-        ["failed", ["bang"]],
-        ["failed", ["no file at gone.html"]],
-      ]);
-      expect(statuses((url: string) => (url === "/a" ? "shell" : "fail"))).toEqual([
-        ["ok", []],
-        ["shell", ["boom"]],
-        ["failed", ["bang"]],
-        ["failed", ["no file at gone.html"]],
-      ]);
-      expect(statuses("shell").map(([status]) => status)).toEqual(["ok", "shell", "shell", "failed"]);
-      // nucleus-ssr wrote nothing: no file is missing
-      expect(classifyPages(report, { out: written }, false).map(({ status }) => status)).toEqual([
-        "ok",
-        "failed",
-        "failed",
-        "ok",
-      ]);
+      await Promise.all([one, two].map((runner) => runner.import(path.join(FIXTURE, "options.ts"))));
+      const repository = repositoryOf(FIXTURE);
+      expect(repository).toBe(path.resolve(RIG_ROOT, "../.."));
+      const key = await workerKey(one, site, repository);
+      expect(await workerKey(two, pathToFileURL(site), repository)).toBe(key);
+      expect(one.modules().map(({ id }) => id)).toContain(path.join(FIXTURE, "options.ts"));
+      writeFileSync(path.join(site, "index.html"), "<p>no module</p>");
+      expect(await workerKey(one, site, repository)).toBe(key);
+      writeFileSync(path.join(site, "assets/shell.js"), "export const a = 2;");
+      const changed = await workerKey(one, site, repository);
+      expect(changed).not.toBe(key);
+      await two.import(path.join(FIXTURE, "links.config.ts"));
+      expect(await workerKey(two, site, repository)).not.toBe(changed);
     } finally {
-      rmSync(written, { recursive: true, force: true });
+      await Promise.all([one.close(), two.close()]);
+      rmSync(site, { recursive: true, force: true });
     }
   });
 });
 
-describe("formatReport", () => {
-  it("prints a line per page, problems under failures, then counts, sizes and warnings", async () => {
-    const { formatReport } = await load();
-    const lines = formatReport(
-      [
-        {
-          url: "/",
-          file: "index.html",
-          bytes: 12_345,
-          ms: 40,
-          status: "ok",
-          problems: [],
-          diagnostics: diagnostics({ islandBytes: 2_000, warnings: ["slow"] }),
-        },
-        {
-          url: "/docs/a",
-          file: "docs/a.html",
-          bytes: 3_000,
-          ms: 7,
-          status: "shell",
-          problems: ["Refused DELETE"],
-          diagnostics: diagnostics({ errors: ["Refused DELETE"], warnings: ["slow"] }),
-        },
-        {
-          url: "/x",
-          file: "x.html",
-          bytes: 0,
-          ms: 5_001,
-          status: "failed",
-          problems: ["Not settled"],
-          diagnostics: diagnostics({ errors: ["Not settled"] }),
-        },
+describe("workerKey of another checkout", () => {
+  it("gives the same key wherever the repository is", async () => {
+    const { repositoryOf, workerKey } = await import("../../scripts/prerender-worker.mjs");
+    const site = mkdtempSync(path.join(os.tmpdir(), "rig-prerender-site-"));
+    const checkout = (repository: string) => ({
+      import: async () => ({ default: { version: "1.0.0", dependencies: { "happy-dom": "20.8.3" } } }),
+      modules: () => [
+        { id: `${repository}/packages/site/entry.ts`, meta: { code: `import "${repository}/packages/kit/index.ts";` } },
+        { id: "happy-dom", meta: { externalize: `file://${repository}/common/temp/node_modules/.pnpm/happy-dom@20.8.3/index.js` } },
       ],
-      61_250,
-    );
-    expect(lines).toEqual([
-      "  ok     index.html    12.3 kB    40 ms island 2.0 kB 1 warning(s)",
-      "  shell  docs/a.html    3.0 kB     7 ms 1 warning(s)",
-      "           Refused DELETE",
-      "  failed x.html              -  5001 ms",
-      "           Not settled",
-      "prerender: 1 rendered, 1 shell fallback(s), 1 failed, in 61.3 s",
-      "  largest pages: index.html 12.3 kB, docs/a.html 3.0 kB",
-      "  largest islands: index.html 2.0 kB",
-      "  warning ×2: slow",
-    ]);
-  });
-});
-
-describe("liveMarkup", () => {
-  it("drops comments, scripts, styles and inert template content, keeping declarative shadow roots", async () => {
-    const { liveMarkup } = await load();
-    expect(
-      liveMarkup(
-        [
-          "<p>a</p><!-- <p>comment</p> -->",
-          '<script type="application/json">{"html":"<template>"}</script>',
-          "<STYLE>p > a {}</STYLE>",
-          '<template data-note="a > b"><p>inert</p><template><p>nested</p></template><p>inert</p></template>',
-          "<p>b</p>",
-          '<template shadowrootmode="open"><p>shadow</p><template><p>inert</p></template><p>shadow</p></template>',
-          "<p>c</p><template><p>unclosed",
-        ].join(""),
-      ),
-    ).toBe("<p>a</p><p>b</p><p>shadow</p><p>shadow</p><p>c</p>");
-  });
-});
-
-describe("checkLinks", () => {
-  const PAGE = [
-    '<html><head><link rel="alternate" href="/missing-link-element"></head><body>',
-    '<spa-a route-href="/a/b">a page</spa-a>',
-    '<spa-a route-href="/a/b/">trailing slash</spa-a>',
-    '<spa-a route-href="/docs">folder index</spa-a>',
-    '<spa-a route-href="/">home</spa-a>',
-    '<a href="b">relative, to /a/b</a>',
-    '<a href="#top">fragment</a>',
-    '<a href="?page=2">query</a>',
-    '<a href="/a/b?x=1&amp;y=2#z">query and fragment</a>',
-    '<a href="/caf%C3%A9">encoded</a>',
-    '<a href="/missing">missing</a>',
-    "<a href='/missing-single'>single quotes</a>",
-    "<a href=/missing-bare>no quotes</a>",
-    '<a title="x > y" href="/missing-after-gt">> in a value</a>',
-    '<a href="/missing">the same link again</a>',
-    '<a class="a" data-href="/data" href="/missing-&#x41;&amp;b">entities</a>',
-    '<a href="/llms.txt">a file</a>',
-    '<a href="/sandbox/app">served elsewhere</a>',
-    '<a href="https://elsewhere.test/missing">another site</a>',
-    '<a href="mailto:someone@example.com">mail</a>',
-    '<a href="http://[broken">unparsable</a>',
-    '<a name="anchor">no href</a>',
-    '<a-b href="/missing-custom">custom element</a-b>',
-    '<abbr href="/missing-abbr">abbreviation</abbr>',
-    '<spa-route route-href="/missing-route/:pattern"></spa-route>',
-    '<template><a href="/missing-template">inert</a></template>',
-    '<template shadowrootmode="open"><a href="/missing-shadow">live</a></template>',
-    '<!-- <a href="/missing-comment"> -->',
-    '<script type="application/json">{"html":"<a href=\\"/missing-script\\">"}</script>',
-    "</body></html>",
-  ].join("\n");
-
-  it("lists each link of a written page to no page of the site, once per page", async () => {
-    const { checkLinks } = await load();
-    for (const file of ["index.html", "a/b.html", "a/x.html", "docs/index.html", "café.html"]) {
-      mkdirSync(path.dirname(path.join(out, file)), { recursive: true });
-      writeFileSync(path.join(out, file), file === "a/x.html" ? PAGE : "<p>page</p>");
+    });
+    try {
+      const keys = await Promise.all(
+        ["/work/a/nucleus", "/home/runner/nucleus"].map((repository) => workerKey(checkout(repository), site, repository)),
+      );
+      expect(keys[0]).toBe(keys[1]);
+      expect(repositoryOf(site)).toBe(path.resolve(site));
+    } finally {
+      rmSync(site, { recursive: true, force: true });
     }
-    const pages = [
-      { url: "/a/x", file: "a/x.html" },
-      { url: "/gone", file: "gone.html" },
-    ];
-    const servedElsewhere = (url: string) => new URL(url).pathname.startsWith("/sandbox/");
-    const missing = [
-      "/missing",
-      "/missing-single",
-      "/missing-bare",
-      "/missing-after-gt",
-      "/missing-&#x41;&amp;b",
-      "/missing-shadow",
-    ].map((href) => ({ page: "a/x.html", href: href.replace("&#x41;&amp;", "A&") }));
-    expect(checkLinks(pages, { out, origin: "https://rig.test/base", servedElsewhere })).toEqual({
-      checked: 16,
-      broken: missing,
-    });
-    // without the predicate, the sandbox link leads to no page either
-    expect(checkLinks(pages, { out: pathToFileURL(out), origin: "https://rig.test" })).toEqual({
-      checked: 17,
-      broken: [...missing.slice(0, 5), { page: "a/x.html", href: "/sandbox/app" }, missing[5]],
-    });
   });
 });
 
-describe("formatLinks", () => {
-  it("prints the count, then each link to no page with its page", async () => {
-    const { formatLinks } = await load();
-    expect(formatLinks({ checked: 12, broken: [] })).toEqual(["  links: 12 checked, each to a page"]);
-    expect(
-      formatLinks({
-        checked: 12,
-        broken: [
-          { page: "index.html", href: "/gone" },
-          { page: "docs/a.html", href: "../gone#top" },
-        ],
-      }),
-    ).toEqual([
-      "  links: 12 checked, 2 to no page:",
-      "    index.html → /gone",
-      "    docs/a.html → ../gone#top",
-    ]);
+describe("serveWorker", () => {
+  it("loads the config through a runner of its own, and serves only in a pool's worker", async () => {
+    const { serveWorker } = await import("../../scripts/prerender-worker.mjs");
+    await expect(serveWorker({ packageRoot: FIXTURE, configFile: path.join(FIXTURE, "fail.config.ts") })).rejects.toThrow(
+      "nucleus-ssr: serveRenderer() serves prerender()'s pool",
+    );
   });
 });
 
-describe("runPrerender", () => {
+describe("parseArguments", () => {
+  it("takes the config, the pool size and --no-cache", async () => {
+    const { parseArguments } = await load();
+    // no pool size: nucleus-ssr's default (one per core but one, at most 6)
+    expect(parseArguments(["a.config.ts"])).toEqual({
+      configFile: "a.config.ts",
+      concurrency: undefined,
+      cache: true,
+    });
+    expect(parseArguments(["--concurrency", "3", "a.config.ts", "--no-cache"])).toEqual({
+      configFile: "a.config.ts",
+      concurrency: 3,
+      cache: false,
+    });
+    for (const value of ["0", "1.5", "many"])
+      expect(() => parseArguments(["--concurrency", value, "a.config.ts"])).toThrow(
+        `prerender: --concurrency takes a whole number above 0, not ${value}`,
+      );
+    // the rig saves the shell to SHELL_FILE
+    expect(() => parseArguments(["a.config.ts", "--save-shell", "shell.html"])).toThrow("--save-shell");
+  });
+});
+
+describe("runPrerender", { timeout: SLOW }, () => {
   const read = (file: string) => readFileSync(path.join(out, file), "utf8");
 
   it("exits 1 naming the route that failed, writing nothing", async () => {
@@ -289,6 +148,8 @@ describe("runPrerender", () => {
       packageRoot: FIXTURE,
       configFile: "fail.config.ts",
       log,
+      cacheDir,
+      shellFile,
     });
     expect(exitCode).toBe(1);
     expect(pages.map(({ url, status }) => [url, status])).toEqual([
@@ -298,7 +159,7 @@ describe("runPrerender", () => {
     expect(existsSync(path.join(out, "index.html"))).toBe(false);
     const printed = log.mock.calls.map(([line]) => line).join("\n");
     expect(printed).toContain("broken on purpose");
-    expect(printed).toContain("prerender: 1 rendered, 0 shell fallback(s), 1 failed");
+    expect(printed).toContain("prerender: 1 rendered, 0 reused (0 verified), 0 shell route(s), 0 shell fallback(s), 1 failed");
     expect(printed).toContain("; nothing written");
   });
 
@@ -309,6 +170,8 @@ describe("runPrerender", () => {
       packageRoot: FIXTURE,
       configFile: "shell.config.ts",
       log,
+      cacheDir,
+      shellFile,
     });
     expect(exitCode).toBe(0);
     expect(pages.map(({ status }) => status)).toEqual(["ok", "shell"]);
@@ -319,6 +182,36 @@ describe("runPrerender", () => {
     expect(log).toHaveBeenCalledWith("  links: 2 checked, each to a page");
   });
 
+  it("writes shell routes as the shell, counts them as pages in the link check, and saves the shell", async () => {
+    const { runPrerender } = await load();
+    const log = vi.fn();
+    const { exitCode, pages, links } = await runPrerender({
+      packageRoot: FIXTURE,
+      configFile: "shell-routes.config.ts",
+      log,
+      cacheDir,
+      shellFile,
+    });
+    const shell = readFileSync(path.join(FIXTURE, "site/index.html"), "utf8");
+    expect(exitCode).toBe(0);
+    expect(pages.map(({ url, status, shellRoute }) => [url, status, shellRoute])).toEqual([
+      ["/", "ok", undefined],
+      ["/nucleus/broken", "shell", true],
+    ]);
+    expect(read("nucleus/broken.html")).toBe(shell);
+    // `/` links /nucleus/broken, a page now; the shell route's own markup is checked too
+    expect(links).toEqual({ checked: 2, broken: [] });
+    expect(readFileSync(shellFile, "utf8")).toBe(shell);
+    expect(log).toHaveBeenCalledWith(expect.stringContaining("prerender: 1 rendered, 0 reused (0 verified), 1 shell route(s), 0 shell fallback(s), 0 failed"));
+  });
+
+  it("saves no shell when the config's shell is a function: each route may have its own", async () => {
+    const { runPrerender } = await load();
+    await runPrerender({ packageRoot: FIXTURE, configFile: "shell-function.config.ts", log: vi.fn(), cacheDir, shellFile });
+    expect(read("index.html")).toContain("<rig-greeting>Rendered by the entry</rig-greeting>");
+    expect(existsSync(shellFile)).toBe(false);
+  });
+
   it("exits 1 naming the page and its link when a written page links a page with no file", async () => {
     const { runPrerender } = await load();
     const log = vi.fn();
@@ -326,6 +219,8 @@ describe("runPrerender", () => {
       packageRoot: FIXTURE,
       configFile: "links.config.ts",
       log,
+      cacheDir,
+      shellFile,
     });
     expect(exitCode).toBe(1);
     expect(pages.map(({ status }) => status)).toEqual(["ok"]);
@@ -336,6 +231,42 @@ describe("runPrerender", () => {
     ]);
   });
 
+  it(
+    "reuses the pages of an earlier run from the package's cache, and checks the links of every written page",
+    async () => {
+      const { runPrerender } = await load();
+      const cacheFile = path.join(cacheDir, "pages.json");
+      const run = (cache?: boolean) =>
+        runPrerender({ packageRoot: FIXTURE, configFile: "shell.config.ts", log: vi.fn(), concurrency: 2, cache, cacheDir, shellFile });
+      expect((await run()).pages.map(({ reused }) => reused)).toEqual([false, false]);
+      expect(existsSync(cacheFile)).toBe(true);
+      const log = vi.fn();
+      const { pages, links } = await runPrerender({
+        packageRoot: FIXTURE,
+        configFile: "shell.config.ts",
+        log,
+        concurrency: 2,
+        cacheDir,
+        shellFile,
+      });
+      // a shell fallback is never cached
+      expect(pages.map(({ status, reused }) => [status, reused])).toEqual([
+        ["ok", true],
+        ["shell", false],
+      ]);
+      expect(read("index.html")).toContain("<rig-greeting>Rendered by the entry</rig-greeting>");
+      expect(links).toEqual({ checked: 2, broken: [] });
+      // the one reused page is also the one checked by rendering it again
+      expect(log).toHaveBeenCalledWith(expect.stringContaining("prerender: 0 rendered, 1 reused (1 verified), 0 shell route(s), 1 shell fallback(s)"));
+      expect(log).toHaveBeenCalledWith(expect.stringMatching(/^ {2}shell {2}nucleus\/broken\.html .* \(cache: it failed in the last run\)$/));
+      // --no-cache: neither read nor written
+      rmSync(cacheFile);
+      expect((await run(false)).pages.map(({ reused }) => reused)).toEqual([false, false]);
+      expect(existsSync(cacheFile)).toBe(false);
+    },
+    120_000,
+  );
+
   it("asks for a config module", async () => {
     const { runPrerender } = await load();
     await expect(runPrerender({ configFile: "" })).rejects.toThrow("prerender: pass the config module");
@@ -344,10 +275,17 @@ describe("runPrerender", () => {
   it("runs the config given on the command line when executed directly, setting the exit code", async () => {
     vi.spyOn(process, "cwd").mockReturnValue(FIXTURE);
     vi.spyOn(console, "log").mockImplementation(() => {});
-    process.argv = [process.execPath, SCRIPT, "fail.config.ts"];
+    process.argv = [process.execPath, SCRIPT, "fail.config.ts", "--no-cache"];
     vi.resetModules();
-    await import("../../scripts/prerender.mjs");
-    expect(process.exitCode).toBe(1);
-    expect(console.log).toHaveBeenCalledWith(expect.stringContaining("1 failed"));
+    const saved = path.join(FIXTURE, "temp/prerender-shell.html");
+    try {
+      await import("../../scripts/prerender.mjs");
+      expect(process.exitCode).toBe(1);
+      expect(console.log).toHaveBeenCalledWith(expect.stringContaining("1 failed"));
+      // the shell the run rendered from, in the package: a failed run too
+      expect(readFileSync(saved, "utf8")).toBe(readFileSync(path.join(FIXTURE, "site/index.html"), "utf8"));
+    } finally {
+      rmSync(path.join(FIXTURE, "temp"), { recursive: true, force: true });
+    }
   });
 });

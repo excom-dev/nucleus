@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@excom/provider-fetch",
-      "comment": "Tests only: complexity snapshots count fewer parent walks, now that selector matching in the test DOM goes through `@excom/nucleus-dom`'s selector shim",
+      "comment": "Update complexity snapshots: they count `parentNode` reads, and fewer parent walks now that selector matching in the test DOM goes through `@excom/nucleus-dom`",
       "type": "none"
     }
   ],

@@ -1,7 +1,8 @@
 # Manual redeploy of wrenfield.excom.dev from `main`. Pushes to `main` deploy
 # through the Release workflow (publish.yml), after the version bump, so the
-# page always pins a Kit version that is on npm. Run this from `main` only:
-# another ref can carry a Kit version that was never published.
+# page always loads a Kit version that is on npm. Run this from `main` only:
+# another ref can carry a Kit version that was never published, which the
+# published-Kit check below refuses.
 #
 # CLOUDFLARE_API_TOKEN needs Workers Scripts:Edit (account), plus Workers
 # Routes:Edit and DNS:Edit on the excom.dev zone for the custom domain
@@ -18,18 +19,62 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@v6
 
-      # No dependencies to install: staging copies files and reads the Kit
-      # version from packages/nucleus-kit/package.json.
-      - uses: actions/setup-node@v6
+      - uses: ./.github/actions/setup-monorepo
+
+      # Build cache only on main (see .github/actions/setup-monorepo).
+      - name: Cache Rush build cache
+        uses: actions/cache@v5
         with:
-          node-version: "24.13.0"
-      - run: node packages/wrenfield/scripts/stage.mjs
+          path: common/temp/build-cache
+          key: rush-build-cache-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            rush-build-cache-${{ runner.os }}-
+
+      # Wrenfield's dependencies: the Nucleus Kit's dist, for the check (the
+      # deploy build loads the Kit from unpkg at the workspace version, which
+      # must be the Kit built here), and nucleus-ssr, for the prerender.
+      - run: node common/scripts/install-run-rush.js build --to wrenfield
+      - name: Check the published Nucleus Kit
+        working-directory: packages/wrenfield
+        run: node node_modules/@excom/heft-rig/scripts/kit-check.mjs
+      - name: Build Wrenfield for deploy
+        working-directory: packages/wrenfield
+        run: pnpm run build --kit=unpkg
+
+      # Pages whose inputs did not change are reused from the last run's cache.
+      - name: Restore prerender cache
+        uses: actions/cache/restore@v5
+        with:
+          path: packages/wrenfield/temp/prerender-cache
+          key: prerender-wrenfield-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            prerender-wrenfield-${{ runner.os }}-
+      # The catalogue's pages → static pages in the app's dist, the person's
+      # pages as the shell, plus 404.html. Only after the fresh deploy build
+      # above: a dist an earlier prerender wrote is refused.
+      - run: node common/scripts/install-run-rush.js build:prerender --only wrenfield
+      - name: Save prerender cache
+        uses: actions/cache/save@v5
+        with:
+          path: packages/wrenfield/temp/prerender-cache
+          key: prerender-wrenfield-${{ runner.os }}-${{ github.sha }}
+      # Chrome's sandbox needs unprivileged user namespaces, which Ubuntu restricts through AppArmor.
+      # continue-on-error on this and the Chrome step: temporary, until the suite proves stable on the runner.
+      - name: Allow user namespaces for Chrome's sandbox
+        continue-on-error: true
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+      # The prerender, the app and its boot in headless Chrome.
+      - name: Check Wrenfield in headless Chrome
+        continue-on-error: true
+        timeout-minutes: 10
+        working-directory: packages/wrenfield
+        run: node support/tests/browser/run.mjs
 
       # From the repo root like the docs deploy: the action installs wrangler
       # with npm where it runs, which cannot read the package's `workspace:`

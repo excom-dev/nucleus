@@ -77,14 +77,16 @@ const markHtmlSource = (
  * Write text only when it differs from what's painted: one text node
  * holding `text` (or no children for `""`). Same-string re-runs skip
  * the DOM. Anything else in the target (elements, several nodes) is
- * replaced as before.
+ * replaced as before. Replaced by a later text paint of the commit, it
+ * writes nothing but drops the stamp its write would have.
  */
-const paintText = (target: Node, text: string) => {
+const paintText = (target: Node, text: string, isReplaced = false) => {
   const first = target.firstChild;
   if (!(first === null ? text === "" : isSoleText(first, text))) {
-    target.textContent = text;
+    if (!isReplaced) target.textContent = text;
     unstamp(target);
   }
+  if (isReplaced) return;
   // a <textarea>'s text is only its default value: mirror it to .value
   syncTextControl(target, text);
 };
@@ -674,9 +676,9 @@ export const FIELD_RESOLVERS = {
           )
         : [];
     schedulePaint(
-      () => {
+      (isReplaced) => {
         if (value !== undefined) {
-          elementInternal.setAttr(hash, key, value);
+          elementInternal.setAttr(hash, key, value, isReplaced);
           return;
         }
         const toggles = flips();
@@ -691,7 +693,8 @@ export const FIELD_RESOLVERS = {
         value !== undefined
           ? attrWillChange(element, key, value)
           : flips().length > 0
-      )
+      ),
+      value !== undefined ? elementInternal.ledger(key) : undefined
     );
     return result;
   },
@@ -752,13 +755,14 @@ export const FIELD_RESOLVERS = {
     }
     const value = isWipe(result) ? null : result;
     schedulePaint(
-      () => {
-        elementInternal.setAttr(hash, key, value);
+      (isReplaced) => {
+        elementInternal.setAttr(hash, key, value, isReplaced);
       },
       1,
       withTransition(paintTransition(args), () =>
         attrWillChange(element, key, value)
-      )
+      ),
+      elementInternal.ledger(key)
     );
     return result;
   },
@@ -896,16 +900,19 @@ export const FIELD_RESOLVERS = {
           } else {
             const text = res + "";
             schedulePaint(
-              () => {
+              (isReplaced) => {
                 /*
                  * `textContent` / `innerText` do not write a template's
                  * document fragment (unlike `innerHTML`), so templates go
                  * through `.content`.
                  */
-                paintText(textTarget, text);
+                paintText(textTarget, text, isReplaced);
               },
               0,
-              withTransition(transition, () => textWillChange(textTarget, text))
+              withTransition(transition, () =>
+                textWillChange(textTarget, text)
+              ),
+              elementInternal.ledger("content")
             );
           }
         })
@@ -923,12 +930,14 @@ export const FIELD_RESOLVERS = {
       // nearness) works for plain string results too
       elementInternal.setContentAttr(hash);
       const text = result + "";
+      // text replaces all content: keyed, a commit's last text paint writes
       schedulePaint(
-        () => {
-          paintText(textTarget, text);
+        (isReplaced) => {
+          paintText(textTarget, text, isReplaced);
         },
         0,
-        withTransition(transition, () => textWillChange(textTarget, text))
+        withTransition(transition, () => textWillChange(textTarget, text)),
+        elementInternal.ledger("content")
       );
     }
     return result;

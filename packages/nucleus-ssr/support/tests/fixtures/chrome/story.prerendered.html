@@ -1,0 +1,283 @@
+<!doctype html><html lang="en-GB" n-ssr=""><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <title>Our story · Wrenfield</title>
+  <meta name="description" content="Wrenfield is a furniture house: made-to-order pieces, restored antiques, lighting and objects. A fictional shop, built as the reference Nucleus Stack app.">
+  <meta name="application-name" content="Wrenfield">
+  <meta name="robots" content="noindex">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f6f2ea" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#141311" media="(prefers-color-scheme: dark)">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Wrenfield">
+  <meta property="og:title" content="Wrenfield">
+  <meta property="og:description" content="Made-to-order furniture, restored antiques, lighting and objects. A reference Nucleus Stack app.">
+  <meta property="og:image" content="/img/icon-512.png">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Wrenfield">
+  <meta name="twitter:description" content="Made-to-order furniture, restored antiques, lighting and objects. A reference Nucleus Stack app.">
+  <meta name="twitter:image" content="/img/icon-512.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/img/logo.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&amp;display=swap">
+  <!-- model-viewer by import() from a classic script, as an async script would load it: an async module script beside the kit's makes the build defer both -->
+  <script>import("https://unpkg.com/@google/model-viewer@4.3.1/dist/model-viewer.min.js");</script>
+  <script type="module" crossorigin="" src="/assets/index-DpxEJp6m.js"></script>
+  <link rel="modulepreload" crossorigin="" href="/assets/preload-helper-BZ1Pz5am.js">
+  <link rel="stylesheet" crossorigin="" href="/assets/index-jfPWLPnZ.css">
+</head>
+<body nucleus-kit-idle="">
+  <quark-sheet src-url="/shell.quark" is-success="" did-load=""></quark-sheet>
+  <detect-media media-query="(width < 768px)"></detect-media>
+  <detect-media media-query="(width >= 768px)"></detect-media>
+
+  <provider-fetch id="me" api-url="/api/me" class="abstract" bag-count="0" saved-count="0">
+    <spa-manager class="abstract" overscroll-behavior-x="navigate" active-url="/account/story" default-title="Wrenfield" has-rendered="">
+      <header>
+        <spa-a route-href="/" role="link" class="wordmark" tabindex="0">Wrenfield</spa-a>
+        <nav aria-label="Collections">
+          <spa-a route-href="/shop/seating" role="link" match-nested="" tabindex="0">Seating</spa-a>
+          <spa-a route-href="/shop/tables" role="link" match-nested="" tabindex="0">Tables</spa-a>
+          <spa-a route-href="/shop/storage" role="link" match-nested="" tabindex="0">Storage</spa-a>
+          <spa-a route-href="/shop/lighting" role="link" match-nested="" tabindex="0">Lighting</spa-a>
+          <spa-a route-href="/shop/objects" role="link" match-nested="" tabindex="0">Objects</spa-a>
+          <spa-a route-href="/shop?era=antique" role="link" match-nested="" tabindex="0">Antiques</spa-a>
+        </nav>
+        <spa-a route-href="/shop" listen-for="submit" prevent-default="" bind-search="">
+          <form role="search">
+            <input type="search" name="q" placeholder="Search" aria-label="Search" autocomplete="off" value="">
+          </form>
+        </spa-a>
+        <nav id="tabs" aria-label="Main">
+          <spa-a route-href="/" data-tab="home" role="link" transition-types="tab" tabindex="0">
+            <svg aria-hidden="true"><use href="/img/icons.svg#house"></use></svg>Home
+          </spa-a>
+          <spa-a route-href="/shop" data-tab="shop" role="link" match-nested="" transition-types="tab" tabindex="0">
+            <svg aria-hidden="true"><use href="/img/icons.svg#armchair"></use></svg>Shop
+          </spa-a>
+          <spa-a route-href="/saved" data-tab="saved" role="link" match-nested="" transition-types="tab" tabindex="0">
+            <svg aria-hidden="true"><use href="/img/icons.svg#heart"></use></svg>Saved
+            <small class="badge" bind-saved-count="">0</small>
+          </spa-a>
+          <spa-a route-href="/bag" data-tab="bag" role="link" match-nested="" transition-types="tab" tabindex="0">
+            <svg aria-hidden="true"><use href="/img/icons.svg#shopping-bag"></use></svg>Bag
+            <small class="badge" bind-bag-count="">0</small>
+          </spa-a>
+          <spa-a route-href="/account" data-tab="account" role="link" match-nested="" transition-types="tab" is-active="" tabindex="0" aria-current="page">
+            <svg aria-hidden="true"><use href="/img/icons.svg#user-round"></use></svg>Account
+          </spa-a>
+        </nav>
+        <a id="source-link" href="https://github.com/excom-dev/nucleus/tree/main/packages/wrenfield" target="_blank" rel="noopener">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"></path></svg><span>See source</span>
+        </a>
+      </header>
+
+      <main>
+        <spa-route route-href="/" template-ref="/views/home/home.html" pre-fetch="idle" document-title="Home · Wrenfield"></spa-route>
+        <spa-route route-href="/shop" template-ref="/views/shop/shop.html" pre-fetch="idle" document-title="Shop · Wrenfield"></spa-route>
+        <spa-route route-href="/shop/:category" template-ref="/views/shop/shop.html" document-title="Shop · Wrenfield"></spa-route>
+        <spa-route route-href="/shop/:category/:slug" template-ref="/views/product/product.html" same-route="refresh" pre-fetch="idle" document-title="Shop · Wrenfield"></spa-route>
+        <spa-route route-href="/saved" template-ref="/views/saved/saved.html" pre-fetch="idle" document-title="Saved · Wrenfield"></spa-route>
+        <spa-route route-href="/bag" template-ref="/views/bag/bag.html" pre-fetch="idle" document-title="Bag · Wrenfield"></spa-route>
+        <spa-route route-regex="^/bag/checkout/(details|delivery|payment|review)$" template-ref="/views/checkout/checkout.html" document-title="Checkout · Wrenfield"></spa-route>
+        <spa-route route-href="/bag/checkout/complete" template-ref="/views/checkout/complete.html" document-title="Order placed · Wrenfield"></spa-route>
+        <spa-route route-href="/account" template-ref="/views/account/account.html" pre-fetch="idle" document-title="Account · Wrenfield"></spa-route>
+        <spa-route route-href="/account/orders/:id" template-ref="/views/order/order.html" same-route="refresh" document-title="Order · Wrenfield"></spa-route>
+        <spa-route route-href="/account/story" template-ref="/views/story/story.html" document-title="Our story · Wrenfield" is-active="" did-load="" n-tpl="/views/story/story.html#25iu19lx6w1" n-ssr="0"><article id="story">
+  <link rel="stylesheet" href="/views/story/story.css">
+  <header class="bar">
+    <spa-a route-action="back" route-href="/account" role="link" tabindex="0">
+      <svg aria-hidden="true"><use href="/img/icons.svg#chevron-left"></use></svg>Account
+    </spa-a>
+    <strong aria-hidden="true">Our story</strong>
+  </header>
+
+  <hgroup>
+    <p class="eyebrow">Our story</p>
+    <h1>New pieces made to order, old pieces made good</h1>
+    <p>Wrenfield is a small furniture house with its own workshop in Somerset. We make new pieces to order, find and restore antiques, one of each, and sell the two side by side, as they sit in most good rooms.</p>
+  </hgroup>
+
+  <figure>
+    <figure>
+      <spa-a route-href="/shop/tables/wenlock-writing-table" role="link" class="stage" tabindex="0">
+        <img src="/img/products/wenlock-writing-table/main.webp" alt="Plain cherry writing table on four square tapered legs">
+      </spa-a>
+      <figcaption><strong>Wenlock Writing Table</strong> Made to order in our Somerset workshop</figcaption>
+    </figure>
+    <figure>
+      <spa-a route-href="/shop/seating/yoke-back-armchair" role="link" class="stage" tabindex="0">
+        <img src="/img/products/yoke-back-armchair/main.webp" alt="Tall Chinese elm armchair with a yoke-shaped crest rail and carved back splat">
+      </spa-a>
+      <figcaption><strong>Yoke-Back Armchair</strong> China, c. 1850</figcaption>
+    </figure>
+  </figure>
+
+  <dl>
+    <div><dt>Workshops make our new pieces, in five countries</dt><dd>7</dd></div>
+    <div><dt>Antiques in the house, each the only one</dt><dd>25</dd></div>
+    <div><dt>Weeks to make a piece to order</dt><dd>4–12</dd></div>
+  </dl>
+
+  <section>
+    <header>
+      <p class="eyebrow">Made to order</p>
+      <h2>The workshop</h2>
+    </header>
+    <p>Our workshop is a former coach works on the edge of the Somerset Levels. Six cabinetmakers make the tables, chests and shelving that carry the Wrenfield Workshop name, in solid oak, walnut and cherry, jointed and finished by hand.</p>
+    <figure>
+      <spa-a route-href="/shop/tables/eddystone-coffee-table" role="link" class="stage" tabindex="0">
+        <img src="/img/products/eddystone-coffee-table/main.webp" alt="Square ebonised coffee table cut through with concentric walnut fretwork" loading="lazy">
+      </spa-a>
+      <figcaption><strong>Eddystone Coffee Table</strong> Each walnut ring is cut and fitted by hand in Somerset</figcaption>
+    </figure>
+    <p>The rest of our new pieces come from six workshops we have known for years: upholsterers in Portugal and England, cabinetmakers in Denmark, a stone workshop in Belgium, a foundry in Italy and a pottery in the West Country. Each piece carries the name of the workshop that made it.</p>
+    <p>Nothing is made until you order it. You choose the finish, pay half as a deposit, and the piece is made for you in four to twelve weeks. The lead time for each finish is shown beside it.</p>
+    <spa-a route-href="/shop?era=contemporary" role="link" transition-types="tab" tabindex="0">
+      See pieces made to order<svg aria-hidden="true"><use href="/img/icons.svg#arrow-right"></use></svg>
+    </spa-a>
+  </section>
+
+  <section>
+    <header>
+      <p class="eyebrow">One of each</p>
+      <h2>The antiques room</h2>
+    </header>
+    <p>Our buyers look for furniture, lighting and objects made between about 1840 and 1920: French seating, English oak and mahogany, Chinese elm, brass from France and the Netherlands. We buy only what we would keep ourselves.</p>
+    <p>Every piece comes back to the workshop before it goes on sale, and we do only what it needs. Old surfaces are cleaned and waxed rather than stripped. Original handles, knobs and frames stay. Seats are re-upholstered by hand, the traditional way, and every light is rewired to current standards. Patina is left as we find it.</p>
+    <figure>
+      <figure>
+        <spa-a route-href="/shop/seating/moss-velvet-fauteuil" role="link" class="stage" tabindex="0">
+          <img src="/img/products/moss-velvet-fauteuil/main.webp" alt="Carved walnut open armchair upholstered in moss-green velvet" loading="lazy">
+        </spa-a>
+        <figcaption><strong>Moss Velvet Fauteuil</strong> France, c. 1870. Frame cleaned and waxed, seat re-covered in cotton velvet</figcaption>
+      </figure>
+      <figure category-slug="lighting">
+        <spa-a route-href="/shop/lighting/two-tier-brass-chandelier" role="link" class="stage" tabindex="0">
+          <img src="/img/products/two-tier-brass-chandelier/main.webp" alt="Large brass chandelier with two tiers of candle lights in cut-glass dishes" loading="lazy">
+        </spa-a>
+        <figcaption><strong>Two-Tier Brass Chandelier</strong> Netherlands, c. 1900. Rewired and fitted for candle bulbs</figcaption>
+      </figure>
+    </figure>
+    <p>Each antique is one of a kind. When you put one in your bag we hold it for you for 15 minutes, and once it is ordered it is marked sold.</p>
+    <spa-a route-href="/shop?era=antique" role="link" transition-types="tab" tabindex="0">
+      Enter the antiques room<svg aria-hidden="true"><use href="/img/icons.svg#arrow-right"></use></svg>
+    </spa-a>
+  </section>
+
+  <blockquote>
+    <p>We take away as little as we can. A good repair should be hard to find and easy to undo.</p>
+    <footer>Nell Ashdown, head of restoration</footer>
+  </blockquote>
+
+  <aside class="trade">
+    <p class="eyebrow">For designers and architects</p>
+    <h2>The trade programme</h2>
+    <p>Interior designers, architects and stylists buy every piece, new or antique, at fifteen per cent off. We invoice on request, with 14 days to pay, and each project has one person to call from the first enquiry to the last delivery.</p>
+    <p>Switch trade pricing on in your account and the shop shows your price beside the list price.</p>
+    <spa-a route-href="/account" role="button" class="outline" transition-types="tab" tabindex="0">Switch on trade pricing</spa-a>
+    <strong>Trade pricing is on.</strong>
+  </aside>
+
+  <nav aria-label="Continue">
+    <spa-a route-href="/shop" role="button" transition-types="tab" tabindex="0">Shop the collection</spa-a>
+    <spa-a route-href="/account/delivery-returns" role="button" class="secondary" tabindex="0">Delivery and returns</spa-a>
+  </nav>
+</article></spa-route>
+        <spa-route route-href="/account/delivery-returns" template-ref="/views/delivery-returns/delivery-returns.html" document-title="Delivery and returns · Wrenfield"></spa-route>
+        <spa-route route-regex=".*" is-fallback="" template-ref="/views/not-found/not-found.html" document-title="Not found · Wrenfield"></spa-route>
+      </main>
+
+      <footer>
+        <p class="wordmark">Wrenfield</p>
+        <nav aria-label="About">
+          <spa-a route-href="/account/story" role="link" is-active="" tabindex="0">Our story</spa-a>
+          <spa-a route-href="/account/delivery-returns" role="link" tabindex="0">Delivery and returns</spa-a>
+          <spa-a route-href="/account" role="link" tabindex="0">Trade programme</spa-a>
+        </nav>
+        <small>Wrenfield is a fictional house and this is a demo. Any made-up details work, and nothing is charged or shipped.</small>
+      </footer>
+    </spa-manager>
+
+    <gesture-handler gesture-types="pan-y swipe" pointer-types="touch pen mouse" progress-axis="up" snap-points="0 1" from-ref=":scope > content-drawer > header" handoff-ref=":scope > content-drawer" range-ref=":scope > content-drawer" progress-offset="0">
+      <content-drawer id="bag-sheet" role="region" aria-labelledby="bag-sheet-title">
+        <dismiss-watcher command-name="--close"></dismiss-watcher>
+        <header>
+          <h2 id="bag-sheet-title">Added to your bag</h2>
+          <button type="button" class="icon" command="--close" commandfor="bag-sheet" aria-label="Close">
+            <svg aria-hidden="true"><use href="/img/icons.svg#x"></use></svg>
+          </button>
+        </header>
+        <div bind-bag-lines="" role="list" q-loop=""></div>
+        <footer>
+          <dl class="totals">
+            <dt>Subtotal</dt>
+            <dd bind-bag="subtotal" is-zero="">$0</dd>
+          </dl>
+          <spa-a route-href="/bag" role="button" class="secondary" transition-types="tab" tabindex="0">View bag</spa-a>
+          <spa-a route-href="/bag/checkout/details" role="button" tabindex="0">Checkout</spa-a>
+        </footer>
+      </content-drawer>
+      <event-handler role="presentation" target-ref="content-drawer:has(+ :scope)" command-name="--close"></event-handler>
+    </gesture-handler>
+  </provider-fetch>
+
+  <template id="product-card">
+    <data-product role="listitem">
+      <spa-a role="link" bind-product-link="">
+        <figure class="stage"><img alt="" loading="lazy" decoding="async" bind-product-image=""></figure>
+        <h3 bind-product="name"></h3>
+        <p bind-product="maker"></p>
+        <p><data bind-price=""></data> <data bind-trade-price=""></data></p>
+      </spa-a>
+      <super-form>
+        <form bind-save="">
+          <button type="submit" class="icon"><svg aria-hidden="true"><use href="/img/icons.svg#heart"></use></svg></button>
+        </form>
+      </super-form>
+    </data-product>
+  </template>
+
+  <template id="bag-line">
+    <data-line role="listitem">
+      <spa-a bind-line-link="" aria-hidden="true">
+        <figure class="stage"><img alt="" loading="lazy" decoding="async" bind-line-image=""></figure>
+      </spa-a>
+      <hgroup>
+        <h3><spa-a role="link" bind-line-link="" bind-item="name"></spa-a></h3>
+        <p bind-line-finish=""></p>
+        <p bind-line-lead=""></p>
+        <p bind-line-hold=""></p>
+      </hgroup>
+      <data bind-line-total=""></data>
+      <fieldset aria-label="Quantity">
+        <super-form>
+          <form method="patch" bind-line-less="">
+            <input type="number" name="qty" hidden="">
+            <button type="submit" class="icon" aria-label="One fewer"><svg aria-hidden="true"><use href="/img/icons.svg#minus"></use></svg></button>
+          </form>
+        </super-form>
+        <output bind-item="qty"></output>
+        <super-form>
+          <form method="patch" bind-line-more="">
+            <input type="number" name="qty" hidden="">
+            <button type="submit" class="icon" aria-label="One more"><svg aria-hidden="true"><use href="/img/icons.svg#plus"></use></svg></button>
+          </form>
+        </super-form>
+      </fieldset>
+      <super-form>
+        <form method="delete">
+          <button type="submit" class="plain">Remove</button>
+        </form>
+      </super-form>
+    </data-line>
+  </template>
+
+  <p role="status"><img src="/img/logo.svg" alt="" width="56" height="56">Opening the showroom</p>
+
+
+<script type="application/json" id="nucleus-hydration">{"v":1,"provisions":{"0":{"routeHref":"/account/story","matchNested":false,"scrollResetY":["push","replace"],"scrollResetX":["push","replace"],"scrollResetBehavior":null,"noTransition":false,"active":{"id":"init","url":"/account/story","isInit":true},"match":["/account/story"],"move":null,"next":null,"previous":null,"params":{},"query":{}}},"responses":[{"method":"GET","url":"/shell.quark","record":{"url":"/shell.quark","status":200,"statusText":"","ok":true,"redirected":false,"type":"basic","headers":[["content-type","text/plain; charset=utf-8"]],"body":"@use \"quark:date\" as date;\n@use \"quark:list\" as list;\n@use \"quark:string\" as *;\n@use \"quark:url\" as url;\n\n/* Each layout once its query is known: a prerender, which knows none, writes neither. */\n:scope:has(> detect-media[media-query=\"(width \u003c 768px)\"][is-matched]) {\n  data-layout: \"compact\";\n}\n:scope:has(> detect-media[media-query=\"(width >= 768px)\"][is-matched]) {\n  data-layout: \"regular\";\n}\n\n#me {\n  @on super-form-success, super-form-error, web-authn-success {\n    @command --fetch;\n  }\n  @on super-form-success (target: \"super-form:has(> form[action='/api/bag'])\") {\n    @command --open (target: \"#bag-sheet\");\n  }\n  @on spa-manager-push, spa-manager-back, spa-manager-forward {\n    content-drawer {\n      is-open: none;\n    }\n  }\n\n  &[did-load] {\n    $me: prop(\"provision\").body;\n    $bag: $me.bag;\n    $bag-skus: list.pluck($me.bag.items, \"sku\");\n    $saved-skus: list.pluck($me.saved.items, \"sku\");\n    is-trade: $me.isTrade;\n    bag-count: $me.bag.count;\n    saved-count: $me.saved.count;\n  }\n\n  > spa-manager {\n    $query: prop(\"provision\").query;\n    [bind-search] input {\n      value: $query.q or \"\";\n    }\n  }\n}\n\nspa-route {\n  $route: prop(\"provision\");\n  @on view-title {\n    document-title: \"#{event.detail} · Wrenfield\";\n  }\n}\nspa-a[role] {\n  tabindex: 0;\n  @on keydown (key: \"Enter\") {\n    @dispatch click;\n  }\n}\nspa-a[role=\"button\"] {\n  @on keydown (key: \"Space\", prevent-default) {\n    @dispatch click;\n  }\n}\nheader nav > spa-a {\n  aria-current: if(attr(\"is-active\") != null: \"page\"; else: none);\n}\n[bind-search] {\n  @on input {\n    route-href: \"/shop?q=#{url.encode(event.target.value)}\";\n  }\n}\n[bind-saved-count] {\n  content: $me.saved.count;\n}\n[bind-bag-count] {\n  content: $bag.count;\n}\n[bind-bag]:not([bind-bag=\"deliveryFee\"]) {\n  is-zero: $bag[attr(\"bind-bag\")] == 0;\n  content: $bag[\"#{attr(\"bind-bag\")}Text\"];\n}\n[bind-bag=\"deliveryFee\"] {\n  content: if($bag.deliveryFee == 0: \"Free\"; else: $bag.deliveryFeeText);\n}\n[bind-item] {\n  content: item[attr(\"bind-item\")];\n}\n[bind-count] {\n  content: plural($count, (one: \"# piece\", other: \"# pieces\"));\n}\nmain provider-fetch {\n  $response: prop(\"provision\").body;\n  [bind-error] {\n    content: $response.message or \"Please try again in a moment.\";\n  }\n}\n\n[bind-products] {\n  content: iterate($products, \"#product-card\", \"sku\");\n  > data-product {\n    $product: item;\n  }\n}\ndata-product {\n  category-slug: $product.category;\n  is-new: $product.isNew;\n  is-unique: $product.isUnique;\n  is-sold: $product.isSold;\n  is-saved: $saved-skus.includes($product.sku);\n  is-in-bag: $bag-skus.includes($product.sku);\n\n  [bind-product] {\n    content: $product[attr(\"bind-product\")];\n  }\n  [bind-product-link] {\n    route-href: $product.href;\n  }\n  [bind-product-image] {\n    src: $product.image;\n  }\n  [bind-price] {\n    value: $product.price;\n    content: $product.priceText;\n  }\n  [bind-trade-price] {\n    value: $product.tradePrice;\n    content: $product.tradePriceText;\n  }\n  [bind-save] {\n    action: \"/api/saved/#{$product.sku}\";\n  }\n  &[is-saved] [bind-save] {\n    method: \"delete\";\n    button {\n      aria-label: \"Remove from saved\";\n    }\n  }\n  &:not([is-saved]) [bind-save] {\n    method: \"put\";\n    button {\n      aria-label: \"Save\";\n    }\n  }\n}\n\n[bind-bag-lines] {\n  content: iterate($bag.items, \"#bag-line\", \"id\");\n}\ndata-line {\n  is-unique: item.isUnique;\n  line-qty: item.qty;\n\n  [bind-line-link] {\n    route-href: item.href;\n  }\n  [bind-line-image] {\n    src: item.image;\n  }\n  [bind-line-finish] {\n    content: item.finish.name;\n    --swatch: item.finish.swatch;\n  }\n  [bind-line-lead] {\n    content: if(\n      item.leadWeeks: \"Made to order, about #{item.leadWeeks} weeks\";\n      else: none\n    );\n  }\n  [bind-line-hold] {\n    content: if(\n      item.heldUntil:\n        \"Held for you until #{date.format(item.heldUntil, \"en-US\", (timeStyle: \"short\"))}\";\n      else: none\n    );\n  }\n  [bind-line-total] {\n    value: item.lineTotal;\n    content: item.lineTotalText;\n  }\n  form {\n    action: \"/api/bag/#{item.id}\";\n  }\n  [bind-line-less] input {\n    value: item.qty - 1;\n  }\n  [bind-line-more] input {\n    value: item.qty + 1;\n  }\n}\n\ncontent-drawer {\n  :scope[data-layout=\"compact\"] & {\n    from-side: \"bottom\";\n  }\n  :scope[data-layout=\"regular\"] & {\n    from-side: \"right\";\n  }\n  &[is-open] dismiss-watcher {\n    is-active: \"\";\n  }\n  &:not([is-open]) dismiss-watcher {\n    is-active: none;\n  }\n}\n:not(link, quark-sheet):has(~ gesture-handler > content-drawer[is-open]),\nspa-manager:has(content-drawer[is-open]) > :is(header, footer) {\n  inert: \"\";\n}\n:not(link, quark-sheet):has(~ gesture-handler > content-drawer:not([is-open])),\nspa-manager:not(:has(content-drawer[is-open])) > :is(header, footer) {\n  inert: none;\n}\ngesture-handler:has(> content-drawer) {\n  :scope[data-layout=\"compact\"] & {\n    is-disabled: none;\n  }\n  :scope[data-layout=\"regular\"] & {\n    is-disabled: \"\";\n  }\n  &:has(> [is-open]) {\n    progress-offset: 1;\n  }\n  &:not(:has(> [is-open])) {\n    progress-offset: 0;\n  }\n  @on gesture-handler-start {\n    content-drawer {\n      is-scrubbing: \"\";\n    }\n  }\n  @on gesture-handler-end {\n    content-drawer {\n      is-open: event.detail.snap == 1;\n      is-scrubbing: none;\n    }\n  }\n}\n"}},{"method":"GET","url":"/views/story/story.html","record":{"url":"/views/story/story.html","status":200,"statusText":"","ok":true,"redirected":false,"type":"basic","headers":[["content-type","text/html; charset=utf-8"]],"body":"\u003carticle id=\"story\">\n  \u003clink rel=\"stylesheet\" href=\"/views/story/story.css\">\n  \u003cheader class=\"bar\">\n    \u003cspa-a route-action=\"back\" route-href=\"/account\" role=\"link\">\n      \u003csvg aria-hidden=\"true\">\u003cuse href=\"/img/icons.svg#chevron-left\"/>\u003c/svg>Account\n    \u003c/spa-a>\n    \u003cstrong aria-hidden=\"true\">Our story\u003c/strong>\n  \u003c/header>\n\n  \u003chgroup>\n    \u003cp class=\"eyebrow\">Our story\u003c/p>\n    \u003ch1>New pieces made to order, old pieces made good\u003c/h1>\n    \u003cp>Wrenfield is a small furniture house with its own workshop in Somerset. We make new pieces to order, find and restore antiques, one of each, and sell the two side by side, as they sit in most good rooms.\u003c/p>\n  \u003c/hgroup>\n\n  \u003cfigure>\n    \u003cfigure>\n      \u003cspa-a route-href=\"/shop/tables/wenlock-writing-table\" role=\"link\" class=\"stage\">\n        \u003cimg src=\"/img/products/wenlock-writing-table/main.webp\" alt=\"Plain cherry writing table on four square tapered legs\">\n      \u003c/spa-a>\n      \u003cfigcaption>\u003cstrong>Wenlock Writing Table\u003c/strong> Made to order in our Somerset workshop\u003c/figcaption>\n    \u003c/figure>\n    \u003cfigure>\n      \u003cspa-a route-href=\"/shop/seating/yoke-back-armchair\" role=\"link\" class=\"stage\">\n        \u003cimg src=\"/img/products/yoke-back-armchair/main.webp\" alt=\"Tall Chinese elm armchair with a yoke-shaped crest rail and carved back splat\">\n      \u003c/spa-a>\n      \u003cfigcaption>\u003cstrong>Yoke-Back Armchair\u003c/strong> China, c. 1850\u003c/figcaption>\n    \u003c/figure>\n  \u003c/figure>\n\n  \u003cdl>\n    \u003cdiv>\u003cdt>Workshops make our new pieces, in five countries\u003c/dt>\u003cdd>7\u003c/dd>\u003c/div>\n    \u003cdiv>\u003cdt>Antiques in the house, each the only one\u003c/dt>\u003cdd>25\u003c/dd>\u003c/div>\n    \u003cdiv>\u003cdt>Weeks to make a piece to order\u003c/dt>\u003cdd>4–12\u003c/dd>\u003c/div>\n  \u003c/dl>\n\n  \u003csection>\n    \u003cheader>\n      \u003cp class=\"eyebrow\">Made to order\u003c/p>\n      \u003ch2>The workshop\u003c/h2>\n    \u003c/header>\n    \u003cp>Our workshop is a former coach works on the edge of the Somerset Levels. Six cabinetmakers make the tables, chests and shelving that carry the Wrenfield Workshop name, in solid oak, walnut and cherry, jointed and finished by hand.\u003c/p>\n    \u003cfigure>\n      \u003cspa-a route-href=\"/shop/tables/eddystone-coffee-table\" role=\"link\" class=\"stage\">\n        \u003cimg src=\"/img/products/eddystone-coffee-table/main.webp\" alt=\"Square ebonised coffee table cut through with concentric walnut fretwork\" loading=\"lazy\">\n      \u003c/spa-a>\n      \u003cfigcaption>\u003cstrong>Eddystone Coffee Table\u003c/strong> Each walnut ring is cut and fitted by hand in Somerset\u003c/figcaption>\n    \u003c/figure>\n    \u003cp>The rest of our new pieces come from six workshops we have known for years: upholsterers in Portugal and England, cabinetmakers in Denmark, a stone workshop in Belgium, a foundry in Italy and a pottery in the West Country. Each piece carries the name of the workshop that made it.\u003c/p>\n    \u003cp>Nothing is made until you order it. You choose the finish, pay half as a deposit, and the piece is made for you in four to twelve weeks. The lead time for each finish is shown beside it.\u003c/p>\n    \u003cspa-a route-href=\"/shop?era=contemporary\" role=\"link\" transition-types=\"tab\">\n      See pieces made to order\u003csvg aria-hidden=\"true\">\u003cuse href=\"/img/icons.svg#arrow-right\"/>\u003c/svg>\n    \u003c/spa-a>\n  \u003c/section>\n\n  \u003csection>\n    \u003cheader>\n      \u003cp class=\"eyebrow\">One of each\u003c/p>\n      \u003ch2>The antiques room\u003c/h2>\n    \u003c/header>\n    \u003cp>Our buyers look for furniture, lighting and objects made between about 1840 and 1920: French seating, English oak and mahogany, Chinese elm, brass from France and the Netherlands. We buy only what we would keep ourselves.\u003c/p>\n    \u003cp>Every piece comes back to the workshop before it goes on sale, and we do only what it needs. Old surfaces are cleaned and waxed rather than stripped. Original handles, knobs and frames stay. Seats are re-upholstered by hand, the traditional way, and every light is rewired to current standards. Patina is left as we find it.\u003c/p>\n    \u003cfigure>\n      \u003cfigure>\n        \u003cspa-a route-href=\"/shop/seating/moss-velvet-fauteuil\" role=\"link\" class=\"stage\">\n          \u003cimg src=\"/img/products/moss-velvet-fauteuil/main.webp\" alt=\"Carved walnut open armchair upholstered in moss-green velvet\" loading=\"lazy\">\n        \u003c/spa-a>\n        \u003cfigcaption>\u003cstrong>Moss Velvet Fauteuil\u003c/strong> France, c. 1870. Frame cleaned and waxed, seat re-covered in cotton velvet\u003c/figcaption>\n      \u003c/figure>\n      \u003cfigure category-slug=\"lighting\">\n        \u003cspa-a route-href=\"/shop/lighting/two-tier-brass-chandelier\" role=\"link\" class=\"stage\">\n          \u003cimg src=\"/img/products/two-tier-brass-chandelier/main.webp\" alt=\"Large brass chandelier with two tiers of candle lights in cut-glass dishes\" loading=\"lazy\">\n        \u003c/spa-a>\n        \u003cfigcaption>\u003cstrong>Two-Tier Brass Chandelier\u003c/strong> Netherlands, c. 1900. Rewired and fitted for candle bulbs\u003c/figcaption>\n      \u003c/figure>\n    \u003c/figure>\n    \u003cp>Each antique is one of a kind. When you put one in your bag we hold it for you for 15 minutes, and once it is ordered it is marked sold.\u003c/p>\n    \u003cspa-a route-href=\"/shop?era=antique\" role=\"link\" transition-types=\"tab\">\n      Enter the antiques room\u003csvg aria-hidden=\"true\">\u003cuse href=\"/img/icons.svg#arrow-right\"/>\u003c/svg>\n    \u003c/spa-a>\n  \u003c/section>\n\n  \u003cblockquote>\n    \u003cp>We take away as little as we can. A good repair should be hard to find and easy to undo.\u003c/p>\n    \u003cfooter>Nell Ashdown, head of restoration\u003c/footer>\n  \u003c/blockquote>\n\n  \u003caside class=\"trade\">\n    \u003cp class=\"eyebrow\">For designers and architects\u003c/p>\n    \u003ch2>The trade programme\u003c/h2>\n    \u003cp>Interior designers, architects and stylists buy every piece, new or antique, at fifteen per cent off. We invoice on request, with 14 days to pay, and each project has one person to call from the first enquiry to the last delivery.\u003c/p>\n    \u003cp>Switch trade pricing on in your account and the shop shows your price beside the list price.\u003c/p>\n    \u003cspa-a route-href=\"/account\" role=\"button\" class=\"outline\" transition-types=\"tab\">Switch on trade pricing\u003c/spa-a>\n    \u003cstrong>Trade pricing is on.\u003c/strong>\n  \u003c/aside>\n\n  \u003cnav aria-label=\"Continue\">\n    \u003cspa-a route-href=\"/shop\" role=\"button\" transition-types=\"tab\">Shop the collection\u003c/spa-a>\n    \u003cspa-a route-href=\"/account/delivery-returns\" role=\"button\" class=\"secondary\">Delivery and returns\u003c/spa-a>\n  \u003c/nav>\n\u003c/article>\n"}}]}</script></body></html>

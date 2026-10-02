@@ -37,6 +37,13 @@ export interface HydrationReport {
    * task, or by the frame callbacks due by then, never paints: not one.
    */
   flashes: string[];
+  /**
+   * Elements kept out of the prerender, as served, which mount as on a cold
+   * load: each outermost `no-ssr` region, whose nodes, texts and attributes
+   * are in no other list, and each instance of a Neutron tag with `ssr:
+   * false` outside one, whose own attributes are in no other list.
+   */
+  keptOut: string[];
   /** The window's requests since the call, in order. */
   requests: ServedRequest[];
   /** How long (ms) the hydration window stayed open; `0` when the page opened none. */
@@ -44,6 +51,10 @@ export interface HydrationReport {
 }
 
 type Context = { request: Request; response: Response };
+// a Neutron element's class
+type Configured = { getConfig?(): { ssr?: boolean } | undefined };
+/** How an element stays out of the prerender: `"region"` (`no-ssr`: it and what it holds), `"self"` (a tag's `ssr: false`: its own code). */
+type KeptOut = "region" | "self";
 type Interceptor = Record<string, unknown> & {
   beforeAsyncRequest?(context: Context): Promise<Response | undefined>;
   afterAsyncResponse?(context: Context): Promise<Response | undefined>;
@@ -112,6 +123,52 @@ const twins = (
   return pairs;
 };
 
+/**
+ * The elements kept out of the prerender, found once the page parsed
+ * (`scan()`); they mount in the browser only. `of(node)`: whose change at
+ * `node` is theirs, by where `node` is: in a region (or detached from one:
+ * `track(records)` notes removals first), or a `"self"` element's own.
+ */
+const watchKeptOut = (window: DomWindow, noSsrAttr: string) => {
+  const { document, customElements } = window;
+  const regions = new Set<Node>();
+  const selves = new Set<Node>();
+  // removed from a region, last: where a detached node was
+  const left = new WeakSet<Node>();
+  const listed: string[] = [];
+  const keptOutAs = (element: Element): KeptOut | undefined =>
+    element.hasAttribute(noSsrAttr)
+      ? "region"
+      : (
+            customElements.get(element.localName) as Configured | undefined
+          )?.getConfig?.()?.ssr === false
+        ? "self"
+        : undefined;
+  const inRegion = (node: Node): boolean =>
+    regions.has(node) ||
+    (node.parentNode ? inRegion(node.parentNode) : left.has(node));
+  return {
+    listed,
+    of: (node: Node): KeptOut | undefined =>
+      inRegion(node) ? "region" : selves.has(node) ? "self" : undefined,
+    scan: () =>
+      document.querySelectorAll("*").forEach((element) => {
+        const as = keptOutAs(element);
+        // a region covers what it holds
+        if (!as || inRegion(element)) return;
+        (as === "region" ? regions : selves).add(element);
+        listed.push(pathTo(element).join(" > "));
+      }),
+    track: (records: MutationRecord[]) =>
+      records.forEach(({ target, removedNodes }) =>
+        removedNodes.forEach((node) => {
+          if (inRegion(target)) left.add(node);
+          else left.delete(node);
+        })
+      ),
+  };
+};
+
 /** Logs the window's requests through its fetch interceptor (`serve()`'s), until stopped. */
 const logRequests = (window: DomWindow) => {
   const settings = (
@@ -155,14 +212,20 @@ const logRequests = (window: DomWindow) => {
  * `start()` right before the parse and `parsed()` right after it, before its
  * elements upgrade: what follows is the page's doing.
  */
-const recordChanges = (window: DomWindow) => {
+const recordChanges = (
+  window: DomWindow,
+  keptOut: ReturnType<typeof watchKeptOut>
+) => {
   const removed: string[] = [];
   const added: string[] = [];
   const writes = new Map<Element, Map<string, number>>();
   const texts = new Map<Node, { node: string; server: string }>();
   const take = (records: MutationRecord[]) => {
+    keptOut.track(records);
     for (const record of records) {
       const { type, target, attributeName, oldValue } = record;
+      // a region's nodes and texts change as it mounts
+      if (type !== "attributes" && keptOut.of(target) === "region") continue;
       if (type === "childList") {
         const parent = target as Element;
         removed.push(
@@ -240,17 +303,30 @@ const beforeEachTask = (boundary: () => void) => {
   };
 };
 
-/** Sets `window[name]` until the returned function restores it. */
+/**
+ * Sets `window[name]`, and the global the page calls (the window's), until
+ * the returned function restores both. The global is a plain property
+ * meanwhile: an assignment to it, as Vitest's around each RPC (it saves and
+ * restores `setTimeout`), neither hides the patch nor outlives it.
+ */
 const patch = <K extends keyof DomWindow>(
   window: DomWindow,
   name: K,
   value: DomWindow[K]
 ) => {
   const own = Object.getOwnPropertyDescriptor(window, name);
+  const global = Object.getOwnPropertyDescriptor(globalThis, name);
   window[name] = value;
+  Object.defineProperty(globalThis, name, {
+    configurable: true,
+    writable: true,
+    value,
+  });
   return () => {
     if (own) Object.defineProperty(window, name, own);
     else delete window[name];
+    if (global) Object.defineProperty(globalThis, name, global);
+    else Reflect.deleteProperty(globalThis, name);
   };
 };
 
@@ -354,7 +430,11 @@ const afterParse = (root: Element, parsed: () => void) => {
  * attributes and nodes gone then; `stop()` lists those back by the end: one
  * still gone is a change the other lists report.
  */
-const watchFlashes = (window: DomWindow, ssrAttr: string) => {
+const watchFlashes = (
+  window: DomWindow,
+  ssrAttr: string,
+  keptOut: ReturnType<typeof watchKeptOut>
+) => {
   const { document } = window;
   // the page as served: each element's attributes, each node's parent
   const served = new Map<Element, Map<string, string>>();
@@ -386,16 +466,21 @@ const watchFlashes = (window: DomWindow, ssrAttr: string) => {
     }
   };
   const take = (records: MutationRecord[]) => {
+    keptOut.track(records);
     for (const { type, target, attributeName, removedNodes } of records) {
+      // kept out: a region's markup, a `"self"` element's attributes
+      const as = keptOut.of(target);
       if (
         type === "attributes" &&
+        !as &&
         served.get(target as Element)?.has(attributeName!)
       )
         touched.set(
           target as Element,
           (touched.get(target as Element) ?? new Set()).add(attributeName!)
         );
-      removedNodes.forEach((node) => parents.has(node) && removed.add(node));
+      if (as !== "region")
+        removedNodes.forEach((node) => parents.has(node) && removed.add(node));
     }
   };
   const observer = new window.MutationObserver(take);
@@ -461,7 +546,8 @@ const compare = (
     added,
     writes,
     texts,
-  }: ReturnType<ReturnType<typeof recordChanges>["stop"]>
+  }: ReturnType<ReturnType<typeof recordChanges>["stop"]>,
+  keptOut: (node: Node) => KeptOut | undefined
 ) => {
   // a claimed provision drops its `n-ssr`
   const kept = (name: string, final: string | null) =>
@@ -469,6 +555,8 @@ const compare = (
   const values = Array.from(
     twins(live.documentElement, server.documentElement)
   ).flatMap(([element, twin]) => {
+    // a kept-out element's attributes change as it mounts
+    if (keptOut(element)) return [];
     const written = writes.get(element);
     const names = new Set([
       ...element.getAttributeNames(),
@@ -514,11 +602,13 @@ const compare = (
  * Loads prerendered `html` into `window` as a browser loads the page, then
  * reports what hydrating it changed: assert "hydration is a no-op" on
  * happy-dom (`removed`, `added`, `attributes` and `texts` empty) and "nothing
- * the server painted blinked" (`flashes` empty). The markup and its island
- * parse while `document.readyState` is `"loading"`, so first mounts wait as
- * they do for a parsed document; `DOMContentLoaded` then boots the island.
- * Resolves once the hydration window closed and the window is idle; each
- * wait gives up after `timeout` ms.
+ * the server painted blinked" (`flashes` empty). Elements kept out of the
+ * prerender mount as on a cold load: listed in `keptOut`, what they change
+ * in no other list. The markup and its island parse while
+ * `document.readyState` is `"loading"`, so first mounts wait as they do for
+ * a parsed document; `DOMContentLoaded` then boots the island. Resolves once
+ * the hydration window closed and the window is idle; each wait gives up
+ * after `timeout` ms.
  *
  * The kit's hydration state and fetch caches start afresh, as on a page
  * load; reset other module state in `beforeParse`, e.g. `resetRouter(url)`.
@@ -559,9 +649,10 @@ export async function hydrate(
     undo.push(() => server.dispose());
     const log = logRequests(window);
     undo.push(log.stop);
-    const changes = recordChanges(window);
+    const keptOut = watchKeptOut(window, kit.NO_SSR_ATTR);
+    const changes = recordChanges(window, keptOut);
     undo.push(changes.stop);
-    const missing = watchFlashes(window, kit.SSR_ATTR);
+    const missing = watchFlashes(window, kit.SSR_ATTR, keptOut);
     undo.push(missing.stop);
     try {
       await resetDocument(window, {
@@ -581,6 +672,7 @@ export async function hydrate(
           undo.push(
             afterParse(document.documentElement, () => {
               parsed = true;
+              keptOut.scan();
               changes.parsed();
               missing.parsed();
             })
@@ -618,8 +710,15 @@ export async function hydrate(
     const failure = stopSampling!();
     if (failure) throw failure.error;
     return {
-      ...compare(document, server.document, kit.SSR_ATTR, changes.stop()),
+      ...compare(
+        document,
+        server.document,
+        kit.SSR_ATTR,
+        changes.stop(),
+        keptOut.of
+      ),
       flashes: missing.stop(),
+      keptOut: keptOut.listed,
       requests: log.requests,
       windowMs,
     };

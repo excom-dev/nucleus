@@ -2,7 +2,12 @@
   "changes": [
     {
       "packageName": "@excom/kit-utils",
-      "comment": "Hydration helpers for prerendered pages: `fetchRecord()` answers identical GET / HEAD requests from the page's hydration island, as many as the prerender made, `replaceNonTemplateChildren()` takes `{ identity }` (from `templateIdentity()` / `htmlIdentity()`) and returns `\"adopted\"` when the server already rendered that source, `holdHydration()` keeps hydration open for start-up work and `whenHydrated()` resolves when it ends",
+      "comment": "Add hydration helpers for prerendered pages: `fetchRecord()` answers identical GET and HEAD requests from the page's hydration island, `replaceNonTemplateChildren()` takes `{ identity }` (from `templateIdentity()` or `htmlIdentity()`) and returns `\"adopted\"` when the server already rendered that source, `holdHydration()` keeps hydration open for start-up work and `whenHydrated()` resolves when it ends",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/kit-utils",
+      "comment": "Add `NO_SSR_ATTR`, the name of the `no-ssr` attribute that keeps a region of a page out of a prerender",
       "type": "minor"
     }
   ],

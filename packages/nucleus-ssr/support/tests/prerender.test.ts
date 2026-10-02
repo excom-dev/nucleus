@@ -208,6 +208,87 @@ describe("prerender", () => {
     expect(read(site, "menu.html")).toContain('<html lang="en" n-ssr="">');
   });
 
+  it("writes each shell route as its untouched shell: not rendered, not cached", async () => {
+    const site = copySite();
+    const cacheDir = mkdtempSync(join(tmpdir(), "nucleus-ssr-cache-"));
+    temporary.push(cacheDir);
+    const options = {
+      root: site,
+      out: site,
+      origin: ORIGIN,
+      entry: loadKit,
+      routes: ["/menu"],
+      shellRoutes: ["/bag", "/account/orders/order"],
+      notFound: "/no-such-page",
+      cache: { dir: cacheDir, key: "v1", verify: 0 },
+    };
+    const report = await prerender(options);
+    expect(
+      report.pages.map(({ url, file, shellRoute, reused, cacheMiss, diagnostics }) => [
+        url,
+        file,
+        shellRoute,
+        reused,
+        cacheMiss,
+        diagnostics.requests.length,
+      ])
+    ).toEqual([
+      ["/menu", "menu.html", undefined, false, "no cache found", 3],
+      ["/bag", "bag.html", true, false, undefined, 0],
+      ["/account/orders/order", "account/orders/order.html", true, false, undefined, 0],
+      ["/no-such-page", "404.html", undefined, false, "no cache found", 1],
+    ]);
+    expect(read(site, "bag.html")).toBe(SITE_SHELL);
+    expect(read(site, "account/orders/order.html")).toBe(SITE_SHELL);
+    const cached = JSON.parse(read(cacheDir, "pages.json"));
+    expect(Object.keys(cached.pages)).toEqual(["/menu", "/no-such-page"]);
+  });
+
+  it("refuses a shell route that is rendered too, or shares a file, before rendering any", async () => {
+    const options = { root: SITE, out: SITE, origin: ORIGIN, entry: loadKit };
+    for (const [routes, shellRoutes, notFound, refusal] of [
+      [["/menu", "/bag"], ["/bag"], undefined, "shell routes also rendered (routes, notFound): /bag"],
+      [["/menu"], ["/menu", "/missing"], "/missing", "shell routes also rendered (routes, notFound): /menu, /missing"],
+      [["/menu"], ["/Menu"], undefined, "routes /menu and /Menu would both write Menu.html"],
+    ] as const)
+      await expect(prerender({ ...options, routes, shellRoutes, notFound })).rejects.toThrow(
+        `nucleus-ssr: ${refusal}`
+      );
+  });
+
+  it("fails a shell route whose shell function throws, and the run on a shell an earlier prerender wrote", async () => {
+    const site = copySite();
+    const options = { root: site, out: site, origin: ORIGIN, entry: loadKit, routes: ["/menu"] };
+    await expect(
+      prerender({
+        ...options,
+        shellRoutes: ["/bag"],
+        onError: "shell",
+        shell: (url) => {
+          if (url === "/bag") throw new Error("no shell for /bag");
+          return SITE_SHELL;
+        },
+      })
+    ).rejects.toMatchObject({
+      message: "nucleus-ssr: 1 of 2 pages failed: /bag",
+      report: {
+        failed: ["/bag"],
+        pages: [
+          { url: "/menu", diagnostics: { errors: [] } },
+          { url: "/bag", bytes: 0, shellRoute: true, diagnostics: { errors: ["shell: Error: no shell for /bag"] } },
+        ],
+      },
+    });
+    await expect(
+      prerender({
+        ...options,
+        shellRoutes: ["/bag"],
+        shell: (url) => (url === "/bag" ? SITE_SHELL.replace("<html", "<html n-ssr") : SITE_SHELL),
+      })
+    ).rejects.toThrow("nucleus-ssr: the shell was written by an earlier prerender");
+    expect(existsSync(join(site, "menu.html"))).toBe(false);
+  });
+
   it("stops at a render that fails before its page does, closing the renderer", async () => {
     const options = {
       root: SITE,

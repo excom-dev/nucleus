@@ -1,4 +1,4 @@
-# Cloudflare Pages negotiates Brotli (br) then gzip from Accept-Encoding.
+# The host (Workers static assets) negotiates Brotli (br) then gzip from Accept-Encoding.
 # Vary keeps the two encodings in separate cache entries.
 /*
   Vary: Accept-Encoding

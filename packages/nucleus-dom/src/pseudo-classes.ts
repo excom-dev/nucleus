@@ -1,3 +1,4 @@
+import { parentNodeOf, parentOf } from "./parents";
 import type { DomWindow } from "./window";
 
 const HTML = "http://www.w3.org/1999/xhtml";
@@ -59,14 +60,6 @@ export const trim = (text: string) =>
 /** `el`'s tag name when it is an HTML element. */
 export const tag = (el: Element) =>
   el.namespaceURI === HTML ? el.localName : "";
-/**
- * `el`'s parent element, by `parentNode`: budgets that spy on
- * `parentElement` count the app's walks, not matching.
- */
-export const parentOf = (el: Element): Element | null => {
-  const parent = el.parentNode;
-  return parent?.nodeType === 1 ? (parent as Element) : null;
-};
 /** The first of `el` and its ancestors that passes `test`. */
 const ancestor = (
   el: Element | null,
@@ -217,7 +210,7 @@ export const nth = (
   const [ofType, fromEnd] = STRUCTURAL[name];
   const key = of ? {} : ofType ? TYPES : CHILDREN;
   return (el, ctx) => {
-    const parent = el.parentNode;
+    const parent = parentNodeOf(el);
     const groupOf = ofType
       ? typeOf
       : of
@@ -242,7 +235,7 @@ const alone =
   (el) => {
     for (let sibling = el[step]; sibling; sibling = sibling[step])
       if (!ofType || typeOf(sibling) === typeOf(el)) return false;
-    return !!el.parentNode;
+    return !!parentNodeOf(el);
   };
 const first = alone("previousElementSibling", false);
 const last = alone("nextElementSibling", false);

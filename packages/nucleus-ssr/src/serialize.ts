@@ -1,15 +1,20 @@
 import { openingTag } from "./diagnostics";
-import { loadStateAttributes } from "./load-state";
+import { LOAD_STATE_ATTRIBUTES, loadStateAttributes } from "./load-state";
 import type { HydrationIsland } from "@excom/kit-utils";
 
 // what an element whose data stays out of the island must not claim
 const LOADED = loadStateAttributes("loaded");
+
+// a Neutron element's class
+type Configured = { getConfig?(): unknown };
 
 /** The kit-utils names of the island and its markers. */
 export interface IslandNames {
   HYDRATION_ISLAND_ID: string;
   SSR_ATTR: string;
   INERT_ATTR: string;
+  STAMP_ATTR: string;
+  NO_SSR_ATTR: string;
 }
 
 /** What the shell parsed into, before the render touched it. */
@@ -34,7 +39,7 @@ export interface SerializeOptions {
 
 export interface Serialized {
   html: string;
-  /** Markup that would read differently once parsed from the file, and leaked build paths. */
+  /** Markup that would read differently once parsed from the file, `file:` URLs, and Neutron elements `no-ssr` reached after they mounted. */
   errors: string[];
   skippedProvisions: string[];
   neutralizedScripts: number;
@@ -43,7 +48,8 @@ export interface Serialized {
 }
 
 // head nodes a render may add: SEO, and idempotent in the browser
-const KEPT_HEAD = "title, meta, link[rel~=canonical]";
+export const KEPT_HEAD =
+  "title, meta, link[rel~=canonical], link[rel~=alternate]:not([rel~=stylesheet])";
 
 // what a browser runs or applies: classic (no / a JavaScript type), module,
 // import map, speculation rules. Any other type is a data block.
@@ -202,6 +208,19 @@ export const scriptJson = (value: unknown): string =>
     (char) => `\\u${char.charCodeAt(0).toString(16).padStart(4, "0")}`
   );
 
+/** Code-unit order, as no locale has it. */
+const compare = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
+
+/** What only a mounted element writes, on `element`: a stamp, a load state, a provision. */
+const mountMarks = (element: Element, stampAttr: string): string[] => [
+  ...[stampAttr, ...Object.keys(LOAD_STATE_ATTRIBUTES)]
+    .filter((name) => element.hasAttribute(name))
+    .map((name) => `[${name}]`),
+  ...((element as { provision?: unknown }).provision != null
+    ? ["a provision"]
+    : []),
+];
+
 /** The URL a `FetchableElement` provision's data came from: its `url`, beside a numeric `status`. */
 const sourceOf = (provision: unknown) => {
   const { url, status } = provision as { url?: unknown; status?: unknown };
@@ -216,14 +235,19 @@ const sourceOf = (provision: unknown) => {
  * marked `n-ssr="<id>"` (one whose data is not in the island written not
  * loaded: no `is-success` / `did-load`), executable scripts and declarative
  * shadow roots the render inserted made inert, `q-scope` ids and head nodes
- * added by the render dropped, the island (`provisions`, `responses`) last
- * in `<body>`. Writes to the document, which is thrown away afterwards.
+ * added by the render dropped (a title, meta, canonical link or alternate
+ * link that is no stylesheet stays), the island (`provisions`, `responses`
+ * by method and URL) last in `<body>`. A Neutron element in a `no-ssr` region never mounted:
+ * one that holds what a mount writes (a stamp, a load state, a provision) is
+ * an error, and gets no `n-ssr`. Writes to the document, which is thrown
+ * away afterwards.
  */
 export const serialize = (
   document: Document,
   { names, responses, shell, doctype }: SerializeOptions
 ): Serialized => {
-  const { HYDRATION_ISLAND_ID, SSR_ATTR, INERT_ATTR } = names;
+  const { HYDRATION_ISLAND_ID, SSR_ATTR, INERT_ATTR, STAMP_ATTR, NO_SSR_ATTR } =
+    names;
   const root = document.documentElement;
   const view = document.defaultView!;
   const relative = (url: string) => {
@@ -243,7 +267,27 @@ export const serialize = (
       (node) => !shell.head.has(node) && !(node as Element).matches?.(KEPT_HEAD)
     )
     .forEach((node) => node.remove());
-  const errors = unsafeMarkup(document, shell);
+  // Neutron elements in a `no-ssr` region: they never mounted
+  const keptOut = new Set(
+    Array.from(
+      document.querySelectorAll(`[${NO_SSR_ATTR}], [${NO_SSR_ATTR}] *`)
+    ).filter(
+      (element) =>
+        typeof (view.customElements.get(element.localName) as Configured)
+          ?.getConfig === "function"
+    )
+  );
+  const errors = [
+    ...unsafeMarkup(document, shell),
+    ...Array.from(keptOut).flatMap((element) => {
+      const marks = mountMarks(element, STAMP_ATTR);
+      return marks.length
+        ? [
+            `${openingTag(element)} holds ${marks.join(", ")}: no-ssr reached it after it had started, and belongs in the markup or first in the rule that activates it`,
+          ]
+        : [];
+    }),
+  ];
   // ids from a page this one was rendered from, or copied with markup
   queryDeep(document, `[${SSR_ATTR}]`).forEach((element) =>
     element.removeAttribute(SSR_ATTR)
@@ -251,7 +295,11 @@ export const serialize = (
   root.setAttribute(SSR_ATTR, "");
   for (const element of Array.from(document.querySelectorAll("*"))) {
     const { provision } = element as Element & { provision?: unknown };
-    if (!view.customElements.get(element.localName) || provision == null)
+    if (
+      !view.customElements.get(element.localName) ||
+      provision == null ||
+      keptOut.has(element)
+    )
       continue;
     const source = sourceOf(provision);
     const plain = isPlainData(provision);
@@ -290,7 +338,15 @@ export const serialize = (
   document
     .querySelectorAll("[q-scope]")
     .forEach((element) => element.removeAttribute("q-scope"));
-  const island: HydrationIsland = { v: 1, provisions, responses };
+  // recorded as fetches complete: by method and URL, so a page has one set of
+  // bytes (the browser looks a response up by both, order means nothing)
+  const island: HydrationIsland = {
+    v: 1,
+    provisions,
+    responses: [...responses].sort(
+      (a, b) => compare(a.method, b.method) || compare(a.url, b.url)
+    ),
+  };
   const json = scriptJson(island);
   document.body.append(
     Object.assign(document.createElement("script"), {

@@ -9,6 +9,7 @@ exports[`css-variables view > writes --border-color for open and closed details 
   "listenerRuns": 0,
   "matches": 1,
   "parentElement": 0,
+  "parentNode": 0,
   "quarkRuns": 1,
   "queryScopeCost": 0,
   "querySelectorAll": 0,

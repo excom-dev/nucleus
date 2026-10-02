@@ -29,7 +29,9 @@ import {
   claimProvision,
   defineObservableProperty,
   isIslandPending,
+  isServerRender,
   LoopGuard,
+  NO_SSR_ATTR,
   TokenList,
 } from "@excom/kit-utils";
 import {
@@ -88,6 +90,9 @@ export class NeutronInternal {
    * set in the constructor, whose own attribute write queues none. A write
    * through the setter drops the pending value. */
   private upgradedAttrValues = new Map<string, unknown>();
+  /* Server render: kept out of the prerender, unmounted, its reactions held
+   * until it mounts. */
+  private heldOut = false;
   debug?: {
     effects: {
       getTrace: () => string;
@@ -245,9 +250,11 @@ export class NeutronInternal {
     this.CustomElement = CustomElement;
   }
   private static getObservedAttrs() {
+    // `no-ssr` too: written late in a server render, it unmounts
     return Object.values(this.runtimeConfig.props ?? {})
       .filter((propConfig) => propConfig.notify === "attr" && propConfig.attr)
-      .map((propConfig) => propConfig.attr as string);
+      .map((propConfig) => propConfig.attr as string)
+      .concat(NO_SSR_ATTR);
   }
   private static buildBatching() {
     const linkTracker = {};
@@ -330,6 +337,18 @@ export class NeutronInternal {
      */
   }
   connectedCallback() {
+    // `no-ssr` here or above, or `ssr: false`: the browser mounts it
+    if (
+      isServerRender() &&
+      (this.ctr.runtimeConfig.ssr === false ||
+        this.element.closest(`[${NO_SSR_ATTR}]`))
+    )
+      return this.holdOut();
+    if (this.heldOut) {
+      this.heldOut = false;
+      // what changed meanwhile reacts, then it mounts
+      this.batchManager.unlock();
+    }
     // a move or a remount never waits: only a first mount needs the island
     const isFirst = !this.element.isMounted && !this.element.wasMounted;
     if (isFirst && isIslandPending()) {
@@ -390,8 +409,8 @@ export class NeutronInternal {
     this.element.isAdopted = true;
   }
   disconnectedCallback() {
-    // gated: it never mounted
-    if (gatedMounts.delete(this)) return;
+    // gated or held out: not mounted
+    if (gatedMounts.delete(this) || this.heldOut) return;
     const _execDisconnect = () => {
       this.batch(() => {
         this.element.isAdopted = false;
@@ -422,6 +441,14 @@ export class NeutronInternal {
     oldValue: string | null,
     newValue: string | null
   ) {
+    if (name === NO_SSR_ATTR) {
+      // server render: written late, it unmounts; removed, it mounts
+      if (isServerRender() && this.element.isConnected) {
+        if (newValue !== null) this.holdOut();
+        else if (this.heldOut) this.connectedCallback();
+      }
+      return;
+    }
     const propConfig = this.ctr.CustomElement.getPropConfig({ attr: name });
     if (propConfig) {
       const converter = Converter.type(propConfig.type);
@@ -454,6 +481,18 @@ export class NeutronInternal {
   }
 
   /* --- PRIVATE: INSTANCE HELPERS --- */
+  /* Unmounted at once, as when disconnected (a pending disconnect lands
+   * now); held so until `connectedCallback` mounts it, whatever batch it was
+   * taken in (that batch's reactions, `onDisconnected` included, wait too). */
+  private holdOut() {
+    if (this.heldOut) return;
+    if (this.element.isMounted) {
+      this.disconnectedCallback();
+      this.execDisconnect?.();
+    }
+    this.heldOut = true;
+    this.batchManager.lock();
+  }
   private defineProps() {
     if (this.ctr.runtimeConfig.props) {
       Object.keys(this.ctr.runtimeConfig.props).forEach((propName) => {
@@ -600,7 +639,8 @@ export class NeutronInternal {
       if (doLock) this.batchManager.lock();
       fn();
     } finally {
-      if (doLock) {
+      // a hold taken meanwhile (`holdOut`) keeps the lock
+      if (doLock && !this.heldOut) {
         // snapshot first: `unlock` → `flushHandlers` → `clearNotifs`
         const changedProps = Object.keys(this.batchManager.notifs);
         this.batchManager.unlock();

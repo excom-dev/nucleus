@@ -1,7 +1,8 @@
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import * as pluginCss from "../../../vite-plugin-nucleus/css.mjs";
 import {
   cssConfig,
   heftRigCssPlugin,
@@ -12,12 +13,6 @@ let root: string;
 
 beforeAll(async () => {
   root = await mkdtemp(path.join(os.tmpdir(), "heft-rig-css-config-"));
-  await writeFile(
-    path.join(root, "imported.css"),
-    `@define-mixin badge $color { .badge { color: $color } }\n.imported { color: green }\n`,
-  );
-  await writeFile(path.join(root, "glob-a.css"), `.glob-a { color: red }\n`);
-  await writeFile(path.join(root, "glob-b.css"), `.glob-b { color: blue }\n`);
 });
 
 afterAll(async () => {
@@ -25,34 +20,9 @@ afterAll(async () => {
 });
 
 describe("css-config", () => {
-  it("exposes a single postcss plugin chain", () => {
-    expect(Array.isArray(cssConfig.postcss.plugins)).toBe(true);
-    expect(cssConfig.postcss.plugins.length).toBe(6);
-  });
-
-  it("inlines imports, expands mixins and custom selectors and keeps nesting", async () => {
-    const entry = path.join(root, "entry.css");
-    const css = `
-@import "./imported.css";
-@import-glob "./glob-*.css";
-@custom-selector :--article article, .tag-article;
-@mixin badge purple;
-@scope (:--article) to (.end) { p { color: red } }
-:--article:hover { color: blue }
-.parent { & .child { color: pink } }
-`;
-    const out = await transformCss(css, entry);
-    expect(out).toContain(".imported {");
-    expect(out).toContain(".glob-a {");
-    expect(out).toContain(".glob-b {");
-    expect(out).toContain(".badge {");
-    expect(out).toContain("color: purple");
-    expect(out).toContain("@scope (:is(article, .tag-article)) to (.end)");
-    expect(out).toMatch(/:is\(article, \.tag-article\):hover/);
-    expect(out).not.toContain("@custom-selector");
-    expect(out).not.toContain("@define-mixin");
-    // Nesting is shipped as authored.
-    expect(out).toContain("& .child");
+  it("is the site plugin's CSS config, by path", () => {
+    expect(cssConfig).toBe(pluginCss.cssConfig);
+    expect(transformCss).toBe(pluginCss.transformCss);
   });
 
   it("provides a pre transform plugin for CSS ids only", async () => {

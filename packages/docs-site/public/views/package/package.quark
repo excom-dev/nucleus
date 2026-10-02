@@ -23,7 +23,9 @@ provider-fetch.doc-page {
     .md-content {
       content: dangerous-html(getDocHtml($package-meta, $doc-name));
     }
+    /* demos render in the browser only: first, before what activates them */
     [data-demo] {
+      no-ssr: "";
       template-ref: "/views/live-demo/live-demo.html";
       lazy-load: "";
     }

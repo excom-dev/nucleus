@@ -51,11 +51,11 @@ describe("prerender config", () => {
   });
 
   it("refuses an empty sitemap and URLs off the site", () => {
-    expect(() => config.sitemapRoutes("<urlset></urlset>")).toThrow(
+    expect(() => config.default("<urlset></urlset>")).toThrow(
       "prerender: the sitemap lists no URL"
     );
     expect(() =>
-      config.sitemapRoutes("<url><loc>https://elsewhere.test/x</loc></url>")
+      config.default("<url><loc>https://elsewhere.test/x</loc></url>")
     ).toThrow(
       "prerender: https://elsewhere.test/x is not on https://excom.dev"
     );
@@ -125,6 +125,10 @@ describe("prerender entry", () => {
 
   const render = (url: string, routes: string) => {
     document.body.innerHTML = routes;
+    // the hook asks for the page's markdown file: no such file here
+    vi.spyOn(window, "fetch").mockResolvedValue(
+      new Response(null, { status: 404 })
+    );
     entry.afterRender({ url, window, document } as never);
     return [
       document.head

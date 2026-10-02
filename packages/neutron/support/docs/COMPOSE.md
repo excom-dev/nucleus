@@ -27,6 +27,6 @@ FancyButton.define();
 
 ## Merge rules
 
-Props, events, and broadcasts merge (later wins); methods and lifecycles concatenate in order; `tag` comes from the last builder. Bases are deep-cloned, so composing never mutates them.
+Props, events, and broadcasts merge (later wins); methods and lifecycles concatenate in order; `tag` comes from the last builder. Any other option (`reflectDefaultProps`, `definitionOpts`, `ssr`) is inherited when a later builder leaves it out: the last builder that states it wins. Bases are deep-cloned, so composing never mutates them.
 
 Composing is also how you add props to a packaged element you did not write — see [Recompose](./RECOMPOSE.md).

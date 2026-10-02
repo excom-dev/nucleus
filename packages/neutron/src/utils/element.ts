@@ -182,8 +182,10 @@ export const initRenderRootConfig = (
 
 export const createBuiltConfig = (optsConfig: OptsConfig): BuiltConfig => ({
   ...optsConfig,
-  reflectDefaultProps: optsConfig.reflectDefaultProps || [],
-  renderRoot: initRenderRootConfig(optsConfig.renderRoot),
+  // stated only, as `reflectDefaultProps` and `ssr`: `compose` inherits it
+  ...(optsConfig.renderRoot && {
+    renderRoot: initRenderRootConfig(optsConfig.renderRoot),
+  }),
   events: optsConfig.events || {},
   broadcasts: optsConfig.broadcasts || {},
   methods: optsConfig.methods || [],
@@ -313,7 +315,10 @@ export const compose = <T extends any[]>(inheriting: [...T]) => {
           if (!acc) return conf;
           return {
             ...acc,
-            ...conf,
+            // what a builder leaves undefined, it inherits
+            ...Object.fromEntries(
+              Object.entries(conf).filter(([, value]) => value !== undefined)
+            ),
             events: {
               ...acc.events,
               ...conf.events,

@@ -28,111 +28,123 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&display=swap">
   <link rel="stylesheet" href="./shell.css">
   <script type="module">
-    import "@excom/nucleus-kit/nucleus-kit.progressive";
+    // The page shows as it is; the Nucleus Kit loads once the service worker controls it, so no element asks /api/
+    // before the worker answers. A form does nothing until the element that takes it over is defined: submitted
+    // natively, it would leave the app.
+    const inert = (event) => event.target.closest("super-form, spa-a, web-authn")?.matches(":not(:defined)");
+    document.addEventListener("submit", (event) => inert(event) && event.preventDefault(), true);
+    const { serviceWorker } = navigator;
+    const unsupported = () => serviceWorker?.controller || document.body.setAttribute("needs-service-worker", "");
+    if (serviceWorker) {
+      const registering = serviceWorker.register("/service-worker/service-worker.js", { scope: "/", updateViaCache: "none" }).catch(unsupported);
+      if (!serviceWorker.controller) {
+        const controlled = new Promise((resolve) => serviceWorker.addEventListener("controllerchange", resolve, { once: true }));
+        // a hard reload bypasses an active worker: asked, it claims the page
+        (await registering)?.active?.postMessage("claim");
+        await controlled;
+      }
+      await import("@excom/nucleus-kit/nucleus-kit.progressive");
+    } else unsupported();
   </script>
-  <script type="module" async src="https://unpkg.com/@google/model-viewer@4.3.1/dist/model-viewer.min.js"></script>
-  <script>navigator.serviceWorker?.register("/sw.js", { updateViaCache: "none" });</script>
+  <!-- model-viewer by import() from a classic script, as an async script would load it: an async module script beside the kit's makes the build defer both -->
+  <script>import("https://unpkg.com/@google/model-viewer@4.3.1/dist/model-viewer.min.js");</script>
 </head>
 <body nucleus-kit-idle>
   <quark-sheet src-url="/shell.quark"></quark-sheet>
-  <service-worker></service-worker>
   <detect-media media-query="(width < 768px)"></detect-media>
+  <detect-media media-query="(width >= 768px)"></detect-media>
 
-  <include-content class="abstract" bind-app>
-    <template>
-      <provider-fetch id="me" api-url="/api/me" class="abstract">
-        <spa-manager class="abstract" overscroll-behavior-x="navigate">
-          <header>
-            <spa-a route-href="/" role="link" class="wordmark">Wrenfield</spa-a>
-            <nav aria-label="Collections">
-              <spa-a route-href="/shop/seating" role="link" match-nested>Seating</spa-a>
-              <spa-a route-href="/shop/tables" role="link" match-nested>Tables</spa-a>
-              <spa-a route-href="/shop/storage" role="link" match-nested>Storage</spa-a>
-              <spa-a route-href="/shop/lighting" role="link" match-nested>Lighting</spa-a>
-              <spa-a route-href="/shop/objects" role="link" match-nested>Objects</spa-a>
-              <spa-a route-href="/shop?era=antique" role="link" match-nested>Antiques</spa-a>
-            </nav>
-            <spa-a route-href="/shop" listen-for="submit" prevent-default bind-search>
-              <form role="search">
-                <input type="search" name="q" placeholder="Search" aria-label="Search" autocomplete="off">
-              </form>
-            </spa-a>
-            <nav id="tabs" aria-label="Main">
-              <spa-a route-href="/" data-tab="home" role="link" transition-types="tab">
-                <svg aria-hidden="true"><use href="/img/icons.svg#house"/></svg>Home
-              </spa-a>
-              <spa-a route-href="/shop" data-tab="shop" role="link" match-nested transition-types="tab">
-                <svg aria-hidden="true"><use href="/img/icons.svg#armchair"/></svg>Shop
-              </spa-a>
-              <spa-a route-href="/saved" data-tab="saved" role="link" match-nested transition-types="tab">
-                <svg aria-hidden="true"><use href="/img/icons.svg#heart"/></svg>Saved
-                <small class="badge" bind-saved-count></small>
-              </spa-a>
-              <spa-a route-href="/bag" data-tab="bag" role="link" match-nested transition-types="tab">
-                <svg aria-hidden="true"><use href="/img/icons.svg#shopping-bag"/></svg>Bag
-                <small class="badge" bind-bag-count></small>
-              </spa-a>
-              <spa-a route-href="/account" data-tab="account" role="link" match-nested transition-types="tab">
-                <svg aria-hidden="true"><use href="/img/icons.svg#user-round"/></svg>Account
-              </spa-a>
-            </nav>
-            <a id="source-link" href="https://github.com/excom-dev/nucleus/tree/main/packages/wrenfield" target="_blank" rel="noopener">
-              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>See source</span>
-            </a>
-          </header>
+  <provider-fetch id="me" api-url="/api/me" class="abstract">
+    <spa-manager class="abstract" overscroll-behavior-x="navigate">
+      <header>
+        <spa-a route-href="/" role="link" class="wordmark">Wrenfield</spa-a>
+        <nav aria-label="Collections">
+          <spa-a route-href="/shop/seating" role="link" match-nested>Seating</spa-a>
+          <spa-a route-href="/shop/tables" role="link" match-nested>Tables</spa-a>
+          <spa-a route-href="/shop/storage" role="link" match-nested>Storage</spa-a>
+          <spa-a route-href="/shop/lighting" role="link" match-nested>Lighting</spa-a>
+          <spa-a route-href="/shop/objects" role="link" match-nested>Objects</spa-a>
+          <spa-a route-href="/shop?era=antique" role="link" match-nested>Antiques</spa-a>
+        </nav>
+        <spa-a route-href="/shop" listen-for="submit" prevent-default bind-search>
+          <form role="search">
+            <input type="search" name="q" placeholder="Search" aria-label="Search" autocomplete="off">
+          </form>
+        </spa-a>
+        <nav id="tabs" aria-label="Main">
+          <spa-a route-href="/" data-tab="home" role="link" transition-types="tab">
+            <svg aria-hidden="true"><use href="/img/icons.svg#house"/></svg>Home
+          </spa-a>
+          <spa-a route-href="/shop" data-tab="shop" role="link" match-nested transition-types="tab">
+            <svg aria-hidden="true"><use href="/img/icons.svg#armchair"/></svg>Shop
+          </spa-a>
+          <spa-a route-href="/saved" data-tab="saved" role="link" match-nested transition-types="tab">
+            <svg aria-hidden="true"><use href="/img/icons.svg#heart"/></svg>Saved
+            <small class="badge" bind-saved-count></small>
+          </spa-a>
+          <spa-a route-href="/bag" data-tab="bag" role="link" match-nested transition-types="tab">
+            <svg aria-hidden="true"><use href="/img/icons.svg#shopping-bag"/></svg>Bag
+            <small class="badge" bind-bag-count></small>
+          </spa-a>
+          <spa-a route-href="/account" data-tab="account" role="link" match-nested transition-types="tab">
+            <svg aria-hidden="true"><use href="/img/icons.svg#user-round"/></svg>Account
+          </spa-a>
+        </nav>
+        <a id="source-link" href="https://github.com/excom-dev/nucleus/tree/main/packages/wrenfield" target="_blank" rel="noopener">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg><span>See source</span>
+        </a>
+      </header>
 
-          <main>
-            <spa-route route-href="/" template-ref="/views/home/home.html" pre-fetch="idle" document-title="Home · Wrenfield"></spa-route>
-            <spa-route route-href="/shop" template-ref="/views/shop/shop.html" pre-fetch="idle" document-title="Shop · Wrenfield"></spa-route>
-            <spa-route route-href="/shop/:category" template-ref="/views/shop/shop.html" document-title="Shop · Wrenfield"></spa-route>
-            <spa-route route-href="/shop/:category/:slug" template-ref="/views/product/product.html" same-route="refresh" pre-fetch="idle" document-title="Shop · Wrenfield"></spa-route>
-            <spa-route route-href="/saved" template-ref="/views/saved/saved.html" pre-fetch="idle" document-title="Saved · Wrenfield"></spa-route>
-            <spa-route route-href="/bag" template-ref="/views/bag/bag.html" pre-fetch="idle" document-title="Bag · Wrenfield"></spa-route>
-            <spa-route route-regex="^/bag/checkout/(details|delivery|payment|review)$" template-ref="/views/checkout/checkout.html" document-title="Checkout · Wrenfield"></spa-route>
-            <spa-route route-href="/bag/checkout/complete" template-ref="/views/checkout/complete.html" document-title="Order placed · Wrenfield"></spa-route>
-            <spa-route route-href="/account" template-ref="/views/account/account.html" pre-fetch="idle" document-title="Account · Wrenfield"></spa-route>
-            <spa-route route-href="/account/orders/:id" template-ref="/views/order/order.html" same-route="refresh" document-title="Order · Wrenfield"></spa-route>
-            <spa-route route-href="/account/story" template-ref="/views/story/story.html" document-title="Our story · Wrenfield"></spa-route>
-            <spa-route route-href="/account/delivery-returns" template-ref="/views/delivery-returns/delivery-returns.html" document-title="Delivery and returns · Wrenfield"></spa-route>
-            <spa-route route-regex=".*" is-fallback template-ref="/views/not-found/not-found.html" document-title="Not found · Wrenfield"></spa-route>
-          </main>
+      <main>
+        <spa-route route-href="/" template-ref="/views/home/home.html" pre-fetch="idle" document-title="Home · Wrenfield"></spa-route>
+        <spa-route route-href="/shop" template-ref="/views/shop/shop.html" pre-fetch="idle" document-title="Shop · Wrenfield"></spa-route>
+        <spa-route route-href="/shop/:category" template-ref="/views/shop/shop.html" document-title="Shop · Wrenfield"></spa-route>
+        <spa-route route-href="/shop/:category/:slug" template-ref="/views/product/product.html" same-route="refresh" pre-fetch="idle" document-title="Shop · Wrenfield"></spa-route>
+        <spa-route route-href="/saved" template-ref="/views/saved/saved.html" pre-fetch="idle" document-title="Saved · Wrenfield"></spa-route>
+        <spa-route route-href="/bag" template-ref="/views/bag/bag.html" pre-fetch="idle" document-title="Bag · Wrenfield"></spa-route>
+        <spa-route route-regex="^/bag/checkout/(details|delivery|payment|review)$" template-ref="/views/checkout/checkout.html" document-title="Checkout · Wrenfield"></spa-route>
+        <spa-route route-href="/bag/checkout/complete" template-ref="/views/checkout/complete.html" document-title="Order placed · Wrenfield"></spa-route>
+        <spa-route route-href="/account" template-ref="/views/account/account.html" pre-fetch="idle" document-title="Account · Wrenfield"></spa-route>
+        <spa-route route-href="/account/orders/:id" template-ref="/views/order/order.html" same-route="refresh" document-title="Order · Wrenfield"></spa-route>
+        <spa-route route-href="/account/story" template-ref="/views/story/story.html" document-title="Our story · Wrenfield"></spa-route>
+        <spa-route route-href="/account/delivery-returns" template-ref="/views/delivery-returns/delivery-returns.html" document-title="Delivery and returns · Wrenfield"></spa-route>
+        <spa-route route-regex=".*" is-fallback template-ref="/views/not-found/not-found.html" document-title="Not found · Wrenfield"></spa-route>
+      </main>
 
-          <footer>
-            <p class="wordmark">Wrenfield</p>
-            <nav aria-label="About">
-              <spa-a route-href="/account/story" role="link">Our story</spa-a>
-              <spa-a route-href="/account/delivery-returns" role="link">Delivery and returns</spa-a>
-              <spa-a route-href="/account" role="link">Trade programme</spa-a>
-            </nav>
-            <small>Wrenfield is a fictional house and this is a demo. Any made-up details work, and nothing is charged or shipped.</small>
-          </footer>
-        </spa-manager>
+      <footer>
+        <p class="wordmark">Wrenfield</p>
+        <nav aria-label="About">
+          <spa-a route-href="/account/story" role="link">Our story</spa-a>
+          <spa-a route-href="/account/delivery-returns" role="link">Delivery and returns</spa-a>
+          <spa-a route-href="/account" role="link">Trade programme</spa-a>
+        </nav>
+        <small>Wrenfield is a fictional house and this is a demo. Any made-up details work, and nothing is charged or shipped.</small>
+      </footer>
+    </spa-manager>
 
-        <gesture-handler gesture-types="pan-y swipe" pointer-types="touch pen mouse" progress-axis="up" snap-points="0 1"
-          from-ref=":scope > content-drawer > header" handoff-ref=":scope > content-drawer" range-ref=":scope > content-drawer">
-          <content-drawer id="bag-sheet" role="region" aria-labelledby="bag-sheet-title">
-            <dismiss-watcher command-name="--close"></dismiss-watcher>
-            <header>
-              <h2 id="bag-sheet-title">Added to your bag</h2>
-              <button type="button" class="icon" command="--close" commandfor="bag-sheet" aria-label="Close">
-                <svg aria-hidden="true"><use href="/img/icons.svg#x"/></svg>
-              </button>
-            </header>
-            <div bind-bag-lines role="list"></div>
-            <footer>
-              <dl class="totals">
-                <dt>Subtotal</dt>
-                <dd bind-bag="subtotal"></dd>
-              </dl>
-              <spa-a route-href="/bag" role="button" class="secondary" transition-types="tab">View bag</spa-a>
-              <spa-a route-href="/bag/checkout/details" role="button">Checkout</spa-a>
-            </footer>
-          </content-drawer>
-          <event-handler role="presentation" target-ref="content-drawer:has(+ :scope)" command-name="--close"></event-handler>
-        </gesture-handler>
-      </provider-fetch>
-    </template>
-  </include-content>
+    <gesture-handler gesture-types="pan-y swipe" pointer-types="touch pen mouse" progress-axis="up" snap-points="0 1"
+      from-ref=":scope > content-drawer > header" handoff-ref=":scope > content-drawer" range-ref=":scope > content-drawer">
+      <content-drawer id="bag-sheet" role="region" aria-labelledby="bag-sheet-title">
+        <dismiss-watcher command-name="--close"></dismiss-watcher>
+        <header>
+          <h2 id="bag-sheet-title">Added to your bag</h2>
+          <button type="button" class="icon" command="--close" commandfor="bag-sheet" aria-label="Close">
+            <svg aria-hidden="true"><use href="/img/icons.svg#x"/></svg>
+          </button>
+        </header>
+        <div bind-bag-lines role="list"></div>
+        <footer>
+          <dl class="totals">
+            <dt>Subtotal</dt>
+            <dd bind-bag="subtotal"></dd>
+          </dl>
+          <spa-a route-href="/bag" role="button" class="secondary" transition-types="tab">View bag</spa-a>
+          <spa-a route-href="/bag/checkout/details" role="button">Checkout</spa-a>
+        </footer>
+      </content-drawer>
+      <event-handler role="presentation" target-ref="content-drawer:has(+ :scope)" command-name="--close"></event-handler>
+    </gesture-handler>
+  </provider-fetch>
 
   <template id="product-card">
     <data-product role="listitem">

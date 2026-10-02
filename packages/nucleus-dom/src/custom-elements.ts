@@ -1,4 +1,5 @@
 import { internal, owner } from "./happy-dom";
+import { keepParentRead, parentNodeOf } from "./parents";
 import { claim, type DomWindow } from "./window";
 
 type Win = DomWindow | typeof globalThis;
@@ -223,7 +224,7 @@ const upgradeTree = (node: Node): Node => {
 
 /** The topmost undefined element above `node`, or `node`. */
 const topmost = (node: Node, top: Node = node): Node => {
-  const parent = node.parentNode;
+  const parent = parentNodeOf(node);
   return parent ? topmost(parent, definitionOf(parent) ? parent : top) : top;
 };
 
@@ -335,6 +336,7 @@ export const loadPage = (win: Win, root: Element, html: string): void => {
  * gets a new element in place of the undefined one.
  */
 export function upgradeClones(win: Win): void {
+  keepParentRead(win);
   const registry = win.customElements;
   definitionsOf(registry).forEach(watch);
   const registryProto = owner(registry, "define");

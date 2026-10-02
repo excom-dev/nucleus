@@ -1,5 +1,6 @@
 import { proxyOf } from "./form-parents";
 import { internal, owner } from "./happy-dom";
+import { keepParentRead, parentNodeOf, parentOf } from "./parents";
 import {
   anB,
   type Context,
@@ -8,7 +9,6 @@ import {
   lower,
   memoOf,
   nth,
-  parentOf,
   PSEUDO_CLASSES,
   remember,
   STRUCTURAL,
@@ -263,7 +263,7 @@ const left = (
 
 /** Whether `steps` is `:host` / `:host(S)` alone before a top-level child `el` of a shadow tree. */
 const crossHost = (el: Element, steps: Complex, i: number, ctx: Context) => {
-  const root = el.parentNode as ShadowRoot | null;
+  const root = parentNodeOf(el) as ShadowRoot | null;
   const { native, tests } = steps[0].compound;
   return (
     i === 1 &&
@@ -285,7 +285,7 @@ const around = (
 ): boolean => {
   const results = memoOf(ctx, key);
   if (!results.has(el)) {
-    const run = [...(el.parentNode?.children ?? [el])];
+    const run = [...(parentNodeOf(el)?.children ?? [el])];
     (after ? run.reverse() : run).reduce((found, sibling) => {
       results.set(sibling, found);
       return found || test(sibling);
@@ -558,7 +558,8 @@ export function supportSelectors(win: DomWindow | typeof globalThis): void {
     fragment,
   ];
   trackModalDialogs(win);
-  const { matches, closest } = element;
+  keepParentRead(win);
+  const { matches } = element;
   // a form / select runs these on the object behind the proxy its tree holds
   const proxy = proxyOf(win);
   // the focused element itself: happy-dom's `activeElement` falls back to body
@@ -628,8 +629,13 @@ export function supportSelectors(win: DomWindow | typeof globalThis): void {
     },
     closest(this: Element, selectors: string) {
       const plan = planFor(this, "closest", selectors);
-      if (!plan || (plan.native && plan.compound))
-        return closest.call(this, plan?.text ?? selectors);
+      // happy-dom's own climbs by the public `parentElement`: its matching, the shim's walk
+      if (!plan || (plan.native && plan.compound)) {
+        const text = plan?.text ?? selectors;
+        for (let el: Element | null = this; el; el = parentOf(el))
+          if (matches.call(el, text)) return el;
+        return null;
+      }
       const ctx = context(proxy(this));
       for (let el: Element | null = proxy(this); el; el = parentOf(el))
         if (matchList(el, plan.list, ctx)) return el;

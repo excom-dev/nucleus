@@ -8,7 +8,8 @@
   },
   "type": "module",
   "files": [
-    "dist"
+    "dist",
+    "nucleus-ssr.mjs"
   ],
   "scripts": {
     "build": "node node_modules/@excom/heft-rig/scripts/vite-build.mjs",
@@ -46,5 +47,8 @@
     "navGroup": "libraries",
     "packageType": "library",
     "umd": false
+  },
+  "bin": {
+    "nucleus-ssr": "./nucleus-ssr.mjs"
   }
 }

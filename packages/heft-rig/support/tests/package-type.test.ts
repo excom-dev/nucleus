@@ -6,6 +6,7 @@ import {
   getPackageType,
   isSitePackage,
   readPackageJson,
+  usesSiteBuild,
 } from "../../scripts/package-type.mjs";
 
 let root: string;
@@ -49,5 +50,14 @@ describe("package-type", () => {
     const dir = await makePackage("plain", { name: "@excom/plain" });
     expect(await getPackageType(dir)).toBeUndefined();
     expect(await isSitePackage(dir)).toBe(false);
+    expect(await usesSiteBuild(dir)).toBe(false);
+  });
+
+  it("gives site and app packages the site build, and the docs to sites alone", async () => {
+    const site = await makePackage("site-built", { excom: { packageType: "site" } });
+    const app = await makePackage("app", { excom: { packageType: "app" } });
+    const library = await makePackage("library", { excom: { packageType: "library" } });
+    expect(await Promise.all([site, app, library].map(usesSiteBuild))).toEqual([true, true, false]);
+    expect(await Promise.all([site, app, library].map(isSitePackage))).toEqual([true, false, false]);
   });
 });

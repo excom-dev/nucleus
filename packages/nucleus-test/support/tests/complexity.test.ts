@@ -33,6 +33,7 @@ const spiedMembers = () =>
       [Element.prototype, "matches"],
       [Element.prototype, "closest"],
       [Node.prototype, "parentElement"],
+      [Node.prototype, "parentNode"],
       [Element.prototype, "setAttribute"],
       [Element.prototype, "removeAttribute"],
       [Element.prototype, "textContent"],
@@ -70,6 +71,7 @@ describe("measureComplexity", () => {
       "matches",
       "closest",
       "parentElement",
+      "parentNode",
       "setAttribute",
       "removeAttribute",
       "textContent",
@@ -84,6 +86,7 @@ describe("measureComplexity", () => {
     ["textContent", (p) => (p.textContent = "x")],
     ["importNode", (p) => document.importNode(p, true)],
     ["parentElement", (p) => p.parentElement],
+    ["parentNode", (p) => p.parentNode],
     ["matches", (p) => p.matches("p")],
     ["closest", (p) => p.closest("div")],
     ["querySelectorAll", (p) => p.querySelectorAll("b")],
@@ -94,6 +97,27 @@ describe("measureComplexity", () => {
     const count = meter.take()[metric];
     meter.stop();
     expect(count).toBe(1);
+  });
+
+  it("counts the calls the code makes, not the climbing that answers a selector", () => {
+    const root = fixture("<section><ul><li></li><li></li></ul></section>");
+    const li = root.querySelector("li") as Element;
+    const meter = measureComplexity(stubEngine());
+    const answers = [
+      li.matches("section li"),
+      li.closest("ul > li") === li,
+      root.querySelectorAll("li ~ li").length,
+    ];
+    const budget = meter.take();
+    meter.stop();
+    expect(answers).toEqual([true, true, 1]);
+    expect(budget).toMatchObject({
+      matches: 1,
+      closest: 1,
+      querySelectorAll: 1,
+      parentElement: 0,
+      parentNode: 0,
+    });
   });
 
   it("weighs the engine's scope queries by subtree size at take()", () => {

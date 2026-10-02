@@ -1,0 +1,23 @@
+<div>
+    <template id="description-popover">
+        <span>
+            <event-handler target-ref=":scope + [popover]" command-name="toggle-popover" role="button"
+                class="icon-button-round"><div class="ico-question"></div></event-handler>
+            <div popover data-placement="top">
+                <span bind-description></span>
+                <small role="note"><code bind-property></code></small>
+                <small bind-inherited-from role="note"></small></span>
+            </div>
+        </span>
+    </template>
+    <template id="defaultaction-popover">
+        <span>
+            <event-handler target-ref=":scope + [popover]" command-name="toggle-popover" role="button"
+                class="icon-button-round"><div class="ico-question"></div></event-handler>
+            <div popover data-placement="top">
+                A "default action" is subsequent logic executed by the element if <code>e.preventDefault()</code> is not
+                synchronously called on the event.
+            </div>
+        </span>
+    </template>
+</div>

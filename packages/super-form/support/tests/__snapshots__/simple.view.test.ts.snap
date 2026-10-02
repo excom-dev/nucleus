@@ -9,6 +9,7 @@ exports[`simple view > echoes the submitted name and stays within the complexity
   "listenerRuns": 0,
   "matches": 6,
   "parentElement": 3,
+  "parentNode": 0,
   "quarkRuns": 3,
   "queryScopeCost": 15,
   "querySelectorAll": 4,

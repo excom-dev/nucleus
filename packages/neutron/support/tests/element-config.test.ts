@@ -189,10 +189,11 @@ describe("Prop reflection", () => {
     expect(el._n_.propStore.hardEl).toBe(child);
     el.childEl = null;
     expect(el.childEl).toBe(null);
-    // only props with a reaction observe their attribute
+    // only props with a reaction observe their attribute; `no-ssr` always
     expect(ReflectHost.CustomElement.observedAttributes).toEqual([
       "label-text",
       "count-value",
+      "no-ssr",
     ]);
   });
 });

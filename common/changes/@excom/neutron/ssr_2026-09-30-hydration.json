@@ -2,13 +2,23 @@
   "changes": [
     {
       "packageName": "@excom/neutron",
-      "comment": "On a prerendered page an element takes its `provision` from the page's hydration island before it mounts, and deferred event defaults keep hydration open",
+      "comment": "Add hydration of prerendered pages: an element takes its `provision` from the page's hydration island before it mounts, and deferred event defaults keep hydration open",
       "type": "minor"
     },
     {
       "packageName": "@excom/neutron",
-      "comment": "A value assigned to a declared prop before the element's definition loads is applied at upgrade (it was dropped)",
+      "comment": "Add `no-ssr` and `Neutron({ ssr: false })` to keep elements out of a prerender: the attribute keeps every Neutron element on or inside its element unmounted until the browser, and the option does the same for one tag's own instances",
       "type": "minor"
+    },
+    {
+      "packageName": "@excom/neutron",
+      "comment": "Fix an issue where a value assigned to a declared prop before the element's definition loaded was dropped: it is now applied at upgrade",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/neutron",
+      "comment": "Fix an issue where `Neutron.compose()` lost `reflectDefaultProps` when a later builder left it out: an option a builder leaves out is inherited, and the last builder that states it wins",
+      "type": "patch"
     }
   ],
   "packageName": "@excom/neutron"

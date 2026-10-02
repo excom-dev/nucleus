@@ -9,6 +9,7 @@ exports[`refetch view > loads then refetches > complexity 1`] = `
   "listenerRuns": 0,
   "matches": 13,
   "parentElement": 3,
+  "parentNode": 0,
   "quarkRuns": 3,
   "queryScopeCost": 60,
   "querySelectorAll": 9,

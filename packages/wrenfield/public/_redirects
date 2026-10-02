@@ -1,0 +1,7 @@
+# Order pages depend on the person: every one is the same shell file, prerendered
+# as `ORDER_SHELL` (`shellRoutes` in support/prerender/prerender.config.ts).
+/account/orders/*   /account/orders/order   200
+
+# No SPA fallback: every other route has its file (`build:prerender`); 404.html is
+# the not-found page the host serves for any other path
+# (`not_found_handling: "404-page"` in wrangler.jsonc).

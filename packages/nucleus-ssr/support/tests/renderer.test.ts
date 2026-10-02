@@ -5,6 +5,7 @@ import {
 } from "../../index";
 import { loadKit, ORIGIN, ownEntry, parse, SITE } from "./helpers";
 import { afterAll, beforeAll, describe, expect, it, vi } from "@excom/nucleus-test";
+import { createHash } from "node:crypto";
 import fs, { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import http from "node:http";
 import https from "node:https";
@@ -34,6 +35,8 @@ const DATA_CSS = `data:text/css,${"p%7Bcolor:red%7D".repeat(12)}`;
 const SEPARATORS = String.fromCharCode(0x2028, 0x2029);
 const NOTE = `</script><script>alert(1)</script><!-- <script type="application/json" id="nucleus-hydration">{"v":1,"provisions":{},"responses":[]}</script> ${SEPARATORS}`;
 const ATTACK = "<img src=x onerror=alert(1)>";
+
+const sha256 = (body: string | Uint8Array) => createHash("sha256").update(body).digest("hex");
 
 /** The site's shell with `body` as its page. */
 const page = (body: string) =>
@@ -224,6 +227,10 @@ const SHELLS: Record<string, string> = {
   "/stuck": page(
     `<spa-manager><spa-route route-href="/stuck" ready-on="never-ready"><template><p>Soon</p></template></spa-route></spa-manager><x-stuck id="feed"></x-stuck><x-stuck></x-stuck><x-stuck class="card" data-source="${"/data/".padEnd(70, "x")}"></x-stuck>`
   ),
+  // no-ssr on elements that had started loading
+  "/stuck-no-ssr": page(
+    `<section no-ssr><x-stuck id="inside"></x-stuck></section><x-stuck id="marked" no-ssr></x-stuck>`
+  ),
   "/foreign-fetch": page(
     `<provider-fetch api-url="https://api.example/data"></provider-fetch>`
   ),
@@ -370,8 +377,9 @@ describe("a renderer", () => {
       body: { special: "Rhubarb crumble" },
     });
     expect(Object.keys(island.provisions)).toHaveLength(2);
-    expect(requested(island)).toEqual(["GET /views/menu.html", "GET /data/menu.json"]);
-    expect(island.responses[1].record).toMatchObject({
+    // by method and URL, whichever completed first
+    expect(requested(island)).toEqual(["GET /data/menu.json", "GET /views/menu.html"]);
+    expect(island.responses[0].record).toMatchObject({
       status: 200,
       body: readFileSync(join(SITE, "data/menu.json"), "utf8"),
     });
@@ -382,11 +390,13 @@ describe("a renderer", () => {
     // q-scope ids come from a module-level counter: never in the output
     expect(scoped).toContain("/menu");
     expect(menu.html).not.toContain("q-scope");
-    // of the head nodes the render added, the canonical link stays
+    // of the head nodes the render added, the canonical and alternate links stay
     expect(menuPage.querySelector('link[rel="canonical"]')!.getAttribute("href")).toBe(
       `${ORIGIN}/menu`
     );
-    expect(menuPage.querySelector('link[rel="alternate"]')).toBeNull();
+    expect(menuPage.querySelector('link[rel="alternate"]')!.getAttribute("href")).toBe(
+      `${ORIGIN}/fr/menu`
+    );
     expect(menuPage.querySelector('link[rel="stylesheet"]')).not.toBeNull();
     expect(menu.diagnostics).toMatchObject({
       errors: [],
@@ -421,7 +431,7 @@ describe("a renderer", () => {
     await renderer.render("/menu");
     const { html } = await renderer.render("/specials");
     expect(parse(html).querySelector("[bind-special]")!.textContent).toBe("Rhubarb crumble");
-    expect(requested(islandOf(html))).toEqual(["GET /views/menu.html", "GET /data/menu.json"]);
+    expect(requested(islandOf(html))).toEqual(["GET /data/menu.json", "GET /views/menu.html"]);
   });
 
   it("makes the scripts of a template-ref view inert: they never ran on a cold load", async () => {
@@ -460,7 +470,7 @@ describe("a renderer", () => {
     expect(diagnostics.neutralizedShadowRoots).toBe(1);
   });
 
-  it("drops head nodes the render added, unless a title, meta or canonical link", async () => {
+  it("drops head nodes the render added, unless a title, meta, canonical or alternate link", async () => {
     const { html } = await renderer.render("/head");
     const head = parse(html).head;
     expect(Array.from(head.children, (node) => node.outerHTML)).toEqual([
@@ -469,6 +479,7 @@ describe("a renderer", () => {
       '<link rel="stylesheet" href="/site.css">',
       `<meta name="description" content="Today's menu">`,
       `<link rel="canonical" href="${ORIGIN}/head">`,
+      `<link rel="alternate" href="${ORIGIN}/fr/head">`,
     ]);
     expect(html).not.toContain("modulepreload");
   });
@@ -543,7 +554,7 @@ describe("a renderer", () => {
       true,
       true,
     ]);
-    expect(requested(islandOf(html)).sort()).toEqual(["GET /api/menu", "GET /api/shell"]);
+    expect(requested(islandOf(html))).toEqual(["GET /api/menu", "GET /api/shell"]);
     expect(diagnostics.skippedProvisions).toEqual([
       expect.stringMatching(
         /^<provider-fetch api-url="\/api\/sandbox".*>: its data \(\/api\/sandbox\) is not in the island: excluded, or not recordable$/
@@ -569,10 +580,14 @@ describe("a renderer", () => {
       const document = parse(html);
       await sleep(10);
       expect(network.calls()).toEqual([]);
-      expect(diagnostics.requests).toEqual([
-        { method: "GET", url: `${ORIGIN}/site.css`, status: 200 },
-        { method: "GET", url: `${ORIGIN}/data/menu.json`, status: 200 },
-      ]);
+      expect(diagnostics.requests).toEqual(
+        ["site.css", "data/menu.json"].map((file) => ({
+          method: "GET",
+          url: `${ORIGIN}/${file}`,
+          status: 200,
+          digest: sha256(readFileSync(join(SITE, file))),
+        }))
+      );
       expect(document.querySelector("iframe")!.getAttribute("src")).toBe(
         "https://video.example/embed/1"
       );
@@ -659,6 +674,18 @@ describe("a renderer", () => {
       diagnostics: {
         errors: [
           `Not ready once settled: spa-route[route-href="/stuck"] (delaying-ready), x-stuck#feed (is-loading), x-stuck (is-loading), x-stuck[data-source="${"/data/".padEnd(60, "x")}…"] (is-loading)`,
+        ],
+      },
+    });
+  });
+
+  it("says of an element still loading in a no-ssr region where no-ssr belongs", async () => {
+    const hint =
+      "no-ssr reached it after it had started loading, and belongs in the markup or first in the rule that activates it";
+    await expect(renderer.render("/stuck-no-ssr")).rejects.toMatchObject({
+      diagnostics: {
+        errors: [
+          `Not ready once settled: x-stuck#inside (is-loading): ${hint}, x-stuck#marked (is-loading): ${hint}`,
         ],
       },
     });
@@ -1008,6 +1035,46 @@ describe("renderer options", () => {
     }
   });
 
+  it("writes one set of bytes for a page whichever order its concurrent fetches complete in", async () => {
+    let round = 0;
+    const items = Array.from({ length: 8 }, (_, index) => index);
+    const renderer = await createRenderer({
+      root: SITE,
+      origin: ORIGIN,
+      shell: page(items.map((index) => `<provider-fetch api-url="/api/item/${index}"></provider-fetch>`).join("")),
+      // each round, the answers come back in the other order
+      api: async (request) => {
+        const index = Number(new URL(request.url).pathname.split("/").pop());
+        await sleep(5 * (round % 2 ? items.length - 1 - index : index));
+        return json({ index });
+      },
+      entry: loadKit,
+    });
+    try {
+      const pages: string[] = [];
+      for (round = 0; round < 4; round++) pages.push((await renderer.render("/")).html);
+      expect(new Set(pages).size).toBe(1);
+      expect(requested(islandOf(pages[0]!))).toEqual(items.map((index) => `GET /api/item/${index}`));
+    } finally {
+      await renderer.close();
+    }
+  });
+
+  it("waits on the settle hook without end under an endless budget", async () => {
+    const renderer = await createRenderer({
+      root: SITE,
+      origin: ORIGIN,
+      shell: "<p>static</p>",
+      budgetMs: Infinity,
+      entry: ownEntry({ settle: () => sleep(20) }),
+    });
+    try {
+      expect((await renderer.render("/")).diagnostics.errors).toEqual([]);
+    } finally {
+      await renderer.close();
+    }
+  });
+
   it("settles once the window and the settle hook are quiet in the same pass", async () => {
     let passes = 0;
     const renderer = await createRenderer({
@@ -1029,7 +1096,12 @@ describe("renderer options", () => {
       const { diagnostics } = await renderer.render("/");
       expect(passes).toBe(2);
       expect(diagnostics.requests).toEqual([
-        { method: "GET", url: `${ORIGIN}/api/late`, status: 200 },
+        {
+          method: "GET",
+          url: `${ORIGIN}/api/late`,
+          status: 200,
+          digest: sha256('{"late":true}'),
+        },
       ]);
     } finally {
       await renderer.close();

@@ -13,9 +13,10 @@ export interface Diagnostics {
    * Console errors, happy-dom errors, unhandled `-error` events, unhandled
    * rejections, private responses, refused writes, WebSockets and requests
    * of schemes other than `http:` / `https:`, elements still `is-loading`
-   * or `delaying-ready` once the page settled, unsafe markup, markup a
-   * browser parses into other elements, `file:` URLs and build-machine
-   * paths, an unsettled page, and a throwing `shell` function or hook.
+   * or `delaying-ready` once the page settled, a Neutron element that
+   * mounted before `no-ssr` reached it, unsafe markup, markup a browser
+   * parses into other elements, `file:` URLs and build-machine paths, an
+   * unsettled page, and a throwing `shell` function or hook.
    */
   errors: string[];
   /** Console warnings, happy-dom warnings, skipped cross-origin resources and iframe pages, an island over `warnIslandBytes`. */
@@ -96,15 +97,20 @@ const selectorOf = (element: Element): string => {
 /**
  * Elements still `is-loading` or `delaying-ready`, each as a short selector
  * with what it waits on: once the page settled, they would be written
- * half-rendered (or hidden).
+ * half-rendered (or hidden). One in a `noSsr` region (`no-ssr`) got there
+ * once it had started loading: said so.
  */
-export const notReady = (document: Document): string[] =>
+export const notReady = (document: Document, noSsr: string): string[] =>
   Array.from(
     document.querySelectorAll(NOT_READY.map((name) => `[${name}]`).join(", ")),
     (element) =>
       `${selectorOf(element)} (${NOT_READY.filter((name) =>
         element.hasAttribute(name)
-      ).join(", ")})`
+      ).join(", ")})${
+        element.closest(`[${noSsr}]`)
+          ? `: ${noSsr} reached it after it had started loading, and belongs in the markup or first in the rule that activates it`
+          : ""
+      }`
   );
 
 const isNode = (value: unknown): value is Node =>

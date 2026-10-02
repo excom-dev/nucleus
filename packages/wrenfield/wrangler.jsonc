@@ -1,14 +1,16 @@
-// Deploy: `node scripts/stage.mjs`, then `wrangler deploy` (deploy-wrenfield.yml).
-// The API token needs Workers Scripts:Edit (account), plus Workers Routes:Edit
-// and DNS:Edit on the excom.dev zone for the custom domain.
-// Assets only: before the service worker controls the page, /api/* falls to
-// index.html like any unknown path. The app waits for the controller, so it never asks.
+// Deploy (publish.yml, deploy-wrenfield.yml): the published-kit check, a deploy
+// build (`pnpm run build --kit=unpkg`), `build:prerender`, then `wrangler
+// deploy`. The API token needs Workers Scripts:Edit (account), plus Workers
+// Routes:Edit and DNS:Edit on the excom.dev zone for the custom domain. Assets
+// only: `_headers` and `_redirects` in `dist` apply.
 {
   "name": "wrenfield",
   "compatibility_date": "2026-09-01",
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "single-page-application"
+    // every route has its file (prerendered, or the shell); any other path,
+    // /api/* before the service worker controls the page too, answers 404.html
+    "not_found_handling": "404-page"
   },
   "routes": [{ "pattern": "wrenfield.excom.dev", "custom_domain": true }],
   "workers_dev": false

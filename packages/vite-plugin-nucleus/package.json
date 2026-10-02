@@ -1,0 +1,68 @@
+{
+  "name": "@excom/vite-plugin-nucleus",
+  "version": "0.1.0",
+  "description": "Vite plugin that builds, serves and previews a Nucleus Stack site",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24.13.0"
+  },
+  "type": "module",
+  "files": [
+    "dist",
+    "*.mjs",
+    "*.d.mts",
+    "src",
+    "THIRD-PARTY-NOTICES.md"
+  ],
+  "scripts": {
+    "build": "node -e \"console.log('vite-plugin-nucleus: no build output')\"",
+    "build:watch": "node -e \"console.log('vite-plugin-nucleus: no build watch')\"",
+    "format": "node node_modules/@excom/heft-rig/scripts/format.mjs",
+    "test": "node node_modules/@excom/heft-rig/scripts/vitest.mjs",
+    "coverage": "node node_modules/@excom/heft-rig/scripts/coverage.mjs",
+    "build:package-metas": "node node_modules/@excom/heft-rig/scripts/build-package-metas.mjs"
+  },
+  "dependencies": {
+    "compression": "^1.8.1",
+    "esbuild": "^0.28.2",
+    "postcss": "^8.5.3",
+    "postcss-custom-selectors": "^9.0.1",
+    "postcss-import": "^16.1.0",
+    "postcss-import-ext-glob": "^2.1.1",
+    "postcss-mixins": "^11.0.3",
+    "postcss-preset-env": "^10.5.0"
+  },
+  "peerDependencies": {
+    "vite": "^8.3.0"
+  },
+  "devDependencies": {
+    "@excom/heft-rig": "workspace:^",
+    "@excom/nucleus-test": "workspace:^",
+    "vite": "^8.3.0"
+  },
+  "repository": {
+    "url": "excom-dev/nucleus",
+    "directory": "packages/vite-plugin-nucleus"
+  },
+  "homepage": "https://github.com/excom-dev/nucleus/tree/main/packages/vite-plugin-nucleus/support/docs/README.md",
+  "bugs": "https://github.com/excom-dev/nucleus/issues",
+  "keywords": [
+    "vite-plugin-nucleus",
+    "tool",
+    "vite-plugin",
+    "nucleus",
+    "static-site",
+    "web-components"
+  ],
+  "excom": {
+    "documented": true,
+    "navGroup": "libraries",
+    "packageType": "tool",
+    "umd": false
+  },
+  "exports": {
+    ".": "./index.mjs",
+    "./host": "./host.mjs",
+    "./css": "./css.mjs"
+  }
+}

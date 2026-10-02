@@ -395,6 +395,51 @@ describe("buildDocsIndex", () => {
     );
   });
 
+  it("flags the packages whose own markdown file it mirrored in the site's package index", async () => {
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const site = path.join(tmp, "flag-repo");
+    const indexFile = "packages/docs-site/dist/package-metas/index.json";
+    writeFiles(site, {
+      "rush.json": "{}",
+      "packages/a/support/dist-docs/a-el.md": "# a-el",
+      // a mixin named for no package, and a guide named for one: not their own
+      "packages/b/support/dist-docs/helper-mixin.md": "# HelperMixin",
+      "packages/docs-site/support/dist-docs/docs/quark.md": "# Quark",
+      [indexFile]: JSON.stringify({
+        packages: [
+          { shortName: "a-el", packageType: "kit-element", version: "1.0.0" },
+          { shortName: "helper", packageType: "element-base", version: "1.0.0" },
+          { shortName: "quark", packageType: "library", docSections: [{ id: "a", title: "A" }] },
+        ],
+        docs: [{ name: "quark", title: "Quark" }],
+      }),
+    });
+    await buildDocsIndex(site);
+    expect(JSON.parse(read(site, indexFile))).toEqual({
+      packages: [
+        { shortName: "a-el", packageType: "kit-element", version: "1.0.0", markdown: true },
+        { shortName: "helper", packageType: "element-base", version: "1.0.0" },
+        { shortName: "quark", packageType: "library", docSections: [{ id: "a", title: "A" }] },
+      ],
+      docs: [{ name: "quark", title: "Quark" }],
+    });
+    expect(read(site, indexFile).endsWith("}\n")).toBe(true);
+  });
+
+  it("leaves a package index without packages as it is", async () => {
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const site = path.join(tmp, "flag-empty-repo");
+    const indexFile = "packages/docs-site/dist/package-metas/index.json";
+    writeFiles(site, {
+      "rush.json": "{}",
+      "packages/a/support/dist-docs/a-el.md": "# a-el",
+      "packages/docs-site/support/dist-docs/docs/intro.md": "# Introduction",
+      [indexFile]: "[]",
+    });
+    await buildDocsIndex(site);
+    expect(read(site, indexFile)).toBe("[]");
+  });
+
   it("writes a sitemap of the docs home, guides, packages with their doc pages, and examples", async () => {
     const log = vi.spyOn(console, "log").mockImplementation(() => {});
     const site = path.join(tmp, "sitemap-repo");

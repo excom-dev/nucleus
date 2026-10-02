@@ -13,7 +13,8 @@ export interface AST {
   children: AST[];
 }
 
-export type PaintFn = () => void;
+/** `isReplaced`: a later paint of its key in the commit writes instead. */
+export type PaintFn = (isReplaced?: boolean) => void;
 
 /**
  * A `@view-transition` block as the writes inside it carry it

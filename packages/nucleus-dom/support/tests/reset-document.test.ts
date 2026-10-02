@@ -753,6 +753,20 @@ describe("resetDocument: the page parses whole, then its elements upgrade", () =
     await dispose();
   });
 
+  it("finds the topmost undefined element above an inserted one without the public parentNode getter", async () => {
+    const { window, document, log, dispose } = page(["x-sub", "x-cell"]);
+    await resetDocument(window, {
+      url: "/next",
+      html: `<template><x-cell id="c"><x-sub id="s"></x-sub></x-cell></template>`,
+    });
+    const parentNode = vi.spyOn(window.Node.prototype, "parentNode", "get");
+    document.body.append(document.querySelector("template")!.content.cloneNode(true));
+    const reads = parentNode.mock.calls.length;
+    vi.restoreAllMocks();
+    expect([log, reads]).toEqual([["c new 1/1", 'c connected ""', "s new 1/0", 's connected ""'], 0]);
+    await dispose();
+  });
+
   it("gates a definition once with another nucleus-dom copy in the process", async () => {
     // a second module instance, as a second copy of the package
     const path = "../../src/custom-elements.ts?copy";

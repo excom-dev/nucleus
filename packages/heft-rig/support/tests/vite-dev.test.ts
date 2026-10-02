@@ -67,6 +67,18 @@ describe("vite-dev.mjs", () => {
     expect(mocks.createServer).not.toHaveBeenCalled();
   });
 
+  it("starts the same dev-site server for app packages, without the docs", async () => {
+    const app = path.join(ws.rushRoot, "packages/app");
+    await writeTree(app, {
+      "package.json": JSON.stringify({ name: "app", excom: { packageType: "app" } }),
+      "index.html": "<!doctype html>\n",
+    });
+    await start(app);
+    expect(mocks.prepareSiteDocs).not.toHaveBeenCalled();
+    const config = mocks.createServer.mock.calls[0][0];
+    expect([config.root, config.publicDir, config.server.port]).toEqual([app, path.join(app, "public"), 3001]);
+  });
+
   it("starts the demo playground for packages with support/demos/index.html", async () => {
     await writeTree(ws.lib, { "support/demos/index.html": "<h1>lib demos</h1>\n" });
     await start(ws.lib);

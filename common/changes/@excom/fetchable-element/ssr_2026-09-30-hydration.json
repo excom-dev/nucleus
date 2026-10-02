@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@excom/fetchable-element",
-      "comment": "On a prerendered page an identical GET / HEAD request is answered from the page's hydration island (as many of them as the prerender made), so the element announces `loading` then `success` without a request",
+      "comment": "Add hydration of prerendered pages: an identical GET or HEAD request is answered from the page's hydration island, as often as the prerender made it, so the element announces `loading` then `success` without a network request",
       "type": "minor"
     }
   ],

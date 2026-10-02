@@ -9,6 +9,7 @@ exports[`js-api view > re-runs the rules reading $app-flags when JS hands the fl
   "listenerRuns": 0,
   "matches": 1,
   "parentElement": 2,
+  "parentNode": 0,
   "quarkRuns": 1,
   "queryScopeCost": 5,
   "querySelectorAll": 1,

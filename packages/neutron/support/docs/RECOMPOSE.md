@@ -30,7 +30,7 @@ Every builder exposes its definition as `builtConfig`, a plain object you can re
 | `events` / `broadcasts` | `{ [name]: { prefixWithTag? } }` |
 | `methods` | `[name, fn][]` in definition order. |
 | `lifecycles` | `{ constructed, connected, adopted, disconnected, error, effect, propSet, propUnset, propChanged, promiseResolved, promiseRejected, broadcast, event, eventDefault }`, each an array of `[names, handler]` pairs in registration order. `names` is the prop / event list the handler was registered with (`[]` for lifecycles without one). |
-| `reflectDefaultProps` / `definitionOpts` | As passed to `Neutron()`. |
+| `reflectDefaultProps` / `definitionOpts` | As stated in `Neutron()`, absent when left out. A composed builder holds the last one stated. |
 
 ## Removing a lifecycle
 

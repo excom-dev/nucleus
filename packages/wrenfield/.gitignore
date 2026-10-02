@@ -3,5 +3,7 @@
 support/tests/browser/shots
 # Opt-in complexity snapshots (NUCLEUS_COMPLEXITY=1 pnpm test), never committed
 support/tests/__snapshots__/
-# Staged deploy output (scripts/stage.mjs)
+# Build output
 dist/
+# The prerender's cache and saved shell (heft-rig prerender.mjs)
+temp/

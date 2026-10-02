@@ -2,20 +2,20 @@
   "name": "wrenfield",
   "private": true,
   "version": "0.1.0",
-  "description": "Wrenfield, a furniture house for made-to-order pieces, restored antiques, lighting and objects. Built on the Nucleus Stack with no build step and no backend: a service worker plays the API.",
+  "description": "Wrenfield, a furniture house for made-to-order pieces, restored antiques, lighting and objects. Built on the Nucleus Stack with no backend: a service worker plays the API.",
   "license": "MIT",
   "engines": {
     "node": ">=24.13.0"
   },
   "type": "module",
   "scripts": {
-    "build": "node -e \"console.log('wrenfield: no build output')\"",
+    "build": "node node_modules/@excom/heft-rig/scripts/vite-build.mjs",
     "format": "node node_modules/@excom/heft-rig/scripts/format.mjs",
     "test": "node node_modules/@excom/heft-rig/scripts/vitest.mjs",
     "coverage": "node node_modules/@excom/heft-rig/scripts/coverage.mjs",
-    "stage": "node scripts/stage.mjs",
-    "deploy": "node scripts/stage.mjs && npx wrangler deploy",
-    "dev": "node node_modules/@excom/heft-rig/scripts/vite-dev.mjs"
+    "dev": "node node_modules/@excom/heft-rig/scripts/vite-dev.mjs",
+    "preview": "node node_modules/@excom/heft-rig/scripts/vite-preview.mjs",
+    "build:prerender": "node node_modules/@excom/heft-rig/scripts/prerender.mjs support/prerender/prerender.config.ts"
   },
   "dependencies": {
     "@excom/nucleus-kit": "workspace:^"
@@ -23,8 +23,11 @@
   "peerDependencies": {},
   "devDependencies": {
     "@excom/heft-rig": "workspace:^",
+    "@excom/nucleus-dom": "workspace:^",
+    "@excom/nucleus-ssr": "workspace:^",
     "@excom/nucleus-test": "workspace:^",
-    "@excom/spa-route": "workspace:^"
+    "@excom/spa-route": "workspace:^",
+    "@excom/vite-plugin-nucleus": "workspace:^"
   },
   "bugs": "https://github.com/excom-dev/nucleus/issues",
   "keywords": [

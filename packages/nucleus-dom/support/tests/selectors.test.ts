@@ -3,6 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "@excom/heft-rig/node_modules/vitest";
 import { createDom, installShims, supportSelectors } from "../../index";
+import { originalPrototype } from "./helpers/happy-dom-original";
 
 // recorded in headless Chrome 154: cases<n>.json run against index<n>.html
 const FIXTURES = join(dirname(fileURLToPath(import.meta.url)), "fixtures/selectors");
@@ -546,6 +547,78 @@ describe.each(Object.keys(SETUPS))("selectors on %s", (setup) => {
     expect([attempt(() => dom.document.querySelector("svg|rect")), attempt(() => $("top").matches("svg|rect")), attempt(() => $("top").closest("svg|rect"))]).toEqual(
       Array(3).fill("THROW SyntaxError"),
     );
+  });
+
+  it("climbs by the parent getter kept at install, so a spy on the public ones never sees it", () => {
+    const { Node } = dom.document.defaultView!;
+    const main = dom.document.querySelector("main")!;
+    dom.document.body.insertAdjacentHTML(
+      "beforeend",
+      `<section lang="de" dir="rtl"><ul><li id="a"></li><li id="b" contenteditable></li></ul><fieldset disabled><input id="x"></fieldset></section>`,
+    );
+    const shadow = $("side").attachShadow({ mode: "open" });
+    shadow.innerHTML = `<p></p>`;
+    const parentNode = vi.spyOn(Node.prototype, "parentNode", "get");
+    const parentElement = vi.spyOn(Node.prototype, "parentElement", "get");
+    const answers = [
+      // right to left through a descendant, a child and a sibling combinator
+      $("drawer").matches("main gesture-handler > content-drawer"),
+      $("end").matches("header ~ footer"),
+      ids(main.querySelectorAll("header ~ nav")),
+      $("drawer").closest("main > gesture-handler")?.id,
+      shadow.firstElementChild!.matches(":host > p"),
+      // positions, form state and the nearest ancestor that says
+      $("b").matches("li:nth-child(2):last-child"),
+      $("x").matches(":disabled"),
+      $("b").matches(":lang(de):dir(rtl):read-write"),
+      // a compound closest(), which happy-dom answers climbing by `parentElement`, and what it throws
+      $("drawer").closest("main")?.localName,
+      $("b").closest("section")?.localName,
+      [attempt(() => $("drawer").closest(":is(main")), attempt(() => $("drawer").closest("svg|rect")), attempt(() => $("drawer").closest("a >"))],
+    ];
+    const reads = [parentNode.mock.calls.length, parentElement.mock.calls.length];
+    vi.restoreAllMocks();
+    expect(answers).toEqual([
+      true,
+      true,
+      ["side"],
+      "gesture",
+      true,
+      true,
+      true,
+      true,
+      "main",
+      "section",
+      Array(3).fill("THROW SyntaxError"),
+    ]);
+    expect(reads).toEqual([0, 0]);
+  });
+
+  it("answers a compound closest() as happy-dom's own does, in light, shadow, form and detached trees", async () => {
+    const { closest } = await originalPrototype<Pick<Element, "closest">>("nodes/element/Element.js");
+    dom.document.body.insertAdjacentHTML(
+      "beforeend",
+      `<form id="f"><fieldset id="fs"><input id="in"><select id="sel"><option id="opt"></option></select></fieldset></form>`,
+    );
+    const shadow = $("side").attachShadow({ mode: "open" });
+    shadow.innerHTML = `<article id="art"><p id="para"></p></article>`;
+    const detached = dom.document.createElement("div");
+    detached.innerHTML = `<section id="top"><p id="low"></p></section>`;
+    const elements = [
+      ...dom.document.querySelectorAll("*"),
+      ...shadow.querySelectorAll("*"),
+      detached,
+      ...detached.querySelectorAll("*"),
+    ];
+    const selectors = ["main", "div", "*", "[is-open]", "#drawer", ".missing", ":not(footer)", ":is(header, nav)", "article, section", "form", "fieldset", "select"];
+    // by name: a form's method runs on the object behind its proxy, so a form that matches itself is answered as that
+    const named = (el: Element | null) => el && `${el.localName}#${el.id}`;
+    const answers = elements.flatMap((el) =>
+      selectors.map((selector) => [named(el.closest(selector)), named(closest.call(el, selector)), `${el.id} ${selector}`] as const),
+    );
+    expect(answers.filter(([shimmed, own]) => shimmed !== own).map(([, , call]) => call)).toEqual([]);
+    expect(answers.filter(([shimmed]) => shimmed).length).toBeGreaterThan(50);
+    expect(answers.filter(([shimmed]) => !shimmed).length).toBeGreaterThan(50);
   });
 
   it("keeps answering after many generated selectors", () => {

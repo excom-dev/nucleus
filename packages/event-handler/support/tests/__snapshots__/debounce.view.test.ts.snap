@@ -9,6 +9,7 @@ exports[`debounce view > coalesces a burst of input into one search-query > comp
   "listenerRuns": 0,
   "matches": 0,
   "parentElement": 0,
+  "parentNode": 0,
   "quarkRuns": 0,
   "queryScopeCost": 0,
   "querySelectorAll": 2,

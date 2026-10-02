@@ -90,10 +90,25 @@ describe("runFullBuild", () => {
     expect(mocks.build).toHaveBeenCalledTimes(1);
     const config = mocks.build.mock.calls[0][0];
     expect(config.root).toBe(ws.site);
-    expect(config.build.rolldownOptions.input.main).toBe(path.join(ws.site, "index.html"));
+    expect(config.build.rolldownOptions.input.index).toBe(path.join(ws.site, "index.html"));
     // dist was wiped before the build.
     expect(await exists(path.join(ws.site, "dist/stale.txt"))).toBe(false);
     expect(await exists(path.join(ws.site, "dist/exports.generated.json"))).toBe(false);
+  });
+
+  it("builds app packages with the site build, without the docs", async () => {
+    const { runFullBuild } = await load();
+    const app = path.join(ws.rushRoot, "packages/app");
+    await writeTree(app, {
+      "package.json": JSON.stringify({ name: "app", excom: { packageType: "app" } }),
+      "index.html": "<!doctype html>\n",
+      "node_modules/@excom/nucleus-kit/package.json": JSON.stringify({ version: "2.0.0" }),
+    });
+    await runFullBuild(app, { kit: "unpkg" });
+    expect(mocks.prepareSiteDocs).not.toHaveBeenCalled();
+    const config = mocks.build.mock.calls[0][0];
+    expect(config.build.rolldownOptions.input).toEqual({ index: path.join(app, "index.html") });
+    expect(config.plugins[0].name).toBe("nucleus-kit");
   });
 
   it("runs every lib build mode per root entry and writes exports", async () => {
@@ -210,6 +225,19 @@ describe("runFullBuild", () => {
     await import("../../scripts/vite-build.mjs");
     expect(mocks.build).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith(`No build entry files found in ${ws.linked}; skipping.`);
+  });
+
+  it("takes the kit switch from --kit, and refuses another flag", async () => {
+    vi.spyOn(process, "cwd").mockReturnValue(ws.site);
+    await writeTree(ws.site, {
+      "node_modules/@excom/nucleus-kit/package.json": JSON.stringify({ version: "3.0.0" }),
+    });
+    process.argv = [process.execPath, SCRIPT, "--kit=unpkg"];
+    await import("../../scripts/vite-build.mjs");
+    expect(mocks.build.mock.calls[0][0].plugins[0].name).toBe("nucleus-kit");
+    vi.resetModules();
+    process.argv = [process.execPath, SCRIPT, "--kitt=unpkg"];
+    await expect(import("../../scripts/vite-build.mjs")).rejects.toThrow("--kitt");
   });
 
   it("does not run when argv[1] is missing or unresolvable", async () => {

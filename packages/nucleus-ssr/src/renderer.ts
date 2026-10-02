@@ -1,3 +1,4 @@
+import { version } from "../package.json";
 import {
   captureConsole,
   describe,
@@ -9,7 +10,7 @@ import {
   watchErrorEvents,
 } from "./diagnostics";
 import { inertDom } from "./inert";
-import { builtin, cwd, EXPIRED, pathOf, within } from "./node";
+import { builtin, cwd, EXPIRED, pathOf, sha256, within } from "./node";
 import { type IslandNames, serialize } from "./serialize";
 import type { ServerRender } from "@excom/kit-utils";
 import {
@@ -23,6 +24,7 @@ import {
   type PendingWork,
   resetDocument,
   serve,
+  type ServedRequest,
   whenIdle,
 } from "@excom/nucleus-dom";
 
@@ -46,7 +48,7 @@ export interface RendererHooks {
    * fire, `holdTimersAbove` ≥ 1000) and `budgetMs` already bounds the page.
    */
   settle?(): unknown;
-  /** After the page settled, before it is serialized: per-page `<link rel="canonical">` or `<meta name="description">`. */
+  /** After the page settled, before it is serialized: per-page `<link rel="canonical">`, `<link rel="alternate">` or `<meta name="description">`. */
   afterRender?(page: RenderPage & { document: Document }): unknown;
 }
 
@@ -156,6 +158,32 @@ export interface Renderer {
   readonly window: DomWindow;
   /** Restores the globals and closes the window. */
   close(): Promise<void>;
+}
+
+/** What a cached page was rendered from, to tell whether it would render the same again. */
+export interface PageInputs {
+  /** Digest of its shell. */
+  shell: string;
+  /** Every request it made, as answered then. */
+  requests: ServedRequest[];
+}
+
+/** A renderer, plus what `prerender()` asks of one. */
+export interface RendererHandle extends Renderer {
+  /** Digest of the versions, the options that are data and what `entry` fetched while it loaded. */
+  readonly key: string;
+  readonly budgetMs: number;
+  /** `render()`, with the digest of the shell for a page without errors. */
+  renderPage(url: string): Promise<RenderResult & { shell?: string }>;
+  /** What of `url`'s shell and requests answers otherwise now; none when nothing does. */
+  changed(url: string, inputs: PageInputs): Promise<string | undefined>;
+  /**
+   * A page lost before it rendered (its worker stopped), with `diagnostics`:
+   * the untouched shell under `"shell"`, else rejects with them.
+   */
+  lost(url: string, diagnostics: Diagnostics): Promise<RenderResult>;
+  /** `url`'s untouched shell, not rendered: a shell route. A `shell` function that throws fails it. */
+  shellPage(url: string): Promise<RenderResult>;
 }
 
 type RequestContext = { request: Request; window: DomWindow };
@@ -315,7 +343,15 @@ const fetchCallsOf = (window: DomWindow): ReadonlyMap<Request, string> =>
  * (block content inside a `<p>`), whose hydration would not match. Node
  * only.
  */
-export async function createRenderer({
+export async function createRenderer(
+  options: RendererOptions
+): Promise<Renderer> {
+  const { window, render, close } = await openRenderer(options);
+  return { window, render, close };
+}
+
+/** `createRenderer()`, plus what `prerender()` asks of a renderer. */
+export async function openRenderer({
   root,
   origin,
   entry,
@@ -329,7 +365,7 @@ export async function createRenderer({
   excludedTags = [],
   onError = "fail",
   warnIslandBytes,
-}: RendererOptions): Promise<Renderer> {
+}: RendererOptions): Promise<RendererHandle> {
   const base = new URL(origin).origin;
   const rootPath = pathOf(root);
   // read before any page renders: a prerender may overwrite the file
@@ -339,6 +375,8 @@ export async function createRenderer({
       builtin("node:path").join(rootPath, "index.html"),
       "utf8"
     );
+  const fixedShell =
+    typeof shellSource === "string" ? sha256(shellSource) : undefined;
   // the build machine's paths a page must never hold: at least two segments
   // deep, so `/` or `/app` match no site URL
   const buildPaths = [rootPath, cwd()]
@@ -372,6 +410,16 @@ export async function createRenderer({
     const difference = findParseDifference(parser.window, html);
     if (difference) throw misparsedShell(difference, source);
     sound.add(digest);
+  };
+  /** `checkShell()`, and throws for a shell an earlier prerender wrote. */
+  const assertShell = (html: string, source?: string) => {
+    if (
+      parsedIn(parser.window, html, ({ documentElement }) =>
+        documentElement.hasAttribute(kit.SSR_ATTR)
+      )
+    )
+      throw staleShell(kit);
+    checkShell(html, source);
   };
   // the page being rendered; between pages, a sink nobody reads
   let page = idlePage();
@@ -488,14 +536,7 @@ export async function createRenderer({
       );
     // browser code: loaded once the window's globals are in place
     kit = await import("@excom/kit-utils");
-    if (
-      typeof shellSource === "string" &&
-      parsedIn(parser.window, shellSource, ({ documentElement }) =>
-        documentElement.hasAttribute(kit.SSR_ATTR)
-      )
-    )
-      throw staleShell(kit);
-    if (typeof shellSource === "string") checkShell(shellSource);
+    if (typeof shellSource === "string") assertShell(shellSource);
     // what a browser gets for a route with no page
     const fallbackSource =
       fallback && readText(builtin("node:path").join(rootPath, fallback));
@@ -504,6 +545,24 @@ export async function createRenderer({
     await teardown();
     throw error;
   }
+  // what decides every page besides app code and the page's own inputs: the
+  // versions (happy-dom's in its user agent), the options that are data, and
+  // what the requests `entry` made while it loaded answered
+  const key = sha256(
+    JSON.stringify([
+      version,
+      window.navigator.userAgent,
+      base,
+      viewport ?? null,
+      holdTimersAbove,
+      budgetMs,
+      fallback ?? null,
+      excludedTags,
+      typeof onError === "string" ? onError : null,
+      warnIslandBytes ?? null,
+      served.requests,
+    ])
+  );
 
   /** Resolves the held timers once the window and the `settle` hook are quiet in one pass. */
   const settle = async (): Promise<PendingWork> => {
@@ -521,11 +580,47 @@ export async function createRenderer({
     }
   };
 
-  const renderPage = async (url: string): Promise<RenderResult> => {
+  /** `url` on the origin, and its path, query and hash. */
+  const targetOf = (url: string) => {
     const target = new URL(url, `${base}/`);
     if (target.origin !== base)
       throw new TypeError(`nucleus-ssr: ${url} is not on ${base}`);
-    const path = target.pathname + target.search + target.hash;
+    return { target, path: target.pathname + target.search + target.hash };
+  };
+
+  const shellFor = async (path: string) =>
+    typeof shellSource === "function" ? await shellSource(path) : shellSource;
+
+  /** The shell for `path`; none when a `shell` function throws. */
+  const shellOrNone = async (path: string) => {
+    try {
+      return await shellFor(path);
+    } catch {
+      return undefined;
+    }
+  };
+
+  /** A page with errors: its `shell` under the `"shell"` policy, else rejects with `diagnostics`. */
+  const failed = (
+    path: string,
+    shell: string | undefined,
+    diagnostics: Diagnostics
+  ): RenderResult => {
+    const policy = typeof onError === "function" ? onError(path) : onError;
+    if (policy === "shell" && shell !== undefined)
+      return { html: shell, diagnostics };
+    throw Object.assign(
+      new Error(
+        `nucleus-ssr: ${path} failed: ${diagnostics.errors.join("; ")}`
+      ),
+      { diagnostics }
+    );
+  };
+
+  const renderPage = async (
+    url: string
+  ): Promise<RenderResult & { shell?: string }> => {
+    const { target, path } = targetOf(url);
     const state = idlePage();
     const { diagnostics } = state;
     const server: ServerRender = { responses: [], exclude };
@@ -536,10 +631,7 @@ export async function createRenderer({
     // whatever page is current: the previous one's teardown is not this one's
     const release = captureConsole(() => page.diagnostics);
     try {
-      html =
-        typeof shellSource === "function"
-          ? await shellSource(path)
-          : shellSource;
+      html = await shellFor(path);
       await resetDocument(window, {
         url: target.href,
         html,
@@ -561,7 +653,7 @@ export async function createRenderer({
       diagnostics.heldTimers = (await settle()).held;
       await hooks.afterRender?.({ url: path, window, document });
       // e.g. a `ready-on` event that never came: the page would be written half-rendered
-      const waiting = notReady(document);
+      const waiting = notReady(document, kit.NO_SSR_ATTR);
       if (waiting.length)
         diagnostics.errors.push(
           `Not ready once settled: ${waiting.join(", ")}`
@@ -626,33 +718,118 @@ export async function createRenderer({
       diagnostics.warnings.push(
         `Island is ${diagnostics.islandBytes} bytes (warnIslandBytes: ${warnIslandBytes})`
       );
-    if (!diagnostics.errors.length) return { html: output!, diagnostics };
-    const policy = typeof onError === "function" ? onError(path) : onError;
-    if (policy === "shell" && html !== undefined) return { html, diagnostics };
-    throw Object.assign(
-      new Error(
-        `nucleus-ssr: ${path} failed: ${diagnostics.errors.join("; ")}`
-      ),
-      { diagnostics }
+    if (diagnostics.errors.length) return failed(path, html, diagnostics);
+    return { html: output!, diagnostics, shell: fixedShell ?? sha256(html!) };
+  };
+
+  /**
+   * What each of `requests` answers now, through the interceptor a page's
+   * requests take: files, `fallback`, `api` and 404s as a render sees them.
+   * Undefined for one that went unlogged; none at all for a private answer.
+   */
+  const answer = async (requests: readonly ServedRequest[]) => {
+    const from = served.requests.length;
+    page = idlePage();
+    const distinct = new Map(
+      requests.map((request) => [`${request.method} ${request.url}`, request])
     );
+    await Promise.all(
+      Array.from(distinct.values(), async ({ method, url }) => {
+        try {
+          await window.fetch(url, { method });
+        } catch {
+          // a network error, as logged
+        }
+      })
+    );
+    const answered = served.requests.splice(from);
+    const refused = page.diagnostics.errors.length > 0;
+    page = idlePage();
+    return refused
+      ? undefined
+      : requests.map(({ method, url }) =>
+          answered.find((entry) => entry.method === method && entry.url === url)
+        );
+  };
+
+  /**
+   * What of `url`'s shell and requests answers otherwise now, if anything. A
+   * request that got no answer (aborted, or still in flight once the page
+   * was done) gave the page nothing: no input.
+   */
+  const changed = async (url: string, inputs: PageInputs) => {
+    const html = await shellOrNone(targetOf(url).path);
+    if (html === undefined) return "its shell function throws";
+    if ((fixedShell ?? sha256(html)) !== inputs.shell)
+      return "the shell changed";
+    const requests = inputs.requests.filter(({ status }) => status);
+    const now = await answer(requests);
+    if (!now) return "a response it used is private now";
+    const index = requests.findIndex(
+      ({ status, digest }, index) =>
+        now[index]?.status !== status || now[index]?.digest !== digest
+    );
+    if (index < 0) return undefined;
+    const { method, url: was, status } = requests[index]!;
+    const { origin, pathname, search } = new URL(was);
+    const request = `${method} ${origin === base ? pathname + search : was}`;
+    const answered = now[index];
+    return !answered
+      ? `${request} went unanswered`
+      : answered.status !== status
+        ? `${request} answered ${status}, now ${answered.status}`
+        : `${request} answered another body`;
+  };
+
+  const lost = async (url: string, diagnostics: Diagnostics) => {
+    const { path } = targetOf(url);
+    const shell = await shellOrNone(path);
+    if (shell !== undefined) assertShell(shell, `route ${path}`);
+    return failed(path, shell, diagnostics);
+  };
+
+  const shellPage = async (url: string): Promise<RenderResult> => {
+    const { path } = targetOf(url);
+    const diagnostics = emptyDiagnostics();
+    try {
+      const html = await shellFor(path);
+      assertShell(html, `route ${path}`);
+      return { html, diagnostics };
+    } catch (error) {
+      // as for a rendered page: no policy applies
+      if (error instanceof ShellError) throw error;
+      diagnostics.errors.push(`shell: ${describe(error)}`);
+      return failed(path, undefined, diagnostics);
+    }
   };
 
   let closed = false;
   let turn = Promise.resolve();
+  /** `work` once the previous call's is done: one page at a time, in call order. */
+  const serially = async <T>(work: () => Promise<T>): Promise<T> => {
+    if (closed) throw new Error("nucleus-ssr: the renderer is closed");
+    const previous = turn;
+    let done!: () => void;
+    turn = new Promise((resolve) => (done = resolve));
+    try {
+      await previous;
+      return await work();
+    } finally {
+      done();
+    }
+  };
   return {
     window,
+    key,
+    budgetMs,
+    renderPage: (url) => serially(() => renderPage(url)),
     async render(url) {
-      if (closed) throw new Error("nucleus-ssr: the renderer is closed");
-      const previous = turn;
-      let done!: () => void;
-      turn = new Promise((resolve) => (done = resolve));
-      try {
-        await previous;
-        return await renderPage(url);
-      } finally {
-        done();
-      }
+      const { html, diagnostics } = await serially(() => renderPage(url));
+      return { html, diagnostics };
     },
+    changed: (url, inputs) => serially(() => changed(url, inputs)),
+    lost: (url, diagnostics) => serially(() => lost(url, diagnostics)),
+    shellPage: (url) => serially(() => shellPage(url)),
     async close() {
       if (closed) return;
       closed = true;

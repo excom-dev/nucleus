@@ -48,6 +48,16 @@ export class QuarkInternal {
    * Lets change-event fan-out skip re-runs for shadowed (farther) owners.
    */
   varOwners: Record<string, WeakRef<HTMLElement>> = {};
+  /**
+   * Per painted key (`content`, an attribute name), across sheets; its
+   * entry keys the paint. `committed`: what Quark last wrote through
+   * `setAttr` (`null`: removed). `unwritten`: what a replaced paint of the
+   * running commit would have left.
+   */
+  cascade?: Map<
+    string,
+    { committed?: string | null; unwritten?: string | null }
+  >;
   instances: {
     [hash: string]: {
       modules: Record<string, any>;
@@ -111,6 +121,13 @@ export class QuarkInternal {
       };
     }
     return this.instances[quarkHash];
+  }
+  /** The `cascade` entry of `key`, created on first use. */
+  ledger(key: string) {
+    const cascade = (this.cascade ??= new Map());
+    let ledger = cascade.get(key);
+    if (!ledger) cascade.set(key, (ledger = {}));
+    return ledger;
   }
   getRule(instance, ruleId) {
     if (!instance.rules[ruleId]) {
@@ -209,17 +226,31 @@ export class QuarkInternal {
   setAttr(
     quarkHash: string,
     name: string,
-    value: string | null | undefined | unknown | boolean
+    value: string | null | undefined | unknown | boolean,
+    // a later paint of this key in the commit writes: record, never write
+    isReplaced = false
   ) {
     // `undefined` = no-op (leave the attribute alone). `null` / false = wipe.
     if (value === undefined) return;
     const instance = this.getInstance(quarkHash);
     const _val = typeof value === "boolean" ? (value ? "" : null) : value;
     const shouldRemove = _val === null;
+    // compared as written: `0` and "0" are one value, never rewritten
+    const next = shouldRemove ? null : String(_val);
     const oldVal = this.element.getAttribute(name);
-    if (_val !== oldVal) {
-      // compared as written: `0` and "0" are one value, never rewritten
-      if (shouldRemove || String(_val) !== oldVal) {
+    const ledger = this.cascade?.get(name);
+    // what this commit's replaced paints of the key would have left
+    const shownVal =
+      ledger?.unwritten !== undefined ? ledger.unwritten : oldVal;
+    if (isReplaced) {
+      // its write's hop, without the write: past the guard's limit it drops
+      if (next !== shownVal) {
+        if (LoopGuard.write(this.element, name, () => true) === false) return;
+        (ledger ?? this.ledger(name)).unwritten = next;
+      }
+    } else {
+      if (ledger) ledger.unwritten = undefined;
+      if (next !== oldVal) {
         // one causal hop for the loop guard; past its limit the write is
         // dropped and the runaway chain ends here
         const written = LoopGuard.write(this.element, name, () => {
@@ -230,23 +261,23 @@ export class QuarkInternal {
           return true;
         });
         if (written === false) return;
+        (ledger ?? this.ledger(name)).committed = next;
       }
+    }
+    if (_val !== shownVal) {
       instance.attributes[name] = true;
     } else if (!shouldRemove && isHydrating()) {
       // the server painted it: this sheet owns it, as after a cold write
       // (a `dataset` key it drops later is removed)
       instance.attributes[name] = true;
     }
+    if (isReplaced) return;
     /*
      * Form controls: the attr is authoritative. Keep the live
      * (dirty-flag) property in step even when the attr itself did not
      * change, since the user may have edited the control away from it.
      */
-    syncFormControlAttribute(
-      this.element,
-      name,
-      shouldRemove ? null : String(_val)
-    );
+    syncFormControlAttribute(this.element, name, next);
   }
   setContentAttr(quarkHash: string) {
     const instance = this.getInstance(quarkHash);

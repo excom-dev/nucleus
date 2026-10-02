@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/dismiss-watcher",
+      "comment": "Update the drawer demo",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/dismiss-watcher"
+}

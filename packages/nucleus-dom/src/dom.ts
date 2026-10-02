@@ -1,11 +1,13 @@
 import { trackActivity } from "./activity";
 import { installCommandShim } from "./command";
 import { upgradeClones } from "./custom-elements";
+import { keepEventPaths } from "./event-path";
 import { keepFormParents } from "./form-parents";
 import { reportIntersecting } from "./intersection-observer";
 import { installMissingApis } from "./missing-apis";
 import { pinMutationObservers } from "./mutation-observer";
 import { supportSelectors } from "./selectors";
+import { ignoreStrayMarkup } from "./stray-markup";
 import { supportTableTemplates } from "./table-templates";
 import type { DomWindow } from "./window";
 import { type IOptionalBrowserSettings, Window } from "happy-dom";
@@ -71,6 +73,8 @@ export function installShims(win: DomWindow | typeof globalThis): void {
   upgradeClones(win);
   keepFormParents(win);
   supportTableTemplates(win);
+  ignoreStrayMarkup(win);
+  keepEventPaths(win);
 }
 
 /**

@@ -77,7 +77,8 @@
     "@excom/nucleus-dom": "workspace:^",
     "@excom/nucleus-ssr": "workspace:^",
     "@excom/nucleus-test": "workspace:^",
-    "@excom/quark-formatter": "workspace:^"
+    "@excom/quark-formatter": "workspace:^",
+    "@excom/vite-plugin-nucleus": "workspace:^"
   },
   "bugs": "https://github.com/excom-dev/nucleus/issues",
   "keywords": [

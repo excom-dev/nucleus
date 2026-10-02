@@ -18,7 +18,7 @@
  *     `packages/docs-site/public/views/<app>/`
  *   - `<repo>/packages/docs-site/dist/package-metas/index.json` and
  *     `<package>.json` — the documented packages, their `docSections` and
- *     doc pages (sitemap only)
+ *     doc pages (sitemap), and the entries to flag (see Outputs)
  *
  * Outputs (generated, not committed):
  *   - `<repo>/dist-docs/<element>.md` — flat mirror by element/mixin name
@@ -36,6 +36,9 @@
  *     `docs/examples/<app>/` when `dist/` exists — the Markdown mirror, so
  *     the relative links inside `llms.txt` and the guides resolve on the
  *     deployed site instead of falling through to the SPA
+ *   - `<repo>/packages/docs-site/dist/package-metas/index.json` when `dist/`
+ *     exists — each package entry whose `<shortName>.md` was mirrored gets
+ *     `markdown: true` (the page links that file), the others nothing
  *   - `<repo>/packages/docs-site/dist/sitemap.xml` when `dist/` exists —
  *     the site root, the docs home, every guide, package, package doc page
  *     and example route: the routes `build:prerender` writes
@@ -146,6 +149,10 @@ export async function buildDocsIndex(repoRoot = findRepoRoot()) {
  * every link is served the SPA fallback. The guides link the example apps
  * as `./examples/<app>/<app>.html`, so `docs/examples/` is mirrored too.
  *
+ * The site's `package-metas/index.json` then flags the packages whose own
+ * `<shortName>.md` was mirrored. Not every package has one, and the index
+ * is the only list the site's pages load.
+ *
  * @param {string} repoRoot
  * @param {string} [srcDir]
  */
@@ -163,6 +170,7 @@ export async function copyLlmsToSiteDist(
     copied += 1;
   }
   let mirrored = 0;
+  const elementFiles = new Set();
   for (const rel of ["", "docs"]) {
     const from = path.join(srcDir, rel);
     if (!existsSync(from)) continue;
@@ -176,8 +184,10 @@ export async function copyLlmsToSiteDist(
       }
       await copyFile(path.join(from, file), path.join(to, file));
       mirrored += 1;
+      if (!rel) elementFiles.add(file);
     }
   }
+  await flagMarkdownPackages(destDir, elementFiles);
   let apps = 0;
   const examplesFrom = path.join(srcDir, "docs/examples");
   if (existsSync(examplesFrom)) {
@@ -191,6 +201,23 @@ export async function copyLlmsToSiteDist(
       `Copied ${copied} llms file(s) + ${mirrored} markdown file(s) + ${apps} example app(s) → ${SITE_PACKAGE}/dist`,
     );
   }
+}
+
+/**
+ * `markdown: true` on each package entry of `<distDir>/package-metas/index.json`
+ * whose `<shortName>.md` is in `files`. No-op without an index.
+ *
+ * @param {string} distDir
+ * @param {Set<string>} files names of the mirrored element docs
+ */
+async function flagMarkdownPackages(distDir, files) {
+  const file = path.join(distDir, "package-metas/index.json");
+  const index = await readJson(file);
+  if (!index?.packages) return;
+  const packages = index.packages.map((entry) =>
+    files.has(`${entry.shortName}.md`) ? { ...entry, markdown: true } : entry,
+  );
+  await writeFile(file, JSON.stringify({ ...index, packages }, null, 2) + "\n", "utf8");
 }
 
 // --- Example apps ---------------------------------------------------------

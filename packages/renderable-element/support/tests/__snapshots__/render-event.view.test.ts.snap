@@ -9,6 +9,7 @@ exports[`render-event view > renders and unrenders inside a view transition > co
   "listenerRuns": 0,
   "matches": 2,
   "parentElement": 0,
+  "parentNode": 0,
   "quarkRuns": 1,
   "queryScopeCost": 6,
   "querySelectorAll": 2,

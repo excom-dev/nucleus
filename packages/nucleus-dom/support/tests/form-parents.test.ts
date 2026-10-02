@@ -1,4 +1,4 @@
-import { describe, expect, it } from "@excom/heft-rig/node_modules/vitest";
+import { describe, expect, it, vi } from "@excom/heft-rig/node_modules/vitest";
 import { createDom, resetDocument } from "../../index";
 
 /** How `parent` and `child` relate: contains, position, parentNode, closest. */
@@ -24,6 +24,32 @@ describe("keepFormParents", () => {
     expect([elements.length, options.length, value, selectedIndex]).toEqual([2, 2, "m", 1]);
     (select as HTMLSelectElement).value = "s";
     expect([(select as HTMLSelectElement).selectedIndex, (option as HTMLOptionElement).selected]).toEqual([0, true]);
+    await dispose();
+  });
+
+  it("answers selectors through a form / select parent, by the parent getter kept at install", async () => {
+    const { window, document, dispose } = createDom();
+    const host = document.createElement("div");
+    host.innerHTML = `<form><input name="q"><fieldset><input name="r"></fieldset><select><option>s</option><option selected>m</option></select></form>`;
+    document.body.append(host);
+    const [form, select, option] = ["form", "select", "option:nth-child(2)"].map((selector) => host.querySelector(selector)!);
+    const [parentNode, parentElement] = [
+      vi.spyOn(window.Node.prototype, "parentNode", "get"),
+      vi.spyOn(window.Node.prototype, "parentElement", "get"),
+    ];
+    const answers = [
+      form.querySelector("input")!.matches("form > input"),
+      [...form.querySelectorAll("form input")].map((input) => input.getAttribute("name")),
+      form.querySelector("fieldset > input")?.getAttribute("name"),
+      option.matches("form select > option:last-child"),
+      option.closest("form > select") === select,
+      select.matches("form > fieldset ~ select"),
+      form.querySelector("form:has(> select) > :first-child")?.getAttribute("name"),
+    ];
+    const reads = [parentNode.mock.calls.length, parentElement.mock.calls.length];
+    vi.restoreAllMocks();
+    expect(answers).toEqual([true, ["q", "r"], "r", true, true, true, "q"]);
+    expect(reads).toEqual([0, 0]);
     await dispose();
   });
 

@@ -1,3 +1,4 @@
+import { inertDom } from "../../src/inert";
 import {
   isExecutable,
   isPlainData,
@@ -8,12 +9,21 @@ import { parse } from "./helpers";
 import {
   HYDRATION_ISLAND_ID,
   INERT_ATTR,
+  NO_SSR_ATTR,
   SSR_ATTR,
+  STAMP_ATTR,
 } from "@excom/kit-utils";
 import { createDom } from "@excom/nucleus-dom";
 import { describe, expect, it } from "@excom/nucleus-test";
 
 const SEPARATORS = String.fromCharCode(0x2028, 0x2029);
+const NAMES = {
+  HYDRATION_ISLAND_ID,
+  SSR_ATTR,
+  INERT_ATTR,
+  STAMP_ATTR,
+  NO_SSR_ATTR,
+};
 
 describe("isPlainData", () => {
   it("accepts what a JSON round trip gives back as the same data", () => {
@@ -122,7 +132,7 @@ describe("serialize", () => {
     });
     try {
       const { html, neutralizedScripts } = serialize(document, {
-        names: { HYDRATION_ISLAND_ID, SSR_ATTR, INERT_ATTR },
+        names: NAMES,
         responses: [],
         shell: {
           head: new Set(document.head.childNodes),
@@ -138,6 +148,136 @@ describe("serialize", () => {
           content.firstElementChild!.getAttribute("type")
         )
       ).toEqual(["text/plain", "text/plain"]);
+    } finally {
+      await dispose();
+    }
+  });
+});
+
+describe("serialize: island", () => {
+  it("writes the responses by method and URL, whichever order they were recorded in", async () => {
+    const { document, dispose } = createDom({
+      html: `<!DOCTYPE html><html><head></head><body></body></html>`,
+    });
+    const response = (method: "GET" | "HEAD", url: string) => ({
+      method,
+      url,
+      record: { url, status: 200, statusText: "OK", ok: true, redirected: false, type: "basic" as const, headers: [], body: url },
+    });
+    try {
+      const recorded = [
+        response("HEAD", "/a"),
+        response("GET", "/b?x=2"),
+        response("GET", "/B"),
+        response("GET", "/b?x=10"),
+        response("GET", "/a"),
+      ];
+      const { html } = serialize(document, {
+        names: NAMES,
+        responses: recorded,
+        shell: { head: new Set(document.head.childNodes), parsed: document.implementation.createHTMLDocument() },
+        doctype: "",
+      });
+      const island = JSON.parse(parse(html).getElementById(HYDRATION_ISLAND_ID)!.textContent!);
+      expect(island.responses.map(({ method, url }: { method: string; url: string }) => `${method} ${url}`)).toEqual([
+        "GET /B",
+        "GET /a",
+        "GET /b?x=10",
+        "GET /b?x=2",
+        "HEAD /a",
+      ]);
+      // what the render recorded stays as it was
+      expect(recorded[0]!.method).toBe("HEAD");
+    } finally {
+      await dispose();
+    }
+  });
+});
+
+describe("serialize: no-ssr regions", () => {
+  it("fails a Neutron element no-ssr reached once it had started; none there gets an n-ssr id", async () => {
+    const { window, document, dispose } = createDom({
+      html: `<!DOCTYPE html><html><head></head><body><x-kept id="stamped" no-ssr n-tpl="html#1"></x-kept><section no-ssr><x-kept id="loaded" did-load></x-kept><x-kept id="waiting" is-loading></x-kept><x-kept id="provided"></x-kept><x-kept id="untouched"></x-kept><x-plain id="plain" did-load></x-plain></section><x-kept id="outside" did-load></x-kept></body></html>`,
+    });
+    try {
+      // a Neutron element's class has `getConfig()`
+      window.customElements.define(
+        "x-kept",
+        class extends window.HTMLElement {
+          static getConfig() {
+            return {};
+          }
+        }
+      );
+      window.customElements.define("x-plain", class extends window.HTMLElement {});
+      // happy-dom upgrades by replacing the element; its id cache keeps the old one
+      const provide = (id: string, provision: unknown) =>
+        Object.assign(document.querySelector(`#${id}`)!, { provision });
+      provide("provided", { n: 1 });
+      provide("outside", { n: 2 });
+      const { html, errors } = serialize(document, {
+        names: NAMES,
+        responses: [],
+        shell: {
+          head: new Set(document.head.childNodes),
+          parsed: document.implementation.createHTMLDocument(),
+        },
+        doctype: "<!DOCTYPE html>",
+      });
+      const late =
+        ": no-ssr reached it after it had started, and belongs in the markup or first in the rule that activates it";
+      expect(errors).toEqual([
+        `<x-kept id="stamped" no-ssr n-tpl="html#1"> holds [n-tpl]${late}`,
+        `<x-kept id="loaded" did-load> holds [did-load]${late}`,
+        `<x-kept id="waiting" is-loading> holds [is-loading]${late}`,
+        `<x-kept id="provided"> holds a provision${late}`,
+      ]);
+      expect(
+        Array.from(parse(html).querySelectorAll("body [n-ssr]"), ({ id }) => id)
+      ).toEqual(["outside"]);
+    } finally {
+      await dispose();
+    }
+  });
+});
+
+describe("serialize head", () => {
+  it("keeps the title, meta, canonical and alternate link nodes a render added, and drops any other (an alternate stylesheet too)", async () => {
+    const { document, dispose } = inertDom(
+      `<!DOCTYPE html><html><head><link rel="stylesheet" href="/shell.css"><link rel="alternate" href="/shell.md"></head><body></body></html>`
+    );
+    try {
+      const shellHead = new Set(document.head.childNodes);
+      document.head.insertAdjacentHTML(
+        "beforeend",
+        [
+          "<title>Page</title>",
+          '<meta name="description" content="About the page">',
+          '<link rel="canonical" href="/page">',
+          '<link rel="alternate" type="text/markdown" href="/page.md">',
+          '<link rel="alternate stylesheet" title="Dark" href="/dark.css">',
+          '<link rel="stylesheet" href="/added.css">',
+          '<link rel="modulepreload" href="/chunk.js">',
+          "<style>p { color: red; }</style>",
+        ].join("")
+      );
+      const { html } = serialize(document, {
+        names: NAMES,
+        responses: [],
+        shell: {
+          head: shellHead,
+          parsed: document.implementation.createHTMLDocument(),
+        },
+        doctype: "<!DOCTYPE html>",
+      });
+      expect(Array.from(parse(html).head.children, (node) => node.outerHTML)).toEqual([
+        '<link rel="stylesheet" href="/shell.css">',
+        '<link rel="alternate" href="/shell.md">',
+        "<title>Page</title>",
+        '<meta name="description" content="About the page">',
+        '<link rel="canonical" href="/page">',
+        '<link rel="alternate" type="text/markdown" href="/page.md">',
+      ]);
     } finally {
       await dispose();
     }

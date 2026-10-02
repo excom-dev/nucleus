@@ -1,11 +1,16 @@
+// `node vite-build.mjs [--kit=bundled|unpkg]` (`pnpm run build`): the
+// package's build. `--kit=unpkg` is the deploy build of a site or app: the
+// Nucleus Kit loads from unpkg at the installed version instead of being
+// bundled (`pnpm run build --kit=unpkg`). Libraries ignore it.
 import { readdir, realpath, rm } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { parseArgs } from "node:util";
 import { build } from "vite";
 import { createRigViteConfig, writeMinifiedCss } from "./vite-config.mjs";
 import { buildSizeReport } from "./build-size.mjs";
 import { buildExports } from "./build-exports.mjs";
-import { isSitePackage, readPackageJson } from "./package-type.mjs";
+import { isSitePackage, readPackageJson, usesSiteBuild } from "./package-type.mjs";
 import { prepareSiteDocs } from "./collect-docs-metas.mjs";
 
 /** Root entries that only run in Node: an ESM pair, never a UMD. */
@@ -13,26 +18,29 @@ const NODE_ONLY_ENTRIES = ["testing", "server"];
 
 /**
  * Run the full Vite build for the current package (or given root).
- * Site packages emit a static app into `dist/`. Library packages discover
- * root-level .ts/.css entry files, run all build modes (a `<name>.progressive.ts`
- * entry runs only the progressive mode; `excom.umd: false` skips the UMD, for
- * Node-only libraries, and a `testing.ts` / `server.ts` entry never gets one),
- * then buildExports and the size report.
+ * Site and app packages emit a static site into `dist/` (`@excom/vite-plugin-nucleus`; a site
+ * collects its docs first). Library packages discover root-level .ts/.css entry
+ * files, run all build modes (a `<name>.progressive.ts` entry runs only the
+ * progressive mode; `excom.umd: false` skips the UMD, for Node-only libraries,
+ * and a `testing.ts` / `server.ts` entry never gets one), then buildExports and
+ * the size report.
  * @param {string} [packageRoot=process.cwd()]
+ * @param {{ kit?: "bundled" | "unpkg" }} [options] where a site takes the Nucleus Kit from
  */
-export async function runFullBuild(packageRoot = process.cwd()) {
+export async function runFullBuild(packageRoot = process.cwd(), { kit } = {}) {
   await rm(path.resolve(packageRoot, "dist"), {
     recursive: true,
     force: true,
   });
 
-  if (await isSitePackage(packageRoot)) {
-    await prepareSiteDocs(packageRoot);
+  if (await usesSiteBuild(packageRoot)) {
+    if (await isSitePackage(packageRoot)) await prepareSiteDocs(packageRoot);
     await build(
       await createRigViteConfig({
         mode: "build-site",
         root: packageRoot,
         packageRoot,
+        kit,
       }),
     );
     return;
@@ -120,5 +128,6 @@ async function isMain() {
   }
 }
 if (await isMain()) {
-  await runFullBuild();
+  const { values } = parseArgs({ options: { kit: { type: "string" } } });
+  await runFullBuild(process.cwd(), values);
 }

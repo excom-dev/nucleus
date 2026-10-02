@@ -1,4 +1,4 @@
-import { readdir, writeFile } from "node:fs/promises";
+import { readdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const isJs = (file) => file.endsWith(".js");
@@ -44,6 +44,28 @@ const conditionsFor = (file, dtsFiles) => {
   };
 };
 
+/**
+ * Files at the package root that `files` in package.json publishes besides
+ * `dist/` (nucleus-test's `chrome.mjs`): without an export of their own, an
+ * `exports` map hides them. Directories, globs and missing files are skipped.
+ */
+const rootFilesOf = async (packageRoot) => {
+  const { files = [] } = await readFile(
+    path.resolve(packageRoot, "package.json"),
+    "utf8",
+  ).then(JSON.parse, () => ({}));
+  const names = files
+    .map((entry) => entry.replace(/^\.\//, ""))
+    .filter((name) => !/[/\\*?[{]/.test(name));
+  const isFile = (name) =>
+    stat(path.resolve(packageRoot, name)).then(
+      (found) => found.isFile(),
+      () => false,
+    );
+  const found = await Promise.all(names.map(isFile));
+  return names.filter((_, index) => found[index]);
+};
+
 export async function buildExports(packageRoot = process.cwd()) {
   const dist = path.resolve(packageRoot, "dist");
   const out = path.resolve(packageRoot, "dist/exports.generated.json");
@@ -79,6 +101,24 @@ export async function buildExports(packageRoot = process.cwd()) {
     if (file === "index.js") {
       exportsMap["."] = { ...conditions };
     }
+  }
+
+  // an ESM entry built only minified (`<name>.progressive.min.js`) is its plain
+  // name too, so `import "<pkg>/<name>"` resolves; a UMD is no entry of its own
+  for (const file of files.filter(
+    (file) => file.endsWith(".min.js") && !isUmd(file) && !files.includes(file.replace(/\.min\.js$/, ".js")),
+  )) {
+    const name = file.replace(/\.min\.js$/, "");
+    for (const key of [`./${name}`, `./dist/${name}`, `./${name}.js`, `./dist/${name}.js`])
+      exportsMap[key] ??= conditionsFor(file, dtsFiles);
+  }
+
+  // a root file is exported as itself, under its own name; `dist/` keys win
+  for (const file of await rootFilesOf(packageRoot)) {
+    const target = `./${file}`;
+    exportsMap[target] ??= /\.m?js$/.test(file)
+      ? { import: target, default: target }
+      : { default: target };
   }
 
   const sorted = Object.fromEntries(

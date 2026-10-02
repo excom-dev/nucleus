@@ -2,9 +2,11 @@ import { Window } from "happy-dom";
 import { describe, expect, it, vi } from "@excom/heft-rig/node_modules/vitest";
 import {
   createDom,
+  ignoreStrayMarkup,
   installCommandShim,
   installMissingApis,
   installShims,
+  keepEventPaths,
   keepFormParents,
   pinMutationObservers,
   supportSelectors,
@@ -29,6 +31,7 @@ const patchedFunctions = (win: DomWindow | typeof globalThis) => [
   win.MutationObserver.prototype.observe,
   win.MutationObserver.prototype.disconnect,
   win.Element.prototype.checkVisibility,
+  win.Event.prototype.composedPath,
   win.document.importNode,
   win.customElements.define,
   internalMethod(win.Node.prototype, "connectedToNode"),
@@ -153,6 +156,8 @@ describe("installShims", () => {
       upgradeClones,
       keepFormParents,
       supportTableTemplates,
+      ignoreStrayMarkup,
+      keepEventPaths,
     ]) {
       install(window);
     }

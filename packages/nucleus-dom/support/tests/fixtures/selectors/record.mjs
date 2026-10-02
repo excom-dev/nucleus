@@ -7,10 +7,11 @@
 // cases.json runs against index.html and cases2.json against index2.html (answers in chrome.json and
 // chrome2.json); each dynamic.json case runs in a fresh container on blank.html (chrome-dynamic.json).
 // It needs Google Chrome (or CHROME) and cannot run in a sandbox. The owner approves every run, as for
-// the wrenfield suite (whose Chrome harness this reuses).
+// the wrenfield suite (both run on nucleus-test's chrome.mjs).
+// Imported by path, not as @excom/nucleus-test: that package depends on nucleus-dom, so the reverse is a cycle.
+import { open, serve } from "../../../../../nucleus-test/chrome.mjs";
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { open, serve } from "../../../../../wrenfield/support/tests/browser/shot.mjs";
 
 const here = fileURLToPath(new URL(".", import.meta.url));
 const read = (file) => JSON.parse(readFileSync(`${here}${file}`, "utf8"));

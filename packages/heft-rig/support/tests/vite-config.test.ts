@@ -33,7 +33,6 @@ afterAll(async () => {
 });
 
 afterEach(() => {
-  delete process.env.DOCS_SITE_BASE;
   vi.unstubAllEnvs();
 });
 
@@ -440,45 +439,30 @@ describe("createRigViteConfig", () => {
   });
 
   describe("build-site", () => {
-    it("adds sandbox.html and the quark modules as stable inputs", async () => {
+    it("is the site build, with the rig's chunk warning and Rolldown checks", async () => {
       const config = await createRigViteConfig({ mode: "build-site", root: ws.site });
-      expect(config.base).toBe("/");
       expect(config.publicDir).toBe(path.join(ws.site, "public"));
-      expect(names(config.plugins as unknown[])).toEqual(["sandbox-html-rewrite", "site-service-worker"]);
+      expect(names(config.plugins as unknown[])).toEqual(["nucleus-modules", "nucleus-service-worker"]);
       const build = config.build!;
-      expect(build.outDir).toBe(path.join(ws.site, "dist"));
-      expect(build.emptyOutDir).toBe(true);
-      expect(build.chunkSizeWarningLimit).toBe(2000);
-      expect(build.rolldownOptions!.preserveEntrySignatures).toBe("exports-only");
+      expect([build.outDir, build.emptyOutDir, build.chunkSizeWarningLimit]).toEqual([path.join(ws.site, "dist"), true, 2000]);
+      expect(build.rolldownOptions!.checks).toEqual({ pluginTimings: false });
       expect(build.rolldownOptions!.input).toEqual({
-        main: path.join(ws.site, "index.html"),
+        index: path.join(ws.site, "index.html"),
         sandbox: path.join(ws.site, "sandbox.html"),
         shell: path.join(ws.site, "shell.ts"),
         "demo-utils": path.join(ws.site, "public/demo-utils.ts"),
       });
-      const output = build.rolldownOptions!.output as {
-        entryFileNames: (c: { name: string }) => string;
-        chunkFileNames: string;
-        assetFileNames: string;
-      };
-      expect(output.entryFileNames({ name: "shell" })).toBe("[name].js");
-      expect(output.entryFileNames({ name: "demo-utils" })).toBe("[name].js");
-      expect(output.entryFileNames({ name: "main" })).toBe("assets/[name]-[hash].js");
-      expect(output.chunkFileNames).toBe("assets/[name]-[hash].js");
-      expect(output.assetFileNames).toBe("assets/[name]-[hash][extname]");
       // Site builds bundle their dependencies: no externals were read.
       expect(build.rolldownOptions!.external).toBeUndefined();
     });
 
-    it("omits sandbox.html when the site has none and honours DOCS_SITE_BASE", async () => {
-      process.env.DOCS_SITE_BASE = "/docs/";
-      const config = await createRigViteConfig({ mode: "build-site", root: ws.lib, packageRoot: ws.lib });
-      expect(config.base).toBe("/docs/");
-      expect(config.build!.rolldownOptions!.input).toEqual({
-        main: path.join(ws.lib, "index.html"),
-        shell: path.join(ws.lib, "shell.ts"),
-        "demo-utils": path.join(ws.lib, "public/demo-utils.ts"),
+    it("passes the kit switch to the site build", async () => {
+      await writeTree(ws.site, {
+        "node_modules/@excom/nucleus-kit/package.json": JSON.stringify({ version: "1.2.3" }),
       });
+      const config = await createRigViteConfig({ mode: "build-site", root: ws.site, kit: "unpkg" });
+      expect(names(config.plugins as unknown[])[0]).toBe("nucleus-kit");
+      await expect(createRigViteConfig({ mode: "build-site", root: ws.site, kit: "x" as never })).rejects.toThrow('kit "x"');
     });
   });
 
@@ -487,10 +471,10 @@ describe("createRigViteConfig", () => {
       const config = await createRigViteConfig({ mode: "dev", root: ws.site });
       expect(config.server).toMatchObject({ port: 3001, host: true, watch: { usePolling: true } });
       expect(names(config.plugins as unknown[])).toEqual([
-        "dev-server-compress",
-        "quark-module-extensionless",
-        "sandbox-html-rewrite",
-        "site-service-worker",
+        "nucleus-compress",
+        "nucleus-rewrites",
+        "nucleus-modules",
+        "nucleus-service-worker",
         "serve-workspace-packages",
         "serve-demo-html",
         "strip-vite-client-from-subtemplates",
@@ -537,13 +521,13 @@ describe("createRigViteConfig", () => {
       }
     });
 
-    it("skips the service-worker and workspace plugins without a package root or rush root", async () => {
+    it("skips the workspace plugin without a rush root (the worker plugin does nothing without a worker)", async () => {
       const config = await createRigViteConfig({ mode: "dev", root: ws.orphan });
       expect(names(config.plugins as unknown[])).toEqual([
-        "dev-server-compress",
-        "quark-module-extensionless",
-        "sandbox-html-rewrite",
-        "site-service-worker",
+        "nucleus-compress",
+        "nucleus-rewrites",
+        "nucleus-modules",
+        "nucleus-service-worker",
         "serve-demo-html",
         "strip-vite-client-from-subtemplates",
       ]);
@@ -551,39 +535,33 @@ describe("createRigViteConfig", () => {
   });
 
   describe("dev-site", () => {
-    it("serves the package root with public/ and the site plugins", async () => {
-      process.env.DOCS_SITE_BASE = "/base/";
+    it("serves the package root with public/, the site plugins and the workspace files", async () => {
       const config = await createRigViteConfig({ mode: "dev-site", root: ws.site, packageRoot: ws.site });
-      expect(config.base).toBe("/base/");
+      expect(config.base).toBeUndefined();
       expect(config.publicDir).toBe(path.join(ws.site, "public"));
       expect(config.css).toBeDefined();
       expect(config.server).toMatchObject({ port: 3001, host: true });
       expect(names(config.plugins as unknown[])).toEqual([
-        "dev-server-compress",
-        "quark-module-extensionless",
-        "sandbox-html-rewrite",
-        "site-service-worker",
+        "nucleus-compress",
+        "nucleus-rewrites",
+        "nucleus-modules",
+        "nucleus-service-worker",
         "serve-workspace-packages",
       ]);
     });
 
-    it("defaults the base to /", async () => {
+    it("has no workspace files outside a rush workspace", async () => {
       const config = await createRigViteConfig({ mode: "dev-site", root: ws.orphan });
-      expect(config.base).toBe("/");
       expect(names(config.plugins as unknown[])).not.toContain("serve-workspace-packages");
     });
   });
 
   describe("preview", () => {
-    it("serves dist with compression, the module rewrite and the Pages rules", async () => {
+    it("serves dist as the host does, on 4173", async () => {
       const config = await createRigViteConfig({ mode: "preview", root: ws.site });
       expect(config.build).toEqual({ outDir: path.join(ws.site, "dist") });
       expect(config.preview).toEqual({ port: 4173, host: true });
-      expect(names(config.plugins as unknown[])).toEqual([
-        "dev-server-compress",
-        "quark-module-extensionless",
-        "pages-rules",
-      ]);
+      expect(names(config.plugins as unknown[])).toEqual(["nucleus-compress", "nucleus-host"]);
     });
   });
 });

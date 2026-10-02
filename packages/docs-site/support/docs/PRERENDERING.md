@@ -4,7 +4,7 @@ Render every route to static HTML when the site is built. The browser takes each
 
 ## Setup
 
-[nucleus-ssr](/nucleus/packages/nucleus-ssr) renders the built site in Node: a build script names the routes, an entry module loads the app. Its page has the working example, the options and what fails a page. The app itself stays as it is: the same HTML, sheets, views and kit `<script>`. Prerender after every fresh build: a shell an earlier prerender wrote is refused.
+[nucleus-ssr](/nucleus/packages/nucleus-ssr) renders the built site in Node: a config module names the routes, an entry module loads the app. Build the site with [vite-plugin-nucleus](/nucleus/packages/vite-plugin-nucleus), then run `npx nucleus-ssr prerender.config.js`: it prerenders every route, reports each page and fails on a broken internal link. The nucleus-ssr page has the working example, the options and what fails a page. The app itself stays as it is: the same HTML, sheets, views and kit `<script>`. Prerender after every fresh build: a shell an earlier prerender wrote is refused.
 
 ## How it fits
 
@@ -23,7 +23,7 @@ A prerendered page is static HTML plus the data it was built from, in a JSON `<s
 - **Loaded state** (`is-success` / `did-load`) is dropped and set again within one task as an element loads: content gated on it never flashes, and a MutationObserver sees one removal and one re-add.
 - **Sheets** find what they would paint already there; `iterate()` adopts the prerendered rows.
 - **`spa-manager`** runs its first update without a View Transition or `transition-delay` and leaves scroll to the browser; a reload gets its saved position back.
-- **What the prerender left out** happens now, as on any page load: elements that read the device or the person, `shadow` / `iframe` render hosts, `pre-fetch="idle"` fetches, anything behind a long timer (`@delay 3000`). An element whose data was kept out of the page arrives not loaded, its rendered content in place, and fetches as on a cold load.
+- **What the prerender left out** happens now, as on any page load: elements that read the device or the person, [`no-ssr` regions](#md-keeping-elements-out), `shadow` / `iframe` render hosts, `pre-fetch="idle"` fetches, anything behind a long timer (`@delay 3000`). An element whose data was kept out of the page arrives not loaded, its rendered content in place, and fetches as on a cold load.
 
 Hydration ends once nothing holds it: kit requests, sheets and `@use` modules still loading, the first `spa-manager` update. From then on the page is an ordinary one. It lasts 10 s at most, and a console warning says when that limit ended it.
 
@@ -47,25 +47,39 @@ provider-fetch {
 
 Four smaller things:
 
-- Two rules that set the same property on one element both write, in order, and for `content:` the first write replaces the prerendered node. One matching rule per element and property, as in the first two rules above, keeps it.
+- Of two rules that set the same attribute, or text `content:`, on one element in one pass, only the later writes: a prerendered text node that already shows it is kept. `iterate()`, `template()`, `dangerous-html()` and `none` content is still written rule by rule, so one matching rule per element keeps the prerendered nodes.
 - `iterate()` adopts prerendered rows by key: the key property's value, else a hash of the item, compared as text. A row whose key the browser does not find renders again.
 - `template()` and `dangerous-html()` content is kept when its source is unchanged, replaced otherwise.
 - A `$binding` not written yet, its sheet still loading a `@use` module, keeps what is painted until it is bound; once hydration ends, an unbound name is `undefined` again.
+
+## Keeping elements out
+
+What should not render at build time mounts in the browser instead, as on a cold load.
+
+**`no-ssr` keeps a region out.** No Neutron element on or inside an element with the attribute mounts in the prerender, Nucleus Kit elements included. Use it for one place in a page, such as a live demo or a `lazy-load` view that should stay lazy:
+
+```html
+<include-content no-ssr lazy-load template-ref="/views/map/map.html"></include-content>
+```
+
+A sheet may write it too, on the element itself and first in the rule that activates it. An element that had already loaded or rendered when `no-ssr` reached it fails the page.
+
+**`ssr: false` keeps a tag out.** `Neutron({ tag, props, ssr: false })` keeps every instance of your own element out, wherever it is written and without an attribute: for an element whose code reads the device or the person. Only the tag's own instances stay out; what they hold prerenders as usual.
 
 ## Your own elements
 
 Compose `fetchable-element` / `renderable-element` and an element hydrates like the kit's own, with nothing to add. An element that calls `fetch()` and replaces its own content still works on a prerendered page: it fetches and renders again. To keep the prerendered result instead, use these from `@excom/kit-utils`:
 
-- `fetchRecord(url, init)` in place of `fetch()`. It resolves the response as plain data (`ok`, `status`, `headers`, `body` as text). The prerender records a successful one, and in the browser the page answers as many identical GET / HEAD requests as the prerender made. A request that must be fresh or private always reaches the network: any other method, another origin, a `Request` object, `cache: "no-store"` / `"no-cache"` / `"reload"`, an `Authorization`, `Range` or `Cache-Control` header.
+- `fetchRecord(url, init)` in place of `fetch()`. It resolves the response as plain data (`ok`, `status`, `headers`, `body` as text). The prerender records a successful one, and in the browser the page answers, while it hydrates, as many identical GET / HEAD requests as the prerender made. A request that must be fresh or private always reaches the network: any other method, another origin, a `Request` object, `cache: "no-store"` / `"no-cache"` / `"reload"`, an `Authorization`, `Range` or `Cache-Control` header.
 - `replaceNonTemplateChildren(host, nodes, { identity })` to render. `identity` names the source: `templateIdentity(ref, { scope })` or `htmlIdentity(html)`. Where `host` still holds what the prerender rendered from that source, its nodes stay (yours are not inserted) and the call returns `"adopted"`.
 - `holdHydration(promise)` keeps the page hydrating until other start-up work settles, `whenHydrated()` resolves once hydration is over, and `isServerRender()` is `true` during a prerender.
 
-A `provision` of plain data (what JSON carries) is restored from the page before the element mounts; any other is derived again in the browser. When the response it came from stayed out of the page, the element is written not loaded (no `is-success` / `did-load`) and fetches again. An element that reads the device or the person must stay undefined in the prerender: the entry does not load it, and `excludedTags` has the renderer check. A `<script>` an element inserts as HTML never runs in the browser, but does once it sits in a prerendered file: insert none. The attributes the prerender writes for itself (`n-ssr`, `n-tpl`, `n-tpl-id`, `n-inert`, `q-key`) are never written or selected on by hand.
+A `provision` of plain data (what JSON carries) is restored from the page before the element mounts; any other is derived again in the browser. When the response it came from stayed out of the page, the element is written not loaded (no `is-success` / `did-load`) and fetches again. An element that reads the device or the person is defined with `ssr: false`, or stays undefined in the prerender: the entry does not load it, and `excludedTags` has the renderer check. A `<script>` an element inserts as HTML never runs in the browser, but does once it sits in a prerendered file: insert none. The attributes the prerender writes for itself (`n-ssr`, `n-tpl`, `n-tpl-id`, `n-inert`, `q-key`) are never written or selected on by hand.
 
 ## Static hosting
 
 - **Slashless files.** `/docs/intro` is written to `docs/intro.html` and `/` to `index.html`. The host must serve `/docs/intro` from that file: many static hosts do, some need a rewrite rule.
-- **A real 404.** Prerender the not-found route to `404.html`. Once `/` is prerendered, `index.html` is the home page: a host that falls back to it would answer every unknown URL with the home page and a 200. With a `404.html`, every route needs its file.
+- **A real 404.** Prerender the not-found route to `404.html`. Once `/` is prerendered, `index.html` is the home page: a host that falls back to it would answer every unknown URL with the home page and a 200. With a `404.html`, every route needs its file: a route that depends on the person (a bag, an account) is written as the untouched shell, through [`shellRoutes`](/nucleus/packages/nucleus-ssr#md-options), and renders in the browser.
 - **A file served for another URL** still works: the content of a route the URL does not match is removed, and the matching route renders.
 - **Script loading.** Load the kit as a module or deferred script, so the page paints before the kit runs. A classic script works too: elements mount once the document is parsed.
 - **Public files.** Nothing a per-person response returned may be in a prerendered page. nucleus-ssr fails a page built from a response marked private.
@@ -73,6 +87,6 @@ A `provision` of plain data (what JSON carries) is restored from the page before
 ## Limits
 
 - **Build time only.** No per-request rendering: what only a request knows (the person, a cookie) renders in the browser.
-- **One page at a time.** One renderer per process, no worker pool yet.
-- **happy-dom, not a browser.** The prerender has no layout: every observed element counts as in view, so `lazy-load` views are in the page, and `matchMedia()` answers for one viewport. Where the browser derives something else, it writes it. Markup a browser would parse into other elements [fails the prerender](/nucleus/packages/nucleus-ssr#md-failures): most often block content rendered into an element that sits in a `<p>`, or rows rendered straight into a `<table>` (write the `<tbody>`). The [hydration test](/nucleus/packages/nucleus-ssr#md-test-hydration) runs on happy-dom too, so it cannot show what only a real browser does.
+- **One renderer per process.** Pages render one at a time, or in a pool of worker processes; a cache writes a page again without rendering it while its shell and requests answer as in the last build. Both are [nucleus-ssr options](/nucleus/packages/nucleus-ssr#md-workers-cache).
+- **happy-dom, not a browser.** The prerender has no layout: every observed element counts as in view, so `lazy-load` views are in the page unless `no-ssr` keeps them out, and `matchMedia()` answers for one viewport. Where the browser derives something else, it writes it. Markup a browser would parse into other elements [fails the prerender](/nucleus/packages/nucleus-ssr#md-failures): most often block content rendered into an element that sits in a `<p>`, or rows rendered straight into a `<table>` (write the `<tbody>`). The [hydration test](/nucleus/packages/nucleus-ssr#md-test-hydration) runs on happy-dom too, so it cannot show what only a real browser does.
 - **Time and randomness.** A page that depends on them differs between builds, and from what the browser derives.

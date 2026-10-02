@@ -41,6 +41,8 @@ build.
 <script type="module" src="/node_modules/@excom/nucleus-kit/nucleus-kit.progressive.min.js"></script>
 ```
 
+With a bundler, `import "@excom/nucleus-kit/nucleus-kit.progressive";` loads the same entry.
+
 Trade-offs: elements upgrade one network round-trip later (style the
 pre-upgrade state with `:not(:defined)`), it is ES modules only, and elements
 inside a shadow root need `observeElements(shadowRoot)` from the same module.

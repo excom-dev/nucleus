@@ -9,6 +9,7 @@ exports[`timer-app view > writes duration from the slider and reset reloads the 
   "listenerRuns": 1,
   "matches": 1,
   "parentElement": 2,
+  "parentNode": 0,
   "quarkRuns": 2,
   "queryScopeCost": 10,
   "querySelectorAll": 1,

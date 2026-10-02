@@ -230,6 +230,16 @@ describe("verifyPublishOutputs", () => {
       expect(problems).toEqual([]);
     });
 
+    it("reads no path out of a comment", async () => {
+      const problems = await run(
+        "dts-comments",
+        withDeclarations({
+          "index.d.ts": `/**\n * An example: \`() => import("./your-entry.js")\`.\n */\nexport declare const a: 1; // from './nowhere'\n`,
+        }),
+      );
+      expect(problems).toEqual([]);
+    });
+
     it("names the package and the first dangling path", async () => {
       const problems = await run(
         "dts-dangling",

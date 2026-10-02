@@ -611,6 +611,7 @@ describe("hydrate()", () => {
         ],
         // all in one task: `data-flip` came back before a paint could show it
         flashes: [],
+        keptOut: [],
         requests: [
           { method: "GET", url: `${ORIGIN}/site.css`, status: 200 },
           { method: "GET", url: `${ORIGIN}/missing.json`, status: 404 },
@@ -805,8 +806,128 @@ describe("hydrate()", () => {
     }
   });
 
+  it("leaves out what a no-ssr region changes, and an ssr: false element's own attributes only, naming both", async () => {
+    const page = openWindow();
+    try {
+      class Demo extends HTMLElement {
+        connectedCallback() {
+          document.addEventListener(
+            "DOMContentLoaded",
+            () => {
+              (this.firstChild as Text).data = "client";
+              this.setAttribute("data-state", "client");
+              this.querySelector("i")!.replaceWith(document.createElement("b"));
+              // back a task later
+              this.removeAttribute("data-blink");
+              setTimeout(() => this.setAttribute("data-blink", ""), 0);
+            },
+            { once: true }
+          );
+        }
+      }
+      customElements.define("x-demo", Demo);
+      // a Neutron tag with `ssr: false`, as its `getConfig()` gives it
+      customElements.define(
+        "x-self",
+        class extends Demo {
+          static getConfig() {
+            return { ssr: false };
+          }
+        }
+      );
+      const demo = (id: string, tag = "x-demo", inner = "") =>
+        `<${tag} id="${id}" data-state="server" data-blink="">server<i></i>${inner}</${tag}>`;
+      const report = await hydrate(
+        page.window,
+        prerendered(
+          `<section id="demos" no-ssr>${demo("in")}<p no-ssr></p>${demo("in-self", "x-self")}</section>${demo("out")}${demo("self", "x-self", demo("child"))}`
+        )
+      );
+      const SELF = "body > x-self#self";
+      const CHILD = `${SELF} > x-demo#child`;
+      expect(report).toMatchObject({
+        keptOut: ["body > section#demos", SELF],
+        // nothing of the region; of the ssr: false element, its nodes and text
+        removed: ["body > x-demo#out > i", `${CHILD} > i`, `${SELF} > i`],
+        added: ["body > x-demo#out > b", `${CHILD} > b`, `${SELF} > b`],
+        attributes: [
+          {
+            element: "body > x-demo#out",
+            name: "data-state",
+            server: "server",
+            final: "client",
+          },
+          { element: CHILD, name: "data-state", server: "server", final: "client" },
+        ],
+        rewrites: [
+          { element: "body > x-demo#out", name: "data-blink", value: "", writes: 2 },
+          { element: CHILD, name: "data-blink", value: "", writes: 2 },
+        ],
+        texts: [
+          { node: 'body > x-demo#out > "client"', server: "server", final: "client" },
+          { node: `${CHILD} > "client"`, server: "server", final: "client" },
+          { node: `${SELF} > "client"`, server: "server", final: "client" },
+        ],
+        flashes: [
+          "body > x-demo#out without [data-blink]",
+          `${CHILD} without [data-blink]`,
+        ],
+      });
+    } finally {
+      await page.close();
+    }
+  });
+
+  it("reports what happens outside a no-ssr region: its root removed or replaced, a node moved out of it", async () => {
+    const page = openWindow();
+    try {
+      customElements.define(
+        "x-portal",
+        class extends HTMLElement {
+          connectedCallback() {
+            document.addEventListener(
+              "DOMContentLoaded",
+              () => {
+                document.getElementById("gone")!.remove();
+                document.getElementById("swapped")!.replaceWith(document.createElement("aside"));
+                // the region's own: changed, then detached within the task
+                const scratch = document.querySelector("#portal > span")!;
+                scratch.append(document.createElement("i"));
+                scratch.remove();
+                // moved out of the region, then changed
+                const moved = document.getElementById("moved")!;
+                document.body.append(moved);
+                moved.append(document.createElement("b"));
+              },
+              { once: true }
+            );
+          }
+        }
+      );
+      const report = await hydrate(
+        page.window,
+        prerendered(
+          `<section id="gone" no-ssr><p></p></section><section id="swapped" no-ssr><p></p></section><section id="portal" no-ssr><p id="moved"></p><span></span></section><x-portal></x-portal>`
+        )
+      );
+      expect(report).toMatchObject({
+        keptOut: ["body > section#gone", "body > section#swapped", "body > section#portal"],
+        removed: ["body > section#gone", "body > section#swapped"],
+        added: ["body > aside", "body > p#moved", "body > p#moved > b"],
+      });
+    } finally {
+      await page.close();
+    }
+  });
+
   it("runs each 0 ms timeout in its own task, as browsers do; splitTimeouts: false runs happy-dom's way", async () => {
     const page = openWindow();
+    // as Vitest does around each RPC (a module fetch, a task update): an
+    // assignment to the global must neither hide the patch nor keep it
+    const saveAndRestore = () => {
+      const saved = globalThis.setTimeout;
+      globalThis.setTimeout = saved;
+    };
     try {
       customElements.define(
         "x-tick",
@@ -815,6 +936,7 @@ describe("hydrate()", () => {
             document.addEventListener(
               "DOMContentLoaded",
               () => {
+                saveAndRestore();
                 setTimeout(() => this.removeAttribute("data-state"), 0);
                 setTimeout(() => this.setAttribute("data-state", ""), 0);
               },
@@ -825,6 +947,7 @@ describe("hydrate()", () => {
       );
       const html = prerendered(`<x-tick id="t" data-state=""></x-tick>`);
       const ownTimeout = page.window.setTimeout;
+      saveAndRestore();
       expect((await hydrate(page.window, html)).flashes).toEqual([
         "body > x-tick#t without [data-state]",
       ]);

@@ -9,6 +9,7 @@ exports[`live-app view > renders one editor per file, saves edits, reloads the p
   "listenerRuns": 0,
   "matches": 208,
   "parentElement": 159,
+  "parentNode": 0,
   "quarkRuns": 2,
   "queryScopeCost": 266,
   "querySelectorAll": 55,

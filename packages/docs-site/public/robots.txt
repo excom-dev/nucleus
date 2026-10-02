@@ -1,3 +1,9 @@
+# Plain-text documentation, as markdown:
+#   /llms.txt         index of every guide and package page
+#   /llms-full.txt    all docs in one file
+#   /docs/<page>.md   one guide
+#   /<package>.md     one package page
+
 User-agent: *
 Allow: /
 

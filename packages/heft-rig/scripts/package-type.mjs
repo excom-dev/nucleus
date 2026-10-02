@@ -32,10 +32,13 @@ export async function isSitePackage(packageRoot) {
   return (await getPackageType(packageRoot)) === "site";
 }
 
+/** Package types built, served and previewed by the site build (`@excom/vite-plugin-nucleus`). */
+const SITE_BUILD_TYPES = ["site", "app"];
+
 /**
  * @param {string} packageRoot
  * @returns {Promise<boolean>}
  */
-export async function isAppPackage(packageRoot) {
-  return (await getPackageType(packageRoot)) === "app";
+export async function usesSiteBuild(packageRoot) {
+  return SITE_BUILD_TYPES.includes(await getPackageType(packageRoot));
 }

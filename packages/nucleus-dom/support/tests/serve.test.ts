@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { chmodSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -40,6 +41,7 @@ const served = (options?: ServeOptions, servedRoot: string | URL = root) => {
   return { ...dom, ...serve(dom.window, servedRoot, options) };
 };
 const read = async (response: Response) => [response.status, response.headers.get("content-type"), await response.text()];
+const sha256 = (body: string) => createHash("sha256").update(body).digest("hex");
 const consoleOf = (window: DomWindow) => (window as unknown as Window).happyDOM.virtualConsolePrinter.readAsString();
 
 describe("serve", () => {
@@ -52,7 +54,9 @@ describe("serve", () => {
     await whenIdle(window);
     expect(document.querySelector("link")!.sheet!.cssRules).toHaveLength(1);
     expect(window.getComputedStyle(document.querySelector("p")!).color).toBe("red");
-    expect(requests).toEqual([{ method: "GET", url: `${ORIGIN}/x.css`, status: 200 }]);
+    expect(requests).toEqual([
+      { method: "GET", url: `${ORIGIN}/x.css`, status: 200, digest: sha256("p { color: red; }") },
+    ]);
     await dispose();
   });
 
@@ -131,7 +135,44 @@ describe("serve", () => {
       "text/html",
       expect.stringContaining("404 Not Found"),
     ]);
-    expect(requests.at(-1)!.status).toBe(404);
+    expect(requests.at(-1)).toEqual({ method: "GET", url: `${ORIGIN}/locked.json`, status: 404 });
+    await dispose();
+  });
+
+  it("logs the digest of each body a request got, the same again; none without an answer", async () => {
+    const api = async (request: Request) => {
+      if (request.url.endsWith("/api/me")) return Response.json({ me: 1 });
+      if (!request.url.endsWith("/api/read")) return null;
+      const read = new window.Response("read");
+      await read.text();
+      return read;
+    };
+    const { window, requests, dispose } = served({ api, fallback: "index.html" });
+    const sync = (url: string) => {
+      const xhr = new window.XMLHttpRequest();
+      xhr.open("GET", url, false);
+      xhr.send();
+    };
+    for (const path of ["/data.json", "/data.json", "/shop/tables", "/img/missing.png", "/api/me", "/api/read"])
+      await window.fetch(path);
+    await window.fetch("/data.json", { method: "HEAD" });
+    sync("/data.json");
+    sync("/views/missing.html");
+    await expect(window.fetch("https://cdn.test/lib.js")).rejects.toThrow(TypeError);
+    expect(requests.map(({ status, digest }) => [status, digest])).toEqual([
+      [200, sha256('{"n":1}')],
+      [200, sha256('{"n":1}')],
+      [200, sha256("<p>shell</p>")],
+      [404, sha256("Not found: /img/missing.png")],
+      [200, sha256('{"me":1}')],
+      // a body the handler used up: the page reads none either
+      [200, undefined],
+      [200, sha256("")],
+      [200, sha256('{"n":1}')],
+      [404, sha256("Not found: /views/missing.html")],
+      [0, undefined],
+    ]);
+    expect(requests.at(-1)).not.toHaveProperty("digest");
     await dispose();
   });
 
@@ -227,7 +268,9 @@ describe("serve", () => {
     const { requests } = serve(globalThis, root);
     try {
       expect(await (await fetch("/data.json")).json()).toEqual({ n: 1 });
-      expect(requests).toEqual([{ method: "GET", url: `${location.origin}/data.json`, status: 200 }]);
+      expect(requests).toEqual([
+        { method: "GET", url: `${location.origin}/data.json`, status: 200, digest: sha256('{"n":1}') },
+      ]);
     } finally {
       Object.assign(settings.fetch, { interceptor: null, virtualServers: null });
     }

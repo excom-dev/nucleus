@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/quark-formatter",
+      "comment": "Update the README's code samples to fenced blocks",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/quark-formatter"
+}

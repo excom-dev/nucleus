@@ -6,7 +6,9 @@
  * task, avoiding extra reflows and observer trips. Priority 0 (high): add
  * DOM nodes. Priority 1 (low): set attrs. Needed because setting an attr
  * on a custom element can trigger a query; if that runs before children
- * are inserted, the query misses them.
+ * are inserted, the query misses them. Keyed paints (an attribute, a
+ * `class` string, text `content`): of a commit's paints of one element and
+ * key, only the last writes; the others keep their turn, without the write.
  *
  * View transitions (`@view-transition`): a paint may carry a
  * `PaintTransition`. When a commit holds one that changes the document,
@@ -72,8 +74,11 @@ export interface PaintTransition {
 
 /** One queued paint. */
 export interface PaintEntry {
-  /** The paint, inside the loop-guard depth of the run that scheduled it. */
-  run: () => void;
+  /** The paint, run inside `depth`: the loop-guard depth of its run. */
+  run: PaintFn;
+  depth: number;
+  /** The element's `cascade` entry for what it writes (keyed paints). */
+  key?: object;
   transition?: PaintTransition;
   /**
    * Commit-time check for a flagged paint: `false` when committing it
@@ -86,7 +91,11 @@ export const PAINT_QUEUES: [Set<PaintEntry>, Set<PaintEntry>] = [
   new Set(),
   new Set(),
 ];
-// TODO consider making each queue a Map with unique attr keys to prevent duplicate paints
+/** Per queue, its last paint of each key until the queue next commits. */
+const LATEST: [Map<object, PaintEntry>, Map<object, PaintEntry>] = [
+  new Map(),
+  new Map(),
+];
 
 /** Queued paints that carry a transition, in queue order. */
 const flaggedPaints = new Set<PaintEntry>();
@@ -115,13 +124,19 @@ const warnOnce = (key: string, message: string) => {
 
 const enqueue = (entry: PaintEntry, priority: number) => {
   PAINT_QUEUES[priority].add(entry);
+  if (entry.key) {
+    // the earlier paint of the key no longer writes: its transition goes too
+    const replaced = LATEST[priority].get(entry.key);
+    if (replaced) flaggedPaints.delete(replaced);
+    LATEST[priority].set(entry.key, entry);
+  }
   if (entry.transition) flaggedPaints.add(entry);
   reqCommit(paint);
 };
 
-const runEntry = (entry: PaintEntry) => {
+const runEntry = (entry: PaintEntry, isReplaced: boolean) => {
   try {
-    entry.run();
+    LoopGuard.run(entry.depth, isReplaced ? () => entry.run(true) : entry.run);
   } catch (error) {
     QuarkLogger.error({
       method: "paint",
@@ -135,6 +150,9 @@ const runEntry = (entry: PaintEntry) => {
 const drain = () =>
   PAINT_QUEUES.forEach((queue, priority) => {
     const entries = Array.from(queue);
+    // a paint queued from now on is the next commit's
+    const latest = LATEST[priority];
+    if (latest.size) LATEST[priority] = new Map();
     if (entries.length) {
       QuarkLogger.info({
         method: `triggerPaint(${priority})`,
@@ -144,7 +162,7 @@ const drain = () =>
     entries.forEach((entry) => {
       queue.delete(entry);
       if (entry.transition) flaggedPaints.delete(entry);
-      runEntry(entry);
+      runEntry(entry, !!entry.key && latest.get(entry.key) !== entry);
     });
   });
 
@@ -158,14 +176,16 @@ const paint = () => {
 export const schedulePaint = (
   action: PaintFn,
   priority: number = 1,
-  extras?: Pick<PaintEntry, "transition" | "willChange">
+  extras?: Pick<PaintEntry, "transition" | "willChange">,
+  key?: object
 ) => {
   counts.schedulePaint++;
-  // paints commit in a later task: carry the causal depth of the run that
-  // scheduled them so the loop guard sees one continuous chain
-  const depth = LoopGuard.current();
   const entry: PaintEntry = {
-    run: () => LoopGuard.run(depth, action),
+    run: action,
+    // paints commit in a later task: carry the causal depth of the run that
+    // scheduled them so the loop guard sees one continuous chain
+    depth: LoopGuard.current(),
+    key,
     transition: extras?.transition,
     willChange: extras?.willChange,
   };

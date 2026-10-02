@@ -205,6 +205,8 @@ function checkFiles(files) {
 }
 
 const DECLARATION_IMPORT = /(?:from\s*|import\(\s*|import\s+)["'](\.{1,2}\/[^"']+)["']/g;
+// a doc comment may show an import of the reader's own file
+const COMMENT = /\/\*[\s\S]*?\*\/|\/\/.*$/gm;
 
 /** Names the first relative specifier in a `dist` `.d.ts` with no declaration behind it. */
 function checkDeclarations(projectRoot) {
@@ -215,7 +217,7 @@ function checkDeclarations(projectRoot) {
     .sort()
     .flatMap((file) => {
       const dir = path.dirname(path.join(dist, file));
-      const source = readFileSync(path.join(dist, file), "utf8");
+      const source = readFileSync(path.join(dist, file), "utf8").replace(COMMENT, "");
       return [...source.matchAll(DECLARATION_IMPORT)]
         .filter(([, spec]) => !resolvesToDeclaration(dist, dir, spec))
         .map(([, spec]) => ({ file, spec }));

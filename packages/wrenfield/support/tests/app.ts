@@ -1,4 +1,4 @@
-// The app on happy-dom: index.html's body, files served from the package, /api/* through the worker.
+// The app on happy-dom: index.html's body, files served from public/, /api/* through the worker.
 // The whole Nucleus Kit from source: every element defined.
 import { Quark } from "@excom/nucleus-kit";
 import { afterEach, consoleSinks, expect, onTestFinished, readFileRelative, serveStatic, trackComplexity, vi } from "@excom/nucleus-test";
@@ -10,7 +10,7 @@ declare const process: { env: Record<string, string | undefined> } | undefined;
 
 export type Call = [method: string, path: string, body?: unknown];
 
-/** The Chrome suite's viewports; `detect-media` turns them into the layout fact. */
+/** The Chrome suite's viewports: phone and wide layout. */
 export const SIZES = { phone: { width: 390, height: 844 }, desktop: { width: 1280, height: 800 } };
 export const TABLE = { path: "/shop/tables/thorpe-coffee-table", sku: "WF-1014", name: "Thorpe Coffee Table" };
 export const BAG: Call[] = [["POST", "/bag", { sku: TABLE.sku }], ["POST", "/bag", { sku: "WF-1019" }]];
@@ -23,6 +23,9 @@ const { happyDOM } = globalThis as unknown as {
 };
 // happy-dom loads a view's `<link rel=stylesheet>` itself, from the network, past the fetch stand-in.
 Object.assign(happyDOM.settings, { disableCSSFileLoading: true, handleDisabledFileLoadingAsSuccess: true });
+
+// What the host answers for a deep link: `index.html`, above the served `public/`.
+const INDEX_FILE = "../index.html";
 
 // The body only: parsing the head loads its remote stylesheets too.
 const INDEX = new DOMParser().parseFromString(
@@ -53,7 +56,7 @@ export const until = <T>(fn: () => T | Promise<T>): ReturnType<typeof expect.pol
 
 // One stand-in for the whole file: a request that outlives its test (an idle pre-fetch, a late template) gets a file, not the network.
 type Gate = { pattern: RegExp; waiting: number; opened: Promise<void>; release: () => void };
-const page = { serve: serveStatic(ROOT, { fallback: "index.html" }), issues: [] as string[], inflight: 0, gates: [] as Gate[] };
+const page = { serve: serveStatic(ROOT, { fallback: INDEX_FILE }), issues: [] as string[], inflight: 0, gates: [] as Gate[] };
 globalThis.fetch = async (input, init) => {
   page.inflight++;
   try {
@@ -133,20 +136,13 @@ type RouteProvision = { previous: { id: string; url: string } };
 /** The browser's back button: lands on the previous history entry. */
 export const back = () => popstate($<HTMLElement & { provision: RouteProvision }>("spa-manager")!.provision.previous);
 
-// A worker in control, as on every load after the first.
-const stubServiceWorker = () =>
-  Object.defineProperty(navigator, "serviceWorker", {
-    configurable: true,
-    value: Object.assign(new EventTarget(), { controller: {}, ready: Promise.resolve({ scope: `${location.origin}/` }) }),
-  });
-
 const mount = async (url: string) => {
   // the old page's routes leave the router before it restarts
   document.body.innerHTML = "";
   resetRouter(url);
   for (const { name, value } of INDEX.attributes) document.body.setAttribute(name, value);
   document.body.innerHTML = INDEX.innerHTML;
-  await until(() => $("[bind-app][is-active] #me[did-load]")).toBeTruthy();
+  await until(() => $("#me[did-load]")).toBeTruthy();
   await idle();
 };
 
@@ -169,7 +165,7 @@ export const openApp = async (start: string, { setup = [] as Call[], size = SIZE
     }
     return worker.dispatch(request);
   };
-  Object.assign(page, { issues, serve: serveStatic(ROOT, { fallback: "index.html", api }) });
+  Object.assign(page, { issues, serve: serveStatic(ROOT, { fallback: INDEX_FILE, api }) });
   for (const method of ["error", "warn"] as const) {
     vi.spyOn(consoleSinks, method).mockImplementation((...args) => issues.push(`console.${method}: ${args.join(" ")}`));
   }
@@ -180,7 +176,6 @@ export const openApp = async (start: string, { setup = [] as Call[], size = SIZE
     expect(unexpected.filter((issue) => !allow.some((pattern) => pattern.test(issue)))).toEqual([]);
   });
   happyDOM.setViewport(size);
-  stubServiceWorker();
   await mount(start);
   return { worker, reload: mount };
 };
@@ -189,9 +184,8 @@ afterEach(async () => {
   page.gates.forEach(({ release }) => release());
   await idle();
   document.body.innerHTML = "";
-  Object.assign(page, { issues: [], serve: serveStatic(ROOT, { fallback: "index.html" }) });
+  Object.assign(page, { issues: [], serve: serveStatic(ROOT, { fallback: INDEX_FILE }) });
   vi.restoreAllMocks();
-  delete (navigator as { serviceWorker?: unknown }).serviceWorker;
   resetRouter();
 });
 // Counts of this polling-driven app suite vary run to run (up to 2x): snapshots are written only on request,

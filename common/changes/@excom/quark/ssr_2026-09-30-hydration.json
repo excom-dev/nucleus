@@ -2,22 +2,27 @@
   "changes": [
     {
       "packageName": "@excom/quark",
-      "comment": "Sheets hydrate prerendered pages unchanged: `iterate()` rows are adopted by their `q-key`, content painted by `template()` / `dangerous-html()` is kept when its source matches, and a `$binding` nobody has written yet keeps the server's paint until hydration ends",
+      "comment": "Add hydration of prerendered pages: `iterate()` rows are adopted by their `q-key`, content painted by `template()` or `dangerous-html()` is kept when its source matches, and a `$binding` nobody has written yet keeps the server's paint until hydration ends",
       "type": "minor"
     },
     {
       "packageName": "@excom/quark",
-      "comment": "A rule no longer rewrites an attribute whose value already reads the same as text (`data-n: 0` over `data-n=\"0\"`)",
+      "comment": "Improve paints when two rules write the same attribute, `class` string or text `content` of one element in one pass: only the later one writes, so the element never shows the replaced value and a replaced write starts no view transition",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/quark",
+      "comment": "Fix an issue where a rule rewrote an attribute whose value already read the same as text (`data-n: 0` over `data-n=\"0\"`)",
       "type": "patch"
     },
     {
       "packageName": "@excom/quark",
-      "comment": "`Quark.whenSettled({ timeout: Infinity })` waits with no cap (it resolved `\"timeout\"` at once)",
+      "comment": "Fix an issue where `Quark.whenSettled({ timeout: Infinity })` resolved `\"timeout\"` at once: it now waits with no cap",
       "type": "patch"
     },
     {
       "packageName": "@excom/quark",
-      "comment": "A `@warn` / `@error` whose value is a preserve stays silent and reports on a later run that has a value",
+      "comment": "Fix an issue where a `@warn` or `@error` whose value was a preserve reported nothing later: it now stays silent and reports on a later run that has a value",
       "type": "patch"
     }
   ],

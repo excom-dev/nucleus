@@ -1,0 +1,103 @@
+@scope {
+  [bind-hero] {
+    display: grid;
+    gap: 1.5rem;
+    justify-items: start;
+
+    > [aria-hidden] {
+      justify-self: stretch;
+    }
+    hgroup,
+    h1 {
+      margin: 0;
+    }
+    h1 + p {
+      margin-top: 0.75rem;
+      font-size: 1rem;
+    }
+  }
+  [bind-skeleton="hero"] > :nth-child(3) {
+    min-height: 3rem;
+  }
+  [bind-collections] .stage,
+  [bind-skeleton="collections"] > .wf-skeleton > .stage {
+    aspect-ratio: 1;
+  }
+  [bind-rail="antiques"] {
+    margin-inline: calc(var(--wf-gutter) * -1);
+    padding: 3.5rem var(--wf-gutter);
+    background: var(--wf-stage);
+
+    .stage {
+      background: color-mix(in oklab, var(--wf-stage) 40%, var(--wf-paper));
+    }
+  }
+  aside {
+    padding: 2.5rem var(--wf-gutter);
+  }
+
+  @media (width < 768px) {
+    :root & {
+      [bind-hero] .stage,
+      [bind-skeleton="hero"] > .stage {
+        margin: calc((var(--wf-bar) + env(safe-area-inset-top)) * -1) calc(var(--wf-gutter) * -1) 0;
+        border-radius: 0;
+      }
+      [bind-collections],
+      [bind-skeleton="collections"] {
+        --wf-column: 42vw;
+      }
+    }
+  }
+  @media (width >= 768px) {
+    :root & {
+      [bind-hero] {
+        grid-template-columns: 5fr 6fr;
+        gap: 0 var(--wf-gap);
+        align-items: end;
+        margin-top: 2.5rem;
+
+        > [aria-hidden] {
+          grid-area: 1 / 2 / span 2;
+        }
+        .stage {
+          aspect-ratio: 1;
+        }
+        h1 {
+          --v-font-size: clamp(2.5rem, 5.6vw, 4.5rem);
+        }
+        > [role="button"] {
+          align-self: start;
+          margin-top: 2rem;
+        }
+      }
+      [bind-skeleton="hero"] {
+        grid-template-columns: 5fr 6fr;
+        gap: 0.75rem var(--wf-gap);
+        align-items: end;
+        margin-top: 2.5rem;
+
+        > .stage {
+          grid-area: 1 / 2 / span 3;
+          aspect-ratio: 1;
+        }
+      }
+      [bind-collections],
+      [bind-skeleton="collections"] {
+        grid-template-columns: repeat(5, 1fr);
+      }
+      [bind-rail="antiques"] {
+        margin-inline: 0;
+        padding: 4.5rem 3rem;
+        border-radius: 0.85rem;
+      }
+      aside {
+        padding: 3.5rem 3rem;
+
+        p {
+          max-width: 34rem;
+        }
+      }
+    }
+  }
+}

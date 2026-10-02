@@ -277,6 +277,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@excom/vite-plugin-nucleus",
+      "projectFolder": "packages/vite-plugin-nucleus",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@excom/web-authn",
       "projectFolder": "packages/web-authn",
       "shouldPublish": true

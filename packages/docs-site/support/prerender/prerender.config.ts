@@ -8,6 +8,7 @@
  */
 import { SEED } from "../../public/service-worker/todos.js";
 import { SITE_ORIGIN } from "@excom/heft-rig/scripts/build-npm-readmes.mjs";
+import { sitemapRoutes } from "@excom/nucleus-ssr";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -20,19 +21,6 @@ export const NOT_FOUND = "/404";
 
 /** What the service worker answers from client state: `/api/*`, the `/sandbox/*` documents. */
 const CLIENT_STATE = /^\/(api|sandbox)\//;
-
-/** Sitemap URLs as paths; throws when there are none or one is off-site. */
-export const sitemapRoutes = (xml: string, origin = SITE_ORIGIN): string[] => {
-  const urls = Array.from(xml.matchAll(/<loc>([^<]+)<\/loc>/g), ([, loc]) =>
-    loc!.replaceAll("&amp;", "&")
-  );
-  if (!urls.length) throw new Error("prerender: the sitemap lists no URL");
-  return urls.map((url) => {
-    if (!url.startsWith(`${origin}/`))
-      throw new Error(`prerender: ${url} is not on ${origin}`);
-    return url.slice(origin.length);
-  });
-};
 
 /**
  * A URL the service worker answers from client state: its responses stay
@@ -69,7 +57,7 @@ export default (sitemap = readFileSync(join(DIST, "sitemap.xml"), "utf8")) => ({
   root: DIST,
   out: DIST,
   origin: SITE_ORIGIN,
-  routes: sitemapRoutes(sitemap),
+  routes: sitemapRoutes(sitemap, SITE_ORIGIN),
   notFound: NOT_FOUND,
   entry: () => import("./entry"),
   exclude: isClientState,

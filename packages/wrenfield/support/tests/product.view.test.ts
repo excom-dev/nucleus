@@ -22,8 +22,8 @@ describe.each(Object.entries(SIZES))("%s", (_name, size) => {
     const release = hold(/^GET \/api\/products\/thorpe-coffee-table$/);
     push(TABLE.path);
     const page = () => ({
-      skeleton: !!$("#product provider-fetch:not([did-load]) > .wf-skeleton[aria-hidden='true'] > .stage"),
-      piece: !!$("#product provider-fetch[did-load] > data-product"),
+      skeleton: !!$("#product provider-fetch > .wf-skeleton:not([hidden])[aria-hidden='true'] > .stage"),
+      piece: !!$("#product provider-fetch > .wf-skeleton[hidden] ~ data-product"),
       notFound: !!$("#product provider-fetch[is-error]"),
     });
     await until(page).toEqual({ skeleton: true, piece: false, notFound: false });

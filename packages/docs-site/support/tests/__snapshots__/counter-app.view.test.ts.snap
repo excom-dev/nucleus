@@ -9,6 +9,7 @@ exports[`counter-app view > starts at 0 and increments on each click > complexit
   "listenerRuns": 0,
   "matches": 1,
   "parentElement": 1,
+  "parentNode": 0,
   "quarkRuns": 1,
   "queryScopeCost": 1,
   "querySelectorAll": 1,

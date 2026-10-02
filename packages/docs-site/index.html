@@ -71,7 +71,9 @@
       ]
     }
   </script>
-  <!-- Plain-text mirrors of these docs, for agents and other non-JS fetchers. -->
+  <!-- Markdown mirrors of these docs, for agents. Each prerendered page adds a
+       link to its own markdown file (support/prerender/entry.ts), and ends in
+       links to them (the footer of the spa-manager below). -->
   <link rel="alternate" type="text/markdown" href="/llms.txt" title="Documentation index for LLMs">
   <link rel="alternate" type="text/markdown" href="/llms-full.txt" title="Full documentation for LLMs">
   <script type="module">
@@ -177,6 +179,22 @@
         &[route-href$=":docName"] {
           $title-package: list.find($package-indices.packages, "shortName", $route.params.packageName);
           document-title: "#{docTitle($title-package, $route.params.docName)} · #{displayName($route.params.packageName)} · Nucleus · docs";
+        }
+      }
+      /* the page's markdown file, for the footer link: the docs home and each
+         guide the index lists, and a package's page whose index entry says
+         `markdown` (build-docs-index sets it; the dev server's index has none,
+         so no link there). siteDocHref and the path check say which URL is
+         the page's own: the 404 and a package's doc pages have none */
+      > spa-manager[active-url] {
+        $page-path: attr("active-url").split("#").at(0).split("?").at(0);
+        $page-name: if($page-path == SITE_BASE: SITE_HOME_DOC; else: $page-path.split("/").at(-1));
+        $page-guide: list.find($package-indices.docs, "name", $page-name);
+        $page-package: list.find($package-indices.packages, "shortName", $page-name);
+        $page-markdown: if($page-guide and siteDocHref($page-guide.name) == $page-path: "/docs/#{$page-guide.name}.md"; $page-package.markdown and "#{SITE_BASE}/packages/#{$page-package.shortName}" == $page-path: "/#{$page-package.shortName}.md");
+        footer [bind-page-markdown] {
+          href: $page-markdown;
+          content: ternary($page-markdown, "Markdown version of this page");
         }
       }
     }
@@ -534,6 +552,12 @@
         <!-- 404 (and `404.html`). Must stay last: on a cold load `is-fallback` does not see siblings that mount after it -->
         <spa-route route-regex=".*" is-fallback template-ref="/views/not-found/not-found.html"
           document-title="Page not found · Nucleus · docs"></spa-route>
+        <!-- Markdown files, not routes: plain `a`, not `spa-a`. The shell sheet paints the first
+             link per page (only a page with a file has one); the second is on every page. -->
+        <footer>
+          <a bind-page-markdown></a>
+          <a href="/llms.txt">Docs index as markdown</a>
+        </footer>
       </spa-manager>
       <dialog id="search-dialog">
         <include-content template-ref="/views/search-docs/search-docs.html" pre-fetch="idle"

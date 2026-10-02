@@ -31,6 +31,11 @@ export interface ServedRequest {
   method: string;
   url: string;
   status: number;
+  /**
+   * SHA-256 (hex) of the body it got; none without an answer. Tells whether
+   * a URL still answers as it did: a cache of server-rendered pages.
+   */
+  digest?: string;
 }
 
 export interface Served {
@@ -49,6 +54,15 @@ type Reply = {
 };
 /** What `serve` sends: a status and headers, typed after the virtual server read a file. */
 type Answered = { ok: boolean; status: number; headers: Headers };
+
+// loaded at call time, as `./node` loads the other built-ins
+declare const process: {
+  getBuiltinModule(id: "node:crypto"): {
+    createHash(algorithm: "sha256"): {
+      update(data: string | Uint8Array): { digest(encoding: "hex"): string };
+    };
+  };
+};
 
 const TYPES: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -87,6 +101,24 @@ const decode = (segment: string): string | null => {
     return decodeURIComponent(segment);
   } catch {
     return null;
+  }
+};
+
+const digestOf = (body: string | Uint8Array) =>
+  process
+    .getBuiltinModule("node:crypto")
+    .createHash("sha256")
+    .update(body)
+    .digest("hex");
+
+/** The digest of `response`'s body, which stays unread; none for a network error. */
+const digestOfResponse = async (response: Response) => {
+  if (response.type === "error") return undefined;
+  try {
+    return digestOf(new Uint8Array(await response.clone().arrayBuffer()));
+  } catch {
+    // a body the handler already read: the page gets none either
+    return undefined;
   }
 };
 
@@ -196,19 +228,28 @@ export function serve(
   const reply = (window: Win, { body, ...init }: Reply) =>
     new window.Response(body ?? null, init);
   const log = (request: Request) => {
-    const entry = { method: request.method, url: request.url, status: 0 };
+    const entry: ServedRequest = {
+      method: request.method,
+      url: request.url,
+      status: 0,
+    };
     requests.push(entry);
     return entry;
   };
-  /** Leaves `file` to the virtual server; `done` gets the status it answers. */
+  const record = (entry: ServedRequest, status: number, digest?: string) =>
+    Object.assign(entry, { status }, digest && { digest });
+  /** Leaves `file` to the virtual server; `done` gets the status it answers and the file's digest. */
   const pass = (
     request: Request,
     file: string,
-    done: (status: number) => void
+    done: (status: number, digest?: string) => void
   ) =>
     passed.set(request, (answered) => {
       if (answered.ok) answered.headers.set("content-type", typeOf(file));
-      done(answered.status);
+      done(
+        answered.status,
+        answered.ok ? digestOf(readFileSync(file)) : undefined
+      );
     });
   const http = (request: Request) =>
     /^https?:$/.test(new URL(request.url).protocol);
@@ -225,9 +266,9 @@ export function serve(
     // `fetch()` calls are tracked by the window; resource loads here
     const tracked = !!inFlight && !inFlight.has(request);
     if (tracked) inFlight.set(request, `${entry.method} ${entry.url}`);
-    const end = (status = 0) => {
+    const end = (status = 0, digest?: string) => {
       if (tracked) inFlight.delete(request);
-      entry.status = status;
+      record(entry, status, digest);
     };
     const answer = await route(request, window).catch((error: unknown) => {
       window.console.error(error);
@@ -237,7 +278,7 @@ export function serve(
       pass(request, answer, end);
       return undefined;
     }
-    end(answer?.status);
+    end(answer?.status, answer && (await digestOfResponse(answer)));
     if (answer && answer.type !== "error" && !answer.url)
       Object.assign(answer, { url: request.url });
     return answer;
@@ -259,10 +300,10 @@ export function serve(
       );
     const next = local(request.method, url);
     if (typeof next === "string") {
-      pass(request, next, (status) => (entry.status = status));
+      pass(request, next, (status, digest) => record(entry, status, digest));
       return undefined;
     }
-    entry.status = next.status;
+    record(entry, next.status, digestOf(next.body ?? ""));
     return {
       status: next.status,
       statusText: next.statusText ?? "",

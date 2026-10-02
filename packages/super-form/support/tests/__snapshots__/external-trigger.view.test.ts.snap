@@ -9,6 +9,7 @@ exports[`external-trigger view > lists the echo after an outside trigger > compl
   "listenerRuns": 0,
   "matches": 6,
   "parentElement": 14,
+  "parentNode": 0,
   "quarkRuns": 2,
   "queryScopeCost": 88,
   "querySelectorAll": 12,

@@ -53,6 +53,14 @@ export const STAMP_ATTR = "n-tpl";
 export const TEMPLATE_ID_ATTR = "n-tpl-id";
 /** On a `<script>` an html paint inserted during a server render. Inert in a browser at runtime, live once the page is parsed: the prerenderer neutralizes it. */
 export const INERT_ATTR = "n-inert";
+/**
+ * On an element: the Neutron elements in its region (it and what it holds)
+ * stay out of the prerender and mount in the browser only. Write it in the
+ * markup, or first in the rule that activates the element. Methods called
+ * from outside still run on a kept-out element; removing it from an
+ * ancestor does not mount what the ancestor holds.
+ */
+export const NO_SSR_ATTR = "no-ssr";
 
 const DEADLINE_MS = 10_000;
 const UNCACHED = ["no-store", "no-cache", "reload"];

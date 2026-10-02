@@ -199,6 +199,23 @@ body > main > provider-fetch > aside {
   overscroll-behavior-y: contain;
 }
 
+/* Links to the page's markdown file and the docs index (index.html): small and
+   muted, under every page. The first is painted only for a page with a file. */
+body > main > provider-fetch > spa-manager > footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--v-spacing);
+  padding: var(--v-spacing);
+  font-size: 0.75rem;
+  color: var(--v-muted-color);
+  a {
+    color: inherit;
+    &:not([href]) {
+      display: none;
+    }
+  }
+}
+
 /* The company page runs without docs chrome: no nav column, full-width content.
    `.chromeless` is static flavour, `is-active` carries the state. */
 body:has(spa-route.chromeless[is-active]) > main {

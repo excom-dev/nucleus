@@ -2,22 +2,27 @@
   "changes": [
     {
       "packageName": "@excom/nucleus-dom",
-      "comment": "For server rendering and whole-page tests: `serve()`, `whenIdle()`, `resetDocument()`, `installGlobals()`, and the `createDom()` options `viewport` / `holdTimersAbove` / `intersectAll` / `settings`",
+      "comment": "Add server rendering and whole-page test support: `serve()` (each request it answers carries a `digest` of the body), `whenIdle()`, `resetDocument()`, `installGlobals()`, and the `createDom()` options `viewport`, `holdTimersAbove`, `intersectAll` and `settings`",
       "type": "minor"
     },
     {
       "packageName": "@excom/nucleus-dom",
-      "comment": "`supportSelectors` (part of `installShims()`): `matches()`, `closest()` and `querySelector(All)()` answer as Chrome does and never stale: complex selectors inside `:not()` / `:is()` / `:where()` / `:has()`, sibling combinators, structural and form pseudo-classes, `:empty`, `:defined`, attribute flags, escapes. It replaces `scopeQueriesToDocument`, which is gone",
+      "comment": "Add `supportSelectors` (part of `installShims()`): `matches()`, `closest()` and `querySelector(All)()` answer as Chrome does, including complex selectors inside `:not()`, `:is()`, `:where()` and `:has()`, sibling combinators, structural and form pseudo-classes, `:empty`, `:defined`, attribute flags and escapes",
       "type": "minor"
     },
     {
       "packageName": "@excom/nucleus-dom",
-      "comment": "`findParseDifference()`: the first place where a browser's parser builds other elements from markup than happy-dom, or than the document the markup was written from",
+      "comment": "Remove `scopeQueriesToDocument`: `supportSelectors` does its work",
       "type": "minor"
     },
     {
       "packageName": "@excom/nucleus-dom",
-      "comment": "Shims for cloned template content (`upgradeClones`), `<template>` inside tables (`supportTableTemplates`) and the parents of controls attached with a `<form>` / `<select>` (`keepFormParents`); `installMissingApis` adds `DOMException#code`",
+      "comment": "Add `findParseDifference()`, `parseTree()` and `sameTree()`: the tree a browser builds from markup, where happy-dom's tree departs from it, and whether two documents are the same tree",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-dom",
+      "comment": "Add shims for cloned template content (`upgradeClones`), `<template>` inside tables (`supportTableTemplates`), the parents of controls attached with a `<form>` or `<select>` (`keepFormParents`), event paths (`keepEventPaths`) and stray markup (`ignoreStrayMarkup`: a stray end tag no longer closes elements a browser leaves open, and text holding `-->` or `>` is no longer repeated or split); `installMissingApis` adds `DOMException#code`",
       "type": "minor"
     }
   ],

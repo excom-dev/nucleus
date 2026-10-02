@@ -544,7 +544,7 @@ export const GestureHandler = Neutron({
       type: Object as unknown as ConstructorType<Handoff>,
       attr: false,
     },
-    _raf: { type: Object as unknown as ConstructorType<Handle>, attr: false },
+    _raf: { type: Object as unknown as ConstructorType<number>, attr: false },
     _holdTimer: {
       type: Object as unknown as ConstructorType<Handle>,
       attr: false,
