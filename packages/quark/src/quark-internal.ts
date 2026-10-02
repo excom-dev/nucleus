@@ -10,7 +10,7 @@ export interface ListenerMeta {
 }
 import { deref, QuarkLogger } from "./utils";
 import { hashObject } from "@excom/hash-object";
-import { LoopGuard } from "@excom/kit-utils";
+import { isHydrating, LoopGuard } from "@excom/kit-utils";
 export interface TQuarkElement extends HTMLElement {
   _q_: QuarkInternal;
 }
@@ -218,16 +218,23 @@ export class QuarkInternal {
     const shouldRemove = _val === null;
     const oldVal = this.element.getAttribute(name);
     if (_val !== oldVal) {
-      // one causal hop for the loop guard; past its limit the write is
-      // dropped and the runaway chain ends here
-      const written = LoopGuard.write(this.element, name, () => {
-        this.element[shouldRemove ? "removeAttribute" : "setAttribute"](
-          name,
-          _val as string
-        );
-        return true;
-      });
-      if (written === false) return;
+      // compared as written: `0` and "0" are one value, never rewritten
+      if (shouldRemove || String(_val) !== oldVal) {
+        // one causal hop for the loop guard; past its limit the write is
+        // dropped and the runaway chain ends here
+        const written = LoopGuard.write(this.element, name, () => {
+          this.element[shouldRemove ? "removeAttribute" : "setAttribute"](
+            name,
+            _val as string
+          );
+          return true;
+        });
+        if (written === false) return;
+      }
+      instance.attributes[name] = true;
+    } else if (!shouldRemove && isHydrating()) {
+      // the server painted it: this sheet owns it, as after a cold write
+      // (a `dataset` key it drops later is removed)
       instance.attributes[name] = true;
     }
     /*

@@ -19,9 +19,9 @@ Each statement evaluates its expression on the matched element — bindings, `at
 
 ## When it speaks
 
-- `@warn` and `@error` speak **once per element and rule**. A warning repeated on every re-run is noise; a new offending element is its own warning.
+- `@warn` and `@error` speak **once per element and rule**. A warning repeated on every re-run is noise; a new offending element is its own warning. A run that resolves to `preserve` says nothing and does not count: `@warn if(attr("data-bad"): "bad"; else: preserve);` speaks once `data-bad` is set.
 - `@debug` speaks **on every application**, so it re-logs when a binding or `prop()` it reads changes — a trace of the value over time.
-- A failing expression reports a `quark/error` (like any declaration) instead of a diagnostic.
+- A failing expression reports a `quark/error` (like any declaration) instead of a diagnostic; under `@warn` / `@error`, once per element.
 - Outside a rule there is no element to evaluate against: a top-level statement is rejected when the sheet is built.
 
 ## Where it goes

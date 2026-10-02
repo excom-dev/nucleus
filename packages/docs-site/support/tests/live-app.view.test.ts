@@ -3,10 +3,10 @@ import "@excom/event-handler";
 import "@excom/include-content";
 import "@excom/provider-fetch";
 import "@excom/quark-sheet";
+// the playground starts once its worker observer mounts
+import "@excom/service-worker";
 import {
-  afterAll,
   afterEach,
-  beforeAll,
   beforeEach,
   describe,
   expect,
@@ -18,7 +18,6 @@ import {
 } from "@excom/nucleus-test";
 import { Quark } from "@excom/quark";
 import {
-  bypassSelectorCache,
   click,
   expectComplexity,
   flush,
@@ -136,14 +135,7 @@ const textareaOf = (root: HTMLElement, ext: string) =>
 
 const originalLoader = Quark.moduleLoader;
 
-/* happy-dom caches `matches(":has()")`; the preview gate is a `:has()` rule */
-let restoreSelectorCache: () => void;
-
 describe("live-app view", () => {
-  beforeAll(() => {
-    restoreSelectorCache = bypassSelectorCache();
-  });
-  afterAll(() => restoreSelectorCache());
   beforeEach(() => {
     calls.length = 0;
     overrides.clear();

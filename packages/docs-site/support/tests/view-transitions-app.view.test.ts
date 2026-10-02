@@ -2,8 +2,6 @@ import "@excom/quark-sheet";
 import { Quark } from "@excom/quark";
 import {
   afterEach,
-  beforeAll,
-  afterAll,
   describe,
   expect,
   it,
@@ -11,7 +9,6 @@ import {
 } from "@excom/nucleus-test";
 import { installViewTransitionStub } from "@excom/quark/support/tests/helpers";
 import {
-  bypassSelectorCache,
   click,
   expectComplexity,
   flush,
@@ -33,11 +30,6 @@ const current = (root: Element) =>
   root.querySelector(".pages > article[is-current]")?.getAttribute("data-page-index");
 
 describe("view-transitions-app view", () => {
-  let restoreCache: () => void;
-  beforeAll(() => {
-    restoreCache = bypassSelectorCache();
-  });
-  afterAll(() => restoreCache());
   afterEach(() => {
     document.body.innerHTML = "";
   });

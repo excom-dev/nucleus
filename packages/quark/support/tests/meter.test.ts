@@ -58,10 +58,11 @@ describe("Quark.meter", () => {
   });
 
   it("leaves @delay block rules out of ruleRuns", async () => {
-    const { root } = mount(`<p></p>`, `p { @delay 10 { data-late: ""; } }`);
+    // long enough to fire after the reset, even when timers run late
+    const { root } = mount(`<p></p>`, `p { @delay 100 { data-late: ""; } }`);
     await flush();
     Quark.meter.reset();
-    await wait(20);
+    await wait(120);
     await flush();
     expect(root.querySelector("p[data-late]")).not.toBeNull();
     expect(Quark.meter.counts).toMatchObject({

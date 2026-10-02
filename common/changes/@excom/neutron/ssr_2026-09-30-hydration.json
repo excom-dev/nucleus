@@ -1,0 +1,15 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/neutron",
+      "comment": "On a prerendered page an element takes its `provision` from the page's hydration island before it mounts, and deferred event defaults keep hydration open",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/neutron",
+      "comment": "A value assigned to a declared prop before the element's definition loads is applied at upgrade (it was dropped)",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@excom/neutron"
+}

@@ -9,7 +9,15 @@
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
-/index.html
+# Prerendered pages (`build:prerender`): `/` is index.html, `/nucleus` and
+# `/nucleus/*` the slashless `.html` files below it. Rules match request paths.
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
+/nucleus
+  Cache-Control: public, max-age=0, must-revalidate
+
+/nucleus/*
   Cache-Control: public, max-age=0, must-revalidate
 
 /sandbox.html

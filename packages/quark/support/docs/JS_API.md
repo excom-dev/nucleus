@@ -18,7 +18,7 @@ quark.unregister();
 
 `isScoped` mirrors `<quark-sheet>`'s default (see [Sheets & scoping](./SHEETS.md)); `modules` pre-provides what `@use` would import; `Quark.moduleLoader` can be overridden in tests.
 
-`Quark.whenSettled({ timeout? })` resolves once no rule pass, paint, template load or `@use` load is pending (`"settled"`), or after `timeout` ms (`"timeout"`, default 1000) — for tests and tools; sheets have no after-render hook.
+`Quark.whenSettled({ timeout? })` resolves once no rule pass, paint, template load or `@use` load is pending (`"settled"`), or after `timeout` ms (`"timeout"`, default 1000; `Infinity` is no cap) — for tests and tools; sheets have no after-render hook.
 
 `Quark.meter` counts the engine's work across every sheet — sheet passes, rule / binding / attribute / listener runs, `$variable` reads and writes, paints — always on, at negligible cost: `counts`, `reset()`, `scopeSelectors()`. It is the engine for complexity snapshots in `@excom/nucleus-test`: `trackComplexity(Quark.meter, { settle: () => Quark.whenSettled() })`.
 

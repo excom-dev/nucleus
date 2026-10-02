@@ -347,6 +347,9 @@ importers:
       '@excom/nucleus-dom':
         specifier: workspace:^
         version: link:../nucleus-dom
+      '@excom/nucleus-ssr':
+        specifier: workspace:^
+        version: link:../nucleus-ssr
       '@excom/nucleus-test':
         specifier: workspace:^
         version: link:../nucleus-test
@@ -751,6 +754,9 @@ importers:
       happy-dom:
         specifier: 20.8.3
         version: 20.8.3
+      parse5:
+        specifier: ^8.0.1
+        version: 8.0.1
     devDependencies:
       '@excom/heft-rig':
         specifier: workspace:^
@@ -800,6 +806,9 @@ importers:
       '@excom/kit-logger':
         specifier: workspace:^
         version: link:../kit-logger
+      '@excom/kit-utils':
+        specifier: workspace:^
+        version: link:../kit-utils
       '@excom/network-status':
         specifier: workspace:^
         version: link:../network-status
@@ -867,6 +876,25 @@ importers:
       esbuild:
         specifier: ^0.28.2
         version: 0.28.2
+
+  ../../packages/nucleus-ssr:
+    dependencies:
+      '@excom/kit-utils':
+        specifier: workspace:^
+        version: link:../kit-utils
+      '@excom/nucleus-dom':
+        specifier: workspace:^
+        version: link:../nucleus-dom
+    devDependencies:
+      '@excom/heft-rig':
+        specifier: workspace:^
+        version: link:../heft-rig
+      '@excom/nucleus-kit':
+        specifier: workspace:^
+        version: link:../nucleus-kit
+      '@excom/nucleus-test':
+        specifier: workspace:^
+        version: link:../nucleus-test
 
   ../../packages/nucleus-test:
     dependencies:
@@ -4356,6 +4384,9 @@ packages:
 
   parse5@6.0.1:
     resolution: {integrity: sha512-Ofn/CTFzRGTTxwpNEs9PP93gXShHcTq255nzRYSKe8AkVpZY7e1fpmTfOyoIvjP5HG7Z2ZM7VS9PPhQGW2pOpw==}
+
+  parse5@8.0.1:
+    resolution: {integrity: sha512-z1e/HMG90obSGeidlli3hj7cbocou0/wa5HacvI3ASx34PecNjNQeaHNo5WIZpWofN9kgkqV1q5YvXe3F0FoPw==}
 
   parseurl@1.3.3:
     resolution: {integrity: sha512-CiyeOxFT/JZyN5m0z9PfXw4SCBJ6Sygz1Dpl0wqjlhDEGGBP1GnsUVEL0p63hoG1fcj3fHynXi9NYO4nWOL+qQ==}
@@ -8685,6 +8716,10 @@ snapshots:
       type-fest: 3.13.1
 
   parse5@6.0.1: {}
+
+  parse5@8.0.1:
+    dependencies:
+      entities: 8.0.0
 
   parseurl@1.3.3: {}
 

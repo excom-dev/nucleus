@@ -1,0 +1,10 @@
+{
+  "special": "Rhubarb crumble",
+  "dishes": [
+    { "name": "Soup", "tags": ["vegan", "hot"] },
+    { "name": "Pie", "tags": [] },
+    { "name": "Tart", "tags": ["sweet"] }
+  ],
+  "sides": ["Bread", "Salad", "Bread"],
+  "note": "<em>Chef's pick</em><script>window.noteRan = true;</script>"
+}

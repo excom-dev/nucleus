@@ -78,6 +78,12 @@ Nothing stops you from writing two rules, two effects, or a rule and an element 
 
 *Consequence.* A loop costs up to 50 passes before it dies, and the state it leaves behind is wherever the cycle happened to be. Writers the engines do not route — plain `setAttribute` or `innerHTML` in app JS — neither count nor get cut; a cycle made only of those is invisible. Rules that gate on attributes they write for each other are named in a build-time warning. Treat that and a "Loop guard" message as bugs to fix, not behavior to rely on.
 
+## Prerendering happens at build time
+
+[Prerendering](/nucleus/docs/prerendering) writes one static file per route when the site is built. There is no per-request rendering, so a page holds nothing that only a request knows: the person, a cookie, the hour. The renderer is happy-dom rather than a browser, one page at a time in one process, and it leaves `shadow` / `iframe` render hosts, `pre-fetch="idle"` fetches and the elements that read the device or the person to the browser.
+
+*What to do.* Keep per-person content in elements that render in the browser, and look at a new page in a real browser: nucleus-ssr's [hydration test](/nucleus/packages/nucleus-ssr#md-test-hydration) runs on happy-dom too.
+
 ## Commands need the Command API
 
 Elements accept their imperatives as native `command` events (`<button command="--fetch" commandfor="…">`). That API is Baseline 2025 (Chrome 135, Firefox 144, Safari 26.2); older browsers ignore a `commandfor` button. `<event-handler command-name>`, `<dismiss-watcher command-name>` and script-built commands work everywhere, because the stack dispatches custom commands itself; only the built-in verbs (`show-modal`, `toggle-popover`) need the platform. Ship a Command API polyfill for older browsers, or use `<event-handler>` where it matters.

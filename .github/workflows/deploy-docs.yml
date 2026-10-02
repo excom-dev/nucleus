@@ -13,7 +13,8 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # build:prerender took ~3 min locally (146 pages): allow 2.5x on the runner
+    timeout-minutes: 25
     permissions:
       contents: read
     steps:
@@ -43,6 +44,12 @@ jobs:
       # Markdown API docs + llms.txt / llms-full.txt; copies llms into site dist.
       - run: node common/scripts/install-run-rush.js build:docs
       - run: node common/scripts/install-run-rush.js build:docs-index
+
+      # Every sitemap URL → a static page in the site dist, plus 404.html. Only
+      # after the fresh build and build:docs-index above: a dist an earlier
+      # prerender wrote is refused (rebuild the site first). Fails on a link
+      # to a page of the site that has no file (a route the sitemap misses).
+      - run: node common/scripts/install-run-rush.js build:prerender
 
       # Bundle-size baseline for PR comments: merge this build's size reports
       # over the previous baseline and cache it for pr.yml.

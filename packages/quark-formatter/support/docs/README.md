@@ -29,17 +29,21 @@ format(`provider-fetch[is-success]{$todos:prop("provision").body;ul{content:iter
 
 `format(source, options?)` returns the formatted sheet as a string. The only option is `indent` (default two spaces).
 
-<include-content data-language="js"><template>import { format } from "@excom/quark-formatter";
+```js
+import { format } from "@excom/quark-formatter";
 
-const pretty = format(source, { indent: "\t" });</template></include-content>
+const pretty = format(source, { indent: "\t" });
+```
 
 Invalid input throws `QuarkParseError` (from `@excom/quark-parser`) with the line and column, so callers leave the original file untouched:
 
-<include-content data-language="js"><template>try {
+```js
+try {
   fs.writeFileSync(file, format(fs.readFileSync(file, "utf8")));
 } catch (error) {
   console.error(`${file}: ${error.message}`);
-}</template></include-content>
+}
+```
 
 ### What gets normalized
 

@@ -16,9 +16,7 @@
 import { Quark } from "../../index";
 import { QuarkLogger } from "../../src/utils";
 import {
-  afterAll,
   afterEach,
-  beforeAll,
   describe,
   expect,
   fixture,
@@ -26,7 +24,6 @@ import {
   vi,
 } from "@excom/nucleus-test";
 import {
-  bypassSelectorCache,
   createSheet,
   expectComplexity,
   flush,
@@ -39,11 +36,6 @@ const attrsOf = (root: ParentNode, selector: string, attr: string) =>
   [...root.querySelectorAll(selector)].map((el) => el.getAttribute(attr));
 
 describe("selector features", () => {
-  let restoreSelectorCache: () => void;
-  beforeAll(() => {
-    restoreSelectorCache = bypassSelectorCache();
-  });
-  afterAll(() => restoreSelectorCache());
   afterEach(() => {
     unregisterAll();
     document.body.innerHTML = "";

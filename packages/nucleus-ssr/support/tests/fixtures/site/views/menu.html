@@ -1,0 +1,35 @@
+<section class="menu">
+  <h2>Menu</h2>
+  <provider-fetch api-url="/data/menu.json">
+    <p>Today: <strong bind-special>…</strong></p>
+    <ul bind-dishes>
+      <template><li><b bind-dish></b><small bind-tags><template><i bind-tag></i></template></small></li></template>
+    </ul>
+    <ol bind-sides><template><li bind-side></li></template></ol>
+    <div bind-card><template><p>Fresh from the oven</p></template></div>
+    <div bind-note></div>
+  </provider-fetch>
+  <include-content lazy-load>
+    <template><p>Ask us about allergens.</p></template>
+  </include-content>
+  <quark-sheet>
+    provider-fetch {
+      @on provider-fetch-success { data-loaded: ""; @dispatch menu-ready; }
+    }
+    provider-fetch[is-success] {
+      $menu: prop("provision").body;
+      [bind-special] {
+        content: $menu.special;
+        @delay 3000 { content: "Sold out"; }
+      }
+      [bind-dishes] { content: iterate($menu.dishes, ":scope > template", "name"); }
+      [bind-dish] { content: item.name; }
+      [bind-tags] { content: iterate(item.tags); }
+      [bind-tag] { content: item; }
+      [bind-sides] { content: iterate($menu.sides); }
+      [bind-side] { content: item; }
+      [bind-card] { content: template(); }
+      [bind-note] { content: dangerous-html($menu.note); }
+    }
+  </quark-sheet>
+</section>

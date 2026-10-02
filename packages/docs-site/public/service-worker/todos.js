@@ -1,6 +1,6 @@
 import { openDB } from "idb";
 
-const SEED = [
+export const SEED = [
   { userId: 1, id: 1, title: "Pick up groceries  🛒", completed: false },
   { userId: 1, id: 2, title: "Meal prep  🍔", completed: false },
   { userId: 1, id: 3, title: "Organize desk  📁", completed: false },

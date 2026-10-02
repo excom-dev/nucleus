@@ -1,3 +1,4 @@
+import { PENDING_READ, SYMBOL_NOOP } from "./constants";
 import { evaluateExpression, getExpressionAst } from "./evaluator";
 import { type Quark, QuarkRegistry } from "./quark";
 import type { QuarkInternal, TQuarkElement } from "./quark-internal";
@@ -147,7 +148,8 @@ export type QuarkRenderer = DevtoolsRenderer & {
   /**
    * Evaluate a Quark expression as if declared on a rule matching `el`
    * (`$bindings`, `attr()`, `prop()`, `@use` modules of `sheetId` or of the
-   * first sheet touching the element). Returns the raw value; throws the
+   * first sheet touching the element). Returns the raw value, `preserve`
+   * (its symbol) for a read with no value yet while hydrating; throws the
    * evaluator's error. Read-only by the language's design, but a `@use`
    * function may still side-effect.
    */
@@ -221,10 +223,16 @@ const evaluateOn = (
     element: el as HTMLElement,
     options: rule ? { rule } : {},
   });
-  return evaluateExpression(getExpressionAst(expression), {
-    scope,
-    element: el,
-  });
+  try {
+    return evaluateExpression(getExpressionAst(expression), {
+      scope,
+      element: el,
+    });
+  } catch (error) {
+    // what a declaration would resolve to: keep what is painted
+    if (error === PENDING_READ) return SYMBOL_NOOP;
+    throw error;
+  }
 };
 
 const inspectInternal = (

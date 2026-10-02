@@ -136,6 +136,10 @@ jobs:
         with:
           path: size-baseline
           key: size-baseline-${{ runner.os }}-${{ github.sha }}
+      # Every sitemap URL → a static page in the site dist, plus 404.html.
+      # After the publish on purpose: a page that fails to prerender stops
+      # the site deploy, never the packages.
+      - run: node common/scripts/install-run-rush.js build:prerender
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v4
         with:

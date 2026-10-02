@@ -7,7 +7,7 @@
     content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
   <title>Nucleus · docs</title>
   <meta name="description"
-    content="Documentation for the Nucleus Stack — Quark, Neutron, Nucleus Kit, Valence.css. This site is a JavaScript application; plain-text docs for agents and non-JS clients start at /llms.txt." />
+    content="Documentation for the Nucleus Stack — Quark, Neutron, Nucleus Kit, Valence.css. Plain-text docs for agents start at /llms.txt." />
   <meta name="application-name" content="Nucleus Stack" />
   <meta name="robots" content="index,follow" />
   <!-- Valence follows prefers-color-scheme; theme-color is the site header
@@ -19,8 +19,8 @@
   <link rel="icon" href="/favicon.ico" sizes="32x32">
   <link rel="icon" type="image/svg+xml" href="/img/nucleus.svg">
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <!-- One shell serves every route and the SPA sets no per-route meta, so there is
-       no canonical and no og:url: a fixed URL would fold every page into one. -->
+  <!-- Each prerendered page gets its canonical link and og:url
+       (support/prerender/entry.ts); client navigations leave them as loaded. -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Nucleus Stack" />
   <meta property="og:title" content="Nucleus Stack" />
@@ -90,19 +90,6 @@
 </head>
 
 <body nucleus-kit-idle>
-  <!-- Raw fetches (agents, crawlers, no-JS clients) get this shell and nothing else.
-       Ordinary markup on purpose: `<noscript>` and `aria-hidden` are both dropped by
-       common text extractors. shell.css takes it down once the kit upgrades. -->
-  <aside class="agent-notice">
-    <p>
-      This site is a JavaScript application. Plain-text documentation:
-      <a href="/llms.txt">/llms.txt</a> (index),
-      <a href="/llms-full.txt">/llms-full.txt</a> (all docs, one file),
-      per page at <code>/docs/&lt;page&gt;.md</code> and <code>/&lt;package&gt;.md</code>.
-      Source: <a href="https://github.com/excom-dev/nucleus">github.com/excom-dev/nucleus</a>.
-    </p>
-  </aside>
-
   <!-- Observes the worker registered above; views branch on [is-mounted] / [is-ready] -->
   <service-worker></service-worker>
   <detect-browser></detect-browser>
@@ -147,10 +134,12 @@
           $pkg: item.shortName;
           > spa-a {
             route-href: "/nucleus/packages/#{item.shortName}";
-            content: item.shortName;
           }
         }
-        /* No specificity, so this has to follow the rule above */
+        /* one `content` rule per link: a second one would rewrite the first's text on every pass */
+        ul:not(ul ul, [bind-libraries] ul) > li > spa-a {
+          content: item.shortName;
+        }
         [bind-libraries] ul:not(ul ul) > li > spa-a {
           content: displayName(item.shortName);
         }
@@ -170,6 +159,24 @@
           details:not(:has(spa-a[is-active])) {
             open: none;
           }
+        }
+      }
+      /* page titles: the page, then the site. The docs home keeps the title
+         in the document head; the other routes carry theirs in markup */
+      spa-route[is-active] {
+        /* a site guide */
+        &[route-href$=":name"] {
+          $title-guide: list.find($package-indices.docs, "name", $route.params.name);
+          document-title: "#{$title-guide.title or $route.params.name} · Nucleus · docs";
+        }
+        /* a package README */
+        &[route-href$=":packageName"] {
+          document-title: "#{displayName($route.params.packageName)} · Nucleus · docs";
+        }
+        /* one page of a package's docs */
+        &[route-href$=":docName"] {
+          $title-package: list.find($package-indices.packages, "shortName", $route.params.packageName);
+          document-title: "#{docTitle($title-package, $route.params.docName)} · #{displayName($route.params.packageName)} · Nucleus · docs";
         }
       }
     }
@@ -317,6 +324,9 @@
                 <li>
                   <spa-a route-href="/nucleus/docs/creating_elements" role="link" class="secondary">Creating
                     Elements</spa-a>
+                </li>
+                <li>
+                  <spa-a route-href="/nucleus/docs/prerendering" role="link" class="secondary">Prerendering</spa-a>
                 </li>
                 <li>
                   <spa-a route-href="/nucleus/docs/best_practices" role="link" class="secondary">Best Practices</spa-a>
@@ -497,28 +507,33 @@
           ready-on="page-ready" same-route="refresh"></spa-route>
         <!-- Example apps open in the multi-file playground (live-app); the app itself runs in /sandbox/<data-app> -->
         <spa-route route-href="/nucleus/examples/todos" template-ref="/views/live-app/live-app.html" data-app="todo-app"
-          data-files="html quark css"></spa-route>
+          data-files="html quark css" document-title="Todo App · Nucleus · docs"></spa-route>
         <spa-route route-href="/nucleus/examples/counter" template-ref="/views/live-app/live-app.html"
-          data-app="counter-app" data-files="html quark"></spa-route>
+          data-app="counter-app" data-files="html quark" document-title="Counter · Nucleus · docs"></spa-route>
         <spa-route route-href="/nucleus/examples/temperature" template-ref="/views/live-app/live-app.html"
-          data-app="temperature-app" data-files="html quark css"></spa-route>
+          data-app="temperature-app" data-files="html quark css"
+          document-title="Temperature Converter · Nucleus · docs"></spa-route>
         <spa-route route-href="/nucleus/examples/flight-booker" template-ref="/views/live-app/live-app.html"
-          data-app="flight-booker-app" data-files="html quark css"></spa-route>
+          data-app="flight-booker-app" data-files="html quark css"
+          document-title="Flight Booker · Nucleus · docs"></spa-route>
         <spa-route route-href="/nucleus/examples/timer" template-ref="/views/live-app/live-app.html"
-          data-app="timer-app" data-files="html quark css"></spa-route>
+          data-app="timer-app" data-files="html quark css" document-title="Timer · Nucleus · docs"></spa-route>
         <spa-route route-href="/nucleus/examples/cells" template-ref="/views/live-app/live-app.html"
-          data-app="cells-app" data-files="html quark js css"></spa-route>
+          data-app="cells-app" data-files="html quark js css" document-title="Cells · Nucleus · docs"></spa-route>
         <spa-route route-href="/nucleus/examples/returns" template-ref="/views/live-app/live-app.html"
-          data-app="returns-app" data-files="html quark css"></spa-route>
+          data-app="returns-app" data-files="html quark css"
+          document-title="Furniture Returns · Nucleus · docs"></spa-route>
         <spa-route route-href="/nucleus/examples/view-transitions" template-ref="/views/live-app/live-app.html"
-          data-app="view-transitions-app" data-files="html quark css"></spa-route>
+          data-app="view-transitions-app" data-files="html quark css"
+          document-title="View Transitions · Nucleus · docs"></spa-route>
         <spa-route route-href="/nucleus/packages/:packageName" template-ref="/views/package/package.html"
           ready-on="page-ready" same-route="refresh"></spa-route>
         <!-- one page of a package's docs (support/docs/<DOC>.md) -->
         <spa-route route-href="/nucleus/packages/:packageName/:docName" template-ref="/views/package/package.html"
           ready-on="page-ready" same-route="refresh"></spa-route>
-        <!-- 404. Must stay last: on a cold load `is-fallback` does not see siblings that mount after it -->
-        <spa-route route-regex=".*" is-fallback template-ref="/views/not-found/not-found.html"></spa-route>
+        <!-- 404 (and `404.html`). Must stay last: on a cold load `is-fallback` does not see siblings that mount after it -->
+        <spa-route route-regex=".*" is-fallback template-ref="/views/not-found/not-found.html"
+          document-title="Page not found · Nucleus · docs"></spa-route>
       </spa-manager>
       <dialog id="search-dialog">
         <include-content template-ref="/views/search-docs/search-docs.html" pre-fetch="idle"

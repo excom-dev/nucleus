@@ -47,6 +47,17 @@ marked.use({
       const language = (lang ?? "").split(/\s+/)[0] ?? "";
       return `<include-content data-language="${escapeHtml(language)}"><template>${escapeHtml(text)}</template></include-content>\n`;
     },
+    /* A custom element alone on its lines stands without a `<p>`: what it
+       renders is often block markup, and a parser ends a paragraph at the
+       first block tag, so a prerendered page would re-parse with that
+       content outside its element. */
+    paragraph({ tokens }) {
+      const html = this.parser.parseInline(tokens);
+      const isElementOnly =
+        /^<[a-z]\w*-[\w-]*[\s>]/i.test(tokens[0]?.raw ?? "") &&
+        tokens.every(({ type, raw }) => type === "html" || !raw.trim());
+      return isElementOnly ? `${html}\n` : `<p>${html}</p>\n`;
+    },
   },
 });
 

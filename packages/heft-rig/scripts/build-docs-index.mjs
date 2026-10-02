@@ -16,8 +16,9 @@
  *     `<spa-route route-href="/nucleus/examples/<slug>" data-app="<app>">`,
  *     named by the sidebar `<spa-a>` linking the same route; sources from
  *     `packages/docs-site/public/views/<app>/`
- *   - `<repo>/packages/docs-site/dist/package-metas/index.json` — the
- *     documented packages and their `docSections` (sitemap only)
+ *   - `<repo>/packages/docs-site/dist/package-metas/index.json` and
+ *     `<package>.json` — the documented packages, their `docSections` and
+ *     doc pages (sitemap only)
  *
  * Outputs (generated, not committed):
  *   - `<repo>/dist-docs/<element>.md` — flat mirror by element/mixin name
@@ -37,7 +38,7 @@
  *     deployed site instead of falling through to the SPA
  *   - `<repo>/packages/docs-site/dist/sitemap.xml` when `dist/` exists —
  *     the site root, the docs home, every guide, package, package doc page
- *     and example route
+ *     and example route: the routes `build:prerender` writes
  *
  * CI (`publish.yml`, the Release workflow) runs this after the site build. Repo-level only —
  * sibling aggregation doesn't fit a per-package Rush phase. Per-package
@@ -312,9 +313,16 @@ function getAttr(attrs, name) {
 
 /**
  * `<site dist>/sitemap.xml` when the site build exists: the site root, the
- * docs home, every guide, every documented package with the doc pages its
- * `docSections` lists (the site's own `package-metas/index.json`, i.e.
- * exactly what the deployed sidebar offers), and every example route.
+ * docs home, every guide, every documented package (the site's own
+ * `package-metas/index.json`) with every doc page its route renders, and
+ * every example route.
+ *
+ * A package's doc pages are the `docs` of its meta
+ * (`package-metas/<package>.json`: each `support/docs/<PAGE>.md` but the
+ * README), not only the ones its `docSections` lists: a package without a
+ * `support/docs-sections.json` has none, and its pages (nucleus-devtools'
+ * `PRIVACY.md`, nucleus-kit's `BREAKING_CHANGES.md`) are routed all the
+ * same. Sidebar order first, then the unlisted pages by name.
  */
 async function writeSitemap(repoRoot, { siteSections, examples }) {
   const distDir = path.resolve(repoRoot, SITE_PACKAGE, "dist");
@@ -329,11 +337,14 @@ async function writeSitemap(repoRoot, { siteSections, examples }) {
   }
   for (const pkg of metas?.packages ?? []) {
     const base = `${SITE_BASE}/packages/${pkg.shortName}`;
+    const meta = await readJson(path.join(distDir, "package-metas", `${pkg.shortName}.json`));
+    const pages = [
+      ...(pkg.docSections ?? []).flatMap((section) => (section.docs ?? []).map(({ name }) => name)),
+      ...Object.keys(meta?.docs ?? {}).sort(),
+    ];
     routes.push(base);
-    for (const section of pkg.docSections ?? []) {
-      for (const { name } of section.docs ?? []) {
-        if (name !== "readme") routes.push(`${base}/${name}`);
-      }
+    for (const name of pages) {
+      if (name !== "readme") routes.push(`${base}/${name}`);
     }
   }
   for (const { route } of examples) routes.push(route);

@@ -26,7 +26,7 @@
  */
 import { counts } from "./meter";
 import type { SettleUntil } from "./settle";
-import { addBusyCheck, whenSettled } from "./settle";
+import { addBusyCheck, holdWindow, whenSettled } from "./settle";
 import type { PaintFn } from "./types";
 import { QuarkLogger } from "./utils";
 import { getDevtoolsHook, publicize } from "@excom/kit-devtools";
@@ -39,11 +39,16 @@ export const reqCommit = (cb: () => void) => {
   if (!callbacksToRun.includes(cb)) {
     callbacksToRun.push(cb);
     if (!commitTimeout) {
+      const release = holdWindow();
       commitTimeout = setTimeout(() => {
         const cbs = [...callbacksToRun];
         callbacksToRun = [];
         commitTimeout = null;
-        cbs.forEach((cb) => cb());
+        try {
+          cbs.forEach((cb) => cb());
+        } finally {
+          release();
+        }
       }, 0);
     }
   }
@@ -243,11 +248,14 @@ const startTransition = (): boolean => {
   const types = typesOf(flagged);
   let transition: ViewTransition | undefined;
   const id = ++cycle;
+  // queued paints wait for `update`, a rendering opportunity away: a
+  // hydration window stays open until this cycle committed them
+  const releaseWindow = holdWindow();
   const update = async () => {
     clearTimeout(fallback);
     // the fallback already committed (maybe another transition is pending
     // now): capture whatever is there
-    if (id !== cycle || phase !== "pending") return;
+    if (id !== cycle || phase !== "pending") return releaseWindow();
     phase = "updating";
     try {
       // flagged paints queued while pending join this cut
@@ -276,20 +284,24 @@ const startTransition = (): boolean => {
       }
     } finally {
       phase = null;
+      releaseWindow();
       if (PAINT_QUEUES.some((queue) => queue.size > 0)) reqCommit(paint);
     }
   };
   phase = "pending";
   const fallback = setTimeout(() => {
-    if (id !== cycle || phase !== "pending") return;
-    phase = null;
-    drain();
+    if (id === cycle && phase === "pending") {
+      phase = null;
+      drain();
+    }
+    releaseWindow();
   }, PENDING_FALLBACK_MS);
   try {
     transition = document.startViewTransition({ update, types });
   } catch {
     clearTimeout(fallback);
     phase = null;
+    releaseWindow();
     publish("skip", flagged, { reason: "error" });
     return false;
   }

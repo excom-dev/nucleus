@@ -1,8 +1,3 @@
-# The site is a JavaScript application. Plain-text documentation:
-#   /llms.txt       index of every guide and package page
-#   /llms-full.txt  all docs inlined in one file
-# Per page: /docs/<page>.md and /<package>.md
-
 User-agent: *
 Allow: /
 

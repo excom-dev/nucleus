@@ -5,16 +5,13 @@
 import type { Quark } from "../../index";
 import { DIRECT_SCAN_MAX, planScans } from "../../src/rule";
 import {
-  afterAll,
   afterEach,
-  beforeAll,
   describe,
   expect,
   it,
   vi,
 } from "@excom/nucleus-test";
 import {
-  bypassSelectorCache,
   flush,
   mount,
   unregisterAll,
@@ -48,11 +45,6 @@ const el = (html: string) => {
 };
 
 describe("insertion scope", () => {
-  let restoreSelectorCache: () => void;
-  beforeAll(() => {
-    restoreSelectorCache = bypassSelectorCache();
-  });
-  afterAll(() => restoreSelectorCache());
   afterEach(() => {
     unregisterAll();
     document.body.innerHTML = "";

@@ -201,6 +201,20 @@
       "disableBuildCache": false
     },
     {
+      "name": "build:prerender",
+      "commandKind": "bulk",
+      "summary": "Prerender site routes to static HTML",
+      "description": "Runs each project's build:prerender script after a fresh site build and build:docs-index. The docs site renders every sitemap URL to a slashless page in its dist/ (plus 404.html) with @excom/nucleus-ssr, through heft-rig's prerender.mjs, and fails when a page fails or a written page links a page of the site that has no file. A dist an earlier prerender wrote is refused: rebuild the site first (a skipped incremental `rush build` leaves it prerendered).",
+      "safeForSimultaneousRushProcesses": false,
+      "enableParallelism": true,
+      "ignoreDependencyOrder": false,
+      "ignoreMissingScript": true,
+      "allowWarningsInSuccessfulBuild": true,
+      "incremental": false,
+      "watchForChanges": false,
+      "disableBuildCache": true
+    },
+    {
       "name": "rebuild:docs",
       "commandKind": "bulk",
       "summary": "Re-render per-package Markdown documentation without caching",

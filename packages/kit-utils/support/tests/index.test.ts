@@ -16,5 +16,8 @@ describe("index", () => {
     expect(index.observeProperty).toBeTypeOf("function");
     expect(index.QueueManager).toBeTypeOf("function");
     expect(index.mergeSearchParamsIntoUrl).toBeTypeOf("function");
+    expect(index.fetchRecord).toBeTypeOf("function");
+    expect(index.templateIdentity).toBeTypeOf("function");
+    expect(index.HYDRATION_ISLAND_ID).toBe("nucleus-hydration");
   });
 });

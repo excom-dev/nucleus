@@ -7,7 +7,13 @@
  * Vs the all-in `index.umd.min.js`: one extra round-trip before upgrade
  * (style the pre-upgrade state yourself), and ESM only. Opt into idle loading
  * (prefetch the rest after page load) with `<body nucleus-kit-idle>`.
+ *
+ * Prerendered pages: the packages for the tags present at startup load before
+ * hydration ends, so those elements adopt the server markup; tags inserted
+ * later load as usual.
  */
+import { bootHydration, holdHydration } from "@excom/kit-utils";
+
 type Loader = () => Promise<unknown>;
 
 /** The logger Nucleus Kit elements use: `KitLogger.level = 2` shows warnings. */
@@ -81,32 +87,36 @@ export const loadElement = (tag: string): Promise<unknown> | undefined => {
   return promise;
 };
 
-const scan = (node: Node) => {
-  if (node instanceof Element && node.localName in PROGRESSIVE_LOADERS) {
-    loadElement(node.localName);
-  }
-  if ("querySelectorAll" in node) {
-    (node as ParentNode)
-      .querySelectorAll(SELECTOR)
-      .forEach((el) => loadElement(el.localName));
-  }
-};
+/** Start loading the packages for the kit tags in `node` and below; the loads. */
+const scan = (node: Node): Promise<unknown>[] =>
+  [
+    ...(node instanceof Element ? [node.localName] : []),
+    ...("querySelectorAll" in node
+      ? Array.from(
+          (node as ParentNode).querySelectorAll(SELECTOR),
+          (el) => el.localName
+        )
+      : []),
+  ].flatMap((tag) => loadElement(tag) ?? []);
 
-/**
- * Load the Nucleus Kit elements as their tags appear under `root` (an initial
- * scan, then every inserted subtree). Returns a disposer. The entry calls this
- * on `document` at import time; call it yourself for a shadow root.
- */
-export const observeElements = (
-  root: Document | Element | ShadowRoot
-): (() => void) => {
-  scan(root);
+/** Watch `root`: `initial` is what its first scan started, `stop` disposes. */
+const observe = (root: Document | Element | ShadowRoot) => {
+  const initial = scan(root);
   const observer = new MutationObserver((records) => {
     for (const record of records) record.addedNodes.forEach(scan);
   });
   observer.observe(root, { childList: true, subtree: true });
-  return () => observer.disconnect();
+  return { initial, stop: () => observer.disconnect() };
 };
+
+/**
+ * Load the Nucleus Kit elements as their tags appear under `root` (an initial
+ * scan, then every inserted subtree). Returns a disposer. The entry watches
+ * `document` itself; call this for a shadow root.
+ */
+export const observeElements = (
+  root: Document | Element | ShadowRoot
+): (() => void) => observe(root).stop;
 
 const loaded = new Promise((resolve) =>
   document.readyState == "complete"
@@ -150,7 +160,11 @@ export const idleLoadElements = async (
   }
 };
 
-observeElements(document);
+// prerendered page: open the hydration window before any package loads, hold
+// it until the first batch is in (`allSettled`: a failed import must not hold
+// it). Not a prerendered page: both calls are no-ops.
+bootHydration();
+holdHydration(Promise.allSettled(observe(document).initial));
 
 // opt-in: `data-idle` on this entry's own <script> (module scripts have no
 // `currentScript`), else <body nucleus-kit-idle>; empty = every package

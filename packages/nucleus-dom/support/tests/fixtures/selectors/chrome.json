@@ -1,0 +1,750 @@
+{
+ "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/154.0.0.0 Safari/537.36",
+ "all": [
+  [
+   "ul:not(ul ul)",
+   [
+    "u1"
+   ]
+  ],
+  [
+   "li:not(ul ul li)",
+   [
+    "l1",
+    "l3",
+    "l4"
+   ]
+  ],
+  [
+   "li:not(#u2 > li)",
+   [
+    "l1",
+    "l3",
+    "l4"
+   ]
+  ],
+  [
+   "li:not(.x, [data-k])",
+   [
+    "l2",
+    "l4"
+   ]
+  ],
+  [
+   "li:not(ul ul li, .y)",
+   [
+    "l1",
+    "l4"
+   ]
+  ],
+  [
+   "span:not(p ~ span)",
+   [
+    "s1",
+    "s4"
+   ]
+  ],
+  [
+   "span:not(p + span)",
+   [
+    "s1",
+    "s3",
+    "s4"
+   ]
+  ],
+  [
+   "li:not(li:first-child)",
+   [
+    "l2b",
+    "l3",
+    "l4"
+   ]
+  ],
+  [
+   ":not(main > ul > li) > li",
+   [
+    "l1",
+    "l2",
+    "l2b",
+    "l3",
+    "l4"
+   ]
+  ],
+  [
+   "#m :not(main > ul > li) > li",
+   [
+    "l1",
+    "l2",
+    "l2b",
+    "l3",
+    "l4"
+   ]
+  ],
+  [
+   "ul:not(:scope ul)",
+   []
+  ],
+  [
+   "ul:not( ul  ul )",
+   [
+    "u1"
+   ]
+  ],
+  [
+   "LI:NOT(UL UL LI)",
+   [
+    "l1",
+    "l3",
+    "l4"
+   ]
+  ],
+  [
+   ":is(#u2 li, #d1 > p)",
+   [
+    "l2",
+    "l2b",
+    "p1"
+   ]
+  ],
+  [
+   ":is(ul ul, .box) > :first-child",
+   [
+    "l2",
+    "s1"
+   ]
+  ],
+  [
+   "ul:is(.a, ul ul)",
+   [
+    "u1",
+    "u2"
+   ]
+  ],
+  [
+   ":where(ul ul) > li",
+   [
+    "l2",
+    "l2b"
+   ]
+  ],
+  [
+   ":where(#d1, #u2) :is(span + p, li ~ li)",
+   [
+    "l2b",
+    "p1"
+   ]
+  ],
+  [
+   "details:not([open]) > summary",
+   [
+    "sm2"
+   ]
+  ],
+  [
+   "details:is([open]) > :not(summary)",
+   [
+    "p2"
+   ]
+  ],
+  [
+   "#d1:has(> p)",
+   [
+    "d1"
+   ]
+  ],
+  [
+   "#d1:has(p + span)",
+   [
+    "d1"
+   ]
+  ],
+  [
+   "span:has(+ p)",
+   [
+    "s1"
+   ]
+  ],
+  [
+   "span:has(~ span)",
+   [
+    "s1",
+    "s2"
+   ]
+  ],
+  [
+   "span:has(~ span.x)",
+   [
+    "s1"
+   ]
+  ],
+  [
+   "ul:has(li li)",
+   [
+    "u1"
+   ]
+  ],
+  [
+   "ul:has(> li > ul)",
+   [
+    "u1"
+   ]
+  ],
+  [
+   "li:has(ul)",
+   [
+    "l1"
+   ]
+  ],
+  [
+   "li:not(:has(ul))",
+   [
+    "l2",
+    "l2b",
+    "l3",
+    "l4"
+   ]
+  ],
+  [
+   "main:has(#u2 li.x)",
+   [
+    "m"
+   ]
+  ],
+  [
+   "div:has(> a[target])",
+   [
+    "d2"
+   ]
+  ],
+  [
+   "section:has(h2 + div > a.link)",
+   [
+    "sec"
+   ]
+  ],
+  [
+   ":has(> summary):not([open])",
+   [
+    "dt2"
+   ]
+  ],
+  [
+   "li:has(~ li[hidden])",
+   [
+    "l1",
+    "l3"
+   ]
+  ],
+  [
+   "li:has(+ li.y)",
+   [
+    "l1"
+   ]
+  ],
+  [
+   "ul:has(> li:not(.x):not(.y):not([hidden]))",
+   [
+    "u2"
+   ]
+  ],
+  [
+   "main:has(:is(ul ul, .nothing) > .x)",
+   [
+    "m"
+   ]
+  ],
+  [
+   "div:not(:has(*))",
+   [
+    "e1"
+   ]
+  ],
+  [
+   "*:has(> :checked)",
+   [
+    "f1",
+    "se"
+   ]
+  ],
+  [
+   "form:has(:disabled)",
+   [
+    "f1"
+   ]
+  ],
+  [
+   "ul:has(> li:has(> ul > li.x))",
+   "THROW SyntaxError"
+  ],
+  [
+   "li:not(:is(ul ul li, .y))",
+   [
+    "l1",
+    "l4"
+   ]
+  ],
+  [
+   ":is(li:not(ul ul li))",
+   [
+    "l1",
+    "l3",
+    "l4"
+   ]
+  ],
+  [
+   "ul:not(:has(ul))",
+   [
+    "u2"
+   ]
+  ],
+  [
+   "li:is(:not(.x), ul ul li)",
+   [
+    "l2",
+    "l2b",
+    "l3",
+    "l4"
+   ]
+  ],
+  [
+   ":not(:not(ul ul li))",
+   [
+    "l2",
+    "l2b"
+   ]
+  ],
+  [
+   "span:not(:is(p ~ span):not(.x))",
+   [
+    "s1",
+    "s2",
+    "s4"
+   ]
+  ],
+  [
+   "ul:not(ul ul), span:has(+ p)",
+   [
+    "u1",
+    "s1"
+   ]
+  ],
+  [
+   "[data-k='v' i]",
+   [
+    "l3"
+   ]
+  ],
+  [
+   "[data-k=\"V\" s]",
+   "THROW SyntaxError"
+  ],
+  [
+   "[data-k='v']",
+   []
+  ],
+  [
+   "[class~='Y' i]",
+   [
+    "l3",
+    "s2"
+   ]
+  ],
+  [
+   "a[href^='HTTPS' i]",
+   [
+    "a2"
+   ]
+  ],
+  [
+   "li[data-k='B' i]:not(#u1 > li)",
+   [
+    "l2b"
+   ]
+  ],
+  [
+   "li:not([data-k=\"b)\"])",
+   [
+    "l1",
+    "l2",
+    "l2b",
+    "l3",
+    "l4"
+   ]
+  ],
+  [
+   "li:not([data-k=\")\"] , .zzz)",
+   [
+    "l1",
+    "l2",
+    "l2b",
+    "l3",
+    "l4"
+   ]
+  ],
+  [
+   ":is([data-k=\"V\"], [data-k='b'])",
+   [
+    "l2b",
+    "l3"
+   ]
+  ],
+  [
+   "a:not([href*=\":\"])",
+   [
+    "a1"
+   ]
+  ],
+  [
+   "input:enabled",
+   [
+    "i1",
+    "i3"
+   ]
+  ],
+  [
+   ":enabled",
+   [
+    "i1",
+    "i3",
+    "b1",
+    "se",
+    "o1",
+    "ta"
+   ]
+  ],
+  [
+   ":disabled",
+   [
+    "i2",
+    "b2",
+    "fs",
+    "i4",
+    "o2"
+   ]
+  ],
+  [
+   "button:enabled",
+   [
+    "b1"
+   ]
+  ],
+  [
+   "fieldset:disabled input",
+   [
+    "i4"
+   ]
+  ],
+  [
+   "input:not(:disabled)",
+   [
+    "i1",
+    "i3"
+   ]
+  ],
+  [
+   "input:is(:enabled, :checked)",
+   [
+    "i1",
+    "i3"
+   ]
+  ],
+  [
+   ":checked",
+   [
+    "i1",
+    "o1"
+   ]
+  ],
+  [
+   ":required",
+   [
+    "i3"
+   ]
+  ],
+  [
+   "input:optional",
+   [
+    "i1",
+    "i2",
+    "i4"
+   ]
+  ],
+  [
+   "li:nth-child(1 of .x)",
+   [
+    "l1",
+    "l2b"
+   ]
+  ],
+  [
+   "li:nth-child(2 of .x)",
+   []
+  ],
+  [
+   "#d1 > :nth-last-child(1)",
+   [
+    "s3"
+   ]
+  ],
+  [
+   "div:empty",
+   [
+    "e1"
+   ]
+  ],
+  [
+   "custom-thing:not(:defined)",
+   [
+    "c1",
+    "c2"
+   ]
+  ],
+  [
+   "[is-active] > [slot]",
+   [
+    "s4"
+   ]
+  ],
+  [
+   ":root #m > ul",
+   [
+    "u1"
+   ]
+  ],
+  [
+   "li:first-child:not(:last-child)",
+   [
+    "l1",
+    "l2"
+   ]
+  ],
+  [
+   "#d1 > span:first-of-type",
+   [
+    "s1"
+   ]
+  ],
+  [
+   "#d1 > :only-of-type",
+   [
+    "p1"
+   ]
+  ],
+  [
+   "li ~ li",
+   [
+    "l2b",
+    "l3",
+    "l4"
+   ]
+  ],
+  [
+   "ul > li + li",
+   [
+    "l2b",
+    "l3",
+    "l4"
+   ]
+  ],
+  [
+   "main > :not(ul, div, form, details, section)",
+   [
+    "c1",
+    "c2"
+   ]
+  ],
+  [
+   "ul:not(ul ul) > li > ul > li:not(.x)",
+   [
+    "l2"
+   ]
+  ]
+ ],
+ "scoped": [
+  [
+   "#u1",
+   ":scope > li",
+   [
+    "l1",
+    "l3",
+    "l4"
+   ]
+  ],
+  [
+   "#u1",
+   ":scope > li:not(:has(ul))",
+   [
+    "l3",
+    "l4"
+   ]
+  ],
+  [
+   "#u1",
+   "li:not(:scope > li)",
+   [
+    "l2",
+    "l2b"
+   ]
+  ],
+  [
+   "#u1",
+   "li:not(ul ul li)",
+   [
+    "l1",
+    "l3",
+    "l4"
+   ]
+  ],
+  [
+   "#u2",
+   "ul li",
+   [
+    "l2",
+    "l2b"
+   ]
+  ],
+  [
+   "#u2",
+   ":not(ul ul) li",
+   [
+    "l2",
+    "l2b"
+   ]
+  ],
+  [
+   "#u2",
+   "li:is(main > ul > li li)",
+   [
+    "l2",
+    "l2b"
+   ]
+  ],
+  [
+   "#d1",
+   ":scope > span:has(+ p)",
+   [
+    "s1"
+   ]
+  ],
+  [
+   "#d1",
+   "span:not(:scope > p ~ span)",
+   [
+    "s1"
+   ]
+  ],
+  [
+   "#f1",
+   ":enabled",
+   [
+    "i1",
+    "i3",
+    "b1",
+    "se",
+    "o1",
+    "ta"
+   ]
+  ],
+  [
+   "#m",
+   ":scope > :has(> li:not(ul ul li))",
+   [
+    "u1"
+   ]
+  ]
+ ],
+ "matches": [
+  [
+   "#u1",
+   "ul:not(ul ul)",
+   true
+  ],
+  [
+   "#u2",
+   "ul:not(ul ul)",
+   false
+  ],
+  [
+   "#l2",
+   ":is(ul ul li)",
+   true
+  ],
+  [
+   "#l1",
+   "li:has(> ul > li.x)",
+   true
+  ],
+  [
+   "#d1",
+   ":has(> span ~ span)",
+   true
+  ],
+  [
+   "#d1",
+   ":not(:has(> ul))",
+   true
+  ],
+  [
+   "#i1",
+   ":enabled:checked",
+   true
+  ],
+  [
+   "#i4",
+   ":enabled",
+   false
+  ],
+  [
+   "#l3",
+   "[data-k='v' i]",
+   true
+  ],
+  [
+   "#l2",
+   ":scope:not(ul ul li)",
+   false
+  ],
+  [
+   "#s2",
+   "span:is(p ~ span, .nothing):not(span + span)",
+   true
+  ]
+ ],
+ "closest": [
+  [
+   "#l2",
+   "ul:not(ul ul)",
+   "u1"
+  ],
+  [
+   "#l2",
+   "li:has(ul)",
+   "l1"
+  ],
+  [
+   "#l2",
+   ":is(main > ul, form)",
+   "u1"
+  ],
+  [
+   "#a1",
+   "section:has(h2)",
+   "sec"
+  ],
+  [
+   "#l2",
+   "ul:not(:has(ul))",
+   "u2"
+  ],
+  [
+   "#a1",
+   ":not(div, a)",
+   "sec"
+  ],
+  [
+   "#i4",
+   ":disabled",
+   "i4"
+  ]
+ ]
+}

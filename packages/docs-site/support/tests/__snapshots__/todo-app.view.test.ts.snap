@@ -8,7 +8,7 @@ exports[`todo-app view > lists todos, posts a new one, and stays within the comp
   "importNode": 1,
   "listenerRuns": 3,
   "matches": 19,
-  "parentElement": 46,
+  "parentElement": 1,
   "quarkRuns": 3,
   "queryScopeCost": 110,
   "querySelectorAll": 6,

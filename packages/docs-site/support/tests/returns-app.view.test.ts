@@ -2,9 +2,7 @@ import "@excom/provider-fetch";
 import "@excom/quark-sheet";
 import "@excom/super-form";
 import {
-  afterAll,
   afterEach,
-  beforeAll,
   describe,
   expect,
   it,
@@ -13,7 +11,6 @@ import {
   waitForEvent,
 } from "@excom/nucleus-test";
 import {
-  bypassSelectorCache,
   expectComplexity,
   flush,
   measureComplexity,
@@ -220,19 +217,7 @@ const setDate = async (root: HTMLElement, iso: string) => {
   await settle();
 };
 
-/*
- * happy-dom caches `Element.matches()` / `querySelectorAll()` per node and
- * never invalidates a `:has()` answer when a descendant changes, so the host's
- * `:scope:has(…)` facts would freeze on their first answer. Bypassed for this
- * suite; Chrome caches nothing and needs no shim.
- */
-let restoreSelectorCache: () => void;
-
 describe("returns-app view", () => {
-  beforeAll(() => {
-    restoreSelectorCache = bypassSelectorCache();
-  });
-  afterAll(() => restoreSelectorCache());
   afterEach(() => {
     document.body.innerHTML = "";
   });

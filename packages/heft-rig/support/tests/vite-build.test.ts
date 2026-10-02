@@ -159,21 +159,21 @@ describe("runFullBuild", () => {
     expect(Object.keys(map).filter((key) => key.includes(".umd"))).toEqual([]);
   });
 
-  it("builds a testing.ts entry as ESM only, no UMD bundle", async () => {
+  it.each(["testing", "server"])("builds a %s.ts entry as ESM only, no UMD bundle", async (name) => {
     const { runFullBuild } = await load();
-    await writeTree(ws.lib, { "testing.ts": "export const testing = 1;\n" });
+    await writeTree(ws.lib, { [`${name}.ts`]: `export const ${name} = 1;\n` });
     await runFullBuild(ws.lib);
-    expect(libModes().filter((m) => m.startsWith("index") || m.startsWith("testing")).sort()).toEqual([
+    expect(libModes().filter((m) => m.startsWith("index") || m.startsWith(name)).sort()).toEqual([
       "index.js",
       "index.min.js",
       "index.umd.min.js",
-      "testing.js",
-      "testing.min.js",
+      `${name}.js`,
+      `${name}.min.js`,
     ]);
     const map = JSON.parse(await readFile(path.join(ws.lib, "dist/exports.generated.json"), "utf8"));
-    expect(map["./testing"]).toEqual({ import: "./dist/testing.js", default: "./dist/testing.js" });
-    expect(Object.keys(map).filter((key) => key.includes("testing") && key.includes(".umd"))).toEqual([]);
-    await rm(path.join(ws.lib, "testing.ts"));
+    expect(map[`./${name}`]).toEqual({ import: `./dist/${name}.js`, default: `./dist/${name}.js` });
+    expect(Object.keys(map).filter((key) => key.includes(name) && key.includes(".umd"))).toEqual([]);
+    await rm(path.join(ws.lib, `${name}.ts`));
   });
 
   it("runs only the progressive mode for a <name>.progressive.ts entry", async () => {

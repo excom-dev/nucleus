@@ -90,6 +90,8 @@ Consumers now have a state attribute to style (`copy-button[did-copy]`), an even
 
 **Provisions.** To publish rich data, set the `provision` prop (tag it `@provision` in JSDoc). Quark reads it with `prop("provision")` and re-runs when it is assigned; Neutron also fires `neutron-provision` for app JS. Provisions must be plain objects or arrays — assign a new one, in-place mutation is not observed.
 
+**Prerendering.** An element composed from `fetchable-element` / `renderable-element` hydrates on a [prerendered page](/nucleus/docs/prerendering) with nothing to add. One that calls `fetch()` and replaces its own content still works there, fetching and rendering again; to keep the prerendered result it uses `fetchRecord()`, the `{ identity }` option of `replaceNonTemplateChildren()` and `holdHydration()` from `@excom/kit-utils`: see [Your own elements](/nucleus/docs/prerendering#md-your-own-elements).
+
 See the [neutron](/nucleus/packages/neutron) package for the complete API.
 
 ## Naming Recommendations

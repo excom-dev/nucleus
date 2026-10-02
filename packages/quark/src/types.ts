@@ -155,5 +155,7 @@ export type ExpressionResult =
       type: "nodes";
       value: Node[];
       after?: () => void;
+      /** `template()`'s source: a server render stamps it, hydration adopts it. */
+      identity?: string | null;
     }
   | undefined;

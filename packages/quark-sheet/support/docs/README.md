@@ -40,6 +40,8 @@ top-level rules in the root context (e.g. reading a provider above the
 host); rules inside an explicit `@scope { }` block stay host-scoped either
 way. Language details live in the [`quark`](/nucleus/packages/quark) docs.
 
+An inline sheet is HTML content: a browser reads `<` followed by a letter, `/`, `!` or `?` as markup, in a sheet comment or string too, and a `<title>` or `<textarea>` there takes the rest of the page as its text (the sheet fails with a parse error far from the cause). Keep such text out of an inline sheet, or load the sheet with `src-url`.
+
 ### API Reference
 
 <include-content is-active template-ref="/views/api-reference/api-reference.html"></include-content>

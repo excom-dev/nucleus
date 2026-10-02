@@ -23,9 +23,16 @@
     src: "/sandbox/#{$app}";
   }
 
-  /* Every mount drops the app's saved edits; the editors render once that succeeded. */
+  /* Every mount drops the app's saved edits; the editors render once that succeeded.
+     Paused until the `service-worker` observer before it mounts, which a prerender never does. */
   provider-fetch.fresh {
     api-url: "/api/sandbox/views/#{$app}";
+  }
+  service-worker[is-mounted] + provider-fetch.fresh {
+    is-paused: none;
+  }
+  service-worker:not([is-mounted]) + provider-fetch.fresh {
+    is-paused: "";
   }
 
   [bind-file-headers] {

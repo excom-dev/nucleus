@@ -90,6 +90,8 @@ element it resolves to:
 
 <include-content data-demo="host-selector"></include-content>
 
+On a [prerendered page](/nucleus/docs/prerendering) the light DOM and a selector host keep their prerendered content; `shadow` and `iframe` hosts are not prerendered and render in the browser.
+
 #### Hooking render with view transitions
 
 `render` and `unrender` are cancelable; `event.detail` is the update
@@ -126,6 +128,8 @@ unrender. With it, the same live nodes are held across toggles:
 
 <include-content data-demo="persist-content"></include-content>
 
+On a prerendered page the nodes it holds are the prerendered ones.
+
 #### Loading strategies
 
 `pre-fetch` controls *when* the template is fetched, separately from
@@ -144,3 +148,5 @@ when it is rendered:
 
 Pair with `bypass-cache` for revalidation when the element activates
 multiple times. Invoke the `--reload` command to force a refresh.
+
+`pre-fetch="idle"` never runs in a prerender: the template is fetched in the browser.

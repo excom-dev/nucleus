@@ -4,7 +4,7 @@ import type {
 } from "./spa-route";
 import { KitLogger } from "@excom/kit-logger";
 import { type KitRouteData, kitRouter } from "@excom/kit-router";
-import { tc } from "@excom/kit-utils";
+import { holdHydration, tc } from "@excom/kit-utils";
 import { ConstructorType, Neutron, TEvent } from "@excom/neutron";
 import type {
   RenderableErrorEvent,
@@ -114,6 +114,19 @@ const canTransition = () =>
   document.visibilityState !== "hidden";
 
 const settle = (...promises: unknown[]) => Promise.allSettled(promises);
+
+/* A prerendered page hydrates until its manager's first update starts, also
+   one an app holds back by cancelling `spa-manager-will-transition`. */
+const firstUpdates = new WeakMap<Element, () => void>();
+const holdFirstUpdate = (manager: Element) =>
+  firstUpdates.has(manager) ||
+  holdHydration(
+    new Promise<void>((resolve) => firstUpdates.set(manager, resolve))
+  );
+const releaseFirstUpdate = (manager: Element) => {
+  firstUpdates.get(manager)?.();
+  firstUpdates.delete(manager);
+};
 
 /** Settle `promises`, giving up at `deadline` (a `performance.now()` time). `true` when the deadline won. */
 const settleBy = async (promises: unknown[], deadline: number) => {
@@ -226,7 +239,7 @@ const scrollState = () => ({
  * @fires spa-manager-forward - On `forward` navigations.
  * @type SpaManagerForwardEvent
  *
- * @default-action spa-manager-will-transition - Starts the batched update, inside a View Transition unless the API is missing, reduced motion is on, the page is hidden, it is the first paint (without `transition-first-render`), the browser already animated the navigation, the batch only provisions or routes opt out.
+ * @default-action spa-manager-will-transition - Starts the batched update, inside a View Transition unless the API is missing, reduced motion is on, the page is hidden, it is the first paint (without `transition-first-render`) or a prerendered page's first update, the browser already animated the navigation, the batch only provisions or routes opt out.
  *
  * @listens spa-route-render - Queues the child's render callback for the next batched update. A nested manager lets it bubble on to the outermost one.
  * @type RenderableRenderEvent
@@ -262,7 +275,7 @@ export const SpaManager = Neutron.compose([
       noTransition: Boolean,
       /**
        * @option
-       * Max wait (ms) for child routes to be ready before the update (title, scroll, its View Transition) moves on; a warning is logged when it settles the update. Raise for slow remote templates.
+       * Max wait (ms) for child routes to be ready before the update (title, scroll, its View Transition) moves on; a warning is logged when it settles the update, and a route still waiting for its `ready-on` event is shown. Raise for slow remote templates.
        * @default 2000
        */
       renderTimeout: {
@@ -308,9 +321,15 @@ export const SpaManager = Neutron.compose([
       isTransitioning: Boolean,
       /**
        * @state
-       * The first update with a render has settled (rendered, failed or hit `render-timeout`). Set in that update, inside its View Transition if one runs, before `spa-manager-rendered`: hide a loading shell / splash screen on it. Gates `transition-first-render`.
+       * The first update with a render has settled (rendered, failed or hit `render-timeout`). Set in that update, inside its View Transition if one runs, before `spa-manager-rendered`: hide a loading shell / splash screen on it. Gates `transition-first-render`. Leave it in prerendered markup: the page then loads without a View Transition and keeps the browser's scroll (a reload's saved position is restored).
        */
       hasRendered: Boolean,
+      /**
+       * @option
+       * @state
+       * `document.title` while no active route has a `document-title`. Unset, the page's own `<title>` is recorded here when a route first retitles the page, so a prerendered page keeps its shell title.
+       */
+      defaultTitle: String,
       /**
        * @provision
        * Current route payload. Not reflected as an attribute.
@@ -338,8 +357,9 @@ export const SpaManager = Neutron.compose([
       },
       // counted in `owners`
       _ownsScroll: { type: Boolean, attr: false },
-      // the page's own <title>, captured before the first route title lands
-      _defaultTitle: { type: String, attr: false },
+      // `has-rendered` came with the markup (a prerendered page): the first
+      // update only hydrates
+      _wasRendered: { type: Boolean, attr: false },
       transitionDelayId: {
         type: Number as unknown as ConstructorType<
           ReturnType<typeof setTimeout>
@@ -397,6 +417,7 @@ export const SpaManager = Neutron.compose([
       if (isTransitioning && !_updating) {
         _activeViewTransition?.skipTransition?.();
       }
+      if (isIdle && element._wasRendered) holdFirstUpdate(element);
       return [
         {
           _routeCallbacks: {
@@ -432,7 +453,7 @@ export const SpaManager = Neutron.compose([
     },
     /**
      * `document.title` = the last active descendant route carrying a
-     * `document-title`, else the page's own `<title>`.
+     * `document-title`, else `default-title`.
      */
     syncDocumentTitle: (element) => {
       const parentManager = element.parentElement?.closest(
@@ -449,19 +470,23 @@ export const SpaManager = Neutron.compose([
         ({ documentTitle }) => documentTitle
       );
       // No route has ever claimed the title: leave the page's own alone
-      if (!titled && element._defaultTitle == null) return;
-      if (element._defaultTitle == null) {
-        element._defaultTitle = document.title;
-      }
-      const title = titled?.documentTitle ?? element._defaultTitle;
+      if (!titled && element.defaultTitle == null) return;
+      // Recorded before the first route title lands
+      const defaultTitle = element.defaultTitle ?? document.title;
+      const title = titled?.documentTitle ?? defaultTitle;
       if (document.title !== title) {
         document.title = title;
       }
+      return { defaultTitle };
     },
-    _updateRoutes: (_, animate: boolean) => [
-      { isTransitioning: animate, _updating: true },
-      { _runUpdate: [animate] },
-    ],
+    _updateRoutes: (element, animate: boolean) => {
+      // The update holds the window itself from here
+      releaseFirstUpdate(element);
+      return [
+        { isTransitioning: animate, _updating: true },
+        { _runUpdate: [animate] },
+      ];
+    },
     _runUpdate: async (element, animate: boolean) => {
       const {
         // @ts-ignore TODO defineMethods
@@ -480,7 +505,7 @@ export const SpaManager = Neutron.compose([
       /* The one update, with or without a View Transition: routes (and any
          route that activates meanwhile), then title, then scroll. One
          `render-timeout` for the whole update, late joins included. */
-      const update = async () => {
+      const run = async () => {
         const deadline = performance.now() + renderTimeout!;
         let rendered = false;
         let timedOut = false;
@@ -503,11 +528,21 @@ export const SpaManager = Neutron.compose([
             KitLogger.warn(
               `spa-manager: update settled by render-timeout (${renderTimeout} ms); a route is still pending`
             );
+            // A route that missed its `ready-on` event would stay hidden
+            activeRoutes(element)
+              .filter(({ delayingReady }) => delayingReady)
+              .forEach((route) => {
+                route.readyContent();
+                route.tryCompleteReady("render-timeout");
+              });
           }
         } finally {
           _finishUpdate(rendered);
         }
       };
+      // A prerendered page hydrates until its routes settled: renders keep
+      // the server's content meanwhile
+      const update = () => holdHydration(run());
       let updating: Promise<void> | undefined;
       // An engine that rejects the options (no transition types) throws
       const transition: ViewTransition | undefined =
@@ -554,7 +589,7 @@ export const SpaManager = Neutron.compose([
         rendered && { hasRendered: true },
         element.isMounted && { syncDocumentTitle: [] },
         element.isMounted && { _applyScroll: [rendered] },
-        { _updating: false },
+        { _updating: false, _wasRendered: false },
       ];
     },
     /**
@@ -621,10 +656,13 @@ export const SpaManager = Neutron.compose([
         hasRendered,
         transitionFirstRender,
         _animate,
+        _wasRendered,
       } = element;
       resetTransitionDelayId(true);
       const animate =
         doTransition &&
+        // A prerendered page is on screen: its first update only hydrates
+        !_wasRendered &&
         // A batch that only provisions changes nothing to animate
         !!_animate &&
         canTransition() &&
@@ -658,13 +696,28 @@ export const SpaManager = Neutron.compose([
          call: routes may connect later, the first update writes. */
       // @ts-ignore TODO defineMethods
       if (owns && element._routed) queueMicrotask(element._scrollIfIdle);
+      /* A prerendered page registering is in place, and the browser restores
+         no scroll (manual): only an offset saved for this entry is due, now,
+         unless the person scrolled already (no `#fragment` moved the page).
+         A microtask later, so routes defined after the manager count. */
+      const placed = owns && !element._routed && element._wasRendered;
+      const { scrollX, scrollY } = routeData.active;
+      const saved = scrollX != null || scrollY != null;
+      const moved = !!(window.scrollX || window.scrollY) && !location.hash;
+      // @ts-ignore TODO defineMethods
+      if (placed) queueMicrotask(() => element._applyScroll(true));
       return {
         _routed: true,
         ...(element.activeUrl && { lastMove: routeData.move }),
         activeUrl: routeData.active.url,
         provision: routeData,
         // A navigation starts: its write is due, a held offset is released
-        ...(owns && { _scrollDue: true, _heldScroll: null }),
+        ...(owns && {
+          _scrollDue: !placed || (saved && !moved),
+          _heldScroll: null,
+        }),
+        // and its update is no prerendered page's first one
+        ...(element._routed && { _wasRendered: false }),
         ...(routeData.move && { emit: ["spa-manager-" + routeData.move] }),
       };
     },
@@ -744,8 +797,14 @@ export const SpaManager = Neutron.compose([
     _routeCallbacks: noCallbacks(),
   }))
   .onConnected(
-    // Run RoutableElement logic
-    ({ wasMounted }) => !wasMounted && { routeHref: new RegExp(".*") }
+    ({ wasMounted, hasRendered }) =>
+      !wasMounted && {
+        // Run RoutableElement logic
+        routeHref: new RegExp(".*"),
+        // Read once the markup is parsed (a parser-made element gets its
+        // attributes after construction)
+        _wasRendered: hasRendered,
+      }
   )
   /* The outermost manager restores scroll itself: the browser's own restore
      lands during `popstate`, on the old view, before any transition starts. */
@@ -755,8 +814,10 @@ export const SpaManager = Neutron.compose([
     history.scrollRestoration = "manual";
     return { _ownsScroll: true };
   })
-  .onDisconnected(({ isMoving, _ownsScroll }) => {
+  .onDisconnected((element) => {
+    const { isMoving, _ownsScroll } = element;
     if (isMoving) return;
+    releaseFirstUpdate(element);
     if (_ownsScroll && --owners === 0) {
       history.scrollRestoration = pageScrollRestoration;
     }

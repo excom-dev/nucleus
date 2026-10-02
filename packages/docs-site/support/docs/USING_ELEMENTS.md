@@ -102,7 +102,7 @@ The Nucleus Kit catalog exists to give the *same* contract to protocols the plat
 ## Two habits worth forming
 
 - **Select on state, not on classes.** Setting attributes is recommended over toggling / mutating classes and ids, since the latter has a heavier impact on Quark's performance. Keep classes for static styling.
-- **Set attributes, not properties, before upgrade.** If script runs before an element's definition has loaded, `setAttribute()` is honored on upgrade; a property assignment is not.
+- **Prefer attributes before upgrade.** If script runs before an element's definition has loaded, `setAttribute()` is in the document at once, for CSS and Quark to select on; an assignment to a declared property is applied when the element upgrades.
 
 ## Next steps
 

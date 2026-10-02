@@ -62,6 +62,22 @@ describe("renderMarkdown", () => {
     );
   });
 
+  it("leaves a custom element alone on its lines without a paragraph", () => {
+    const demo = '<include-content data-demo="simple"></include-content>';
+    expect(renderMarkdown(`Before.\n\n${demo}\n\nAfter.\n`)).toBe(
+      `<p>Before.</p>\n${demo}\n<p>After.</p>\n`,
+    );
+    // inline in a sentence, around text, or not a custom element: a paragraph as before
+    expect(renderMarkdown(`See ${demo} here.\n`)).toBe(`<p>See ${demo} here.</p>\n`);
+    expect(renderMarkdown('<spa-a route-href="/x">Home</spa-a>\n')).toBe(
+      '<p><spa-a route-href="/x">Home</spa-a></p>\n',
+    );
+    expect(renderMarkdown("<kbd></kbd>\n")).toBe("<p><kbd></kbd></p>\n");
+    expect(renderMarkdown("[Home](/x)\n")).toBe(
+      '<p><spa-a route-href="/x" role="link">Home</spa-a></p>\n',
+    );
+  });
+
   it("isRelativeLink accepts paths and relative references only", () => {
     expect(["/docs/a", "./A.md", "../b", "page", "a/b#c"].map(isRelativeLink)).toEqual([
       true,

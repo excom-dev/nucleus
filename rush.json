@@ -35,6 +35,11 @@
       "shouldPublish": true
     },
     {
+      "packageName": "@excom/nucleus-ssr",
+      "projectFolder": "packages/nucleus-ssr",
+      "shouldPublish": true
+    },
+    {
       "packageName": "@excom/docs-site",
       "projectFolder": "packages/docs-site"
     },

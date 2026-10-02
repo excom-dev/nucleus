@@ -2,9 +2,14 @@ import { AbortableElement } from "@excom/abortable-element";
 import { KitLogger } from "@excom/kit-logger";
 import { requestIdleCb } from "@excom/kit-shims";
 import {
+  canAdopt,
+  getChildren,
+  hasServerContent,
+  isServerRender,
   replaceNonTemplateChildren,
   resolveTemplateContent,
   selectOne,
+  templateIdentity,
 } from "@excom/kit-utils";
 import { ConstructorType, Neutron, TEvent } from "@excom/neutron";
 
@@ -44,6 +49,21 @@ export type RenderableAbortedEvent = TEvent & {
 const IFRAME_HOST_ATTR = "data-render-host";
 /** Iframes waiting on `load` so their body can be `renderHost`. */
 const pendingIframeLoads = new WeakSet<HTMLIFrameElement>();
+/** Elements whose kept prerendered content was announced (`did-render`):
+ *  boot may render one twice (a first-mount load, then the render thunk), so
+ *  a repeat stays silent until the template changes or reloads. */
+const announced = new WeakSet<Element>();
+
+/** Where children render; `null` while `host-ref` resolves to nothing. */
+const hostOf = (
+  element: Element & {
+    hostRef?: string | null;
+    renderHost?: Element | ShadowRoot | null;
+  }
+) =>
+  element.hostRef && !element.renderHost
+    ? null
+    : ((element.renderHost ?? element) as Element);
 
 // Must stay `async` even when `resolveTemplateContent` is sync.
 const initTemplatePromise = async (
@@ -203,7 +223,7 @@ export const RenderableElement = Neutron.compose([
       /**
        * @option
        * When to fetch the template, independent of when it renders.
-       * `""` aliases `eager`.
+       * `""` aliases `eager`. `idle` never runs in a prerender.
        * @default lazy
        */
       preFetch: {
@@ -235,7 +255,8 @@ export const RenderableElement = Neutron.compose([
        * @option
        * Event name that marks rendered children "ready". Until it fires,
        * `delaying-ready` is set so CSS can hide the host for a
-       * coordinated paint / view transition.
+       * coordinated paint / view transition. Prerendered content kept at
+       * hydration is ready at once, never hidden.
        * @values <Event Name>
        */
       readyOn: String,
@@ -355,7 +376,8 @@ export const RenderableElement = Neutron.compose([
     renderChildren: (element, resolved?: Node) => {
       const source = resolved ?? element._persistedTree;
       if (!source) return;
-      if (element.hostRef && !element.renderHost) {
+      const host = hostOf(element);
+      if (!host) {
         // An author iframe still loading paints from its load handler. With
         // no host on the way nothing renders: release ready waiters now.
         return (
@@ -368,14 +390,43 @@ export const RenderableElement = Neutron.compose([
           ]
         );
       }
-      const host = (element.renderHost ?? element) as Element;
-      const children = [
-        element.persistContent
-          ? source
-          : (document.importNode(source, true) as Element),
-      ];
-      if (replaceNonTemplateChildren(host, children as Node[])) {
+      const { templateRef, persistContent, readyOn, readyPromiseObject } =
+        element;
+      // Before the write, which drops the host's `n-tpl`
+      const fromServer = hasServerContent(host);
+      // A server render writes it to the host's `n-tpl`; hydration compares
+      const identity =
+        fromServer || isServerRender()
+          ? templateIdentity(templateRef as string, { scope: element })
+          : null;
+      const adopting = canAdopt(host, identity);
+      const rendered = replaceNonTemplateChildren(
+        host,
+        [
+          adopting || persistContent
+            ? source
+            : (document.importNode(source, true) as Node),
+        ],
+        { identity }
+      );
+      if (rendered === "adopted") {
+        const repeat = announced.has(element);
+        announced.add(element);
         return [
+          // The live tree, so a later toggle keeps it
+          persistContent && {
+            _persistedTree: getChildren(host).otherChildren[0],
+          },
+          { tryCompleteReady: ["adopted"] },
+          !repeat && { emits: [["did-render"]] },
+        ];
+      }
+      if (rendered) {
+        return [
+          // Prerendered content replaced: hidden until `ready-on`, as cold
+          fromServer &&
+            readyOn &&
+            readyPromiseObject && { delayingReady: true },
           {
             tryCompleteReady: ["renderChildren"],
           },
@@ -386,9 +437,8 @@ export const RenderableElement = Neutron.compose([
       }
     },
     unrenderChildren: (element) => {
-      if (element.hostRef && !element.renderHost) return;
-      const host = (element.renderHost ?? element) as Element;
-      if (replaceNonTemplateChildren(host, [])) {
+      const host = hostOf(element);
+      if (host && replaceNonTemplateChildren(host, [])) {
         return [
           /* Drop the non-persist source; `didLoad` stays so a warm
              re-resolve is available. With `persist-content`, keep
@@ -400,31 +450,38 @@ export const RenderableElement = Neutron.compose([
         ];
       }
     },
-    // @ts-ignore TODO defineMethods
-    startTeardown: ({ isLoading, delayingReady, unrenderChildren }) => {
+    startTeardown: (element) => {
+      // @ts-ignore TODO defineMethods
+      const { isLoading, delayingReady, unrenderChildren } = element;
+      const unrender = {
+        emit: [
+          /* Sync, but order still matters for listening parents. */
+          "unrender",
+          // Sync: do not return a promise
+          { detail: unrenderChildren },
+        ],
+      };
+      const host = hostOf(element);
       return isLoading || delayingReady
         ? [
             { setCanceledState: [] },
             { emit: ["aborted"] },
             { tryCompleteReady: ["startTeardown", "reject"] },
+            // Prerendered content leaves too; a cold first load shows none
+            host && hasServerContent(host) && unrender,
           ]
-        : {
-            emit: [
-              /* Sync, but order still matters for listening parents. */
-              "unrender",
-              // Sync: do not return a promise
-              { detail: unrenderChildren },
-            ],
-          };
+        : unrender;
     },
     // @ts-ignore TODO defineMethods
     setupRenderHost: ({ resolveRenderHost }) => ({
       renderHost: resolveRenderHost(),
     }),
-    // Clear the current host's children on a `hostRef` retarget so the
-    // next paint can retarget without a full teardown.
-    clearHostChildren: (element) => {
-      const host = (element.renderHost ?? element) as Element;
+    // Clear the host from before a `hostRef` retarget so the next paint can
+    // retarget without a full teardown. A host that stays (first mount) is
+    // left to that paint: its content may be prerendered.
+    clearHostChildren: (element, previous: Element | ShadowRoot | null) => {
+      const host = (previous ?? element) as Element;
+      if (host === (element.hostRef ? element.renderHost : element)) return;
       if (replaceNonTemplateChildren(host, [])) {
         return {
           emits: [["did-unrender"]],
@@ -449,7 +506,8 @@ export const RenderableElement = Neutron.compose([
       // Eager / empty `preFetch`, or the element is active.
       if (["eager", ""].includes(preFetch as string) || isActive)
         return { attemptLoad: [] };
-      else if (preFetch === "idle") {
+      // A prerender would ship unused bytes and a `did-load` without content
+      else if (preFetch === "idle" && !isServerRender()) {
         const cb = () => {
           /* Re-read `preFetch` off the element; the captured value may be
              stale. `cancelIdleCallback` would be nicer, but Safari lacks it. */
@@ -461,55 +519,68 @@ export const RenderableElement = Neutron.compose([
         requestIdleCb(cb, 17);
       }
     },
-    changeTemplate: (
-      { templatePromise, isActive },
-      opts: { forceBypassCache?: boolean } = {}
-    ) => [
-      templatePromise && {
-        setCanceledState: [],
-      },
-      {
-        didLoad: false,
-        _persistedTree: null,
-        isError: false,
-      },
-      // Bypass the in-memory template cache so reload sees the latest
-      // source (matters when `templateRef` is a URL).
-      isActive ? { attemptLoad: [opts] } : { attemptPreFetch: [opts] },
-    ],
+    changeTemplate: (element, opts: { forceBypassCache?: boolean } = {}) => {
+      // A new or reloaded template is news, kept content or not
+      announced.delete(element);
+      const { templatePromise, isActive } = element;
+      return [
+        templatePromise && {
+          setCanceledState: [],
+        },
+        {
+          didLoad: false,
+          _persistedTree: null,
+          isError: false,
+        },
+        // Bypass the in-memory template cache so reload sees the latest
+        // source (matters when `templateRef` is a URL).
+        isActive ? { attemptLoad: [opts] } : { attemptPreFetch: [opts] },
+      ];
+    },
     readyContent: () => ({
       delayingReady: false,
     }),
-    // @ts-ignore TODO defineMethods
-    startReady: ({ readyOn, readyContent, readyPromiseObject }) => {
+    startReady: (element) => {
+      // @ts-ignore TODO defineMethods
+      const { readyOn, readyContent, readyPromiseObject } = element;
       if (readyPromiseObject) return false;
       const newReadyPromiseObject = makePromiseObject();
       if (readyOn) {
         // Ignore abort rejects; `readyContent` only runs on success
         newReadyPromiseObject!.promise.then(readyContent, () => {});
       }
+      const host = hostOf(element);
       return [
-        readyOn && { delayingReady: true },
+        // Prerendered content stays on screen: its render keeps it
+        readyOn && !(host && hasServerContent(host)) && { delayingReady: true },
         { readyPromiseObject: newReadyPromiseObject },
       ];
     },
-    isResponsibleForReady: ({ readyOn }, caller: string | Event) => {
-      if (caller === "startTeardown") {
-        return { returns: true };
-      } else if (readyOn && caller instanceof Event) {
-        return { returns: true };
-      } else if (!readyOn && caller === "renderChildren") {
-        return { returns: true };
-      }
-      return { returns: false };
-    },
+    isResponsibleForReady: ({ readyOn }, caller: string | Event) => ({
+      returns:
+        caller === "startTeardown" ||
+        // Kept prerendered content: the server already waited for `ready-on`
+        caller === "adopted" ||
+        (readyOn ? caller instanceof Event : caller === "renderChildren"),
+    }),
     tryCompleteReady: (
-      // @ts-ignore TODO defineMethods
-      { readyPromiseObject, isResponsibleForReady },
+      element,
       caller: string | Event,
       method: "reject" | any
     ) => {
-      if (!readyPromiseObject || !isResponsibleForReady(caller)) {
+      // @ts-ignore TODO defineMethods
+      const { readyPromiseObject, isResponsibleForReady } = element;
+      const host = hostOf(element);
+      if (
+        !readyPromiseObject ||
+        !isResponsibleForReady(caller) ||
+        /* An event from prerendered content neither kept nor replaced yet:
+           its view may have changed, what replaces it announces itself */
+        (caller instanceof Event &&
+          !!host &&
+          hasServerContent(host) &&
+          !announced.has(element))
+      ) {
         return;
       }
       /* `readyOn` can fire more than once. Pass `"reject"` on mid-flight
@@ -574,9 +645,9 @@ export const RenderableElement = Neutron.compose([
     changeTemplate: [{ forceBypassCache: true }],
   }))
   /*
-   * Retarget when `hostRef` is set, changed, or unset. Order: clear the
-   * old host's children (so a kept host, element / shadow / iframe body /
-   * portal, isn't left stale), resolve the new host, then re-render.
+   * Retarget when `hostRef` is set, changed, or unset. Order: resolve the
+   * new host, clear the old one's children (so a kept host, element /
+   * shadow / iframe body / portal, isn't left stale), then re-render.
    *
    * `persist-content` re-places `_persistedTree`. Otherwise `attemptLoad`
    * re-resolves (URL refs hit the shared fetch cache).
@@ -584,12 +655,10 @@ export const RenderableElement = Neutron.compose([
    * An unreadied author iframe: `resolveRenderHost` returns null; its
    * load handler paints once the body exists.
    */
-  .onPropChanged("hostRef", ({ isActive, _persistedTree }) => [
-    /* Clear the previous host (light DOM / shadow / iframe body / portal)
-       before resolving the new one. Author iframes stay; only their body
-       children are cleared via `renderHost`. */
-    isActive && { clearHostChildren: [] },
+  .onPropChanged("hostRef", ({ isActive, _persistedTree, renderHost }) => [
     { setupRenderHost: [] },
+    // Author iframes stay; only their body children are cleared
+    isActive && { clearHostChildren: [renderHost] },
     isActive && (_persistedTree ? { renderChildren: [] } : { attemptLoad: [] }),
   ])
   .onPromiseResolved(

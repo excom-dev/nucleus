@@ -3,6 +3,7 @@ export * from "./common";
 export * from "./dom";
 export * from "./fetching";
 export * from "./form";
+export * from "./hydration";
 export * from "./key-filter";
 export * from "./loop-guard";
 export * from "./property";

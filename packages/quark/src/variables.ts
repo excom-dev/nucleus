@@ -1,5 +1,10 @@
-import { readBinding } from "./bindings";
-import { isThenable, markRenderPromise, VALUE_MAP } from "./constants";
+import { findBindingOwner, readBinding } from "./bindings";
+import {
+  isThenable,
+  markRenderPromise,
+  PENDING_READ,
+  VALUE_MAP,
+} from "./constants";
 import { QuarkEvalError } from "./evaluator";
 import { getQuarkInternal } from "./quark-internal";
 import type { ExpressionResult, QuarkOptions } from "./types";
@@ -9,10 +14,39 @@ import {
   di,
   execWhenReady,
   getChildren,
+  isHydrating,
   isPojo,
   isPrimitive,
+  isServerRender,
   resolveTemplateContent,
+  templateIdentity,
 } from "@excom/kit-utils";
+
+/** A row's loop key as text: a server render writes it, the client adopts the row by it. */
+const KEY_ATTR = "q-key";
+
+/**
+ * While hydrating, a server-rendered row `iterate()` has not adopted yet: a
+ * `q-key`, no loop data. Later (or a copied row on a client-only page) it
+ * is an ordinary child, re-rendered like a cold page's.
+ */
+const isServerRow = (row: Element) =>
+  isHydrating() &&
+  getQuarkInternal(row).getLoopIndex() === undefined &&
+  row.hasAttribute(KEY_ATTR);
+
+/** `row` renders `key`: its loop key, or a server row's `q-key` (as text). */
+const isRowOf = (row: Element, key: unknown) =>
+  isServerRow(row)
+    ? row.getAttribute(KEY_ATTR) === String(key)
+    : getQuarkInternal(row).getLoopKey() === key;
+
+/** Loop data of `el`'s row. A server row has none until adopted: its rules wait. */
+const loopOf = (el: Element) => {
+  const row = el.closest("[q-loop] > *");
+  if (row && isServerRow(row)) throw PENDING_READ;
+  return row ? getQuarkInternal(row) : undefined;
+};
 
 const setLoopData = (
   el,
@@ -57,19 +91,9 @@ const BUILTINS: Record<string, (ctx: BuiltinContext) => unknown> = {
   element: ({ elRef }: BuiltinContext): HTMLElement | undefined =>
     di.apply([elRef], (el) => el),
   item: ({ elRef }: BuiltinContext): unknown | undefined | null =>
-    di.apply([elRef], (el) => {
-      const itemEl = el.closest("[q-loop] > *");
-      if (itemEl) {
-        return getQuarkInternal(itemEl as HTMLElement).getLoopItem();
-      }
-    }),
+    di.apply([elRef], (el) => loopOf(el)?.getLoopItem()),
   index: ({ elRef }: BuiltinContext): number | undefined =>
-    di.apply([elRef], (el) => {
-      const itemEl = el.closest("[q-loop] > *");
-      if (itemEl) {
-        return getQuarkInternal(itemEl as HTMLElement).getLoopIndex();
-      }
-    }),
+    di.apply([elRef], (el) => loopOf(el)?.getLoopIndex()),
   // `@on … { }` blocks: the event being handled (see Rule.runEvent)
   event: ({ options }: BuiltinContext): Event | undefined => options.event,
   // `@on (target: "…") { }` blocks: the delegate element; else event.target
@@ -148,10 +172,11 @@ const BUILTINS: Record<string, (ctx: BuiltinContext) => unknown> = {
   template:
     ({ elRef }: BuiltinContext) =>
     (templateRef: string): Promise<ExpressionResult> | undefined => {
+      const ref = templateRef || ":scope > template";
       const nodes = di.apply([elRef], (el) => {
         return execWhenReady(
           resolveTemplateContent(
-            templateRef || ":scope > template",
+            ref,
             {
               scope: el,
             }
@@ -162,6 +187,12 @@ const BUILTINS: Record<string, (ctx: BuiltinContext) => unknown> = {
             return {
               type: "nodes" as const,
               value: [node],
+              // only a server render (stamps it) and hydration (adopts by
+              // it) need the source
+              identity:
+                isServerRender() || isHydrating()
+                  ? templateIdentity(ref, { scope: el })
+                  : null,
             };
           }
         );
@@ -196,7 +227,10 @@ const BUILTINS: Record<string, (ctx: BuiltinContext) => unknown> = {
             // template needs cloning, otherwise it will be removed from the DOM
           ),
           (templateHtml) => {
-            el.setAttribute("q-loop", "");
+            // hydrating: a server list keeps its marker, nothing to rewrite
+            if (!isHydrating() || !el.hasAttribute("q-loop")) {
+              el.setAttribute("q-loop", "");
+            }
             const existingChildren = getChildren(el).otherChildren;
             const entriesResult = isArray
               ? result.map((item, index) => [index, item])
@@ -215,32 +249,34 @@ const BUILTINS: Record<string, (ctx: BuiltinContext) => unknown> = {
               options,
             });
             const changedElements: Node[] = [];
+            // server rows adopted this pass: one item each (duplicates)
+            const adopted = new Set<Element>();
             const returnChildren = entriesResult.map(
               ([resultIndex, resultItem]) => {
                 const resultKey = keyProperty
                   ? resultItem[keyProperty]
                   : hashObject(resultItem);
-                const existingChild = existingChildren.find((c) => {
-                  // TODO account for scenario where data matches multiple elements
-                  return (
-                    resultKey ===
-                    getQuarkInternal(c as HTMLElement).getLoopKey()
-                  );
-                });
-                if (!existingChild) {
-                  // if key is not found, create new element
-                  const newChild = setLoopData(
-                    document.importNode(templateHtml, true) as Element,
-                    resultIndex,
-                    resultItem,
-                    // use hash for key if key property is not provided
-                    !keyProperty ? resultKey : hashObject(resultItem),
-                    resultKey
-                  );
-                  changedElements.push(newChild);
-                  return newChild;
-                }
+                // use hash for key if key property is not provided
                 const hash = !keyProperty ? resultKey : hashObject(resultItem);
+                const existingChild = existingChildren.find(
+                  // TODO account for scenario where data matches multiple elements
+                  (c) => !adopted.has(c) && isRowOf(c, resultKey)
+                );
+                if (!existingChild || isServerRow(existingChild)) {
+                  // key not found: a new row. A server row is adopted as is,
+                  // with the loop data its rules read
+                  const row =
+                    existingChild ??
+                    (document.importNode(templateHtml, true) as Element);
+                  if (existingChild) adopted.add(existingChild);
+                  else if (isServerRender()) {
+                    row.setAttribute(KEY_ATTR, String(resultKey));
+                  }
+                  changedElements.push(
+                    setLoopData(row, resultIndex, resultItem, hash, resultKey)
+                  );
+                  return row;
+                }
                 const internal = getQuarkInternal(existingChild as HTMLElement);
                 let didChange = false;
 
@@ -287,6 +323,11 @@ const BUILTINS: Record<string, (ctx: BuiltinContext) => unknown> = {
                     requeue(options, c as HTMLElement, "NEW_SELF");
                   });
                 }
+                if (adopted.size) {
+                  options.rule?.quarkInstance.queueAdoptedRows(el, [
+                    ...adopted,
+                  ]);
+                }
               }),
             };
           }
@@ -326,7 +367,8 @@ export interface QuarkScope {
   /**
    * Resolve a bare identifier or `$variable` for the evaluating element.
    * Order: value keywords → `@use` exports → built-ins → `$bindings`
-   * (walk ancestors; `undefined` when unbound). Unknown bare ids throw.
+   * (walk ancestors; `undefined` when unbound, pending while hydrating).
+   * Unknown bare ids throw.
    */
   lookup(name: string): unknown;
 }
@@ -364,7 +406,19 @@ export const createScope = ({
         }
         return builtins[name];
       }
-      if (name.startsWith("$")) return readBinding(element, name);
+      if (name.startsWith("$")) {
+        const value = readBinding(element, name);
+        // hydrating: a binding no rule wrote yet (its sheet may still load
+        // `@use`) keeps the server's paint; readers re-run once it is bound
+        if (
+          value === undefined &&
+          isHydrating() &&
+          !findBindingOwner(element, name)
+        ) {
+          throw PENDING_READ;
+        }
+        return value;
+      }
       throw new QuarkEvalError(`"${name}" is not defined`);
     },
   };
