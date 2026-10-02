@@ -1,8 +1,8 @@
 # Manual redeploy of the docs site from `main`. Pushes to `main` deploy
 # through the Release workflow (publish.yml), after the version bump, so the
-# site always shows the versions on npm. Run this from `main` only: the deploy
-# build loads the Kit from unpkg at the workspace version, which the check below
-# requires to be on npm as built here.
+# site always shows the versions on npm. Run this from `main` only. The deploy
+# build loads the Kit from unpkg at the workspace version when the check below
+# finds it on npm as built here, and bundles the workspace Kit when it does not.
 #
 # CLOUDFLARE_API_TOKEN needs Workers Scripts:Edit (account), plus Workers
 # Routes:Edit and DNS:Edit on the zone of the custom domain declared in
@@ -49,13 +49,20 @@ jobs:
 
       # The deploy build loads the Kit from unpkg at the workspace version: that
       # version on unpkg must be the Kit built here, or prerendered pages would
-      # hydrate with other code.
+      # hydrate with other code. Between releases the workspace Kit can differ
+      # from the published one: the check then fails and this manual deploy
+      # bundles the workspace Kit instead. The Release workflow never falls back.
       - name: Check the published Nucleus Kit
+        id: kit
+        continue-on-error: true
         working-directory: packages/docs-site
         run: node node_modules/@excom/heft-rig/scripts/kit-check.mjs
+      - name: Note the fallback to the bundled Kit
+        if: steps.kit.outcome == 'failure'
+        run: echo "::warning::The Nucleus Kit on unpkg is not the Kit built here. This deploy bundles the workspace Kit."
       - name: Build the docs site for deploy
         working-directory: packages/docs-site
-        run: pnpm run build --kit=unpkg
+        run: pnpm run build --kit=${{ steps.kit.outcome == 'success' && 'unpkg' || 'bundled' }}
 
       # Markdown API docs + llms.txt / llms-full.txt; copies llms into site dist.
       - run: node common/scripts/install-run-rush.js build:docs

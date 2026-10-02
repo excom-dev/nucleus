@@ -1,8 +1,9 @@
 # Manual redeploy of wrenfield.excom.dev from `main`. Pushes to `main` deploy
 # through the Release workflow (publish.yml), after the version bump, so the
-# page always loads a Kit version that is on npm. Run this from `main` only:
-# another ref can carry a Kit version that was never published, which the
-# published-Kit check below refuses.
+# page always loads a Kit version that is on npm. Run this from `main` only.
+# When the workspace Kit is not the published one (a change since the last
+# release), the published-Kit check below fails and the deploy bundles the
+# workspace Kit instead of loading it from unpkg.
 #
 # CLOUDFLARE_API_TOKEN needs Workers Scripts:Edit (account), plus Workers
 # Routes:Edit and DNS:Edit on the excom.dev zone for the custom domain
@@ -40,12 +41,20 @@ jobs:
       # deploy build loads the Kit from unpkg at the workspace version, which
       # must be the Kit built here), and nucleus-ssr, for the prerender.
       - run: node common/scripts/install-run-rush.js build --to wrenfield
+      # Between releases the workspace Kit can differ from the published one:
+      # the check then fails and this manual deploy bundles the workspace Kit
+      # instead. The Release workflow never falls back.
       - name: Check the published Nucleus Kit
+        id: kit
+        continue-on-error: true
         working-directory: packages/wrenfield
         run: node node_modules/@excom/heft-rig/scripts/kit-check.mjs
+      - name: Note the fallback to the bundled Kit
+        if: steps.kit.outcome == 'failure'
+        run: echo "::warning::The Nucleus Kit on unpkg is not the Kit built here. This deploy bundles the workspace Kit."
       - name: Build Wrenfield for deploy
         working-directory: packages/wrenfield
-        run: pnpm run build --kit=unpkg
+        run: pnpm run build --kit=${{ steps.kit.outcome == 'success' && 'unpkg' || 'bundled' }}
 
       # Pages whose inputs did not change are reused from the last run's cache.
       - name: Restore prerender cache
