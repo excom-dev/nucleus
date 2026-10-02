@@ -149,7 +149,8 @@ const evaluate = (node: Expression, ctx: EvalContext): any => {
       // unknown bare identifiers throw inside `lookup`
       return ctx.scope.lookup(node.name);
     case "variable":
-      // `$bindings` never throw: unbound resolves to `undefined` (wipe)
+      // unbound resolves to `undefined` (wipe); while hydrating the scope
+      // throws `PENDING_READ` instead (the declaration preserves)
       return ctx.scope.lookup("$" + node.name);
     case "parent_reference":
       // Legacy behavior: `&` in an expression resolves to the element's tag

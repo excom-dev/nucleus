@@ -626,6 +626,21 @@ describe("RenderableElement host-ref", () => {
     expect(el.shadowRoot.querySelector("p")?.textContent).toBe("moves");
   });
 
+  it("clears the light DOM when host-ref moves to a selector that matches nothing", async () => {
+    const el = fixture<any>(
+      `<${TAG}><template><p class="here">here</p></template></${TAG}>`,
+    );
+    await waitForEvent(el, EVT("did-render"), () => {
+      el.isActive = true;
+    });
+
+    await waitForEvent(el, EVT("did-unrender"), () => {
+      el.hostRef = "#rl-missing-host";
+    });
+    expect(el.renderHost).toBeNull();
+    expect(el.querySelector(".here")).toBeNull();
+  });
+
   it("re-targets a persisted tree without re-resolving the template", async () => {
     const el = fixture<any>(
       `<${TAG} persist-content><template><p>kept</p></template></${TAG}>`,

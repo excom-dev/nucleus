@@ -1195,7 +1195,8 @@ describe("spa-manager", () => {
     const started = Date.now();
     await navigate(manager, () => click(linkSlow));
     expect(Date.now() - started).toBeGreaterThanOrEqual(15);
-    expect(routeSlow.delayingReady).toBe(true);
+    // revealed: a missed `ready-on` event must not hide the route for good
+    expect(routeSlow.delayingReady).toBe(false);
     expect(routeSlow.textContent).toContain("Slow");
     expect(manager.isTransitioning).toBe(false);
     routeSlow.dispatchEvent(new Event("content-ready"));

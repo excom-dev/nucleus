@@ -25,7 +25,7 @@ import {
 import { getQuarkInternal } from "./quark-internal";
 import { Rule, transitionSpec } from "./rule";
 import { acquireScopeId, releaseScopeId } from "./scope-id";
-import { addBusyCheck, whenSettled } from "./settle";
+import { addBusyCheck, holdWindow, whenSettled } from "./settle";
 import type {
   InsertedNodes,
   MutationMap,
@@ -42,7 +42,13 @@ import {
   QuarkLogger,
   stringToHash,
 } from "./utils";
-import { LoopGuard, resolveModuleReference } from "@excom/kit-utils";
+import {
+  holdHydration,
+  isHydrating,
+  LoopGuard,
+  resolveModuleReference,
+  whenHydrated,
+} from "@excom/kit-utils";
 import type { UseRule } from "@excom/quark-parser";
 import { parse } from "@excom/quark-parser";
 
@@ -156,8 +162,10 @@ export class Quark {
   /**
    * Resolve once Quark is idle — no queued or running rule pass, no paint
    * waiting to commit, no async `content` or `@use` load pending — or
-   * after `timeout` ms (default 1000): `"settled"`, `"until"` or
-   * `"timeout"`. For tests and tools; sheets have no after-render hook.
+   * after `timeout` ms (default 1000; `Infinity`: no cap, for a caller that
+   * bounds the wait itself, like a prerenderer's `settle` hook):
+   * `"settled"`, `"until"` or `"timeout"`. For tests and tools; sheets
+   * have no after-render hook.
    */
   static whenSettled = whenSettled;
   /**
@@ -208,6 +216,12 @@ export class Quark {
   pendingModules: Promise<{ [key: string]: Vars }> | null = null;
   /** Timers of pending `@delay` blocks (cleared on unregister). */
   delayTimers = new Set<ReturnType<typeof setTimeout>>();
+  /**
+   * Declarations a hydrating run kept as painted for a read with no value
+   * yet, per element: they run again once the window closes (dropped on
+   * unregister, and for elements gone by then).
+   */
+  pendingReads: Map<Element, Set<Variable | Attribute | Listener>> = new Map();
   /**
    * Set while this sheet is inside the outermost `run()`: what ran, in
    * order. `$binding` writes meanwhile are queued (`queueBindingChange`)
@@ -340,11 +354,16 @@ export class Quark {
     }
     if (!this.isRunningRules) {
       this.isRunningRules = true;
+      const release = holdWindow();
       // todo: clean up - double setTimeout(0) ensures that a new quark run is triggered after the current paint is complete.
       setTimeout(() => {
         setTimeout(() => {
-          this.runRules();
-          this.isRunningRules = false;
+          try {
+            this.runRules();
+            this.isRunningRules = false;
+          } finally {
+            release();
+          }
         }, 0);
       }, 0);
     }
@@ -376,9 +395,11 @@ export class Quark {
     const ast = parse(this.src);
     // Kick off @use imports immediately so the fetch overlaps rule
     // construction, registration, and the initial DOM matching pass.
+    // A hydration window stays open until they load: the first run
+    // waiting on them still adopts the server's paint.
     const useRules = collectUseRules(ast.body);
     if (useRules.length) {
-      this.pendingModules = loadUseModules(useRules);
+      this.pendingModules = holdHydration(loadUseModules(useRules));
     }
     const buildRules = (
       statements: Statement[],
@@ -678,6 +699,7 @@ export class Quark {
     this.delayTimers.forEach((timer) => clearTimeout(timer));
     this.delayTimers.clear();
     this.ADDED_NODES.clear();
+    this.pendingReads.clear();
     unobserve(this.observer, this.listenerConfig);
     this.observer = null;
     this.propSubscriptions.forEach((byName) =>
@@ -724,6 +746,72 @@ export class Quark {
       Math.max(0, ...names.map((name) => LoopGuard.depthOf(element, name))),
       () => this.runElement(element, ["PROP"], { properties, isAsyncRun: true })
     );
+  }
+
+  /**
+   * After `property` resolved on `element`: `isPending` when a hydrating
+   * run kept it as painted, a read having no value yet. Once the window
+   * closes it runs again with cold semantics (unbound is `undefined`), so
+   * the page ends where a cold mount would; resolved before, it is done.
+   */
+  trackPendingRead(
+    element: Element,
+    property: Variable | Attribute | Listener,
+    isPending: boolean
+  ) {
+    if (!isPending) {
+      if (!this.pendingReads.size) return;
+      const properties = this.pendingReads.get(element);
+      if (properties?.delete(property) && !properties.size) {
+        this.pendingReads.delete(element);
+      }
+      return;
+    }
+    // no window to wait for: nothing would come back to it
+    if (!isHydrating()) return;
+    if (!this.pendingReads.size) {
+      whenHydrated().then(() => this.rerunPendingReads());
+    }
+    let properties = this.pendingReads.get(element);
+    if (!properties) this.pendingReads.set(element, (properties = new Set()));
+    properties.add(property);
+  }
+
+  private rerunPendingReads() {
+    const pending = this.pendingReads;
+    this.pendingReads = new Map();
+    if (!this.isRegistered) return;
+    pending.forEach((properties, element) => {
+      if (!element.isConnected) return;
+      this.runElement(element, ["PROP"], {
+        properties: [...properties],
+        isAsyncRun: true,
+      });
+    });
+  }
+
+  /**
+   * `iterate()` adopted `rows` of `list`, server rows no node of which
+   * moved: other sheets' observers never saw them arrive. A sheet over the
+   * list gets them as an insertion, a sheet inside a row runs over its
+   * host, so rules on or in the rows (an `item` read that waited for its
+   * row) run now.
+   */
+  queueAdoptedRows(list: Element, rows: Element[]) {
+    QuarkRegistry.sheets.forEach((ref) => {
+      const sheet = ref.deref();
+      const host = sheet?.host?.deref();
+      if (!sheet || sheet === this || !sheet.isRegistered || !host) return;
+      if (host.contains(list)) {
+        sheet.queueRunRules({
+          element: list as HTMLElement,
+          attribute: "content",
+          added: rows,
+        });
+      } else if (rows.some((row) => row.contains(host))) {
+        sheet.queueRunRules({ element: host, attribute: "NEW_SELF" });
+      }
+    });
   }
 
   private reduceAttrs() {

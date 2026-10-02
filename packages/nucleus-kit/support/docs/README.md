@@ -46,6 +46,8 @@ pre-upgrade state with `:not(:defined)`), it is ES modules only, and elements
 inside a shadow root need `observeElements(shadowRoot)` from the same module.
 The all-in `index.umd.min.js` and the ESM `index.js` are unchanged.
 
+On a [prerendered page](/nucleus/docs/prerendering), the packages for the tags present at startup load before hydration ends, so those elements keep the prerendered markup.
+
 #### Idle loading
 
 Prefetch the remaining packages once the page has loaded, so later views, dialogs and SPA navigations upgrade instantly with no round-trip. Packages load one per browser idle period; tags already on the page load first and are never fetched twice.
@@ -60,6 +62,10 @@ Opt in on `<body>` (works with inline / bundled imports) or on the entry's own `
 ```
 
 An empty value loads everything; a space-separated list loads only the packages behind those tags (unknown tags log a warning). `data-idle` is read only from the `<script>` whose `src` is the entry itself and wins over the body attribute. Nothing is prefetched in data-saver mode (Save-Data). From JS, `idleLoadElements(tags?)` does the same.
+
+### Server entry
+
+`@excom/nucleus-kit/server` is the kit for [prerendering](/nucleus/docs/prerendering) in Node: every export of the main entry except the elements that read the device or the person (`detect-browser`, `detect-features`, `detect-media`, `gesture-handler`, `network-status`, `provider-geolocation`, `provider-orientation`, `provider-storage`, `service-worker`, `web-authn`). Those stay as written in the prerendered page and upgrade in the browser; `SERVER_EXCLUDED_TAGS` lists their tags. ES modules only, not for the browser.
 
 ### À la carte
 

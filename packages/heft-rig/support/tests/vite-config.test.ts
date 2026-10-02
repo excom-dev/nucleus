@@ -575,13 +575,14 @@ describe("createRigViteConfig", () => {
   });
 
   describe("preview", () => {
-    it("serves dist with compression and the module rewrite", async () => {
+    it("serves dist with compression, the module rewrite and the Pages rules", async () => {
       const config = await createRigViteConfig({ mode: "preview", root: ws.site });
       expect(config.build).toEqual({ outDir: path.join(ws.site, "dist") });
       expect(config.preview).toEqual({ port: 4173, host: true });
       expect(names(config.plugins as unknown[])).toEqual([
         "dev-server-compress",
         "quark-module-extensionless",
+        "pages-rules",
       ]);
     });
   });

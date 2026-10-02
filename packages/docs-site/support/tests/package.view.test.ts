@@ -15,7 +15,6 @@ import {
 } from "@excom/nucleus-test";
 import { Quark } from "@excom/quark";
 import {
-  bypassSelectorCache,
   flush,
 } from "@excom/quark/support/tests/view-helpers";
 import { renderMarkdown } from "@excom/heft-rig/scripts/render-markdown.mjs";
@@ -204,7 +203,6 @@ const originalLoader = Quark.moduleLoader;
 
 describe("package view", () => {
   beforeEach(() => {
-    bypassSelectorCache();
     requested.length = 0;
     Quark.moduleLoader = async (url: string) => {
       if (url.includes("shell")) return shellStub;
@@ -251,6 +249,7 @@ describe("package view", () => {
 
     expect(requested).toEqual(["/package-metas/neutron.json"]);
     expect(page.hasAttribute("data-is-package-doc")).toBe(false);
+    expect(page.querySelector("[bind-package-link]")?.hasAttribute("route-href")).toBe(false);
     expect(page.querySelector(".md-content h1")?.textContent).toBe("neutron");
     expect(page.hasAttribute("data-has-prev")).toBe(false);
     expect(page.hasAttribute("data-has-next")).toBe(true);
@@ -276,6 +275,10 @@ describe("package view", () => {
 
     expect(requested).toEqual(["/package-metas/docs-site.json"]);
     expect(page.hasAttribute("data-is-package-doc")).toBe(false);
+    // the hidden breadcrumb links nowhere: `/nucleus/packages/` is no page
+    const crumb = page.querySelector("[bind-package-link]")!;
+    expect(crumb.hasAttribute("route-href")).toBe(false);
+    expect(crumb.textContent).toBe("");
     expect(page.querySelector(".md-content h1")?.textContent).toBe(
       "Introduction",
     );

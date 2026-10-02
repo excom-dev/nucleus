@@ -67,6 +67,22 @@ describe("QuarkInternal", () => {
     expect(internal.hasVar("$o")).toBe(false);
   });
 
+  it("skips an attribute write equal once written (0 and \"0\")", () => {
+    const el = document.createElement("p");
+    el.setAttribute("data-n", "0");
+    const internal = getQuarkInternal(el);
+    const setAttribute = vi.spyOn(el, "setAttribute");
+    internal.setAttr("h", "data-n", 0);
+    expect(setAttribute).not.toHaveBeenCalled();
+    // still counts as set by the sheet, as when it was rewritten
+    expect(internal.propertyHasBeenSet("h", 0, "attribute", "data-n")).toBe(
+      true
+    );
+    internal.setAttr("h", "data-n", 1);
+    expect(setAttribute).toHaveBeenCalledWith("data-n", 1);
+    expect(el.getAttribute("data-n")).toBe("1");
+  });
+
   it("stores modules per sheet, defaulting to the bare bucket", () => {
     const internal = getQuarkInternal(document.createElement("div"));
     internal.setModule("h", undefined, { a: 1 });
@@ -454,6 +470,72 @@ describe("settle", () => {
     } finally {
       Quark.moduleLoader = original;
     }
+  });
+
+  describe("timeout", () => {
+    /** The longest delay a timer keeps; past it, platforms fire at once. */
+    const MAX_DELAY = 2 ** 31 - 1;
+    const delaysOf = (timers: { mock: { calls: unknown[][] } }) =>
+      timers.mock.calls.map(([, delay]) => Number(delay ?? 0));
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it("Infinity waits with no cap for a queued pass, arming no overflowing timer", async () => {
+      const warnings = vi.spyOn(process, "emitWarning");
+      const timers = vi.spyOn(globalThis, "setTimeout");
+      const { root, quark } = mount(
+        `<p bind-x></p>`,
+        `[bind-x][data-on] { data-x: "1"; }`
+      );
+      await flush();
+      const p = root.querySelector("p")!;
+      p.setAttribute("data-on", "");
+      quark.queueRunRules({ element: p, attribute: "data-on" });
+      expect(isQuarkBusy()).toBe(true);
+      expect(await whenSettled({ timeout: Infinity })).toBe("settled");
+      expect(p.getAttribute("data-x")).toBe("1");
+      expect(delaysOf(timers).filter((delay) => !(delay <= MAX_DELAY))).toEqual(
+        []
+      );
+      const overflows = warnings.mock.calls.filter((args) =>
+        args.some((arg) => String(arg).includes("TimeoutOverflowWarning"))
+      );
+      expect(overflows).toEqual([]);
+    });
+
+    it("re-arms a cap past the longest delay instead of firing it early", async () => {
+      const timers = vi.spyOn(globalThis, "setTimeout");
+      let release!: () => void;
+      trackPending(new Promise<void>((resolve) => (release = resolve)));
+      try {
+        let state = "pending";
+        const result = whenSettled({ timeout: MAX_DELAY + 5 });
+        result.then((settled) => (state = settled));
+        await wait(20);
+        expect(state).toBe("pending");
+        expect(delaysOf(timers).every((delay) => delay <= MAX_DELAY)).toBe(true);
+        // the longest delay elapsed: the rest is armed anew, then fires
+        const index = delaysOf(timers).indexOf(MAX_DELAY);
+        clearTimeout(timers.mock.results[index].value);
+        (timers.mock.calls[index][0] as () => void)();
+        expect(delaysOf(timers).at(-1)).toBe(5);
+        expect(await result).toBe("timeout");
+      } finally {
+        release();
+      }
+    });
+
+    it("takes NaN as the default cap, and a negative one as already over", async () => {
+      const timers = vi.spyOn(globalThis, "setTimeout");
+      const defaulted = whenSettled({ timeout: NaN });
+      expect(delaysOf(timers)[0]).toBe(1000);
+      const over = whenSettled({ timeout: -5 });
+      expect(delaysOf(timers)[2]).toBe(0);
+      expect(await defaulted).toBe("settled");
+      expect(await over).toBe("timeout");
+    });
   });
 });
 

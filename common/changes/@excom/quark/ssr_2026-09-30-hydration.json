@@ -1,0 +1,25 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/quark",
+      "comment": "Sheets hydrate prerendered pages unchanged: `iterate()` rows are adopted by their `q-key`, content painted by `template()` / `dangerous-html()` is kept when its source matches, and a `$binding` nobody has written yet keeps the server's paint until hydration ends",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/quark",
+      "comment": "A rule no longer rewrites an attribute whose value already reads the same as text (`data-n: 0` over `data-n=\"0\"`)",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/quark",
+      "comment": "`Quark.whenSettled({ timeout: Infinity })` waits with no cap (it resolved `\"timeout\"` at once)",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/quark",
+      "comment": "A `@warn` / `@error` whose value is a preserve stays silent and reports on a later run that has a value",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/quark"
+}

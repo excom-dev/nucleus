@@ -1,0 +1,30 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/heft-rig",
+      "type": "minor",
+      "comment": "`prerender.mjs`: prerender a package's site from workspace source through `@excom/nucleus-ssr` (a package's `build:prerender` script; `rush build:prerender`), printing one line per page; it exits non-zero when a page fails or when an internal link in a prerendered page leads to no page"
+    },
+    {
+      "packageName": "@excom/heft-rig",
+      "type": "patch",
+      "comment": "The sitemap lists every doc page of a package, including pages of packages without a `docs-sections.json`"
+    },
+    {
+      "packageName": "@excom/heft-rig",
+      "type": "patch",
+      "comment": "A root `server.ts` entry builds ESM only, with no UMD file, like `testing.ts`"
+    },
+    {
+      "packageName": "@excom/heft-rig",
+      "type": "patch",
+      "comment": "`preview` serves a built site as Cloudflare Pages does: the 200 rewrites of `_redirects`, the headers of `_headers`, `/a/b/` moved to `/a/b`, and `404.html` with a 404 for an unknown page"
+    },
+    {
+      "packageName": "@excom/heft-rig",
+      "type": "patch",
+      "comment": "Docs markdown: a custom element alone on its lines is no longer wrapped in `<p>`, which a browser's parser ends at the first block element the custom element renders"
+    }
+  ],
+  "packageName": "@excom/heft-rig"
+}

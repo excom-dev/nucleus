@@ -294,6 +294,10 @@ export const renderLang = (
 export const renderLangCopy = (val: string, lang: string) =>
   renderLang(val, lang, { includeCopyButton: true });
 
+const textOf = (html: string) =>
+  Object.assign(document.createElement("template"), { innerHTML: html }).content
+    .textContent;
+
 /**
  * Re-renders the `[data-highlight]` overlay next to the event target. The
  * language comes from the closest `[data-language]` (default `html`).
@@ -306,8 +310,10 @@ export const _renderPre =
     const lang =
       e.target.closest("[data-language]")?.getAttribute("data-language") ||
       "html";
-    e.target.parentElement.querySelector("[data-highlight]").innerHTML =
-      renderLang(shouldFormat ? formatCode(value) : value, lang);
+    const overlay = e.target.parentElement.querySelector("[data-highlight]");
+    const html = renderLang(shouldFormat ? formatCode(value) : value, lang);
+    // the same code shows already (a prerendered page): keep its nodes
+    if (overlay.textContent !== textOf(html)) overlay.innerHTML = html;
   };
 
 export const renderPreFormatted = _renderPre({ shouldFormat: true });
@@ -391,7 +397,8 @@ export const upgradeTemplateCode = (e) => {
   const template = e.target.querySelector("template");
   const language = e.target.getAttribute("data-language");
   const content = template.innerHTML;
-  if (!content) return;
+  // highlighted already (a prerendered page): again would show its markup
+  if (!content || template.content.querySelector(".shiki")) return;
   template.innerHTML = renderLang(unescapeHtml(content), language || "txt", {
     includeCopyButton: true,
   });

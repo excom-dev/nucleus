@@ -27,7 +27,8 @@ provider-fetch.doc-page {
       template-ref: "/views/live-demo/live-demo.html";
       lazy-load: "";
     }
-    [bind-package-link] {
+    /* doc pages only: elsewhere the hidden crumb would link /nucleus/packages/, no page */
+    &[data-is-package-doc] [bind-package-link] {
       route-href: "/nucleus/packages/#{$package-name}";
       content: $package-name;
     }

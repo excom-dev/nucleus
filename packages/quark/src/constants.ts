@@ -30,10 +30,12 @@ export const ATTRIBUTE_BLACKLIST_REGEXES = [
  */
 export const SYMBOL_NOOP = Symbol("preserve");
 export const SYMBOL_UNSET = Symbol("unset");
+/** A failed evaluation: a no-op like `preserve`, told apart where it matters (`@warn` speaks once). */
+export const SYMBOL_FAILED = Symbol("failed");
 
 export const TYPES_WIPE: unknown[] = [undefined, null, SYMBOL_UNSET];
 
-export const TYPES_NOOP: unknown[] = [SYMBOL_NOOP];
+export const TYPES_NOOP: unknown[] = [SYMBOL_NOOP, SYMBOL_FAILED];
 
 /** Keyword → value bindings available in every expression scope. */
 export const VALUE_MAP = {
@@ -41,6 +43,15 @@ export const VALUE_MAP = {
   preserve: SYMBOL_NOOP,
   unset: SYMBOL_UNSET,
 };
+
+/**
+ * Thrown by a read with no value yet that will get one: an unbound
+ * `$binding` while hydrating, `item` / `index` of a server row `iterate()`
+ * has not adopted. The declaration preserves and re-runs once it is there.
+ */
+export const PENDING_READ = new Error(
+  "Quark: no value yet, the rendered content is kept"
+);
 
 export const isWipe = (value: unknown): boolean => TYPES_WIPE.includes(value);
 

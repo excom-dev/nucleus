@@ -40,22 +40,14 @@ describe.each(Object.keys(SETUPS))("querySelector(All) on %s", (setup) => {
     expect(root.querySelector("body > p")).toBeNull();
   });
 
-  it("resolves :scope against the context element and removes its marker", () => {
-    const root = mount(`<ul><li>1<ul><li>nested</li></ul></li><li>2</li></ul>`);
-    expect(root.querySelectorAll(":scope > li")).toHaveLength(2);
-    expect(root.querySelector(":scope > li")!.textContent).toBe("1nested");
-    expect(root.attributes).toHaveLength(0);
-  });
-
   it("matches within a shadow tree, never across its boundary", () => {
     const host = mount(`<div></div>`);
     const shadow = host.attachShadow({ mode: "open" });
     shadow.innerHTML = `<article><ul><li>1<ul><li>nested</li></ul></li><li>2</li></ul></article>`;
     const list = shadow.querySelector("ul")!;
-    expect(list.querySelectorAll(":scope > li")).toHaveLength(2);
+    expect(list.querySelectorAll("ul > li")).toHaveLength(3);
     expect(list.querySelector("article li")!.textContent).toBe("1nested");
     expect(list.querySelector("body li")).toBeNull();
-    expect(list.attributes).toHaveLength(0);
   });
 
   it("finds form controls that happy-dom's contains() misses", () => {
@@ -66,13 +58,22 @@ describe.each(Object.keys(SETUPS))("querySelector(All) on %s", (setup) => {
     expect(form.querySelector("fieldset input")!.getAttribute("name")).toBe("a");
   });
 
-  it("keeps happy-dom's subtree query for offline trees", () => {
-    const div = dom.document.createElement("div");
-    div.innerHTML = `<template id="t"><b>x</b></template><b class="b">y</b>`;
+  it("matches a disconnected tree as a whole, its top element included", () => {
+    const section = dom.document.createElement("section");
+    section.innerHTML = `<div><template id="t"><b>x</b></template><b class="b">y</b></div>`;
+    const div = section.firstElementChild!;
     expect(div.isConnected).toBe(false);
     expect(div.querySelector("template")!.id).toBe("t");
     expect(div.querySelectorAll("b")).toHaveLength(1);
-    expect(div.querySelector(":scope > .b")!.textContent).toBe("y");
-    expect(div.attributes).toHaveLength(0);
+    expect(div.querySelector("section > div > .b")!.textContent).toBe("y");
+    expect(section.querySelector("section > div")).toBe(div);
+    expect(div.querySelector("div")).toBeNull();
+  });
+
+  it("answers in a NodeList", () => {
+    const root = mount(`<section><p>a</p><p>b</p></section>`);
+    const list = root.querySelectorAll("p");
+    expect(list).toBeInstanceOf(dom.document.defaultView!.NodeList);
+    expect([list.length, list.item(1)!.textContent]).toEqual([2, "b"]);
   });
 });

@@ -1,0 +1,50 @@
+{
+  "name": "@excom/nucleus-ssr",
+  "version": "0.1.0",
+  "description": "Prerender Nucleus Stack pages to static HTML that hydrates in the browser without re-rendering",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24.13.0"
+  },
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node node_modules/@excom/heft-rig/scripts/vite-build.mjs",
+    "build:watch": "node node_modules/@excom/heft-rig/scripts/vite-build-watch.mjs",
+    "format": "node node_modules/@excom/heft-rig/scripts/format.mjs",
+    "test": "node node_modules/@excom/heft-rig/scripts/vitest.mjs",
+    "coverage": "node node_modules/@excom/heft-rig/scripts/coverage.mjs",
+    "build:package-metas": "node node_modules/@excom/heft-rig/scripts/build-package-metas.mjs"
+  },
+  "dependencies": {
+    "@excom/kit-utils": "workspace:^",
+    "@excom/nucleus-dom": "workspace:^"
+  },
+  "peerDependencies": {},
+  "devDependencies": {
+    "@excom/heft-rig": "workspace:^",
+    "@excom/nucleus-kit": "workspace:^",
+    "@excom/nucleus-test": "workspace:^"
+  },
+  "repository": {
+    "url": "excom-dev/nucleus",
+    "directory": "packages/nucleus-ssr"
+  },
+  "homepage": "https://github.com/excom-dev/nucleus/tree/main/packages/nucleus-ssr/support/docs/README.md",
+  "bugs": "https://github.com/excom-dev/nucleus/issues",
+  "keywords": [
+    "nucleus-ssr",
+    "ssr",
+    "prerender",
+    "hydration",
+    "static-site"
+  ],
+  "excom": {
+    "documented": true,
+    "navGroup": "libraries",
+    "packageType": "library",
+    "umd": false
+  }
+}

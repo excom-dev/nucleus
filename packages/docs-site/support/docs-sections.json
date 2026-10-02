@@ -15,6 +15,7 @@
         "building_views",
         "business_logic",
         "creating_elements",
+        "prerendering",
         "best_practices",
         "troubleshooting",
         "debugging_with_agents",

@@ -32,27 +32,6 @@ const INDEX = new DOMParser().parseFromString(
   "text/html",
 ).body;
 
-// happy-dom 20.8 throws on `:has(~ …)` (shell.quark's inert rules): evaluate a trailing one as a sibling query.
-const SIBLING_HAS = /^(.*):has\(\s*~\s*(.+)\)$/;
-const hasSibling = (element: Element, siblings: string) => {
-  element.setAttribute("wf-sibling-has", "");
-  try {
-    return !!element.parentElement?.querySelector(`[wf-sibling-has] ~ ${siblings}`);
-  } finally {
-    element.removeAttribute("wf-sibling-has");
-  }
-};
-const { matches, querySelectorAll } = Element.prototype;
-Element.prototype.querySelectorAll = function (this: Element, selectors: string) {
-  const [, own, siblings] = String(selectors).match(SIBLING_HAS) ?? [];
-  const found = querySelectorAll.call(this, siblings ? own : selectors);
-  return siblings ? [...found].filter((element) => hasSibling(element, siblings)) : found;
-} as typeof querySelectorAll;
-Element.prototype.matches = function (this: Element, selectors: string) {
-  const [, own, siblings] = String(selectors).match(SIBLING_HAS) ?? [];
-  return siblings ? matches.call(this, own) && hasSibling(this, siblings) : matches.call(this, selectors);
-};
-
 const clean = (element: Element | null) => element?.textContent?.trim().replace(/\s+/g, " ");
 export const $ = <T extends Element = HTMLElement>(selector: string) => document.querySelector<T>(selector);
 export const $$ = <T extends Element = HTMLElement>(selector: string) => [...document.querySelectorAll<T>(selector)];

@@ -20,3 +20,11 @@
 - A template URL request outlives the element that started it (2026-09-29): an element that deactivates, reloads, disconnects or changes `template-ref` mid-load stops waiting; the request completes and fills the cache, and other elements on that URL finish loading (were left `is-loading`)
 - The internal `content-carousel` prop `autoPlayIntervalId` is now `_autoPlayIntervalId` (2026-09-29): pause auto-play with `auto-play-stopped`
 - `is-fallback` decides from the path (2026-09-30): it is on only when no other route in its `spa-manager` matches the current path; without a manager it now checks its document (or shadow root) instead of always activating, and another fallback, its own layout or a route inside its template no longer hold it off
+- `spa-manager` keeps the fallback title in `default-title` (2026-09-30): the attribute appears on the element once a route retitles the page, and may be authored; the internal `_defaultTitle` prop is gone
+- `render-timeout` shows a route still waiting for its `ready-on` event (2026-09-30): when it settles an update, `delaying-ready` is removed from that route and its ready waiters are released (the route stayed hidden until the event fired)
+- A first mount into a `host-ref` selector no longer clears the host (2026-09-30): what the host already holds stays until the first render replaces it, and no `did-unrender` fires for it
+- A rule no longer rewrites an attribute that already reads the same (2026-09-30): values are compared as written, so `data-n: 0;` over `data-n="0"` writes nothing: no mutation record, no `attributeChangedCallback`
+- A `preserve` run no longer uses up `@warn` / `@error` (2026-09-30): the one report per element is left for a run with a value
+- A property set before upgrade is kept (2026-09-30): a declared Neutron prop assigned before the element's definition loaded is applied at upgrade (was dropped)
+- Element authors (2026-09-30): `replaceNonTemplateChildren` from kit-utils is typed `boolean | "adopted"`, and an override of `isResponsibleForReady` gets two more callers to answer `true` for: `"adopted"` (prerendered content kept) and, on a route, `"render-timeout"`
+- `scopeQueriesToDocument` is gone from `@excom/nucleus-dom` (2026-10-01): `installShims()` covers what it did; if you installed it on its own, call `supportSelectors(window)`

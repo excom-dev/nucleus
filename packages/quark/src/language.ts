@@ -357,7 +357,9 @@ export const BUILTIN_FUNCTIONS: readonly BuiltinDoc[] = [
     signature: "item",
     description:
       "Inside an `iterate()` row: the current collection item (the value " +
-      "for objects). `undefined` outside a row.",
+      "for objects). `undefined` outside a row. While a prerendered page " +
+      "hydrates, a rule on a prerendered row keeps what is painted until " +
+      "`iterate()` adopts the row.",
     group: "loop",
   },
   {
@@ -365,7 +367,7 @@ export const BUILTIN_FUNCTIONS: readonly BuiltinDoc[] = [
     signature: "index",
     description:
       "Inside an `iterate()` row: the current position (the key for " +
-      "objects). `undefined` outside a row.",
+      "objects). `undefined` outside a row. Prerendered rows: as `item`.",
     group: "loop",
   },
   {

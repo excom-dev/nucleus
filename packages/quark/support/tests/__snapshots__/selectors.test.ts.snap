@@ -30,7 +30,7 @@ exports[`selector features > :has() > re-checks the subject when an attribute na
   "importNode": 0,
   "listenerRuns": 0,
   "matches": 12,
-  "parentElement": 14,
+  "parentElement": 12,
   "quarkRuns": 2,
   "queryScopeCost": 0,
   "querySelectorAll": 0,

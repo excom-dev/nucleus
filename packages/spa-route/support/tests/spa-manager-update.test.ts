@@ -716,6 +716,34 @@ describe("spa-manager transition", () => {
     );
   });
 
+  it("reveals a route that missed its ready-on event, before the scroll write", async () => {
+    const warn = vi.spyOn(KitLogger, "warn").mockImplementation(() => {});
+    document.body.innerHTML = `
+      <spa-manager render-timeout="40">
+        <spa-route route-href="/a"><template>A</template></spa-route>
+        <spa-route route-href="/stuck" ready-on="never"><template><p id="stuck">S</p></template></spa-route>
+      </spa-manager>
+    `;
+    const manager = q<HTMLSpaManagerElement>("spa-manager");
+    const stuck = qa<HTMLSpaRouteElement>("spa-route")[1]!;
+    await navigate(manager, () => kitRouter.pushState({ url: "/a" }));
+    const shownAtScroll: boolean[] = [];
+    vi.spyOn(window, "scrollTo").mockImplementation((() =>
+      shownAtScroll.push(
+        !stuck.hasAttribute("delaying-ready")
+      )) as typeof window.scrollTo);
+
+    await navigate(manager, () => kitRouter.pushState({ url: "/stuck" }));
+    expect(warn).toHaveBeenCalledOnce();
+    expect(shownAtScroll).toEqual([true]);
+    expect(stuck.hasAttribute("delaying-ready")).toBe(false);
+    // its waiters are released; a late event changes nothing
+    expect(stuck.readyPromiseObject ?? null).toBeNull();
+    stuck.dispatchEvent(new Event("never"));
+    await wait(0);
+    expect(stuck.hasAttribute("delaying-ready")).toBe(false);
+  });
+
   it("does not warn when the routes settle in time", async () => {
     const warn = vi.spyOn(KitLogger, "warn").mockImplementation(() => {});
     document.body.innerHTML = `
@@ -896,6 +924,25 @@ describe("spa-route query", () => {
     kitRouter.pushState({ url: "/list?page=2#top" });
     await wait(5);
     expect(provisions).toHaveLength(1);
+  });
+
+  it("settles the moves of a route that rendered before it registered", async () => {
+    resetRouter("/list");
+    document.body.innerHTML = `
+      <spa-manager render-timeout="5000">
+        <spa-route is-active><template><p id="early">early</p></template></spa-route>
+      </spa-manager>
+    `;
+    const manager = q<HTMLSpaManagerElement>("spa-manager");
+    const route = q<HTMLSpaRouteElement>("spa-route");
+    await vi.waitFor(() => expect(q("#early")).not.toBeNull());
+    await wait(5);
+
+    // `navigate` gives up after 1 s, long before `render-timeout`
+    await navigate(manager, () => route.setAttribute("route-href", "/list"));
+    await navigate(manager, () => kitRouter.pushState({ url: "/list?page=2" }));
+    expect(route.provision?.query).toEqual({ page: "2" });
+    expect(q("#early")).not.toBeNull();
   });
 
   it("keeps the provision current after A, B, A in one task", async () => {

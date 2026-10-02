@@ -4,7 +4,7 @@ Symptom first, then cause, then fix. Nearly every problem comes from one of thre
 
 ## A rule doesn't run
 
-**The Quark sheet did not load.** A sheet that holds an at-rule Quark does not have (`@media`, `@keyframes`, `@supports`, …) or an `!important` fails to load: the console names the offender (`@media is not a Quark at-rule`), the sheet gets an `is-error` attribute, and none of its rules run. Keep those in the stylesheet.
+**The Quark sheet did not load.** A sheet that holds an at-rule Quark does not have (`@media`, `@keyframes`, `@supports`, …) or an `!important` fails to load: the console names the offender (`@media is not a Quark at-rule`), the sheet gets an `is-error` attribute, and none of its rules run. Keep those in the stylesheet. An inline sheet that fails to parse though it reads right may hold text the browser took for markup: see [quark-sheet](/nucleus/packages/quark-sheet#md-usage).
 
 **It's outside the host.** A sheet matches only strict descendants of its parent element. Move the sheet, target the host with `:scope`, or use `is-global` if the rule truly must reach the whole document.
 
@@ -89,8 +89,6 @@ The loop guard stops this after 50 nested paints, but the fix is the selector: m
 **The name is wrong.** `handle:` refers to an export of a module imported with `@use`. Check the export name and the `as *` / `as name` namespace.
 
 ## An element ignores its attributes
-
-**Set before upgrade with a property.** If script ran before the element's definition loaded, `el.someProp = x` is lost. Use `el.setAttribute("some-prop", x)`, which is honored on upgrade.
 
 **Wrong attribute name.** Attributes are kebab-case (`targetRef` → `target-ref`). Booleans are presence attributes (`is-paused`, not `is-paused="false"`).
 

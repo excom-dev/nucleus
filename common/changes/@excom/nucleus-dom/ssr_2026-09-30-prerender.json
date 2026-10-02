@@ -1,0 +1,25 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/nucleus-dom",
+      "comment": "For server rendering and whole-page tests: `serve()`, `whenIdle()`, `resetDocument()`, `installGlobals()`, and the `createDom()` options `viewport` / `holdTimersAbove` / `intersectAll` / `settings`",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-dom",
+      "comment": "`supportSelectors` (part of `installShims()`): `matches()`, `closest()` and `querySelector(All)()` answer as Chrome does and never stale: complex selectors inside `:not()` / `:is()` / `:where()` / `:has()`, sibling combinators, structural and form pseudo-classes, `:empty`, `:defined`, attribute flags, escapes. It replaces `scopeQueriesToDocument`, which is gone",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-dom",
+      "comment": "`findParseDifference()`: the first place where a browser's parser builds other elements from markup than happy-dom, or than the document the markup was written from",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-dom",
+      "comment": "Shims for cloned template content (`upgradeClones`), `<template>` inside tables (`supportTableTemplates`) and the parents of controls attached with a `<form>` / `<select>` (`keepFormParents`); `installMissingApis` adds `DOMException#code`",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@excom/nucleus-dom"
+}

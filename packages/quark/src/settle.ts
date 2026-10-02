@@ -16,14 +16,28 @@
  * as `Quark.whenSettled()` for tests and tools; sheets have no
  * after-render hook.
  */
-import { tc } from "@excom/kit-utils";
+import { holdHydration, isHydrating, tc } from "@excom/kit-utils";
 
 const busyChecks: Array<() => boolean> = [];
 const pendingWork = new Set<{ ref?: WeakRef<Element> }>();
+const NO_HOLD = () => {};
 
 /** Register a predicate that reports queued Quark work. */
 export const addBusyCheck = (check: () => boolean): void => {
   busyChecks.push(check);
+};
+
+/**
+ * While a prerendered page hydrates, keep its window open until the
+ * returned release is called: passes, commits and async content Quark
+ * schedules itself still adopt the server's paint. Author timers (`@delay`,
+ * `debounce`, a transition `delay`) never hold it. No window: a no-op.
+ */
+export const holdWindow = (): (() => void) => {
+  if (!isHydrating()) return NO_HOLD;
+  let release!: () => void;
+  holdHydration(new Promise<void>((resolve) => (release = resolve)));
+  return release;
 };
 
 /**
@@ -37,8 +51,10 @@ export const trackPending = (
 ): void => {
   const entry = { ref: element ? new WeakRef(element) : undefined };
   pendingWork.add(entry);
+  const release = holdWindow();
   const done = () => {
     pendingWork.delete(entry);
+    release();
   };
   promise.then(done, done);
 };
@@ -65,7 +81,10 @@ export type SettleUntil =
   | { thenable: PromiseLike<unknown> };
 
 export interface SettleOptions {
-  /** Cap in milliseconds; the promise resolves `"timeout"` after it. */
+  /**
+   * Cap in milliseconds; the promise resolves `"timeout"` after it.
+   * `Infinity`: no cap, it resolves only once Quark settles.
+   */
   timeout?: number;
   until?: SettleUntil;
 }
@@ -75,9 +94,13 @@ export type SettleResult = "settled" | "until" | "timeout";
 
 export const DEFAULT_SETTLE_TIMEOUT = 1000;
 
+/** The longest delay a timer keeps: past it, platforms fire at once. */
+const MAX_DELAY = 2 ** 31 - 1;
+
 /**
  * Resolve once Quark is idle (and `until`, when given, is met), or when
- * `timeout` elapses. Never rejects.
+ * `timeout` elapses: `Infinity` waits with no cap (a caller bounding the
+ * wait itself, like a prerenderer's budget). Never rejects.
  */
 export const whenSettled = ({
   timeout = DEFAULT_SETTLE_TIMEOUT,
@@ -86,13 +109,25 @@ export const whenSettled = ({
   new Promise((resolve) => {
     let isMet = !until;
     let isDone = false;
+    let cap: ReturnType<typeof setTimeout> | undefined;
     const finish = (result: SettleResult) => {
       if (isDone) return;
       isDone = true;
       clearTimeout(cap);
       resolve(result);
     };
-    const cap = setTimeout(() => finish("timeout"), timeout);
+    // a cap past the longest delay is re-armed in steps, never fired early
+    const arm = (ms: number) => {
+      cap = setTimeout(
+        () => (ms > MAX_DELAY ? arm(ms - MAX_DELAY) : finish("timeout")),
+        Math.min(ms, MAX_DELAY)
+      );
+    };
+    const ms = Number(timeout);
+    // `NaN` is no cap value: the default; a negative one is already over
+    if (ms !== Infinity) {
+      arm(Number.isNaN(ms) ? DEFAULT_SETTLE_TIMEOUT : Math.max(0, ms));
+    }
     if (until && "thenable" in until) {
       const met = () => {
         isMet = true;

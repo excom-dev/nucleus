@@ -39,8 +39,10 @@
                     The playground needs this site's service worker, which is still installing.
                     Reload the page to start editing.
                 </p>
-                <!-- Every mount drops this app's saved edits (DELETE /api/sandbox/views/<app>); the editors load once that succeeded. -->
-                <provider-fetch class="fresh" api-method="delete">
+                <!-- Every mount drops this app's saved edits (DELETE /api/sandbox/views/<app>); the editors load once that succeeded.
+                     Paused until the service-worker observer below mounts: never in a prerender. -->
+                <service-worker></service-worker>
+                <provider-fetch class="fresh" api-method="delete" is-paused>
                 <content-tabs class="file-tabs">
                     <div bind-file-headers role="tablist" aria-label="files">
                         <template>

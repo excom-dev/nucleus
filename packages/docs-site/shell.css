@@ -38,24 +38,6 @@ body {
   --release-notice-height: 4.5rem;
 }
 
-/* The static pointer to the plain-text docs (index.html, first child of `<body>`).
-   Styled for the CSS-loads-but-JS-fails path */
-.agent-notice {
-  display: none;
-  padding: var(--v-spacing, 1rem);
-  font-size: 0.75rem;
-  line-height: 1.5;
-  color: var(--v-muted-color, #6c757d);
-  > p {
-    margin: 0;
-  }
-}
-@media (scripting: none) {
-  .agent-notice {
-    display: block !important;
-  }
-}
-
 /* wait until loaded so no FOUC */
 #site-header {
   visibility: hidden;

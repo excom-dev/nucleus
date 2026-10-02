@@ -8,5 +8,5 @@
 # Example-app playground preview documents (see sandbox.html).
 /sandbox/*     /sandbox          200
 
-# SPA fallback for /nucleus/packages/:name deep links.
-/*             /index.html       200
+# No SPA fallback: every route is a prerendered page (`build:prerender`);
+# 404.html is the not-found page Pages serves for any other path.

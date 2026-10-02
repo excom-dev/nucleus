@@ -3,7 +3,6 @@ import "@excom/quark-sheet";
 import "@excom/spa-route";
 import {
   afterEach,
-  beforeEach,
   describe,
   expect,
   it,
@@ -11,7 +10,6 @@ import {
   waitForEvent,
 } from "@excom/nucleus-test";
 import {
-  bypassSelectorCache,
   flush,
 } from "@excom/quark/support/tests/view-helpers";
 
@@ -48,8 +46,6 @@ const mountView = async (pathname: string) => {
 };
 
 describe("not-found view", () => {
-  beforeEach(bypassSelectorCache);
-
   afterEach(() => {
     document.body.innerHTML = "";
   });

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/super-form",
+      "comment": "Tests only: complexity snapshots count fewer parent walks, now that selector matching in the test DOM goes through `@excom/nucleus-dom`'s selector shim",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/super-form"
+}

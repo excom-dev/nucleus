@@ -37,7 +37,7 @@ A text result painted into a `<textarea>` is also mirrored to its live `.value` 
 
 <include-content data-demo="iterate"></include-content>
 
-`item` / `index` are available to matching rules for each row. Objects iterate as key → `index`, value → `item`. Pass a key property (`iterate($todos, none, "id")`) so existing rows are reused when the collection changes.
+`item` / `index` are available to matching rules for each row. Objects iterate as key → `index`, value → `item`. Pass a key property (`iterate($todos, none, "id")`) so existing rows are reused when the collection changes. A [prerendered page](/nucleus/docs/prerendering#md-sheets) adopts its rows by their key too.
 
 ## Pitfall
 

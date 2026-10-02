@@ -1,0 +1,15 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/renderable-element",
+      "comment": "Prerendered content is kept: an element whose host already holds the server's render of the same template does not re-render, fires `did-render` once and is ready at once (never `delaying-ready`); `persist-content` keeps those nodes across toggles and `pre-fetch=\"idle\"` does not run during a prerender",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/renderable-element",
+      "comment": "A first mount into a `host-ref` selector no longer clears the host or fires `did-unrender`: what the host holds stays until the first render replaces it",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/renderable-element"
+}

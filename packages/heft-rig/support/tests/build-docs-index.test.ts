@@ -398,6 +398,8 @@ describe("buildDocsIndex", () => {
   it("writes a sitemap of the docs home, guides, packages with their doc pages, and examples", async () => {
     const log = vi.spyOn(console, "log").mockImplementation(() => {});
     const site = path.join(tmp, "sitemap-repo");
+    const meta = (...pages: string[]) =>
+      JSON.stringify({ docs: Object.fromEntries(pages.map((page) => [page, `<h1>${page}</h1>`])) });
     writeFiles(site, {
       "rush.json": "{}",
       ...SITE_FIXTURE,
@@ -410,6 +412,8 @@ describe("buildDocsIndex", () => {
       "packages/docs-site/dist/package-metas/index.json": JSON.stringify({
         packages: [
           { shortName: "content-tabs", packageType: "kit-element" },
+          // no docs-sections.json: its one extra page is in no section
+          { shortName: "nucleus-kit", packageType: "library" },
           {
             shortName: "quark",
             packageType: "library",
@@ -419,9 +423,14 @@ describe("buildDocsIndex", () => {
               { id: "c", title: "C", docs: [{ name: "sheets" }, { name: "js_api" }] },
             ],
           },
+          // no meta of its own: the sections alone
+          { shortName: "neutron", packageType: "library", docSections: [{ docs: [{ name: "props" }] }] },
         ],
         docs: [],
       }),
+      "packages/docs-site/dist/package-metas/content-tabs.json": meta("readme"),
+      "packages/docs-site/dist/package-metas/nucleus-kit.json": meta("readme", "breaking_changes"),
+      "packages/docs-site/dist/package-metas/quark.json": meta("syntax", "readme", "sheets", "js_api", "faq"),
     });
     await buildDocsIndex(site);
     expect(read(site, "packages/docs-site/dist/sitemap.xml")).toBe(
@@ -433,10 +442,16 @@ describe("buildDocsIndex", () => {
         // `introduction` is the docs home, not `/nucleus/docs/introduction`.
         "  <url><loc>https://excom.dev/nucleus/docs/styling</loc></url>",
         "  <url><loc>https://excom.dev/nucleus/packages/content-tabs</loc></url>",
+        "  <url><loc>https://excom.dev/nucleus/packages/nucleus-kit</loc></url>",
+        "  <url><loc>https://excom.dev/nucleus/packages/nucleus-kit/breaking_changes</loc></url>",
         "  <url><loc>https://excom.dev/nucleus/packages/quark</loc></url>",
+        // the sidebar's order, then the pages no section lists
         "  <url><loc>https://excom.dev/nucleus/packages/quark/sheets</loc></url>",
         "  <url><loc>https://excom.dev/nucleus/packages/quark/syntax</loc></url>",
         "  <url><loc>https://excom.dev/nucleus/packages/quark/js_api</loc></url>",
+        "  <url><loc>https://excom.dev/nucleus/packages/quark/faq</loc></url>",
+        "  <url><loc>https://excom.dev/nucleus/packages/neutron</loc></url>",
+        "  <url><loc>https://excom.dev/nucleus/packages/neutron/props</loc></url>",
         "  <url><loc>https://excom.dev/nucleus/examples/todos</loc></url>",
         "  <url><loc>https://excom.dev/nucleus/examples/counter</loc></url>",
         "  <url><loc>https://excom.dev/nucleus/examples/cells</loc></url>",
@@ -444,6 +459,6 @@ describe("buildDocsIndex", () => {
         "",
       ].join("\n"),
     );
-    expect(log).toHaveBeenCalledWith("Wrote 11 URL(s) → packages/docs-site/dist/sitemap.xml");
+    expect(log).toHaveBeenCalledWith("Wrote 16 URL(s) → packages/docs-site/dist/sitemap.xml");
   });
 });

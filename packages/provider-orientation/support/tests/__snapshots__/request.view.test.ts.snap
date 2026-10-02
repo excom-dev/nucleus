@@ -8,7 +8,7 @@ exports[`request view > listens on request, then prints the heading > complexity
   "importNode": 0,
   "listenerRuns": 0,
   "matches": 3,
-  "parentElement": 3,
+  "parentElement": 2,
   "quarkRuns": 2,
   "queryScopeCost": 2,
   "querySelectorAll": 2,

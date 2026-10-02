@@ -20,8 +20,6 @@ Until then: **pin your versions**, and read the change notes before you upgrade.
 
 Work that is done or nearly done, landing in the next releases.
 
-- **SSR** `@excom/nucleus-dom` supplies the per-request DOM (happy-dom with browser-parity shims); the render path on top of it is next.
-- **The testing packages** `@excom/nucleus-dom` and `@excom/nucleus-test` (Vitest setup, matchers, helpers), extracted from the internal rig, land in the next release.
 - **More elements in the catalog.** May include some of the following elements. Interaction: `content-sortable`, `content-splitter`, `content-popover`, `super-file-input`. Actions: `clipboard-copy`, `web-share`, `file-download`. Sensors: `detect-visibility`, `detect-size`, `detect-scroll`, `detect-document`, `detect-permission`. Providers: `provider-url-params`, `provider-event-source`, `provider-websocket`, `provider-worker`.
 - **Polyfills** Some features will be broken for certain browsers whose versions are older than a year (mainly Firefox & Safari, mid-2025). This will be remedied in the first stable release.
 - **The small-bug backlog.** A coverage sweep across every package surfaced a list of minor defects. They are being triaged and fixed ahead of a stable release.
@@ -33,6 +31,7 @@ Work that is done or nearly done, landing in the next releases.
 Wanted, thought about, not scheduled. Nothing here is a commitment.
 
 - **Quark rule reversion & specificity.** There are open architectural and performance questions, not just an implementation cost. It is wanted. It is not scheduled. Do not build on it.
+- **More of SSR.** Rendering per request, a worker pool for large sites (one renderer per process today), prerendered `shadow` / `iframe` render hosts, and a hydration check that runs in a real browser.
 - **Optional build-time wins.** For teams who already run a bundler, shipping pre-parsed sheets would let the parser drop out of the runtime. Noted, not scheduled — and the zero-build path stays the default either way.
 - **Scoped view transitions** When/if this lands in browsers, it is a very easy change to scope Quark's `@view-transition` rule.
 - **A standards track.** If Quark finds real adoption, the intention is to draft a proposal for a native platform capability along these lines. See [Origin Story](/nucleus/docs/origin_story).

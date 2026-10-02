@@ -8,13 +8,16 @@ import { buildExports } from "./build-exports.mjs";
 import { isSitePackage, readPackageJson } from "./package-type.mjs";
 import { prepareSiteDocs } from "./collect-docs-metas.mjs";
 
+/** Root entries that only run in Node: an ESM pair, never a UMD. */
+const NODE_ONLY_ENTRIES = ["testing", "server"];
+
 /**
  * Run the full Vite build for the current package (or given root).
  * Site packages emit a static app into `dist/`. Library packages discover
  * root-level .ts/.css entry files, run all build modes (a `<name>.progressive.ts`
  * entry runs only the progressive mode; `excom.umd: false` skips the UMD, for
- * Node-only libraries, and a `testing.ts` entry never gets one), then
- * buildExports and the size report.
+ * Node-only libraries, and a `testing.ts` / `server.ts` entry never gets one),
+ * then buildExports and the size report.
  * @param {string} [packageRoot=process.cwd()]
  */
 export async function runFullBuild(packageRoot = process.cwd()) {
@@ -61,13 +64,13 @@ export async function runFullBuild(packageRoot = process.cwd()) {
         return [{ mode: "build-js-progressive", entry }];
       }
       // `build-js` emits `<name>.js` + `<name>.min.js` from one bundle; the
-      // UMD needs its own bundle (different externals); a `testing` entry is
-      // Node-only, so it gets none. One CSS build emits `<name>.css`; the
-      // minified twins are derived from it below.
+      // UMD needs its own bundle (different externals); a Node-only entry
+      // gets none. One CSS build emits `<name>.css`; the minified twins are
+      // derived from it below.
       return type === "ts"
         ? [
             { mode: "build-js", entry },
-            ...(umd && name !== "testing" ? [{ mode: "build-js-bundle", entry }] : []),
+            ...(umd && !NODE_ONLY_ENTRIES.includes(name) ? [{ mode: "build-js-bundle", entry }] : []),
           ]
         : [{ mode: "build-css", entry }];
     })

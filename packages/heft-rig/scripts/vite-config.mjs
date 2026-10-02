@@ -11,6 +11,7 @@ import dts from "vite-plugin-dts";
 import { coverageConfigDefaults } from "vitest/config";
 import { cssConfig } from "./css-config.mjs";
 import { readPackageJson } from "./package-type.mjs";
+import { pagesMiddleware } from "./pages.mjs";
 // import { analyzer } from 'vite-bundle-analyzer'
 
 /** Minimum % for statements / branches / functions / lines in `pnpm run coverage`. */
@@ -429,6 +430,22 @@ function sandboxHtmlRewritePlugin() {
   };
 }
 
+/**
+ * Preview serves `dist` as Cloudflare Pages does (`pages.mjs`): the 200
+ * rewrites of `_redirects`, the headers of `_headers`, one URL per page (`/a/`
+ * moves to `/a` when `a.html` is the page) and `404.html` for an unknown page.
+ * A build without those files previews as before, but for that move.
+ */
+function pagesRulesPlugin() {
+  return {
+    name: "pages-rules",
+    configurePreviewServer(server) {
+      const outDir = resolve(server.config.root, server.config.build.outDir);
+      server.middlewares.use(pagesMiddleware(outDir));
+    },
+  };
+}
+
 function siteDevPlugins({ rushRoot, packageRoot }) {
   const plugins = [
     siteCompressPlugin(),
@@ -796,7 +813,12 @@ async function getConfig(
         port: 4173,
         host: true,
       },
-      plugins: [siteCompressPlugin(), quarkModuleRewritePlugin()],
+      // after the module rewrite: its 404 for a missing module is the clearer one
+      plugins: [
+        siteCompressPlugin(),
+        quarkModuleRewritePlugin(),
+        pagesRulesPlugin(),
+      ],
     }),
   };
   return configs[mode] ? await configs[mode]() : undefined;

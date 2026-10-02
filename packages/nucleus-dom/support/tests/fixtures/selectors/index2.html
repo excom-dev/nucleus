@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head><meta charset="utf-8"><title>selectors 2</title></head>
+<body>
+<main id="m">
+  <div id="t0"></div><div id="t1">text</div><div id="t2"><!-- comment --></div><div id="t3"> </div><div id="t4"><i id="t4i"></i></div>
+  <span id="w1" class="b-a"></span><span id="w2" class="a b"></span><span id="w3" class="A"></span>
+  <p id="g1" lang="en">a</p><p id="g2" lang="en-US">b</p><p id="g3" lang="en us">c</p><p id="g4" lang="english">d</p><p id="g5" lang="fr">e</p>
+  <custom-thing id="c1"></custom-thing><defined-thing id="df"><span id="dfs"></span></defined-thing>
+  <i id="1x"></i><i id="esc" class="a:b"></i><i id="dot" class="v1.2"></i>
+  <ol id="o">
+    <li id="n1">1</li><li id="n2" class="odd">2</li><li id="n3">3</li><li id="n4" class="odd">4</li><li id="n5">5</li>
+  </ol>
+  <section id="mix"><h3 id="h1">a</h3><p id="q1">b</p><h3 id="h2">c</h3><p id="q2">d</p><p id="q3">e</p></section>
+  <div id="only"><b id="ob"></b></div>
+  <form id="f" novalidate>
+    <input id="a1" type="text" required value=""><input id="a2" type="text" value="x" readonly><input id="a3" type="number" min="1" max="5" value="9">
+    <input id="a4" type="email" value="nope"><input id="a5" type="text" placeholder="p"><input id="a6" type="checkbox">
+    <input id="a7" type="radio" name="r" checked><input id="a8" type="radio" name="r"><input id="a9" type="submit">
+    <textarea id="ta" readonly></textarea><select id="s" required><option id="s0" value="">-</option><option id="s1">x</option></select>
+    <button id="bt">b</button>
+  </form>
+  <nav id="nv"><a id="k1" href="/x">x</a><a id="k2">no href</a><a id="k3" href="#frag">f</a><area id="k4"></nav>
+  <details id="d1" open><summary id="ds1">s</summary></details><details id="d2"><summary id="ds2">s</summary></details>
+  <dialog id="dg" open>dialog</dialog>
+  <div id="at" data-a="" data-b="Mixed Case" data-c="a b c" data-d="pre-fix" title='q"uote'></div>
+  <table id="tb"><tbody id="tbd"><tr id="r1"><td id="c11">1</td><td id="c12">2</td></tr><tr id="r2"><td id="c21">3</td><td id="c22">4</td></tr></tbody></table>
+  <p id="hid" hidden>hidden</p>
+</main>
+<script>customElements.define("defined-thing", class extends HTMLElement {});</script>
+</body>
+</html>

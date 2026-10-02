@@ -13,7 +13,6 @@ import {
 } from "@excom/nucleus-test";
 import { Quark } from "@excom/quark";
 import {
-  bypassSelectorCache,
   flush,
 } from "@excom/quark/support/tests/view-helpers";
 import {
@@ -127,10 +126,7 @@ const linksOf = (group: Element | null) =>
 const hrefs = (names: string[]) => names.map((n) => `/nucleus/packages/${n}`);
 
 describe("site nav packages", () => {
-  let restoreSelectors: () => void;
-
   beforeEach(() => {
-    restoreSelectors = bypassSelectorCache();
     Quark.moduleLoader = async (url: string) => {
       if (url.includes("shell")) return { displayName, getPackagesByType };
       throw new Error(`unexpected @use module: ${url}`);
@@ -139,7 +135,6 @@ describe("site nav packages", () => {
 
   afterEach(() => {
     document.body.innerHTML = "";
-    restoreSelectors();
     Quark.moduleLoader = originalLoader;
     vi.restoreAllMocks();
   });
@@ -157,7 +152,7 @@ describe("site nav packages", () => {
     }
   });
 
-  it("puts every nav-group package in a collapsed Libraries group after the top level", async () => {
+  it("puts every nav-group package in a collapsed Libraries group between Tools and Element Bases", async () => {
     for (const nav of await mountNav()) {
       const order = [...nav.querySelector(".package-links")!.children].map(
         (el) =>

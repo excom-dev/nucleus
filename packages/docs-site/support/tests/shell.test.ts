@@ -13,6 +13,7 @@ import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { renderMarkdown } from "@excom/heft-rig/scripts/render-markdown.mjs";
+import { NOT_FOUND } from "../prerender/prerender.config";
 import {
   addLengths,
   buildAppFileLink,
@@ -392,6 +393,24 @@ describe("renderLang / renderPre", () => {
     expect(overlay2.innerHTML).toContain("shiki");
     expect(overlay2.innerHTML).toContain("hi");
   });
+
+  it("renderPre keeps an overlay that shows the same code already (a prerendered page)", () => {
+    document.body.innerHTML = `
+      <div data-language="css">
+        <textarea>p { color: red; }</textarea>
+        <div data-highlight></div>
+      </div>`;
+    const textarea = document.querySelector("textarea")!;
+    const overlay = document.querySelector("[data-highlight]")!;
+    renderPre({ target: textarea });
+    const pre = overlay.firstElementChild;
+    renderPre({ target: textarea });
+    expect(overlay.firstElementChild).toBe(pre);
+    textarea.value = "p { color: blue; }";
+    renderPre({ target: textarea });
+    expect(overlay.firstElementChild).not.toBe(pre);
+    expect(overlay.textContent).toBe("p { color: blue; }");
+  });
 });
 
 describe("editor helpers", () => {
@@ -451,6 +470,16 @@ describe("editor helpers", () => {
     upgradeTemplateCode({ target: noLang });
     expect(noLang.querySelector("template")!.innerHTML).toContain("shiki");
     expect(noLang.querySelector("template")!.innerHTML).toContain("plain");
+  });
+
+  it("upgradeTemplateCode leaves a highlighted template alone (a prerendered page)", () => {
+    document.body.innerHTML = `
+      <div data-language="js"><template>const a = 1;</template></div>`;
+    const host = document.querySelector("div")!;
+    upgradeTemplateCode({ target: host });
+    const highlighted = host.querySelector("template")!.innerHTML;
+    upgradeTemplateCode({ target: host });
+    expect(host.querySelector("template")!.innerHTML).toBe(highlighted);
   });
 });
 
@@ -657,13 +686,28 @@ describe("site route table", () => {
     expect(routes.at(-1)!.isFallback).toBe(true);
   });
 
-  /* The two areas differ only by the company route's title: every docs route
-     is untitled, so `spa-manager` puts `index.html`'s own `<title>` back. */
-  it("carries the company title on the company route alone", () => {
+  /* Markup titles the pages whose names are no data: the company page, each
+     example, the 404. The shell sheet titles guides and package pages; the
+     docs home keeps `index.html`'s own `<title>`. */
+  it("titles the company page, each example and the 404 in markup", () => {
     const shell = readFileRelative(import.meta.url, "../../index.html");
     expect(shell).toContain("<title>Nucleus · docs</title>");
     expect(routes[0]!.documentTitle).toBe("Excom");
-    expect(routes.filter((r) => r.documentTitle)).toHaveLength(1);
+    const titled = routes.filter((r) => r.documentTitle).slice(1);
+    expect(titled.map((r) => r.key)).toEqual([
+      ...routes
+        .map((r) => r.key)
+        .filter((key) => String(key).startsWith(`${SITE_BASE}/examples/`)),
+      /.*/,
+    ]);
+    for (const { documentTitle } of titled) {
+      expect(documentTitle).toMatch(/^[A-Z][\w ]+ · Nucleus · docs$/);
+    }
+    expect(activate(routes, SITE_BASE).route.documentTitle).toBeNull();
+  });
+
+  it("renders the not-found page from a path only the fallback matches", () => {
+    expect(activate(routes, NOT_FOUND).route.isFallback).toBe(true);
   });
 
   it("/ activates the company page and nothing else", () => {
@@ -800,5 +844,32 @@ describe("shiki grammar imports", () => {
     for (const clause of clauses) {
       expect(clause).not.toMatch(/,\s*\}$/);
     }
+  });
+});
+
+describe("inline sheets", () => {
+  // An inline `<quark-sheet>` is ordinary HTML content: a browser reads `<`
+  // followed by a letter, `/`, `!` or `?` as markup, even inside a sheet
+  // comment, and a title or textarea tag then swallows the rest of the page.
+  // happy-dom parses those differently, so no view test sees it.
+  it("hold no text a browser would parse as markup", () => {
+    const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+    const pages = [
+      "index.html",
+      "sandbox.html",
+      ...readdirSync(resolve(root, "public"), { recursive: true })
+        .map((file) => `public/${file}`)
+        .filter((file) => file.endsWith(".html")),
+    ];
+    const hazards = pages.flatMap((page) => {
+      const html = readFileSync(resolve(root, page), "utf8");
+      return [
+        ...html.matchAll(/<quark-sheet\b[^>]*>([\s\S]*?)<\/quark-sheet>/g),
+      ]
+        .flatMap(([, sheet]) => sheet!.match(/<[a-zA-Z/!?][^\n]{0,40}/g) ?? [])
+        .map((text) => `${page}: ${text}`);
+    });
+    expect(pages.length).toBeGreaterThan(2);
+    expect(hazards).toEqual([]);
   });
 });

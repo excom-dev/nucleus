@@ -8,7 +8,7 @@ exports[`request view > prints the position read on request > complexity 1`] = `
   "importNode": 0,
   "listenerRuns": 0,
   "matches": 4,
-  "parentElement": 5,
+  "parentElement": 4,
   "quarkRuns": 3,
   "queryScopeCost": 3,
   "querySelectorAll": 3,

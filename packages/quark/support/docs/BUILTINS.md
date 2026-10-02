@@ -20,8 +20,8 @@ Available in every expression, after `@use` exports: element reads, loop context
 
 | Name | Description |
 | --- | --- |
-| `item` | Inside an `iterate()` row: the current collection item (the value for objects). `undefined` outside a row. |
-| `index` | Inside an `iterate()` row: the current position (the key for objects). `undefined` outside a row. |
+| `item` | Inside an `iterate()` row: the current collection item (the value for objects). `undefined` outside a row. While a prerendered page hydrates, a rule on a prerendered row keeps what is painted until `iterate()` adopts the row. |
+| `index` | Inside an `iterate()` row: the current position (the key for objects). `undefined` outside a row. Prerendered rows: as `item`. |
 
 **Rendering (`content`)**
 

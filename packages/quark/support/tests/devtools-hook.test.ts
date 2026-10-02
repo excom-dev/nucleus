@@ -4,6 +4,7 @@
  * sheet, assert the publications and the renderer's `inspect()` snapshot.
  */
 import { Quark } from "../../index";
+import { SYMBOL_NOOP } from "../../src/constants";
 import type { QuarkRenderer } from "../../src/devtools-hook";
 import {
   type DevtoolsHook,
@@ -14,9 +15,16 @@ import {
   type PublicizePath,
 } from "@excom/kit-devtools";
 import {
+  bootHydration,
+  HYDRATION_ISLAND_ID,
+  resetHydration,
+  SSR_ATTR,
+} from "@excom/kit-utils";
+import {
   afterEach,
   describe,
   expect,
+  fixture,
   it,
   vi,
 } from "@excom/nucleus-test";
@@ -491,6 +499,31 @@ describe("Quark DevTools hook", () => {
       quark.unregister();
       // no sheets at all: bindings and attr() still work, modules do not
       expect(renderer.evaluate(el, 'attr("data-n")')).toBe("3");
+    });
+
+    it("evaluate() gives preserve for a binding not bound yet while hydrating", async () => {
+      installHook();
+      const { root, quark, register } = createSheet(
+        `<p bind-x></p>`,
+        `[bind-x] { content: "x"; }`,
+      );
+      register();
+      await flush();
+      const el = root.querySelector("p")!;
+      const renderer = quarkRenderer()!;
+      expect(renderer.evaluate(el, '"a #{$later}"')).toBe("a ");
+      document.documentElement.setAttribute(SSR_ATTR, "");
+      fixture(
+        `<script type="application/json" id="${HYDRATION_ISLAND_ID}">{"v":1,"provisions":{},"responses":[]}</script>`,
+      );
+      bootHydration();
+      try {
+        expect(renderer.evaluate(el, '"a #{$later}"')).toBe(SYMBOL_NOOP);
+      } finally {
+        resetHydration();
+        document.documentElement.removeAttribute(SSR_ATTR);
+      }
+      quark.unregister();
     });
   });
 });

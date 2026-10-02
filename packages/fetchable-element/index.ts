@@ -3,6 +3,7 @@ import { KitLogger } from "@excom/kit-logger";
 import {
   deepMerge,
   deleteUndefined,
+  fetchRecord,
   formToJson,
   jsonToSearchParams,
   mergeSearchParamsIntoUrl,
@@ -374,19 +375,22 @@ async function callFetch(
 ): Promise<FetchResponse | undefined> {
   let responseData: FetchResponse;
   try {
-    const response = await fetch(url, options);
+    const record = await fetchRecord(url, options);
     responseData = {
-      bodyUsed: response.bodyUsed,
-      headers: Array.from(response.headers.entries()),
-      ok: response.ok,
-      redirected: response.redirected,
-      status: response.status,
-      statusText: response.statusText,
-      type: response.type,
-      url: response.url,
-      body: response.headers.get("content-type")?.includes("application/json")
-        ? await response.json()
-        : await response.text(),
+      // the provision always took this flag before reading the body: false
+      bodyUsed: false,
+      headers: record.headers,
+      ok: record.ok,
+      redirected: record.redirected,
+      status: record.status,
+      statusText: record.statusText,
+      type: record.type,
+      url: record.url,
+      body: new Headers(record.headers)
+        .get("content-type")
+        ?.includes("application/json")
+        ? JSON.parse(record.body)
+        : record.body,
     };
   } catch (error) {
     if (error?.name === "AbortError") {
