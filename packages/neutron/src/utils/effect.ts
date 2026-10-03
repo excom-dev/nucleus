@@ -45,7 +45,11 @@ export function effector<
   const wrapper = function (
     ..._args: Parameters<T>
   ): typeof delayNextTask extends true ? Promise<unknown> : unknown {
-    const el: El = this instanceof WeakRef ? this.deref() : this;
+    const isRef = this instanceof WeakRef;
+    const el: El = isRef ? this.deref() : this;
+    /* Bound to a collected element: a listener it left registered (on
+     * `window`, say) has nothing to act on. */
+    if (isRef && !el) return;
 
     /* A delayed effect (`wait(0)`) still continues the chain that
      * triggered it: carry the loop-guard depth across the timeout. The

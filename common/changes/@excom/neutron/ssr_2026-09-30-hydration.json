@@ -19,6 +19,11 @@
       "packageName": "@excom/neutron",
       "comment": "Fix an issue where `Neutron.compose()` lost `reflectDefaultProps` when a later builder left it out: an option a builder leaves out is inherited, and the last builder that states it wins",
       "type": "patch"
+    },
+    {
+      "packageName": "@excom/neutron",
+      "comment": "Fix an error thrown when a `window` or `document` listener fires after its element was removed and garbage-collected: the listener now does nothing",
+      "type": "patch"
     }
   ],
   "packageName": "@excom/neutron"
