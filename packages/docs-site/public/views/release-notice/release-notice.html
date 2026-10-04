@@ -5,7 +5,8 @@
       optimized.</p>
   </blockquote>
   <super-form>
-    <form action="/api/release-subscribers" method="post">
+    <!-- cross-origin: the company site's API (CORS allows this origin) -->
+    <form action="https://excom.dev/api/release-subscribers" method="post">
       <fieldset role="group">
         <input type="email" name="email" required autocomplete="email" placeholder="you@example.com">
         <button type="submit">Notify me</button>

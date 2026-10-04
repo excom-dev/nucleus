@@ -51,23 +51,22 @@ const NOTICE = / > content-drawer#release-notice: server nothing, browser \[(is-
 // One per route kind. `allow`: changes the page makes by design, matched against each reported line;
 // `cold`: the same for its cold render.
 const PAGES = [
-  { name: "home (company page)", path: "/" },
-  { name: "docs home", path: "/nucleus", allow: PLAYGROUND, cold: PLAYGROUND_COLD },
-  { name: "package README", path: "/nucleus/packages/quark" },
+  { name: "docs home", path: "/", allow: PLAYGROUND, cold: PLAYGROUND_COLD },
+  { name: "package README", path: "/packages/quark" },
   // an element's page adds the API reference view and demos: `no-ssr`, so the browser fetches their view
   {
     name: "element README",
-    path: "/nucleus/packages/include-content",
+    path: "/packages/include-content",
     allow: /^request: \/views\/live-demo\/live-demo\.html$/,
   },
-  { name: "package doc page", path: "/nucleus/packages/neutron/props" },
-  { name: "site guide", path: "/nucleus/docs/quick_start" },
-  { name: "example", path: "/nucleus/examples/counter", allow: PLAYGROUND, cold: PLAYGROUND_COLD },
+  { name: "package doc page", path: "/packages/neutron/props" },
+  { name: "site guide", path: "/docs/quick_start" },
+  { name: "example", path: "/examples/counter", allow: PLAYGROUND, cold: PLAYGROUND_COLD },
   // 404.html is served (as a 404) for any path; it names the one that matched nothing, which the
   // prerender rendered as /404
   {
     name: "not found",
-    path: "/nucleus/no-such-page",
+    path: "/no-such-page",
     allow: /bind-path/,
     cold: /bind-path|\[active-url=/,
     status: /no-such-page -> 404$/,
@@ -217,10 +216,10 @@ if (import.meta.main) {
     const navigate = async () => {
       page.issues();
       // loads the page and waits until it has hydrated (the page check reports what that changed)
-      await checkHydration(page, "/nucleus/packages/quark", { loading: LOADING });
+      await checkHydration(page, "/packages/quark", { loading: LOADING });
       await page.do(() => {
         window.sameDocument = true;
-        document.querySelector('spa-a[route-href="/nucleus/packages/neutron"]').click();
+        document.querySelector('spa-a[route-href="/packages/neutron"]').click();
       });
       const shown = () =>
         page.run(() => ({
@@ -229,7 +228,7 @@ if (import.meta.main) {
           heading: document.querySelector("spa-route[is-active] h1")?.textContent.trim(),
         }));
       const arrived = ({ sameDocument, path, heading }) =>
-        sameDocument && path === "/nucleus/packages/neutron" && heading === "neutron";
+        sameDocument && path === "/packages/neutron" && heading === "neutron";
       if (!(await until(async () => arrived(await shown()), 10_000))) throw new Error(JSON.stringify(await shown()));
       const issues = page.issues();
       if (issues.length) throw new Error(`${issues.length} console or network issue(s), first: ${issues[0]}`);

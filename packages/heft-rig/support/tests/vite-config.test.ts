@@ -1,4 +1,4 @@
-import { readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, realpath, rm, symlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import {
@@ -7,6 +7,7 @@ import {
   progressiveChunks,
   resolveCoverageReporters,
   resolveCoverageThresholds,
+  resolveTestExclude,
   resolveVitestMaxWorkers,
   UMD_SHARED_GLOBALS,
   umdExternals,
@@ -143,6 +144,32 @@ describe("createRigViteConfig", () => {
       ]);
     });
 
+    it("adds the packages of the rig's repository for a package of another repository that links the rig", async () => {
+      // `ws/packages/linked` holds a rig folder; a package of a second repository links it
+      const other = path.join(ws.root, "other-repo");
+      const app = path.join(other, "packages/app");
+      await writeTree(other, {
+        "rush.json": JSON.stringify({ projects: [{ packageName: "app", projectFolder: "packages/app" }] }),
+        "packages/app/package.json": "{}",
+      });
+      await mkdir(path.join(app, "node_modules/@excom"), { recursive: true });
+      await symlink(
+        path.join(ws.linked, "node_modules/@excom/heft-rig"),
+        path.join(app, "node_modules/@excom/heft-rig"),
+      );
+      const config = await createRigViteConfig({ mode: "test", root: app });
+      const alias = config.resolve!.alias as unknown as { find: RegExp | string; replacement: string }[];
+      // its own repository first, then the rig's
+      expect(alias.map((a) => String(a.find))).toEqual([
+        "/^app\\/(.+)$/",
+        "/^@excom\\/alpha$/",
+        "/^@excom\\/alpha\\/(.+)$/",
+        "/^@excom\\/beta\\/(.+)$/",
+        "@vitest/coverage-v8",
+      ]);
+      expect(alias[1].replacement).toBe(path.join(await realpath(ws.rushRoot), "packages/alpha/index.ts"));
+    });
+
     it("tolerates a rush.json without projects", async () => {
       const bare = path.join(ws.root, "bare-rush/packages/pkg");
       await writeTree(bare, { "package.json": "{}" });
@@ -151,6 +178,22 @@ describe("createRigViteConfig", () => {
       expect((config.resolve!.alias as unknown as { find: unknown }[]).map((a) => a.find)).toEqual([
         "@vitest/coverage-v8",
       ]);
+    });
+
+    it("keeps a package's excom.testExclude globs out of its tests and its coverage", async () => {
+      expect(resolveTestExclude(undefined)).toEqual([]);
+      expect(resolveTestExclude({ testExclude: "api/**" })).toEqual([]);
+      expect(resolveTestExclude({ testExclude: ["api/**", 5] })).toEqual(["api/**"]);
+
+      const own = path.join(ws.root, "test-exclude/packages/own");
+      await writeTree(own, {
+        "package.json": JSON.stringify({ name: "own", excom: { packageType: "app", testExclude: ["api/**"] } }),
+      });
+      const { test } = await createRigViteConfig({ mode: "test", root: own });
+      expect(test!.exclude).toEqual(expect.arrayContaining(["**/node_modules/**", "api/**"]));
+      expect(test!.coverage!.exclude).toContain("api/**");
+      // without the key, Vitest's own default stays
+      expect("exclude" in (await createRigViteConfig({ mode: "test", root: ws.site })).test!).toBe(false);
     });
 
     it("omits the thresholds for an opted-out package and keeps them for its neighbour", async () => {

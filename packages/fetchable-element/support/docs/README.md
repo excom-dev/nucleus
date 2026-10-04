@@ -6,7 +6,7 @@ track loading / success / error state automatically.
 
 ## Features
 
-- **Shared lifecycle** States, `provision` and events come from [loadable-element](/nucleus/packages/loadable-element)
+- **Shared lifecycle** States, `provision` and events come from [loadable-element](/packages/loadable-element)
 
 - **Attribute-driven requests** URL, method, headers, redirect, and
   credentials all configurable declaratively
@@ -63,5 +63,5 @@ and friends don't redeclare it.
 <include-content is-active template-ref="/views/api-reference/api-reference.html"></include-content>
 
 There are no demos for this package — see
-[provider-fetch](/nucleus/packages/provider-fetch) for `FetchableElement` in
+[provider-fetch](/packages/provider-fetch) for `FetchableElement` in
 action against a real endpoint.

@@ -7,4 +7,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://excom.dev/sitemap.xml
+Sitemap: https://nucleus.excom.dev/sitemap.xml

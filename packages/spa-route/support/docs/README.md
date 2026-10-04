@@ -188,7 +188,7 @@ spa-a[is-active] {
 
 #### View Transitions
 
-The outermost `<spa-manager>` wraps each navigation in one `document.startViewTransition()`; nested managers join it. None runs when the API is missing, with reduced motion, in a hidden page, on the first paint (unless `transition-first-render`) or a [prerendered page](/nucleus/docs/prerendering)'s first update, or when the update only changes provisions. `document.title` follows every update all the same, and `spa-manager-rendered` fires once per update chain: a navigation that arrives during a running update joins or follows it and shares its event. Style with `::view-transition-*`; set per-link types via `transition-types` (e.g. card expansion); opt a route out with `no-transition`.
+The outermost `<spa-manager>` wraps each navigation in one `document.startViewTransition()`; nested managers join it. None runs when the API is missing, with reduced motion, in a hidden page, on the first paint (unless `transition-first-render`) or a [prerendered page](/docs/prerendering)'s first update, or when the update only changes provisions. `document.title` follows every update all the same, and `spa-manager-rendered` fires once per update chain: a navigation that arrives during a running update joins or follows it and shares its event. Style with `::view-transition-*`; set per-link types via `transition-types` (e.g. card expansion); opt a route out with `no-transition`.
 
 ```css
 ::view-transition-old(root),

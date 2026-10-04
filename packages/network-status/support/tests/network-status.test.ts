@@ -398,4 +398,23 @@ describe("network-status", () => {
       expect(el.hasAttribute("is-online")).toBe(true);
     });
   });
+
+  it("a copy that never connects is not mounted and listens to nothing", async () => {
+    // earlier unmounts land in a microtask
+    await wait(0);
+    const el = mount();
+    // `equalTag` parses copies of the element off the document
+    expect(el).dom.to.equalTag(
+      `<network-status is-mounted is-online></network-status>`,
+    );
+    expect(window).toContainListeners({ online: 1, offline: 1 });
+    const clone = el.cloneNode(true) as HTMLNetworkStatusElement;
+    expect(window).toContainListeners({ online: 1, offline: 1 });
+    expect(clone.isMounted).toBe(false);
+    expect(clone.hasAttribute("is-mounted")).toBe(false);
+    expect(clone.provision).toBeNull();
+    el.remove();
+    await wait(0);
+    expect(window).toContainListeners({ online: 0, offline: 0 });
+  });
 });

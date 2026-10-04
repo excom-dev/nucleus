@@ -216,15 +216,6 @@ body > main > provider-fetch > spa-manager > footer {
   }
 }
 
-/* The company page runs without docs chrome: no nav column, full-width content.
-   `.chromeless` is static flavour, `is-active` carries the state. */
-body:has(spa-route.chromeless[is-active]) > main {
-  grid-template-columns: minmax(0, 1fr);
-  > provider-fetch > aside {
-    display: none;
-  }
-}
-
 /* The mobile sheet (#site-menu, index.html) is a `content-drawer` (fixed by default)
    bottom sheet stamping the same nav template as the aside. */
 main
@@ -343,10 +334,10 @@ main
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      > li:has(> spa-a[route-href="/nucleus/packages/quark"]) {
+      > li:has(> spa-a[route-href="/packages/quark"]) {
         order: -1;
       }
-      > li:has(> spa-a[route-href="/nucleus/packages/valence"]) {
+      > li:has(> spa-a[route-href="/packages/valence"]) {
         order: 1;
       }
       > li > spa-a {
@@ -370,7 +361,7 @@ main
     flex-direction: column;
     align-items: flex-start;
 
-    > li:has(> spa-a[route-href="/nucleus/packages/neutron"]) {
+    > li:has(> spa-a[route-href="/packages/neutron"]) {
       order: -1;
     }
   }
@@ -626,14 +617,6 @@ body {
   #site-header {
     height: 0;
   }
-  /* Chromeless: the tab bar goes, taking its menu trigger, and so does the
-     gutter reserved for it. */
-  body:has(spa-route.chromeless[is-active]) {
-    padding-bottom: 0;
-    #site-header {
-      display: none;
-    }
-  }
   body > main {
     /* `minmax(0, …)`: long code lines must not widen the page */
     grid-template-columns: minmax(0, 1fr);
@@ -711,7 +694,7 @@ body {
         margin: 0;
         padding: 0;
       }
-      spa-a:has(img[src*="excom"]) {
+      a:has(img[src*="excom"]) {
         display: flex;
         flex-direction: column;
         align-items: center;

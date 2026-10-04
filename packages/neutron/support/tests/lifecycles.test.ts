@@ -486,4 +486,138 @@ describe("Lifecycles: attribute changes and default-prop reflection", () => {
     expect(el.isMounted).toBe(false);
     expect(el.wasMounted).toBe(true);
   });
+
+  it("a reflected prop without a reaction is not read from its attribute either, and the attribute is undone", async () => {
+    const el = await mountTag(`<reflect-host></reflect-host>`);
+    el.setAttribute("was-mounted", "");
+    expect(el.wasMounted).toBe(false);
+    expect(el.hasAttribute("was-mounted")).toBe(false);
+  });
+});
+
+describe("Lifecycles: reflected lifecycle attributes are output only", () => {
+  const LIFECYCLE_ATTRS = ["is-mounted", "is-adopted", "was-mounted", "is-moving"];
+  const calls: string[] = [];
+  // each call with the attributes the handler saw
+  const log = (name: string) => (el: HTMLElement) =>
+    void calls.push(
+      `${name} [${el.getAttributeNames().join(" ")}]${el.isConnected ? "" : " detached"}`
+    );
+  Neutron({
+    tag: "output-only-host",
+    props: {},
+    reflectDefaultProps: ["isMounted", "isAdopted", "wasMounted", "isMoving"],
+  })
+    .onConnected(log("connected"))
+    .onPropSet("isMounted", log("set:isMounted"))
+    .onAdopted(log("adopted"))
+    .onPropChanged("wasMounted", log("changed:wasMounted"))
+    .onPropChanged("isMoving", log("changed:isMoving"))
+    .onDisconnected(log("disconnected"))
+    .define();
+  const flags = (el: any) => [
+    el.isMounted,
+    el.isAdopted,
+    el.wasMounted,
+    el.isMoving,
+  ];
+
+  afterEach(async () => {
+    document.body.innerHTML = "";
+    // the unmounts land in a microtask
+    await wait(0);
+    calls.length = 0;
+  });
+
+  it("markup parsed off the document cannot mount an element, nor set its other flags", () => {
+    const parent = document.createElement("div");
+    parent.innerHTML = `<output-only-host ${LIFECYCLE_ATTRS.join(" ")}></output-only-host>`;
+    const el = parent.firstElementChild as any;
+    expect(el.isConnected).toBe(false);
+    expect(calls).toEqual([]);
+    expect(flags(el)).toEqual([false, false, false, false]);
+    expect(el.getAttributeNames()).toEqual([]);
+  });
+
+  it("markup that already carries the attribute mounts once, when it connects", () => {
+    const el = fixture<any>(
+      `<output-only-host is-mounted></output-only-host>`
+    );
+    expect(calls).toEqual([
+      "connected [is-mounted]",
+      "set:isMounted [is-mounted]",
+    ]);
+    expect(el.isMounted).toBe(true);
+  });
+
+  it("a clone of a mounted element is not mounted until it connects", async () => {
+    const el = await mountTag(`<output-only-host></output-only-host>`);
+    calls.length = 0;
+    const clone = el.cloneNode(true);
+    expect(calls).toEqual([]);
+    expect(clone.isMounted).toBe(false);
+    expect(clone.hasAttribute("is-mounted")).toBe(false);
+    document.body.append(clone);
+    expect(calls).toEqual([
+      "connected [is-mounted]",
+      "set:isMounted [is-mounted]",
+    ]);
+    expect(clone.isMounted).toBe(true);
+  });
+
+  it("an attribute removed from outside comes back; one added from outside goes", async () => {
+    const el = await mountTag(`<output-only-host></output-only-host>`);
+    calls.length = 0;
+    el.removeAttribute("is-mounted");
+    expect(el.hasAttribute("is-mounted")).toBe(true);
+    LIFECYCLE_ATTRS.slice(1).forEach((name) => el.setAttribute(name, ""));
+    el.toggleAttribute("is-mounted", false);
+    expect(calls).toEqual([]);
+    expect(flags(el)).toEqual([true, false, false, false]);
+    expect(el.getAttributeNames()).toEqual(["is-mounted"]);
+    // whatever a foreign value parses to, the element's own form returns
+    el.setAttribute("is-mounted", "false");
+    expect(el.getAttribute("is-mounted")).toBe("");
+    el.setAttribute("was-mounted", "false");
+    expect(el.hasAttribute("was-mounted")).toBe(false);
+    expect(calls).toEqual([]);
+    expect(flags(el)).toEqual([true, false, false, false]);
+  });
+
+  it("`reflectOnly` is not an option: a prop that states it stays attribute-backed", async () => {
+    Neutron({
+      tag: "reflect-only-option",
+      props: { stepText: { type: String, reflectOnly: true } as any },
+    }).define();
+    const el = await mountTag(`<reflect-only-option step-text="a"></reflect-only-option>`);
+    expect(el.stepText).toBe("a");
+    expect(
+      (el.constructor as any).getPropConfig({ prop: "stepText" }).reflectOnly
+    ).toBeUndefined();
+  });
+
+  it("a mount, an adoption, a move and an unmount reflect and run each handler once, in order", async () => {
+    const el = document.createElement("output-only-host") as any;
+    expect(el.getAttributeNames()).toEqual([]);
+    document.body.append(el);
+    el.adoptedCallback();
+    const section = fixture(`<section></section>`);
+    section.append(el);
+    expect(flags(el)).toEqual([true, false, true, false]);
+    el.remove();
+    await wait(0);
+    expect(flags(el)).toEqual([false, false, true, false]);
+    expect(calls).toEqual([
+      "connected [is-mounted]",
+      "set:isMounted [is-mounted]",
+      "adopted [is-mounted is-adopted]",
+      "changed:isMoving [is-mounted is-adopted is-moving]",
+      "changed:wasMounted [is-moving was-mounted]",
+      "disconnected [is-moving was-mounted]",
+      "connected [is-moving was-mounted is-mounted]",
+      "set:isMounted [is-moving was-mounted is-mounted]",
+      "changed:isMoving [was-mounted is-mounted]",
+      "disconnected [was-mounted] detached",
+    ]);
+  });
 });

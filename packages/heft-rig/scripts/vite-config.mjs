@@ -1,4 +1,4 @@
-import { access, readdir, readFile, writeFile } from "node:fs/promises";
+import { access, readdir, readFile, realpath, writeFile } from "node:fs/promises";
 import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
 import { createRequire } from "node:module";
@@ -6,7 +6,7 @@ import { resolve, dirname, relative, extname, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 import { transform } from "esbuild";
 import dts from "vite-plugin-dts";
-import { coverageConfigDefaults } from "vitest/config";
+import { configDefaults, coverageConfigDefaults } from "vitest/config";
 import { cssConfig } from "./css-config.mjs";
 import { readPackageJson } from "./package-type.mjs";
 // The public site plugin, by path: a dependency on it would be a cycle (it
@@ -42,6 +42,18 @@ export function resolveVitestMaxWorkers(env = process.env) {
  */
 export function resolveCoverageReporters(env = process.env) {
   return env.CI ? ["text", "json", "json-summary"] : ["text", "json", "json-summary", "html"];
+}
+
+/**
+ * Globs a package keeps out of its test run and its coverage: `excom.testExclude`
+ * in its `package.json` (a folder with a test suite of its own, run by another
+ * runner). Anything but an array of strings is ignored.
+ * @param {{ testExclude?: unknown } | null | undefined} excom
+ * @returns {string[]}
+ */
+export function resolveTestExclude(excom) {
+  const globs = excom?.testExclude;
+  return Array.isArray(globs) ? globs.filter((glob) => typeof glob === "string") : [];
 }
 
 /**
@@ -363,7 +375,9 @@ async function getConfig(
         .map((d) => `${slash(packagesDir)}/${d.name}/**`);
 
       const maxWorkers = resolveVitestMaxWorkers();
-      const thresholds = resolveCoverageThresholds((await readPackageJson(packageRoot))?.excom);
+      const excom = (await readPackageJson(packageRoot))?.excom;
+      const thresholds = resolveCoverageThresholds(excom);
+      const testExclude = resolveTestExclude(excom);
       const testAliases = await buildWorkspaceAliases(packageRoot);
       testAliases.push({
         find: "@vitest/coverage-v8",
@@ -377,6 +391,7 @@ async function getConfig(
         test: {
           projects: isIndividualPackage ? undefined : ['packages/*'],
           include: ["**/*.test.ts"],
+          ...(testExclude.length ? { exclude: [...configDefaults.exclude, ...testExclude] } : {}),
           globals: true,
           passWithNoTests: true,
           environment: "happy-dom",
@@ -411,6 +426,7 @@ async function getConfig(
               "**/public/service-worker/**",
               "**/*.config.*",
               "**/*.d.ts",
+              ...testExclude,
             ],
             // Every metric ≥ 90%, unless the package opted out.
             ...(thresholds ? { thresholds } : {}),
@@ -646,6 +662,26 @@ async function buildWorkspaceAliases(packageRoot) {
   if (!rushRoot) {
     return [];
   }
+  const aliases = await rushProjectAliases(rushRoot);
+  // A package of another repository that links the rig from a sibling checkout
+  // also gets the packages of the rig's repository, after its own.
+  const rigRushRoot = await linkedRigRushRoot(packageRoot);
+  if (rigRushRoot && rigRushRoot !== (await realpath(rushRoot))) {
+    aliases.push(...(await rushProjectAliases(rigRushRoot)));
+  }
+  return aliases;
+}
+
+/** The Rush repository that `node_modules/@excom/heft-rig` of the package really lives in, or `null`. */
+async function linkedRigRushRoot(packageRoot) {
+  try {
+    return await findRushRoot(await realpath(resolve(packageRoot, "node_modules/@excom/heft-rig")));
+  } catch {
+    return null;
+  }
+}
+
+async function rushProjectAliases(rushRoot) {
   const rushPath = resolve(rushRoot, "rush.json");
   const rushConfig = JSON.parse(await readFile(rushPath, "utf-8"));
   const aliases = [];

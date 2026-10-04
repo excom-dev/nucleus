@@ -6,7 +6,7 @@
 
 `define(tag?, options?)` registers the element. Both default to the config (`tag`, `definitionOpts`) and are passed straight to `customElements.define`. Defining an already-registered tag logs a warning instead of throwing.
 
-`Neutron({ tag, props, ssr: false })` keeps the tag's instances out of a [prerender](/nucleus/docs/prerendering#md-keeping-elements-out): an element that reads the device or the person mounts in the browser only, and what it holds prerenders as usual. Default `true`.
+`Neutron({ tag, props, ssr: false })` keeps the tag's instances out of a [prerender](/docs/prerendering#md-keeping-elements-out): an element that reads the device or the person mounts in the browser only, and what it holds prerenders as usual. Default `true`.
 
 ## Introspection
 

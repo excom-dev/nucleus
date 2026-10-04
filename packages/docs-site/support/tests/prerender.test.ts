@@ -10,9 +10,9 @@ import { Quark } from "@excom/quark";
 
 const SITEMAP = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://excom.dev/</loc></url>
-  <url><loc>https://excom.dev/nucleus</loc></url>
-  <url><loc>https://excom.dev/nucleus/packages/a&amp;b</loc></url>
+  <url><loc>https://nucleus.excom.dev/</loc></url>
+  <url><loc>https://nucleus.excom.dev/docs/quick_start</loc></url>
+  <url><loc>https://nucleus.excom.dev/packages/a&amp;b</loc></url>
 </urlset>
 `;
 
@@ -38,8 +38,8 @@ describe("prerender config", () => {
     expect(options).toMatchObject({
       root: config.DIST,
       out: config.DIST,
-      origin: "https://excom.dev",
-      routes: ["/", "/nucleus", "/nucleus/packages/a&b"],
+      origin: "https://nucleus.excom.dev",
+      routes: ["/", "/docs/quick_start", "/packages/a&b"],
       notFound: "/404",
     });
     expect(config.DIST).toMatch(/\/packages\/docs-site\/dist$/);
@@ -57,24 +57,24 @@ describe("prerender config", () => {
     expect(() =>
       config.default("<url><loc>https://elsewhere.test/x</loc></url>")
     ).toThrow(
-      "prerender: https://elsewhere.test/x is not on https://excom.dev"
+      "prerender: https://elsewhere.test/x is not on https://nucleus.excom.dev"
     );
   });
 
   it("keeps what the service worker answers from client state out of pages", () => {
     expect(
       [
-        "https://excom.dev/api/todos/1",
-        "https://excom.dev/sandbox/todo-app",
-        "https://excom.dev/views/todo-app/todo-app.html",
-        "https://excom.dev/package-metas/index.json",
+        "https://nucleus.excom.dev/api/todos/1",
+        "https://nucleus.excom.dev/sandbox/todo-app",
+        "https://nucleus.excom.dev/views/todo-app/todo-app.html",
+        "https://nucleus.excom.dev/package-metas/index.json",
       ].map(config.isClientState)
     ).toEqual([true, true, false, false]);
   });
 
   it("answers the demos' todo reads from the service worker's seed", async () => {
     const get = async (path: string) => {
-      const response = config.api(new Request(`https://excom.dev${path}`));
+      const response = config.api(new Request(`https://nucleus.excom.dev${path}`));
       return response && [response.status, await response.json()];
     };
     const [status, all] = (await get("/api/todos"))!;
@@ -115,8 +115,8 @@ describe("prerender entry", () => {
   });
 
   it("starts each page from a cold load of its URL and settles on Quark", async () => {
-    entry.beforeRender({ url: "/nucleus/docs/quick_start", window } as never);
-    expect(location.pathname).toBe("/nucleus/docs/quick_start");
+    entry.beforeRender({ url: "/docs/quick_start", window } as never);
+    expect(location.pathname).toBe("/docs/quick_start");
     // no cap of its own: the renderer's budget bounds the page
     const settled = vi.spyOn(Quark, "whenSettled").mockResolvedValue("settled");
     expect(await entry.settle()).toBe("settled");
@@ -141,10 +141,10 @@ describe("prerender entry", () => {
   };
 
   it("gives a routed page its canonical URL and og:url, without query or hash", () => {
-    const url = `${location.origin}/nucleus/packages/quark`;
+    const url = `${location.origin}/packages/quark`;
     expect(
       render(
-        "/nucleus/packages/quark?tab=api#md-usage",
+        "/packages/quark?tab=api#md-usage",
         `<spa-route is-active></spa-route>`
       )
     ).toEqual([url, url]);
@@ -158,8 +158,8 @@ describe("prerender entry", () => {
 
   it("fails a soft 404 and a not-found path a route matched", () => {
     expect(() =>
-      render("/nucleus/nope", `<spa-route is-fallback is-active></spa-route>`)
-    ).toThrow("/nucleus/nope matches no route");
+      render("/nope", `<spa-route is-fallback is-active></spa-route>`)
+    ).toThrow("/nope matches no route");
     expect(() =>
       render(config.NOT_FOUND, `<spa-route is-active></spa-route>`)
     ).toThrow("/404 is not the fallback route");

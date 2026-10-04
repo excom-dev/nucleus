@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/network-status",
+      "comment": "Add a test for `window` listeners left by copies of the element",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/network-status"
+}

@@ -9,7 +9,7 @@ Rotate slides on autopilot or on click — galleries, hero banners, walkthroughs
 - **Auto-play** Rotate on a timer via `auto-play`
 - **Manual nav** `--back` / `--next` commands from plain buttons; `rel="prev"` / `rel="next"` positions them
 - **Slide or fade** Choose the transition with `slide-animation`: `slide` / `fade` / `track`
-- **Swipeable** `slide-animation="track"` wrapped in [`gesture-handler`](/nucleus/packages/gesture-handler): drag and flick between slides
+- **Swipeable** `slide-animation="track"` wrapped in [`gesture-handler`](/packages/gesture-handler): drag and flick between slides
 - **Pauses itself** Manual navigation stops auto-play automatically
 - **Bindable position** `.provision` is `{ index, count, lastMove }` — a
   progress readout is one Quark rule on `prop("provision")`
@@ -41,7 +41,7 @@ content-carousel {
 }
 ```
 
-Nothing animates until the first move: `last-move` is unset until then, so an initial `is-active`, in markup or written by the app, appears in place. `slide-animation="track"` renders only the active slide and its two DOM neighbours, so slides must be siblings (a `display: contents` wrapper around them is fine) and, with three or more slides, a wrap — `--next` from the last, `--back` from the first — cuts to the new slide instead of sliding; put it inside [`gesture-handler`](/nucleus/packages/gesture-handler) to drag it.
+Nothing animates until the first move: `last-move` is unset until then, so an initial `is-active`, in markup or written by the app, appears in place. `slide-animation="track"` renders only the active slide and its two DOM neighbours, so slides must be siblings (a `display: contents` wrapper around them is fine) and, with three or more slides, a wrap — `--next` from the last, `--back` from the first — cuts to the new slide instead of sliding; put it inside [`gesture-handler`](/packages/gesture-handler) to drag it.
 
 ### API Reference
 
@@ -55,7 +55,7 @@ Invoke `--back` / `--next` from a `<button command commandfor>`. A direct
 child with `rel="prev"` / `rel="next"` (or
 `.tag-content-carousel-prev` / `.tag-content-carousel-next`) is
 positioned as the nav control for you. If you want swipeable slides, you
-must use the carousel in conjunction with the [<gesture-handler>](/nucleus/packages/gesture-handler).
+must use the carousel in conjunction with the [<gesture-handler>](/packages/gesture-handler).
 A demo exists on that page.
 
 <include-content data-demo="manual"></include-content>

@@ -11,9 +11,8 @@
     // every route is a prerendered page; any other path answers 404.html
     "not_found_handling": "404-page"
   },
-  // The site origin (SITE_ORIGIN in heft-rig's build-npm-readmes.mjs). The Pages
-  // project `excom-docs` serves it today: it attaches here only once it is
-  // detached there.
-  "routes": [{ "pattern": "excom.dev", "custom_domain": true }],
+  // The site origin (SITE_ORIGIN in heft-rig's build-npm-readmes.mjs). No API on
+  // it: the release-notice form posts to https://excom.dev/api (cross-origin).
+  "routes": [{ "pattern": "nucleus.excom.dev", "custom_domain": true }],
   "workers_dev": false
 }

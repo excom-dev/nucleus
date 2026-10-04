@@ -3,10 +3,10 @@
    `spa-route`; `$package-meta` / `$package-name` are published here for the
    views the README includes (install-section, api-reference, live-demo),
    which each carry their own sheet and read them from this ancestor. Four
-   routes share this view: `/nucleus` (the Introduction, named by the route's
-   `data-doc-name`), `/nucleus/docs/:name` (site guide),
-   `/nucleus/packages/:packageName` (README) and
-   `/nucleus/packages/:packageName/:docName` (one doc page). */
+   routes share this view: `/` (the Introduction, named by the route's
+   `data-doc-name`), `/docs/:name` (site guide),
+   `/packages/:packageName` (README) and
+   `/packages/:packageName/:docName` (one doc page). */
 @use "/shell" as *;
 
 provider-fetch.doc-page {
@@ -29,9 +29,9 @@ provider-fetch.doc-page {
       template-ref: "/views/live-demo/live-demo.html";
       lazy-load: "";
     }
-    /* doc pages only: elsewhere the hidden crumb would link /nucleus/packages/, no page */
+    /* doc pages only: elsewhere the hidden crumb would link /packages/, no page */
     &[data-is-package-doc] [bind-package-link] {
-      route-href: "/nucleus/packages/#{$package-name}";
+      route-href: "/packages/#{$package-name}";
       content: $package-name;
     }
     [bind-doc-title] {

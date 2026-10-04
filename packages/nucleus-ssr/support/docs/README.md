@@ -17,7 +17,7 @@ Prerender a Nucleus Stack app to static HTML that the browser takes over as it s
 
 ## Usage
 
-`prerender()` renders every route of a built site and writes the files. Run it in Node (24.13 or newer) once the site is built; the app itself needs no change. How a prerendered page behaves in the browser: [Prerendering](/nucleus/docs/prerendering).
+`prerender()` renders every route of a built site and writes the files. Run it in Node (24.13 or newer) once the site is built; the app itself needs no change. How a prerendered page behaves in the browser: [Prerendering](/docs/prerendering).
 
 ```js
 // prerender.mjs
@@ -128,7 +128,7 @@ What stays out:
 - **Excluded URLs** What `exclude` names is fetched for the render but not shipped
 - **Live scripts** A `<script>` that `dangerous-html()` or a fetched view inserted runs on no client-rendered page, so it is written as `type="text/plain"`; a `<template shadowrootmode>` the render inserted loses that attribute. The shell's own scripts and data blocks (JSON-LD) stay. A `<script>` your own element inserts as HTML is written as it is, and runs once the file is parsed
 - **Head additions** Nodes the render added to `<head>` are dropped, except `<title>`, `<meta>`, `<link rel="canonical">` and a `<link rel="alternate">` that is no stylesheet
-- **Elements kept out** A Neutron element in a `no-ssr` region, or of a tag defined with `ssr: false`, does not mount in the render: it mounts in the browser. See [Keeping elements out](/nucleus/docs/prerendering#md-keeping-elements-out)
+- **Elements kept out** A Neutron element in a `no-ssr` region, or of a tag defined with `ssr: false`, does not mount in the render: it mounts in the browser. See [Keeping elements out](/docs/prerendering#md-keeping-elements-out)
 - **Build paths** A `file:` URL in an attribute, script or style, or the path of `root` / the working directory, fails the page
 
 ### Failures
@@ -151,7 +151,7 @@ Every page comes with its `diagnostics`: `errors`, `warnings`, `pending` (on a t
 
 ### Output
 
-One slashless file per route: `/` is `index.html`, `/docs/intro` is `docs/intro.html`, `notFound` is `404.html`. The host must serve `/docs/intro` from `docs/intro.html`: many static hosts do, some need a rewrite rule. Query and hash name no file; routes that would share a file, or write outside `out`, are refused before any page renders. [Static hosting](/nucleus/docs/prerendering#md-static-hosting) has the hosting rules.
+One slashless file per route: `/` is `index.html`, `/docs/intro` is `docs/intro.html`, `notFound` is `404.html`. The host must serve `/docs/intro` from `docs/intro.html`: many static hosts do, some need a rewrite rule. Query and hash name no file; routes that would share a file, or write outside `out`, are refused before any page renders. [Static hosting](/docs/prerendering#md-static-hosting) has the hosting rules.
 
 ### Test hydration
 
@@ -185,7 +185,7 @@ A flash reads `body > include-content without [did-load]`, or names a node; a re
 
 ### Test in a browser
 
-Two more checks from `@excom/nucleus-ssr/testing` ask a real browser. Each takes a page from `open()` of [`@excom/nucleus-test/chrome.mjs`](/nucleus/packages/nucleus-test#md-headless-chrome), or any harness with its `goto()`, `run()` and `cdp()` (the `BrowserPage` type), and a path of the prerendered build, served as the host serves it. `serveSite()` of [vite-plugin-nucleus](/nucleus/packages/vite-plugin-nucleus#md-host-css-entries) does that for Cloudflare Workers static assets, and with `shell`, the file `--save-shell` wrote, answers every prerendered page with the untouched shell:
+Two more checks from `@excom/nucleus-ssr/testing` ask a real browser. Each takes a page from `open()` of [`@excom/nucleus-test/chrome.mjs`](/packages/nucleus-test#md-headless-chrome), or any harness with its `goto()`, `run()` and `cdp()` (the `BrowserPage` type), and a path of the prerendered build, served as the host serves it. `serveSite()` of [vite-plugin-nucleus](/packages/vite-plugin-nucleus#md-host-css-entries) does that for Cloudflare Workers static assets, and with `shell`, the file `--save-shell` wrote, answers every prerendered page with the untouched shell:
 
 ```js
 import { checkHydration, compareColdRender } from "@excom/nucleus-ssr/testing";

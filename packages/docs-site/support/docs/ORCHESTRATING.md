@@ -32,7 +32,7 @@ Scoping is identical to CSS `@scope`: selectors match strict descendants of the 
 
 ## Selectors
 
-Quark rides the native selector engine, so whatever CSS can match, Quark can match — `:is()` / `:where()` / `:not()`, `:has()`, sibling combinators (`+`, `~`), structural pseudo-classes (`:nth-child()`, `:first-child`, `:empty`) and attribute-backed ones (`:disabled`, `:required`, `:lang()`) included. What Quark adds is observation: a rule re-runs when an attribute, class or id it names changes anywhere on its path — an ancestor, an earlier sibling, a `:has()` descendant — and when elements are inserted or removed where its match depends on them. The gaps are selector features backed by state the DOM does not reflect: interaction and validity pseudo-classes (`:hover`, `:focus`, `:checked`, `:invalid`) match on the first run only, and the sheet warns at build. Nesting works like CSS, and `&` means the current selector. See the related section under [Limitations](/nucleus/docs/limitations).
+Quark rides the native selector engine, so whatever CSS can match, Quark can match — `:is()` / `:where()` / `:not()`, `:has()`, sibling combinators (`+`, `~`), structural pseudo-classes (`:nth-child()`, `:first-child`, `:empty`) and attribute-backed ones (`:disabled`, `:required`, `:lang()`) included. What Quark adds is observation: a rule re-runs when an attribute, class or id it names changes anywhere on its path — an ancestor, an earlier sibling, a `:has()` descendant — and when elements are inserted or removed where its match depends on them. The gaps are selector features backed by state the DOM does not reflect: interaction and validity pseudo-classes (`:hover`, `:focus`, `:checked`, `:invalid`) match on the first run only, and the sheet warns at build. Nesting works like CSS, and `&` means the current selector. See the related section under [Limitations](/docs/limitations).
 
 ```quark
 /* an aggregate over the rows becomes a fact on the host — no JS, no observer element */
@@ -128,7 +128,7 @@ Values are Quark expressions, not JavaScript. They are derived from CSS expressi
 [bind-field="status"] { content: if($n == 0: "none"; $n > 3: "many"; else: "few"); }
 ```
 
-Use `if()` for a one-off value. When several rules would branch on the same condition, write the condition to the document once (`data-is-empty: $n == 0;` — a boolean writes `""` or removes the attribute) and select on `[data-is-empty]` instead; see [Best Practices](/nucleus/docs/best_practices).
+Use `if()` for a one-off value. When several rules would branch on the same condition, write the condition to the document once (`data-is-empty: $n == 0;` — a boolean writes `""` or removes the attribute) and select on `[data-is-empty]` instead; see [Best Practices](/docs/best_practices).
 
 Method calls on values are limited to a read-only allowlist (`toUpperCase`, `slice`, `join`, `toFixed`, `getAttribute`, `closest`, …). Expressions may compute and read; they may not cause side effects. Logic they cannot express belongs in a module function (see [Modules](#md-modules)); anything that reaches the network, storage or the clock belongs in an Adapter.
 
@@ -254,7 +254,7 @@ Functions come from modules imported with `@use`, for expressions and for `handl
 [bind-total] { content: formatPrice(utils.total($items)); }
 ```
 
-A module should be pure business logic: values in, a value out. It is also the exit for anything Quark cannot yet declare. Bridging a protocol, such as the network, storage, the clock or a person, belongs to an Adapter, which carries the result as attributes and a provision. Quark leans that way on purpose: it calls module functions synchronously and does not await what they return, so a fetch inside a module is deliberately awkward. A function may build and return a node it owns, like the chart under [Content](#md-content), and fill it once its work finishes (see [Asynchronous work](/nucleus/packages/quark/use#md-asynchronous-work)); it should still leave the document around it alone.
+A module should be pure business logic: values in, a value out. It is also the exit for anything Quark cannot yet declare. Bridging a protocol, such as the network, storage, the clock or a person, belongs to an Adapter, which carries the result as attributes and a provision. Quark leans that way on purpose: it calls module functions synchronously and does not await what they return, so a fetch inside a module is deliberately awkward. A function may build and return a node it owns, like the chart under [Content](#md-content), and fill it once its work finishes (see [Asynchronous work](/packages/quark/use#md-asynchronous-work)); it should still leave the document around it alone.
 
 Before writing a helper, check the built-in modules: `@use "quark:math"`, `quark:list`, `quark:map`, `quark:string`, `quark:date`, `quark:url` and `quark:util` ship pure functions for the derivations views need most — clamping, sorting and grouping a list by a dot path, counting, plurals, dates, query strings — imported like any module and never global:
 
@@ -317,7 +317,7 @@ li { view-transition-name: match-element; view-transition-class: todo; }
 ::view-transition-old(.todo):only-child { animation: todo-out 200ms; }
 ```
 
-Every write of the same tick lands in the same cut, and the transition waits for Quark to settle before the new state is captured, so rows rendered by later rule passes are complete. Writes that change nothing, the sheet's first render, reduced motion and browsers without the API commit without a transition; so do writes while another transition runs (a route change), unless the block says `if-active: replace`. Options: `types`, `timeout`, `delay`, `first-render`, `if-active`, and `until: "<selector>"` to keep the transition open until the block's element matches — for short waits only, the page is frozen meanwhile. Styling recipes are in [Styling](/nucleus/docs/styling) (*Animation*); the full option table is on the [quark `@view-transition`](/nucleus/packages/quark/view_transition) page.
+Every write of the same tick lands in the same cut, and the transition waits for Quark to settle before the new state is captured, so rows rendered by later rule passes are complete. Writes that change nothing, the sheet's first render, reduced motion and browsers without the API commit without a transition; so do writes while another transition runs (a route change), unless the block says `if-active: replace`. Options: `types`, `timeout`, `delay`, `first-render`, `if-active`, and `until: "<selector>"` to keep the transition open until the block's element matches — for short waits only, the page is frozen meanwhile. Styling recipes are in [Styling](/docs/styling) (*Animation*); the full option table is on the [quark `@view-transition`](/packages/quark/view_transition) page.
 
 ## CSS variables
 
@@ -359,15 +359,15 @@ Load a sheet before the elements it listens to begin their lifecycles: put `<qua
 - A `@view-transition` block holding only `$variable` writes never animates: variables do not paint. Put the declarations that write attributes and content inside the block.
 - A Quark sheet is not a place to park CSS. A sheet that holds an at-rule Quark does not have (`@media`, `@supports`, `@keyframes`, …) or an `!important` fails to load and is left `is-error`. Keep those in the stylesheet and have both sides select on the same attributes.
 
-More in [Troubleshooting](/nucleus/docs/troubleshooting). The complete language reference lives on the [quark](/nucleus/packages/quark) package page.
+More in [Troubleshooting](/docs/troubleshooting). The complete language reference lives on the [quark](/packages/quark) package page.
 
 ## Next steps
 
-- [Quick Start - A working page, in five minutes.](/nucleus/docs/quick_start)
-- [Core Concepts - The mental model, in one sitting.](/nucleus/docs/core_concepts)
-- [Using Elements - The Nucleus Kit catalog and how elements behave.](/nucleus/docs/using_elements)
-- [Orchestrating - Get familiar with Quark.](/nucleus/docs/orchestrating)
-- [Styling - Valence.css themes, tokens, and state-driven CSS.](/nucleus/docs/styling)
-- [Building Views - Structure a real app: routes, views, lazy loading.](/nucleus/docs/building_views)
-- Other Guides - [Business Logic](/nucleus/docs/business_logic), [Creating Elements](/nucleus/docs/creating_elements), [Best Practices](/nucleus/docs/best_practices), [Troubleshooting](/nucleus/docs/troubleshooting), [Debugging with Agents](/nucleus/docs/debugging_with_agents)
-- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](/nucleus/docs/diving_deeper)
+- [Quick Start - A working page, in five minutes.](/docs/quick_start)
+- [Core Concepts - The mental model, in one sitting.](/docs/core_concepts)
+- [Using Elements - The Nucleus Kit catalog and how elements behave.](/docs/using_elements)
+- [Orchestrating - Get familiar with Quark.](/docs/orchestrating)
+- [Styling - Valence.css themes, tokens, and state-driven CSS.](/docs/styling)
+- [Building Views - Structure a real app: routes, views, lazy loading.](/docs/building_views)
+- Other Guides - [Business Logic](/docs/business_logic), [Creating Elements](/docs/creating_elements), [Best Practices](/docs/best_practices), [Troubleshooting](/docs/troubleshooting), [Debugging with Agents](/docs/debugging_with_agents)
+- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](/docs/diving_deeper)

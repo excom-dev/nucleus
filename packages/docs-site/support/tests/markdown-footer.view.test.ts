@@ -17,6 +17,7 @@ import {
   docTitle,
   getPackagesByType,
   SITE_BASE,
+  SITE_HOME,
   SITE_HOME_DOC,
   siteDocHref,
 } from "../../shell";
@@ -138,6 +139,7 @@ describe("the page's markdown link", () => {
       docTitle,
       getPackagesByType,
       SITE_BASE,
+      SITE_HOME,
       SITE_HOME_DOC,
       siteDocHref,
     });
@@ -154,7 +156,7 @@ describe("the page's markdown link", () => {
     await goTo(host, `${SITE_BASE}/docs/quick_start`);
     expect(pageLink.getAttribute("href")).toBe("/docs/quick_start.md");
     expect(pageLink.textContent).toBe("Markdown version of this page");
-    await goTo(host, SITE_BASE);
+    await goTo(host, SITE_HOME);
     expect(pageLink.getAttribute("href")).toBe("/docs/introduction.md");
     // the index link is never touched
     expect(indexLink.getAttribute("href")).toBe("/llms.txt");
@@ -165,7 +167,7 @@ describe("the page's markdown link", () => {
     const { host, pageLink } = await mount();
     await goTo(host, `${SITE_BASE}/docs/quick_start?tab=api#md-usage`);
     expect(pageLink.getAttribute("href")).toBe("/docs/quick_start.md");
-    await goTo(host, `${SITE_BASE}?utm=docs#md-start-here`);
+    await goTo(host, `${SITE_HOME}?utm=docs#md-start-here`);
     expect(pageLink.getAttribute("href")).toBe("/docs/introduction.md");
   });
 
@@ -215,17 +217,16 @@ describe("the page's markdown link", () => {
     await goTo(host, `${SITE_BASE}/packages/quark`);
     expect(pageLink.hasAttribute("href")).toBe(false);
     expect(pageLink.textContent).toBe("");
-    await goTo(host, SITE_BASE);
+    await goTo(host, SITE_HOME);
     expect(pageLink.getAttribute("href")).toBe("/docs/introduction.md");
     await goTo(host, `${SITE_BASE}/packages/quark/quick_start`);
     expect(pageLink.hasAttribute("href")).toBe(false);
     expect(pageLink.textContent).toBe("");
   });
 
-  it("has none for what is no guide's page: examples, the company page, an unknown guide, the 404", async () => {
+  it("has none for what is no guide's page: examples, an unknown guide, the 404", async () => {
     const { host, pageLink } = await mount();
     for (const url of [
-      "/",
       `${SITE_BASE}/examples/todos`,
       `${SITE_BASE}/docs/no_such_guide`,
       // the home guide has no /docs URL: that one is the 404
@@ -260,7 +261,7 @@ describe("the page's markdown link", () => {
     kitRouter.pushState({ url: `${SITE_BASE}/packages/quark` });
     await settle();
     expect(pageLink.hasAttribute("href")).toBe(false);
-    kitRouter.pushState({ url: SITE_BASE });
+    kitRouter.pushState({ url: SITE_HOME });
     await settle();
     expect(pageLink.getAttribute("href")).toBe("/docs/introduction.md");
   });

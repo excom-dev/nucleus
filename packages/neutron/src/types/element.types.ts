@@ -178,7 +178,11 @@ export interface OptsPropConfig {
    */
 }
 
-export type PropConfig = Required<OptsPropConfig>;
+export type PropConfig = Required<OptsPropConfig> & {
+  /* Internal, set by `reflectDefaultProps`: the value lives in `propStore`,
+   * `attr` only mirrors it and is never read. */
+  reflectOnly?: boolean;
+};
 
 export type DefaultProps = {
   isMounted: boolean;

@@ -322,7 +322,8 @@ export async function formatPackageJson(packageRoot = process.cwd()) {
         ? undefined
         : homepage ||
           `https://github.com/excom-dev/nucleus/tree/main/packages/${_name}/support/docs/README.md`,
-      bugs: bugs || `https://github.com/excom-dev/nucleus/issues`,
+      // a private package keeps its own, if any: it may live in another repository
+      bugs: bugs || (isPrivate ? undefined : `https://github.com/excom-dev/nucleus/issues`),
       keywords: uniqueArray([...defaults.keywords, ...(keywords || [])]),
       excom: sortObjectAlphabetically(excom),
       ...sortObjectAlphabetically(rest || {}),

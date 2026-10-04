@@ -8,11 +8,11 @@
  *
  *   kind    - package | element | attribute | event | slot | css-property |
  *             css-class | css-alias | listen | command | default-action | expected-child |
- *             doc (repo architecture; client route `/nucleus/docs/<package>`) |
- *             page (a package doc page; route `/nucleus/packages/<package>/<doc>`)
+ *             doc (repo architecture; client route `/docs/<package>`) |
+ *             page (a package doc page; route `/packages/<package>/<doc>`)
  *   package - shortName (or site-doc key for `kind: "doc"`);
- *             package routes `/nucleus/packages/<package>`, site docs
- *             `/nucleus/docs/<package>` (`introduction` is `/nucleus` itself).
+ *             package routes `/packages/<package>`, site docs
+ *             `/docs/<package>` (`introduction` is `/`, the docs home).
  *             The corpus stores keys, not hrefs; the site builds the route.
  *   tag     - element tag; omitted if absent or same as `package`
  *             (package-root docs have no tag). Member anchors:

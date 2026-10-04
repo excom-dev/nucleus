@@ -9,7 +9,7 @@ Build, serve and preview a Nucleus Stack site with one Vite plugin: pages, Quark
 - **Host-true preview** `vite preview` answers as Cloudflare Workers static assets do: `_redirects`, `_headers`, the 404 page
 - **Kit from a CDN** `kit: "unpkg"` loads the Nucleus Kit from unpkg in a deploy build instead of bundling it
 - **CSS chain included** `@import` / `@import-glob`, mixins, custom selectors and preset-env, nesting shipped as written
-- **Prerender-ready** Builds what [nucleus-ssr](/nucleus/packages/nucleus-ssr) prerenders, and serves it for browser checks
+- **Prerender-ready** Builds what [nucleus-ssr](/packages/nucleus-ssr) prerenders, and serves it for browser checks
 
 ## Installation
 
@@ -66,7 +66,7 @@ A page loads the kit from a module script: `import "@excom/nucleus-kit/nucleus-k
 
 ### Host / CSS entries
 
-- `@excom/vite-plugin-nucleus/host` `serveSite({ root, port?, shell? })` serves a build as the preview does, on every network interface, and resolves `{ port, close() }`: for browser checks. With `shell`, the file `nucleus-ssr --save-shell` wrote, every prerendered page answers with the untouched shell, the cold origin of nucleus-ssr's [cold-render check](/nucleus/packages/nucleus-ssr#md-test-in-a-browser). Also `hostHandler`, `answerOf`, `hostOf`, `rulesOf`, `redirectsOf`, `headersOf`
+- `@excom/vite-plugin-nucleus/host` `serveSite({ root, port?, shell? })` serves a build as the preview does, on every network interface, and resolves `{ port, close() }`: for browser checks. With `shell`, the file `nucleus-ssr --save-shell` wrote, every prerendered page answers with the untouched shell, the cold origin of nucleus-ssr's [cold-render check](/packages/nucleus-ssr#md-test-in-a-browser). Also `hostHandler`, `answerOf`, `hostOf`, `rulesOf`, `redirectsOf`, `headersOf`
 - `@excom/vite-plugin-nucleus/css` `cssConfig` is the Vite `css` option the plugin sets, for another Vite config; `transformCss(css, from)` runs the same chain on one stylesheet
 
 ### Credits

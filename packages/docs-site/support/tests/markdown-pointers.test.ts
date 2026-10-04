@@ -17,24 +17,26 @@ afterEach(() => {
 
 describe("a page's markdown file", () => {
   it("is the Introduction's at the docs home, `/docs/<name>.md` for a guide, `/<package>.md` for a package", () => {
-    expect(entry.markdownHref("/nucleus")).toBe("/docs/introduction.md");
-    expect(entry.markdownHref("/nucleus/docs/quick_start")).toBe(
+    expect(entry.markdownHref("/")).toBe("/docs/introduction.md");
+    expect(entry.markdownHref("/docs/quick_start")).toBe(
       "/docs/quick_start.md"
     );
-    expect(entry.markdownHref("/nucleus/packages/spa-route")).toBe(
+    expect(entry.markdownHref("/packages/spa-route")).toBe(
       "/spa-route.md"
     );
   });
 
   it("is none for the pages with no markdown", () => {
     for (const pathname of [
-      "/",
-      "/nucleus/examples/todos",
+      // the old address: no page here
+      "/nucleus",
+      "/nucleus/docs/quick_start",
+      "/examples/todos",
       // a package's doc page: only the package's own page is mirrored
-      "/nucleus/packages/spa-route/quick_start",
-      "/nucleus/docs",
-      "/nucleus/docs/a/b",
-      "/nucleus/packages/",
+      "/packages/spa-route/quick_start",
+      "/docs",
+      "/docs/a/b",
+      "/packages/",
       "/other/docs/quick_start",
       "/404",
     ]) {
@@ -73,7 +75,7 @@ describe("a prerendered page's head", () => {
 
   it("links the page's markdown file after its canonical link and og:url, once a HEAD request for it is ok", async () => {
     const { fetch, link } = await render(
-      "/nucleus/docs/quick_start?tab=api#md-usage"
+      "/docs/quick_start?tab=api#md-usage"
     );
     expect(fetch.mock.calls).toEqual([
       ["/docs/quick_start.md", { method: "HEAD" }],
@@ -89,16 +91,16 @@ describe("a prerendered page's head", () => {
   });
 
   it("links the docs home and a package's page the same way, and a package whose file is missing none", async () => {
-    expect((await render("/nucleus")).link!.getAttribute("href")).toBe(
+    expect((await render("/")).link!.getAttribute("href")).toBe(
       `${location.origin}/docs/introduction.md`
     );
     document.head.innerHTML = "";
     expect(
-      (await render("/nucleus/packages/spa-route")).link!.getAttribute("href")
+      (await render("/packages/spa-route")).link!.getAttribute("href")
     ).toBe(`${location.origin}/spa-route.md`);
     document.head.innerHTML = "";
     // a 404 answer is no error: the page keeps its canonical link and og:url
-    const { fetch, link } = await render("/nucleus/packages/quark");
+    const { fetch, link } = await render("/packages/quark");
     expect(fetch).toHaveBeenCalledWith("/quark.md", { method: "HEAD" });
     expect(link).toBeNull();
     expect(document.head.querySelector('link[rel="canonical"]')).not.toBeNull();
@@ -108,7 +110,7 @@ describe("a prerendered page's head", () => {
     const failing = vi.fn(async () => {
       throw new TypeError("Failed to fetch");
     });
-    const { link } = await render("/nucleus/docs/quick_start", ROUTED, failing);
+    const { link } = await render("/docs/quick_start", ROUTED, failing);
     expect(link).toBeNull();
     expect(
       document.head.querySelector('meta[property="og:url"]')
@@ -117,9 +119,8 @@ describe("a prerendered page's head", () => {
 
   it("asks for no file for a page with no markdown, nor for the not-found page", async () => {
     for (const [url, routes] of [
-      ["/", ROUTED],
-      ["/nucleus/examples/todos", ROUTED],
-      ["/nucleus/packages/spa-route/quick_start", ROUTED],
+      ["/examples/todos", ROUTED],
+      ["/packages/spa-route/quick_start", ROUTED],
       ["/404", ROUTE("is-fallback is-active")],
     ]) {
       const { fetch, link } = await render(url!, routes);
@@ -134,11 +135,11 @@ describe("a prerendered page's head", () => {
     document.body.innerHTML = ROUTE("is-fallback is-active");
     expect(() =>
       entry.afterRender({
-        url: "/nucleus/docs/quick_start",
+        url: "/docs/quick_start",
         window: { fetch },
         document,
       } as never)
-    ).toThrow("/nucleus/docs/quick_start matches no route");
+    ).toThrow("/docs/quick_start matches no route");
     expect(fetch).not.toHaveBeenCalled();
   });
 });
@@ -168,7 +169,7 @@ describe("robots.txt", () => {
 
   it("keeps the rules", () => {
     expect(rules).toBe(
-      "User-agent: *\nAllow: /\n\nSitemap: https://excom.dev/sitemap.xml\n"
+      "User-agent: *\nAllow: /\n\nSitemap: https://nucleus.excom.dev/sitemap.xml\n"
     );
   });
 });

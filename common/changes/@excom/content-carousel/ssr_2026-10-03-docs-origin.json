@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/content-carousel",
+      "comment": "Update docs links to the docs site's new address, `https://nucleus.excom.dev`",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/content-carousel"
+}

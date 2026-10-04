@@ -123,7 +123,7 @@ const linksOf = (group: Element | null) =>
     href: a.getAttribute("route-href"),
   }));
 
-const hrefs = (names: string[]) => names.map((n) => `/nucleus/packages/${n}`);
+const hrefs = (names: string[]) => names.map((n) => `/packages/${n}`);
 
 describe("site nav packages", () => {
   beforeEach(() => {
@@ -176,7 +176,7 @@ describe("site nav packages", () => {
       expect(linksOf(group)).toEqual(
         GROUPED.map((name) => ({
           text: name,
-          href: `/nucleus/packages/${name}`,
+          href: `/packages/${name}`,
         }))
       );
     }
@@ -199,12 +199,12 @@ describe("site nav packages", () => {
   it("leaves Elements and Element Bases as they were", async () => {
     for (const nav of await mountNav()) {
       expect(linksOf(nav.querySelector("[bind-elements]"))).toEqual([
-        { text: "content-tabs", href: "/nucleus/packages/content-tabs" },
+        { text: "content-tabs", href: "/packages/content-tabs" },
       ]);
       expect(linksOf(nav.querySelector("[bind-element-bases]"))).toEqual([
         {
           text: "fetchable-element",
-          href: "/nucleus/packages/fetchable-element",
+          href: "/packages/fetchable-element",
         },
       ]);
     }
@@ -216,7 +216,7 @@ describe("site nav packages", () => {
     expect(group.hasAttribute("open")).toBe(false);
 
     group
-      .querySelector('spa-a[route-href="/nucleus/packages/nucleus-dom"]')!
+      .querySelector('spa-a[route-href="/packages/nucleus-dom"]')!
       .setAttribute("is-active", "");
     for (let i = 0; i < 3; i++) await flush();
 

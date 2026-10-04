@@ -55,7 +55,7 @@ The checked-in `.vscode/settings.json` hides the per-package boilerplate (`confi
 
 ## Conventions
 
-These are the rules reviewers apply. [Best Practices](/nucleus/docs/best_practices) covers the reasoning; this is the short version for contributors.
+These are the rules reviewers apply. [Best Practices](/docs/best_practices) covers the reasoning; this is the short version for contributors.
 
 **Elements**
 
@@ -88,7 +88,7 @@ Every published package documents itself under `support/docs/`. The API referenc
 
 - **README.md** — title, a one-sentence pitch, a demo, `Features`, `Usage`. Keep it terse; the features list is what a prospective app author reads first, so use the words they would search for.
 - **Further pages** when the reference outgrows one screen. A `support/docs-sections.json` groups them into sidebar sections.
-- **Links between pages** are plain relative markdown (`[Props](./PROPS.md)`, `[Styling](/nucleus/docs/styling)`). They work on GitHub, and the pipeline rewrites them for the site. Never hand-write `<spa-a>` in markdown.
+- **Links between pages** are plain relative markdown (`[Props](./PROPS.md)`, `[Styling](/docs/styling)`). They work on GitHub, and the pipeline rewrites them for the site. Never hand-write `<spa-a>` in markdown.
 - **`INTERNAL.md`** is a contributor file. It is never rendered or published.
 
 How these pages become package metas, the custom elements manifest, `dist-docs/` and `llms.txt`: [the docs pipeline](https://github.com/excom-dev/nucleus/blob/main/support/docs/DOCS_PIPELINE.md). All of it is generated and none of it is committed.
@@ -99,12 +99,12 @@ Demos live in `support/demos/<name>.html`: one root element, no embedded JavaScr
 
 Open a discussion before writing code. A proposal is easier to accept when it answers:
 
-1. **What one protocol does it bridge?** A network, a store, a sensor, the clock, or a person's interaction. If the answer has an "and" in it, it may be two elements. See [Adapter, State, Orchestrator](/nucleus/docs/adapter_state_orchestrator).
+1. **What one protocol does it bridge?** A network, a store, a sensor, the clock, or a person's interaction. If the answer has an "and" in it, it may be two elements. See [Adapter, State, Orchestrator](/docs/adapter_state_orchestrator).
 2. **What is its state, as attributes?** Writing those attributes by hand should reproduce what the protocol would have done.
 3. **What does it announce, as events?** And which imperatives does it accept, as commands?
 4. **Why can existing elements plus a Quark rule not already do this?** Composition of what exists always beats a new tag.
 
-Elements stay generic. If the idea only makes sense for one application, it is a [view](/nucleus/docs/building_views), and views belong to their authors.
+Elements stay generic. If the idea only makes sense for one application, it is a [view](/docs/building_views), and views belong to their authors.
 
 ## Change files
 
@@ -154,7 +154,7 @@ Keep the pull request to one story. A rename and a new option are two change-fil
 
 ## Reporting issues
 
-Bugs and feature requests go to [the issue tracker](https://github.com/excom-dev/nucleus/issues). A reduced case beats a description: the smallest HTML, CSS and Quark that reproduces it, plus what you expected. Check [Troubleshooting](/nucleus/docs/troubleshooting) and [Limitations](/nucleus/docs/limitations) first — several surprising behaviours are documented trade-offs with a stated workaround.
+Bugs and feature requests go to [the issue tracker](https://github.com/excom-dev/nucleus/issues). A reduced case beats a description: the smallest HTML, CSS and Quark that reproduces it, plus what you expected. Check [Troubleshooting](/docs/troubleshooting) and [Limitations](/docs/limitations) first — several surprising behaviours are documented trade-offs with a stated workaround.
 
 ## Code of conduct
 

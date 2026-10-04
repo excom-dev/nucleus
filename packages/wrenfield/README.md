@@ -1,7 +1,7 @@
 # Wrenfield
 
 Wrenfield is a fictional furniture house: pieces made to order, restored antiques, lighting and objects.
-It is a whole shop, from the home screen through checkout to order tracking, built as the reference example of a [Nucleus Stack](https://excom.dev/nucleus) app. There is no server of its own: a service worker plays the API.
+It is a whole shop, from the home screen through checkout to order tracking, built as the reference example of a [Nucleus Stack](https://nucleus.excom.dev) app. There is no server of its own: a service worker plays the API.
 
 ## Run it
 

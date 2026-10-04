@@ -1,5 +1,5 @@
 /*
- * Mock order for the /nucleus/examples/returns app. Flat item shapes on purpose: the
+ * Mock order for the /examples/returns app. Flat item shapes on purpose: the
  * view stamps each item onto its row with `dataset: item`, so every field
  * becomes a data-* fact. The POST re-applies the same rules and answers with
  * a return number.

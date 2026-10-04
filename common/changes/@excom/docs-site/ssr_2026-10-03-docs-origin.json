@@ -1,0 +1,15 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/docs-site",
+      "comment": "Update the docs site to its own origin, `https://nucleus.excom.dev`: the Introduction is `/`, guides `/docs/<page>`, packages `/packages/<pkg>[/<page>]`, examples `/examples/<app>`",
+      "type": "none"
+    },
+    {
+      "packageName": "@excom/docs-site",
+      "comment": "Remove the company page from the docs site: the header's company and Contact links now open `https://excom.dev`",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/docs-site"
+}

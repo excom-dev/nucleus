@@ -26,7 +26,7 @@
   <meta property="og:title" content="Nucleus Stack" />
   <meta property="og:description"
     content="Rich HTML apps with drop-in custom elements and Quark, CSS-derived rules that observe the page and react. No components, no virtual DOM, no build process." />
-  <meta property="og:image" content="https://excom.dev/og-image.png" />
+  <meta property="og:image" content="https://nucleus.excom.dev/og-image.png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt"
@@ -35,7 +35,7 @@
   <meta name="twitter:title" content="Nucleus Stack" />
   <meta name="twitter:description"
     content="Rich HTML apps with drop-in custom elements and Quark, CSS-derived rules that observe the page and react. No components, no virtual DOM, no build process." />
-  <meta name="twitter:image" content="https://excom.dev/og-image.png" />
+  <meta name="twitter:image" content="https://nucleus.excom.dev/og-image.png" />
   <meta name="twitter:image:alt"
     content="The Nucleus Stack logo and wordmark: Quark, Neutron, Nucleus Kit, Valence.css" />
   <script type="application/ld+json">
@@ -51,9 +51,9 @@
         },
         {
           "@type": "WebSite",
-          "@id": "https://excom.dev/#website",
+          "@id": "https://nucleus.excom.dev/#website",
           "name": "Nucleus Stack",
-          "url": "https://excom.dev/",
+          "url": "https://nucleus.excom.dev/",
           "description": "Documentation, live examples and API reference for the Nucleus Stack: Quark, Neutron, Nucleus Kit and Valence.css.",
           "inLanguage": "en",
           "publisher": { "@id": "https://excom.dev/#organization" }
@@ -62,7 +62,7 @@
           "@type": "SoftwareSourceCode",
           "name": "Nucleus Stack",
           "description": "Rich HTML apps with drop-in custom elements and Quark, CSS-derived rules that observe the page and react.",
-          "url": "https://excom.dev/nucleus",
+          "url": "https://nucleus.excom.dev/",
           "codeRepository": "https://github.com/excom-dev/nucleus",
           "programmingLanguage": ["TypeScript", "CSS", "HTML"],
           "license": "https://opensource.org/license/mit",
@@ -135,7 +135,7 @@
         ul:not(ul ul) > li {
           $pkg: item.shortName;
           > spa-a {
-            route-href: "/nucleus/packages/#{item.shortName}";
+            route-href: "/packages/#{item.shortName}";
           }
         }
         /* one `content` rule per link: a second one would rewrite the first's text on every pass */
@@ -154,7 +154,7 @@
           details > ul {
             content: iterate(item.docs);
             spa-a {
-              route-href: "/nucleus/packages/#{$pkg}/#{item.name}";
+              route-href: "/packages/#{$pkg}/#{item.name}";
               content: item.title;
             }
           }
@@ -188,7 +188,7 @@
          the page's own: the 404 and a package's doc pages have none */
       > spa-manager[active-url] {
         $page-path: attr("active-url").split("#").at(0).split("?").at(0);
-        $page-name: if($page-path == SITE_BASE: SITE_HOME_DOC; else: $page-path.split("/").at(-1));
+        $page-name: if($page-path == SITE_HOME: SITE_HOME_DOC; else: $page-path.split("/").at(-1));
         $page-guide: list.find($package-indices.docs, "name", $page-name);
         $page-package: list.find($package-indices.packages, "shortName", $page-name);
         $page-markdown: if($page-guide and siteDocHref($page-guide.name) == $page-path: "/docs/#{$page-guide.name}.md"; $page-package.markdown and "#{SITE_BASE}/packages/#{$page-package.shortName}" == $page-path: "/#{$page-package.shortName}.md");
@@ -200,7 +200,7 @@
     }
     spa-route {
       $route: prop("provision");
-      /* paramless routes name their guide in markup (the docs home); /nucleus/docs/:name gets it from params */
+      /* paramless routes name their guide in markup (the docs home, `/`); /docs/:name gets it from params */
       $route-doc-name: attr("data-doc-name");
     }
     /* the desktop aside and the mobile sheet stamp the same nav template */
@@ -279,13 +279,13 @@
               <summary title="Getting Started">Getting Started</summary>
               <ul role="tree">
                 <li>
-                  <spa-a route-href="/nucleus" role="link" class="secondary">Introduction</spa-a>
+                  <spa-a route-href="/" role="link" class="secondary">Introduction</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/docs/quick_start" role="link" class="secondary">Quick Start</spa-a>
+                  <spa-a route-href="/docs/quick_start" role="link" class="secondary">Quick Start</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/docs/core_concepts" role="link" class="secondary">Core Concepts</spa-a>
+                  <spa-a route-href="/docs/core_concepts" role="link" class="secondary">Core Concepts</spa-a>
                 </li>
               </ul>
             </details>
@@ -293,30 +293,30 @@
               <summary title="Examples">Examples</summary>
               <ul role="tree">
                 <li>
-                  <spa-a route-href="/nucleus/examples/todos" role="link" class="secondary">Todo App</spa-a>
+                  <spa-a route-href="/examples/todos" role="link" class="secondary">Todo App</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/examples/counter" role="link" class="secondary">Counter</spa-a>
+                  <spa-a route-href="/examples/counter" role="link" class="secondary">Counter</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/examples/temperature" role="link" class="secondary">Temperature
+                  <spa-a route-href="/examples/temperature" role="link" class="secondary">Temperature
                     Converter</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/examples/flight-booker" role="link" class="secondary">Flight
+                  <spa-a route-href="/examples/flight-booker" role="link" class="secondary">Flight
                     Booker</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/examples/timer" role="link" class="secondary">Timer</spa-a>
+                  <spa-a route-href="/examples/timer" role="link" class="secondary">Timer</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/examples/cells" role="link" class="secondary">Cells</spa-a>
+                  <spa-a route-href="/examples/cells" role="link" class="secondary">Cells</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/examples/returns" role="link" class="secondary">Furniture Returns</spa-a>
+                  <spa-a route-href="/examples/returns" role="link" class="secondary">Furniture Returns</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/examples/view-transitions" role="link" class="secondary">View
+                  <spa-a route-href="/examples/view-transitions" role="link" class="secondary">View
                     Transitions</spa-a>
                 </li>
               </ul>
@@ -325,40 +325,40 @@
               <summary title="Guides">Guides</summary>
               <ul role="tree">
                 <li>
-                  <spa-a route-href="/nucleus/docs/using_elements" role="link" class="secondary">Using Elements</spa-a>
+                  <spa-a route-href="/docs/using_elements" role="link" class="secondary">Using Elements</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/docs/orchestrating" role="link" class="secondary">Orchestrating</spa-a>
+                  <spa-a route-href="/docs/orchestrating" role="link" class="secondary">Orchestrating</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/docs/styling" role="link" class="secondary">Styling</spa-a>
+                  <spa-a route-href="/docs/styling" role="link" class="secondary">Styling</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/docs/building_views" role="link" class="secondary">Building Views</spa-a>
+                  <spa-a route-href="/docs/building_views" role="link" class="secondary">Building Views</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/docs/business_logic" role="link" class="secondary">Business Logic</spa-a>
+                  <spa-a route-href="/docs/business_logic" role="link" class="secondary">Business Logic</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/docs/creating_elements" role="link" class="secondary">Creating
+                  <spa-a route-href="/docs/creating_elements" role="link" class="secondary">Creating
                     Elements</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/docs/prerendering" role="link" class="secondary">Prerendering</spa-a>
+                  <spa-a route-href="/docs/prerendering" role="link" class="secondary">Prerendering</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/docs/best_practices" role="link" class="secondary">Best Practices</spa-a>
+                  <spa-a route-href="/docs/best_practices" role="link" class="secondary">Best Practices</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/docs/troubleshooting" role="link"
+                  <spa-a route-href="/docs/troubleshooting" role="link"
                     class="secondary">Troubleshooting</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/docs/debugging_with_agents" role="link" class="secondary">Debugging with
+                  <spa-a route-href="/docs/debugging_with_agents" role="link" class="secondary">Debugging with
                     Agents</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/docs/glossary" role="link" class="secondary">Glossary</spa-a>
+                  <spa-a route-href="/docs/glossary" role="link" class="secondary">Glossary</spa-a>
                 </li>
               </ul>
             </details>
@@ -366,26 +366,26 @@
               <summary title="Advanced">Advanced</summary>
               <ul role="tree">
                 <li>
-                  <spa-a route-href="/nucleus/docs/diving_deeper" role="link" class="secondary">Diving Deeper</spa-a>
+                  <spa-a route-href="/docs/diving_deeper" role="link" class="secondary">Diving Deeper</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/docs/origin_story" role="link" class="secondary">Origin Story</spa-a>
+                  <spa-a route-href="/docs/origin_story" role="link" class="secondary">Origin Story</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/docs/adapter_state_orchestrator" role="link" class="secondary">Adapter,
+                  <spa-a route-href="/docs/adapter_state_orchestrator" role="link" class="secondary">Adapter,
                     State, Orchestrator</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/docs/prior_art" role="link" class="secondary">Prior Art</spa-a>
+                  <spa-a route-href="/docs/prior_art" role="link" class="secondary">Prior Art</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/docs/limitations" role="link" class="secondary">Limitations</spa-a>
+                  <spa-a route-href="/docs/limitations" role="link" class="secondary">Limitations</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/docs/roadmap" role="link" class="secondary">Roadmap</spa-a>
+                  <spa-a route-href="/docs/roadmap" role="link" class="secondary">Roadmap</spa-a>
                 </li>
                 <li>
-                  <spa-a route-href="/nucleus/docs/contributing" role="link" class="secondary">Contributing</spa-a>
+                  <spa-a route-href="/docs/contributing" role="link" class="secondary">Contributing</spa-a>
                 </li>
               </ul>
             </details>
@@ -420,7 +420,7 @@
             <small class="desktop-only">
               <a href="https://github.com/excom-dev/nucleus" target="_blank" rel="noopener">Source</a>
               <a href="https://github.com/excom-dev/nucleus/issues" target="_blank" rel="noopener">Issues</a>
-              <spa-a route-href="/nucleus/docs/contributing" role="link">Contribute</spa-a>
+              <spa-a route-href="/docs/contributing" role="link">Contribute</spa-a>
             </small>
             <small class="desktop-only">© excom · MIT</small>
             <!-- ≤768px only. This template is stamped twice, so no ids here.
@@ -428,16 +428,16 @@
                    `<template>` would have to live outside this block. -->
             <ul class="mobile-only">
               <li>
-                <spa-a route-href="/nucleus" role="link" aria-label="Nucleus Stack home">
+                <spa-a route-href="/" role="link" aria-label="Nucleus Stack home">
                   <img src="/img/nucleus.svg" alt="Nucleus Stack" />
                 </spa-a>
               </li>
-              <!-- the company page, not the docs home -->
+              <!-- the company's own site: another origin, so a plain link -->
               <li>
-                <spa-a route-href="/" role="link">
+                <a href="https://excom.dev">
                   <img src="/img/excom.svg" alt="excom" />
                   <small role="note">© excom · MIT</small>
-                </spa-a>
+                </a>
               </li>
               <li>
                 <a aria-label="Discord" title="Discord" data-social="discord" target="_blank" rel="noopener"
@@ -452,7 +452,7 @@
                   href="https://x.com/excomdev"></a>
               </li>
               <li>
-                <spa-a route-href="/" role="link" aria-label="Contact" title="Contact" data-social="contact"></spa-a>
+                <a href="https://excom.dev" aria-label="Contact" title="Contact" data-social="contact"></a>
               </li>
               <li>
                 <a href="https://www.npmjs.com/~excom" aria-label="npm" title="npm" data-social="npm" target="_blank"
@@ -512,42 +512,39 @@
         <div role="presentation"></div>
       </gesture-handler>
       <spa-manager overscroll-behavior-x="navigate">
-        <!-- company page: no docs chrome (.chromeless, see shell.css), and its own title -->
-        <spa-route route-href="/" class="chromeless" document-title="Excom"
-          template-ref="/views/company/company.html"></spa-route>
         <!-- docs home: the Introduction guide, named here rather than in a param -->
-        <spa-route route-href="/nucleus" template-ref="/views/package/package.html" ready-on="page-ready"
+        <spa-route route-href="/" template-ref="/views/package/package.html" ready-on="page-ready"
           data-doc-name="introduction"></spa-route>
         <!-- site guides. `introduction` is excluded (it is the docs home now) so it falls through to the 404.
              `route-href` is compiled verbatim into a RegExp, so a lookahead works and `:name` still yields a param
              (pinned by shell.test.ts). -->
-        <spa-route route-href="/nucleus/docs/(?!introduction$):name" template-ref="/views/package/package.html"
+        <spa-route route-href="/docs/(?!introduction$):name" template-ref="/views/package/package.html"
           ready-on="page-ready" same-route="refresh"></spa-route>
         <!-- Example apps open in the multi-file playground (live-app); the app itself runs in /sandbox/<data-app> -->
-        <spa-route route-href="/nucleus/examples/todos" template-ref="/views/live-app/live-app.html" data-app="todo-app"
+        <spa-route route-href="/examples/todos" template-ref="/views/live-app/live-app.html" data-app="todo-app"
           data-files="html quark css" document-title="Todo App · Nucleus · docs"></spa-route>
-        <spa-route route-href="/nucleus/examples/counter" template-ref="/views/live-app/live-app.html"
+        <spa-route route-href="/examples/counter" template-ref="/views/live-app/live-app.html"
           data-app="counter-app" data-files="html quark" document-title="Counter · Nucleus · docs"></spa-route>
-        <spa-route route-href="/nucleus/examples/temperature" template-ref="/views/live-app/live-app.html"
+        <spa-route route-href="/examples/temperature" template-ref="/views/live-app/live-app.html"
           data-app="temperature-app" data-files="html quark css"
           document-title="Temperature Converter · Nucleus · docs"></spa-route>
-        <spa-route route-href="/nucleus/examples/flight-booker" template-ref="/views/live-app/live-app.html"
+        <spa-route route-href="/examples/flight-booker" template-ref="/views/live-app/live-app.html"
           data-app="flight-booker-app" data-files="html quark css"
           document-title="Flight Booker · Nucleus · docs"></spa-route>
-        <spa-route route-href="/nucleus/examples/timer" template-ref="/views/live-app/live-app.html"
+        <spa-route route-href="/examples/timer" template-ref="/views/live-app/live-app.html"
           data-app="timer-app" data-files="html quark css" document-title="Timer · Nucleus · docs"></spa-route>
-        <spa-route route-href="/nucleus/examples/cells" template-ref="/views/live-app/live-app.html"
+        <spa-route route-href="/examples/cells" template-ref="/views/live-app/live-app.html"
           data-app="cells-app" data-files="html quark js css" document-title="Cells · Nucleus · docs"></spa-route>
-        <spa-route route-href="/nucleus/examples/returns" template-ref="/views/live-app/live-app.html"
+        <spa-route route-href="/examples/returns" template-ref="/views/live-app/live-app.html"
           data-app="returns-app" data-files="html quark css"
           document-title="Furniture Returns · Nucleus · docs"></spa-route>
-        <spa-route route-href="/nucleus/examples/view-transitions" template-ref="/views/live-app/live-app.html"
+        <spa-route route-href="/examples/view-transitions" template-ref="/views/live-app/live-app.html"
           data-app="view-transitions-app" data-files="html quark css"
           document-title="View Transitions · Nucleus · docs"></spa-route>
-        <spa-route route-href="/nucleus/packages/:packageName" template-ref="/views/package/package.html"
+        <spa-route route-href="/packages/:packageName" template-ref="/views/package/package.html"
           ready-on="page-ready" same-route="refresh"></spa-route>
         <!-- one page of a package's docs (support/docs/<DOC>.md) -->
-        <spa-route route-href="/nucleus/packages/:packageName/:docName" template-ref="/views/package/package.html"
+        <spa-route route-href="/packages/:packageName/:docName" template-ref="/views/package/package.html"
           ready-on="page-ready" same-route="refresh"></spa-route>
         <!-- 404 (and `404.html`). Must stay last: on a cold load `is-fallback` does not see siblings that mount after it -->
         <spa-route route-regex=".*" is-fallback template-ref="/views/not-found/not-found.html"

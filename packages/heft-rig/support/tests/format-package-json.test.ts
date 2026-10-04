@@ -253,6 +253,8 @@ describe("formatPackageJson", () => {
     expect(json.keywords).toEqual([]);
     expect("repository" in json).toBe(false);
     expect("homepage" in json).toBe(false);
+    // no default issue tracker either: a private package may live in another repository
+    expect("bugs" in json).toBe(false);
     expect(json.files).toEqual(["scripts/**"]);
   });
 

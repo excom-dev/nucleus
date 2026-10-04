@@ -44,9 +44,9 @@ describe("createWorkspaceRunner", () => {
     const runner = await createWorkspaceRunner(FIXTURE);
     try {
       const { SITE_BASE } = await runner.import("@excom/heft-rig/scripts/site-base.mjs");
-      expect(SITE_BASE).toBe("/nucleus");
+      expect(SITE_BASE).toBe("");
       const { options } = await runner.import(path.join(FIXTURE, "options.ts"));
-      expect(options()).toMatchObject({ out, routes: ["/", "/nucleus/broken"] });
+      expect(options()).toMatchObject({ out, routes: ["/", "/broken"] });
     } finally {
       await runner.close();
     }
@@ -154,7 +154,7 @@ describe("runPrerender", { timeout: SLOW }, () => {
     expect(exitCode).toBe(1);
     expect(pages.map(({ url, status }) => [url, status])).toEqual([
       ["/", "ok"],
-      ["/nucleus/broken", "failed"],
+      ["/broken", "failed"],
     ]);
     expect(existsSync(path.join(out, "index.html"))).toBe(false);
     const printed = log.mock.calls.map(([line]) => line).join("\n");
@@ -176,8 +176,8 @@ describe("runPrerender", { timeout: SLOW }, () => {
     expect(exitCode).toBe(0);
     expect(pages.map(({ status }) => status)).toEqual(["ok", "shell"]);
     expect(read("index.html")).toContain("<rig-greeting>Rendered by the entry</rig-greeting>");
-    expect(read("nucleus/broken.html")).toBe(readFileSync(path.join(FIXTURE, "site/index.html"), "utf8"));
-    // each page links /nucleus/broken; the config serves /sandbox/ elsewhere
+    expect(read("broken.html")).toBe(readFileSync(path.join(FIXTURE, "site/index.html"), "utf8"));
+    // each page links /broken; the config serves /sandbox/ elsewhere
     expect(links).toEqual({ checked: 2, broken: [] });
     expect(log).toHaveBeenCalledWith("  links: 2 checked, each to a page");
   });
@@ -196,10 +196,10 @@ describe("runPrerender", { timeout: SLOW }, () => {
     expect(exitCode).toBe(0);
     expect(pages.map(({ url, status, shellRoute }) => [url, status, shellRoute])).toEqual([
       ["/", "ok", undefined],
-      ["/nucleus/broken", "shell", true],
+      ["/broken", "shell", true],
     ]);
-    expect(read("nucleus/broken.html")).toBe(shell);
-    // `/` links /nucleus/broken, a page now; the shell route's own markup is checked too
+    expect(read("broken.html")).toBe(shell);
+    // `/` links /broken, a page now; the shell route's own markup is checked too
     expect(links).toEqual({ checked: 2, broken: [] });
     expect(readFileSync(shellFile, "utf8")).toBe(shell);
     expect(log).toHaveBeenCalledWith(expect.stringContaining("prerender: 1 rendered, 0 reused (0 verified), 1 shell route(s), 0 shell fallback(s), 0 failed"));
@@ -224,10 +224,10 @@ describe("runPrerender", { timeout: SLOW }, () => {
     });
     expect(exitCode).toBe(1);
     expect(pages.map(({ status }) => status)).toEqual(["ok"]);
-    expect(links).toEqual({ checked: 1, broken: [{ page: "index.html", href: "/nucleus/broken#top" }] });
+    expect(links).toEqual({ checked: 1, broken: [{ page: "index.html", href: "/broken#top" }] });
     expect(log.mock.calls.map(([line]) => line).slice(-2)).toEqual([
       "  links: 1 checked, 1 to no page:",
-      "    index.html → /nucleus/broken#top",
+      "    index.html → /broken#top",
     ]);
   });
 
@@ -258,7 +258,7 @@ describe("runPrerender", { timeout: SLOW }, () => {
       expect(links).toEqual({ checked: 2, broken: [] });
       // the one reused page is also the one checked by rendering it again
       expect(log).toHaveBeenCalledWith(expect.stringContaining("prerender: 0 rendered, 1 reused (1 verified), 0 shell route(s), 1 shell fallback(s)"));
-      expect(log).toHaveBeenCalledWith(expect.stringMatching(/^ {2}shell {2}nucleus\/broken\.html .* \(cache: it failed in the last run\)$/));
+      expect(log).toHaveBeenCalledWith(expect.stringMatching(/^ {2}shell {2}broken\.html .* \(cache: it failed in the last run\)$/));
       // --no-cache: neither read nor written
       rmSync(cacheFile);
       expect((await run(false)).pages.map(({ reused }) => reused)).toEqual([false, false]);

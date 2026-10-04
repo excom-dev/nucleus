@@ -48,7 +48,7 @@ pre-upgrade state with `:not(:defined)`), it is ES modules only, and elements
 inside a shadow root need `observeElements(shadowRoot)` from the same module.
 The all-in `index.umd.min.js` and the ESM `index.js` are unchanged.
 
-On a [prerendered page](/nucleus/docs/prerendering), the packages for the tags present at startup load before hydration ends, so those elements keep the prerendered markup.
+On a [prerendered page](/docs/prerendering), the packages for the tags present at startup load before hydration ends, so those elements keep the prerendered markup.
 
 #### Idle loading
 
@@ -67,7 +67,7 @@ An empty value loads everything; a space-separated list loads only the packages 
 
 ### Server entry
 
-`@excom/nucleus-kit/server` is the kit for [prerendering](/nucleus/docs/prerendering) in Node: every export of the main entry except the elements that read the device or the person (`detect-browser`, `detect-features`, `detect-media`, `gesture-handler`, `network-status`, `provider-geolocation`, `provider-orientation`, `provider-storage`, `service-worker`, `web-authn`). Those stay as written in the prerendered page and upgrade in the browser; `SERVER_EXCLUDED_TAGS` lists their tags. ES modules only, not for the browser.
+`@excom/nucleus-kit/server` is the kit for [prerendering](/docs/prerendering) in Node: every export of the main entry except the elements that read the device or the person (`detect-browser`, `detect-features`, `detect-media`, `gesture-handler`, `network-status`, `provider-geolocation`, `provider-orientation`, `provider-storage`, `service-worker`, `web-authn`). Those stay as written in the prerendered page and upgrade in the browser; `SERVER_EXCLUDED_TAGS` lists their tags. ES modules only, not for the browser.
 
 ### À la carte
 
@@ -104,52 +104,52 @@ A `.d.ts` file emits nothing: no runtime import, no bundle cost. À la carte app
 
 **Core**
 
-- [`neutron`](/nucleus/packages/neutron) — custom element factory
-- [`quark`](/nucleus/packages/quark) / [`quark-sheet`](/nucleus/packages/quark-sheet) — DOM
+- [`neutron`](/packages/neutron) — custom element factory
+- [`quark`](/packages/quark) / [`quark-sheet`](/packages/quark-sheet) — DOM
   orchestration
-- [`valence`](/nucleus/packages/valence) — Valence.css, semantic CSS (via `basic.css`)
+- [`valence`](/packages/valence) — Valence.css, semantic CSS (via `basic.css`)
 
 **Layout / chrome**
 
-- [`content-carousel`](/nucleus/packages/content-carousel)
-- [`content-drawer`](/nucleus/packages/content-drawer)
-- [`content-tabs`](/nucleus/packages/content-tabs)
-- [`dialog-anchor`](/nucleus/packages/dialog-anchor)
-- [`dismiss-watcher`](/nucleus/packages/dismiss-watcher)
-- [`data-table`](/nucleus/packages/data-table)
+- [`content-carousel`](/packages/content-carousel)
+- [`content-drawer`](/packages/content-drawer)
+- [`content-tabs`](/packages/content-tabs)
+- [`dialog-anchor`](/packages/dialog-anchor)
+- [`dismiss-watcher`](/packages/dismiss-watcher)
+- [`data-table`](/packages/data-table)
 
 **Content / routing**
 
-- [`include-content`](/nucleus/packages/include-content)
-- [`spa-route`](/nucleus/packages/spa-route)
-- [`scroll-into-view`](/nucleus/packages/scroll-into-view)
+- [`include-content`](/packages/include-content)
+- [`spa-route`](/packages/spa-route)
+- [`scroll-into-view`](/packages/scroll-into-view)
 
 **Forms / auth**
 
-- [`super-form`](/nucleus/packages/super-form)
-- [`super-input`](/nucleus/packages/super-input)
-- [`web-authn`](/nucleus/packages/web-authn)
+- [`super-form`](/packages/super-form)
+- [`super-input`](/packages/super-input)
+- [`web-authn`](/packages/web-authn)
 
 **Providers**
 
-- [`provider-fetch`](/nucleus/packages/provider-fetch)
-- [`provider-geolocation`](/nucleus/packages/provider-geolocation)
-- [`provider-orientation`](/nucleus/packages/provider-orientation)
-- [`provider-storage`](/nucleus/packages/provider-storage)
+- [`provider-fetch`](/packages/provider-fetch)
+- [`provider-geolocation`](/packages/provider-geolocation)
+- [`provider-orientation`](/packages/provider-orientation)
+- [`provider-storage`](/packages/provider-storage)
 
 **Platform**
 
-- [`detect-browser`](/nucleus/packages/detect-browser)
-- [`detect-features`](/nucleus/packages/detect-features)
-- [`detect-media`](/nucleus/packages/detect-media)
-- [`dom-observer`](/nucleus/packages/dom-observer)
-- [`event-handler`](/nucleus/packages/event-handler)
-- [`gesture-handler`](/nucleus/packages/gesture-handler)
-- [`network-status`](/nucleus/packages/network-status)
-- [`service-worker`](/nucleus/packages/service-worker)
+- [`detect-browser`](/packages/detect-browser)
+- [`detect-features`](/packages/detect-features)
+- [`detect-media`](/packages/detect-media)
+- [`dom-observer`](/packages/dom-observer)
+- [`event-handler`](/packages/event-handler)
+- [`gesture-handler`](/packages/gesture-handler)
+- [`network-status`](/packages/network-status)
+- [`service-worker`](/packages/service-worker)
 
 ### Not in Nucleus Kit
 
 Install separately when needed: `mapbox-view`, `super-img`, element bases
 (`abortable-element`, `fetchable-element`, …), and editor tooling such as
-[`nucleus-quark-highlighter`](/nucleus/packages/nucleus-quark-highlighter).
+[`nucleus-quark-highlighter`](/packages/nucleus-quark-highlighter).

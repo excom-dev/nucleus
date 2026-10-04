@@ -45,7 +45,7 @@ FetchOnce.define();
 ```
 
 There are no public attributes — the controller is internal. See
-[renderable-element](/nucleus/packages/renderable-element) for the primary
+[renderable-element](/packages/renderable-element) for the primary
 consumer.
 
 ### API Reference

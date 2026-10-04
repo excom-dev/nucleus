@@ -5,6 +5,7 @@
 import { DIST, NOT_FOUND } from "./prerender.config";
 import {
   SITE_BASE,
+  SITE_HOME,
   SITE_HOME_DOC,
 } from "@excom/heft-rig/scripts/site-base.mjs";
 import type { RenderPage } from "@excom/nucleus-ssr";
@@ -43,7 +44,7 @@ const PACKAGE = new RegExp(`^${SITE_BASE}/packages/([^/]+)$`);
  */
 export const markdownHref = (pathname: string): string | undefined => {
   const guide =
-    pathname === SITE_BASE ? SITE_HOME_DOC : GUIDE.exec(pathname)?.[1];
+    pathname === SITE_HOME ? SITE_HOME_DOC : GUIDE.exec(pathname)?.[1];
   const pkg = PACKAGE.exec(pathname)?.[1];
   return guide ? `/docs/${guide}.md` : pkg && `/${pkg}.md`;
 };

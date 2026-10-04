@@ -35,7 +35,7 @@ describe("buildNpmReadmes", () => {
       // Library package: no compiled element docs, overview used verbatim.
       "packages/quark/package.json": packageJson("@excom/quark"),
       "packages/quark/support/docs/README.md":
-        "# quark\n\nSee [selectors](./SELECTORS.md) and [modules](/nucleus/packages/quark/modules).\n",
+        "# quark\n\nSee [selectors](./SELECTORS.md) and [modules](/packages/quark/modules).\n",
 
       // A `support/dist-docs/` with only a `docs/` subfolder (site-style
       // guides, no top-level `*.md`) also falls back to the overview.
@@ -82,7 +82,7 @@ describe("buildNpmReadmes", () => {
         "",
         "---",
         "",
-        "Full documentation: https://excom.dev/nucleus/packages/content-tabs",
+        "Full documentation: https://nucleus.excom.dev/packages/content-tabs",
         "",
       ].join("\n"),
     );
@@ -95,12 +95,12 @@ describe("buildNpmReadmes", () => {
       [
         "# quark",
         "",
-        "See [selectors](https://excom.dev/nucleus/packages/quark/selectors) and " +
-          "[modules](https://excom.dev/nucleus/packages/quark/modules).",
+        "See [selectors](https://nucleus.excom.dev/packages/quark/selectors) and " +
+          "[modules](https://nucleus.excom.dev/packages/quark/modules).",
         "",
         "---",
         "",
-        "Full documentation: https://excom.dev/nucleus/packages/quark",
+        "Full documentation: https://nucleus.excom.dev/packages/quark",
         "",
       ].join("\n"),
     );
@@ -148,44 +148,44 @@ describe("rewriteNpmLinks", () => {
   const rewrite = (md: string) => rewriteNpmLinks(md, "quark");
 
   it("makes site-relative routes absolute", () => {
-    expect(rewrite("[g](/nucleus/docs/best_practices)")).toBe(
-      "[g](https://excom.dev/nucleus/docs/best_practices)",
+    expect(rewrite("[g](/docs/best_practices)")).toBe(
+      "[g](https://nucleus.excom.dev/docs/best_practices)",
     );
-    expect(rewrite("[p](/nucleus/packages/neutron)")).toBe(
-      "[p](https://excom.dev/nucleus/packages/neutron)",
+    expect(rewrite("[p](/packages/neutron)")).toBe(
+      "[p](https://nucleus.excom.dev/packages/neutron)",
     );
-    expect(rewrite("[s](/nucleus/packages/quark/modules)")).toBe(
-      "[s](https://excom.dev/nucleus/packages/quark/modules)",
+    expect(rewrite("[s](/packages/quark/modules)")).toBe(
+      "[s](https://nucleus.excom.dev/packages/quark/modules)",
     );
-    expect(rewrite("[home](/nucleus)")).toBe("[home](https://excom.dev/nucleus)");
+    expect(rewrite("[home](/)")).toBe("[home](https://nucleus.excom.dev/)");
   });
 
   it("maps ./PAGE.md page links to the package's site route", () => {
     expect(rewrite("[a](./SELECTORS.md)")).toBe(
-      "[a](https://excom.dev/nucleus/packages/quark/selectors)",
+      "[a](https://nucleus.excom.dev/packages/quark/selectors)",
     );
     expect(rewrite("[b](AT_RULES.md)")).toBe(
-      "[b](https://excom.dev/nucleus/packages/quark/at_rules)",
+      "[b](https://nucleus.excom.dev/packages/quark/at_rules)",
     );
     expect(rewrite("[c](./ON.md#md-events)")).toBe(
-      "[c](https://excom.dev/nucleus/packages/quark/on#md-events)",
+      "[c](https://nucleus.excom.dev/packages/quark/on#md-events)",
     );
     // The README is the package page itself, not a sub-page.
-    expect(rewrite("[d](./README.md)")).toBe("[d](https://excom.dev/nucleus/packages/quark)");
+    expect(rewrite("[d](./README.md)")).toBe("[d](https://nucleus.excom.dev/packages/quark)");
   });
 
   it("resolves other relative references, including images, against the package page", () => {
     expect(rewrite("![logo](./logo.png)")).toBe(
-      "![logo](https://excom.dev/nucleus/packages/quark/logo.png)",
+      "![logo](https://nucleus.excom.dev/packages/quark/logo.png)",
     );
     expect(rewrite("![i](img/diagram.svg)")).toBe(
-      "![i](https://excom.dev/nucleus/packages/quark/img/diagram.svg)",
+      "![i](https://nucleus.excom.dev/packages/quark/img/diagram.svg)",
     );
   });
 
   it("leaves external, scheme and #hash links alone", () => {
     const untouched = [
-      "[x](https://excom.dev/nucleus/packages/quark)",
+      "[x](https://nucleus.excom.dev/packages/quark)",
       "[y](http://example.com/a.md)",
       "[z](mailto:hello@example.com)",
       "[w](//cdn.example.com/x.png)",
@@ -196,7 +196,7 @@ describe("rewriteNpmLinks", () => {
 
   it("keeps link titles and does not touch HTML inside fenced code", () => {
     expect(rewrite('[t](./ON.md "The on guide")')).toBe(
-      '[t](https://excom.dev/nucleus/packages/quark/on "The on guide")',
+      '[t](https://nucleus.excom.dev/packages/quark/on "The on guide")',
     );
     const fenced = '```html\n<script src="/node_modules/@excom/quark"></script>\n```';
     expect(rewrite(fenced)).toBe(fenced);
@@ -224,7 +224,7 @@ describe("orderDocs", () => {
 describe("footer", () => {
   it("points at the package's docs page", () => {
     expect(footer("content-tabs")).toBe(
-      "Full documentation: https://excom.dev/nucleus/packages/content-tabs",
+      "Full documentation: https://nucleus.excom.dev/packages/content-tabs",
     );
   });
 });

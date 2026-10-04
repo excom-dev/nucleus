@@ -10,7 +10,7 @@
   [bind-inherited-from] {
     content: if(item.inheritedFrom: template("#inherited-from-link"));
     spa-a {
-      route-href: "/nucleus/packages/#{fileNameOf(item.inheritedFrom)}";
+      route-href: "/packages/#{fileNameOf(item.inheritedFrom)}";
       content: fileNameOf(item.inheritedFrom);
     }
   }

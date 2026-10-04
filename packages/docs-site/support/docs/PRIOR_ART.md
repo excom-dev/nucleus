@@ -22,7 +22,7 @@ Harel's statecharts add hierarchy, guards, and extended state to finite state ma
 
 ### CSS
 
-Quark derives from CSS in more than syntax. It inherits CSS semantics for scoping (`@scope`), cascade and inheritance (variables resolve up the ancestor chain, nearest wins, across sheets), and coordination by selector rather than by reference. Two deliberate departures: rules do not revert on unmatch — see [Limitations](/nucleus/docs/limitations) — and a sheet writes State instead of painting, so features of the browser's style engine, such as media queries and keyframes, stay in the stylesheet. Quark's JS-side variable API, `element.quark.setProperty()`, is modeled on `element.style.setProperty`.
+Quark derives from CSS in more than syntax. It inherits CSS semantics for scoping (`@scope`), cascade and inheritance (variables resolve up the ancestor chain, nearest wins, across sheets), and coordination by selector rather than by reference. Two deliberate departures: rules do not revert on unmatch — see [Limitations](/docs/limitations) — and a sheet writes State instead of painting, so features of the browser's style engine, such as media queries and keyframes, stay in the stylesheet. Quark's JS-side variable API, `element.quark.setProperty()`, is modeled on `element.style.setProperty`.
 
 ### Smalltalk images
 

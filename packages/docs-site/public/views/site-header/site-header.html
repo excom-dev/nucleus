@@ -3,15 +3,15 @@
   <nav>
     <ul>
       <li id="logos">
-        <spa-a route-href="/nucleus" role="link" data-tab="home">
+        <spa-a route-href="/" role="link" data-tab="home">
           <img src="/img/nucleus.svg" alt="Nucleus Stack" />
           <span class="tab-label">Home</span>
         </spa-a>
-        <!-- the company page, not the docs home -->
-        <spa-a route-href="/" role="link" class="desktop-only">
+        <!-- the company's own site: another origin, so a plain link -->
+        <a href="https://excom.dev" class="desktop-only">
           <span>Made by</span>
           <img src="/img/excom.svg" alt="excom" />
-        </spa-a>
+        </a>
       </li>
     </ul>
     <ul>
@@ -39,7 +39,7 @@
         <a aria-label="X" title="X" data-social="x" target="_blank" rel="noopener" href="https://x.com/excomdev"></a>
       </li>
       <li class="desktop-only">
-        <spa-a route-href="/" role="link" aria-label="Contact" title="Contact" data-social="contact"></spa-a>
+        <a href="https://excom.dev" aria-label="Contact" title="Contact" data-social="contact"></a>
       </li>
       <li class="desktop-only">
         <a href="https://www.npmjs.com/~excom" aria-label="npm" title="npm" data-social="npm" target="_blank"

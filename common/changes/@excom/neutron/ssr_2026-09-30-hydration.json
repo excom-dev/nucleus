@@ -24,6 +24,11 @@
       "packageName": "@excom/neutron",
       "comment": "Fix an error thrown when a `window` or `document` listener fires after its element was removed and garbage-collected: the listener now does nothing",
       "type": "patch"
+    },
+    {
+      "packageName": "@excom/neutron",
+      "comment": "Fix an issue where a reflected lifecycle attribute (`reflectDefaultProps`) was read back: an `is-mounted` in markup or on a clone no longer runs `onConnected` on an element that is not mounted, and the attribute returns to the element's real state",
+      "type": "patch"
     }
   ],
   "packageName": "@excom/neutron"

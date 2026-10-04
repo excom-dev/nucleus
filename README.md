@@ -2,19 +2,19 @@
 
 # Nucleus Stack
 
-Rich HTML apps - implementing the novel [ASO architectural pattern](https://excom.dev/nucleus/docs/adapter_state_orchestrator).
+Rich HTML apps - implementing the novel [ASO architectural pattern](https://nucleus.excom.dev/docs/adapter_state_orchestrator).
 
-- **Docs:** https://excom.dev/nucleus
-- **For LLMs / agents:** [llms.txt](https://excom.dev/llms.txt) (index) and [llms-full.txt](https://excom.dev/llms-full.txt) (everything); per-page markdown at `https://excom.dev/docs/<guide>.md` and `https://excom.dev/<element>.md`
+- **Docs:** https://nucleus.excom.dev
+- **For LLMs / agents:** [llms.txt](https://nucleus.excom.dev/llms.txt) (index) and [llms-full.txt](https://nucleus.excom.dev/llms-full.txt) (everything); per-page markdown at `https://nucleus.excom.dev/docs/<guide>.md` and `https://nucleus.excom.dev/<element>.md`
 - **Contributing:** [CONTRIBUTING.md](packages/docs-site/support/docs/CONTRIBUTING.md)
 
 Your HTML __*is*__ the app! Drop-in custom elements that each have a single responsibility, then author CSS-derived rules that observe the page and react accordingly. The source of truth - your HTML - is what the browser paints.
 
 **No components, no virtual DOM, no second copy of application state tucked away in JS memory, and no build process.**
 
-[Live demo](https://excom.dev/nucleus/examples/todos): fully RESTful Todo app - under 50 lines of code, zero app JS, no build process.
+[Live demo](https://nucleus.excom.dev/examples/todos): fully RESTful Todo app - under 50 lines of code, zero app JS, no build process.
 
-[![The Todo demo: the running app beside its HTML, Quark and CSS](packages/docs-site/public/img/todo-demo.png)](https://excom.dev/nucleus/examples/todos)
+[![The Todo demo: the running app beside its HTML, Quark and CSS](packages/docs-site/public/img/todo-demo.png)](https://nucleus.excom.dev/examples/todos)
 
 ## How it's different from existing UI solutions
 
@@ -45,7 +45,7 @@ Every package in `packages/` is published to npm under the `@excom` scope. The w
 npm install @excom/nucleus-kit
 ```
 
-Then `import "@excom/nucleus-kit"` and `@import "@excom/nucleus-kit/basic.css"`. No package manager? Load both from unpkg - see [Quick Start](https://excom.dev/nucleus/docs/quick_start).
+Then `import "@excom/nucleus-kit"` and `@import "@excom/nucleus-kit/basic.css"`. No package manager? Load both from unpkg - see [Quick Start](https://nucleus.excom.dev/docs/quick_start).
 
 ## Why teams pick it
 
@@ -54,12 +54,12 @@ Then `import "@excom/nucleus-kit"` and `@import "@excom/nucleus-kit/basic.css"`.
 - **One source of truth** — Live markup _is_ the primary application state, so an entire family of bugs ("the UI disagrees with the model") cannot exist.
 - **Fully inspectable** — Open devtools and the entire application is in front of you: every value, every binding, and every transition. The state is the document/DOM, so all is plainly transparent to see, alter, and debug in your inspector.
 - **Accessible by default** — Declarative & ARIA state is the state... not a mirror someone forgot to update.
-- **Human and machine friendly** — Inspect [the docs site](https://excom.dev/nucleus) to see its declarativeness. No more `<div>` soups bound to untraceable JavaScript. Custom elements make for a beautifully declarative document. A page that is legible, addressable, and serializable is an ideal target for code generation, AI-assisted editing, and confident human auditing. Tools reason about the screen's exact state instead of inferring a component tree. Likewise, writing and debugging UI code by hand has never felt simpler.
+- **Human and machine friendly** — Inspect [the docs site](https://nucleus.excom.dev) to see its declarativeness. No more `<div>` soups bound to untraceable JavaScript. Custom elements make for a beautifully declarative document. A page that is legible, addressable, and serializable is an ideal target for code generation, AI-assisted editing, and confident human auditing. Tools reason about the screen's exact state instead of inferring a component tree. Likewise, writing and debugging UI code by hand has never felt simpler.
 - **Declarative business behavior** — The vast majority of your proprietary behaviors exist as simple configurations, rather than buried inside imperative spaghetti code.
 
 ## Where it shines
 
-Content-rich sites, complex data-driven business rules, progressive enhancement of static/server-rendered pages, embedded user experiences. See [Limitations](https://excom.dev/nucleus/docs/limitations) for the edges.
+Content-rich sites, complex data-driven business rules, progressive enhancement of static/server-rendered pages, embedded user experiences. See [Limitations](https://nucleus.excom.dev/docs/limitations) for the edges.
 
 The Nucleus Stack also opens up new possibilities that were not easily served by any UI technology before:
 - zero-build-tool UIs (e.g. on-the-fly generation)
@@ -71,7 +71,7 @@ The Nucleus Stack also opens up new possibilities that were not easily served by
 
 ## Dogfood is nutritious
 
-[The docs site](https://excom.dev/nucleus) - including the complex bits, like the text editors - was built entirely using this UI stack alone. Due to the declarative design of these technologies, inspecting the document will give you a very strong understanding of the application's composition and features. Open your inspector! Installing [Nucleus DevTools](https://excom.dev/nucleus/packages/nucleus-devtools) will also provide even stronger insight.
+[The docs site](https://nucleus.excom.dev) - including the complex bits, like the text editors - was built entirely using this UI stack alone. Due to the declarative design of these technologies, inspecting the document will give you a very strong understanding of the application's composition and features. Open your inspector! Installing [Nucleus DevTools](https://nucleus.excom.dev/packages/nucleus-devtools) will also provide even stronger insight.
 
 The Nucleus Stack is currently being used in production by partnering companies.
 
@@ -81,11 +81,11 @@ The Nucleus Stack is MIT licensed and will remain free and open source. This is 
 
 ## Start here
 
-- [Quick Start - A working page, in five minutes.](https://excom.dev/nucleus/docs/quick_start)
-- [Core Concepts - The mental model, in one sitting.](https://excom.dev/nucleus/docs/core_concepts)
-- [Using Elements - The Nucleus Kit catalog and how elements behave.](https://excom.dev/nucleus/docs/using_elements)
-- [Orchestrating - Get familiar with Quark.](https://excom.dev/nucleus/docs/orchestrating)
-- [Styling - Valence.css themes, tokens, and state-driven CSS.](https://excom.dev/nucleus/docs/styling)
-- [Building Views - Structure a real app: routes, views, lazy loading.](https://excom.dev/nucleus/docs/building_views)
-- Other Guides - [Business Logic](https://excom.dev/nucleus/docs/business_logic), [Creating Elements](https://excom.dev/nucleus/docs/creating_elements), [Best Practices](https://excom.dev/nucleus/docs/best_practices), [Troubleshooting](https://excom.dev/nucleus/docs/troubleshooting), [Debugging with Agents](https://excom.dev/nucleus/docs/debugging_with_agents)
-- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](https://excom.dev/nucleus/docs/diving_deeper)
+- [Quick Start - A working page, in five minutes.](https://nucleus.excom.dev/docs/quick_start)
+- [Core Concepts - The mental model, in one sitting.](https://nucleus.excom.dev/docs/core_concepts)
+- [Using Elements - The Nucleus Kit catalog and how elements behave.](https://nucleus.excom.dev/docs/using_elements)
+- [Orchestrating - Get familiar with Quark.](https://nucleus.excom.dev/docs/orchestrating)
+- [Styling - Valence.css themes, tokens, and state-driven CSS.](https://nucleus.excom.dev/docs/styling)
+- [Building Views - Structure a real app: routes, views, lazy loading.](https://nucleus.excom.dev/docs/building_views)
+- Other Guides - [Business Logic](https://nucleus.excom.dev/docs/business_logic), [Creating Elements](https://nucleus.excom.dev/docs/creating_elements), [Best Practices](https://nucleus.excom.dev/docs/best_practices), [Troubleshooting](https://nucleus.excom.dev/docs/troubleshooting), [Debugging with Agents](https://nucleus.excom.dev/docs/debugging_with_agents)
+- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](https://nucleus.excom.dev/docs/diving_deeper)

@@ -90,7 +90,7 @@ element it resolves to:
 
 <include-content data-demo="host-selector"></include-content>
 
-On a [prerendered page](/nucleus/docs/prerendering) the light DOM and a selector host keep their prerendered content; `shadow` and `iframe` hosts are not prerendered and render in the browser.
+On a [prerendered page](/docs/prerendering) the light DOM and a selector host keep their prerendered content; `shadow` and `iframe` hosts are not prerendered and render in the browser.
 
 #### Hooking render with view transitions
 

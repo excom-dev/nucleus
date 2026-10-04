@@ -4,13 +4,25 @@ import path from "node:path";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { writeTree } from "./helpers/vite-fixture";
 
-const mocks = vi.hoisted(() => ({ execFile: vi.fn() }));
+/** Exit codes the CLIs answer with, by command: `spawn` is replaced by a child that closes with them. */
+const mocks = vi.hoisted(() => ({ spawn: vi.fn(), exit: new Map<string, number>(), order: [] as string[] }));
 
 // Node built-ins are interop'd through `default`, so mock both shapes.
 vi.mock("node:child_process", async (importOriginal) => {
-  const mocked = { ...(await importOriginal<object>()), execFile: mocks.execFile };
+  const mocked = { ...(await importOriginal<object>()), spawn: mocks.spawn };
   return { ...mocked, default: mocked };
 });
+
+/** A child process that closes on a later turn, like a real one. */
+const fakeChild = (command: string) => {
+  const listeners = new Map<string, (value: unknown) => void>();
+  mocks.order.push(`start ${path.basename(command)}`);
+  setTimeout(() => {
+    mocks.order.push(`close ${path.basename(command)}`);
+    listeners.get("close")?.(mocks.exit.get(command) ?? 0);
+  }, 0);
+  return { on: (event: string, listener: (value: unknown) => void) => listeners.set(event, listener) };
+};
 
 const RIG_ROOT = path.resolve(__dirname, "../..");
 const CONFIG = path.join(RIG_ROOT, "profiles/default/config");
@@ -82,7 +94,10 @@ afterAll(async () => {
 
 beforeEach(() => {
   vi.resetModules();
-  mocks.execFile.mockReset();
+  mocks.spawn.mockReset();
+  mocks.spawn.mockImplementation(fakeChild);
+  mocks.exit.clear();
+  mocks.order.length = 0;
   vi.spyOn(console, "log").mockImplementation(() => {});
   vi.spyOn(console, "warn").mockImplementation(() => {});
   vi.spyOn(console, "error").mockImplementation(() => {});
@@ -99,10 +114,10 @@ const run = (cwd: string) => {
 };
 
 describe("format.mjs", () => {
-  it("runs eslint --fix, then both prettier configs", async () => {
+  it("runs eslint --fix to its end, then prettier", async () => {
     await run(plain);
-    expect(mocks.execFile).toHaveBeenCalledTimes(3);
-    expect(mocks.execFile.mock.calls[0]).toEqual([
+    expect(mocks.spawn).toHaveBeenCalledTimes(2);
+    expect(mocks.spawn.mock.calls[0]).toEqual([
       ESLINT,
       [
         "--config",
@@ -114,7 +129,7 @@ describe("format.mjs", () => {
       ],
       { stdio: "inherit" },
     ]);
-    expect(mocks.execFile.mock.calls[1]).toEqual([
+    expect(mocks.spawn.mock.calls[1]).toEqual([
       PRETTIER,
       [
         "--config",
@@ -126,18 +141,42 @@ describe("format.mjs", () => {
       ],
       { stdio: "inherit" },
     ]);
-    expect(mocks.execFile.mock.calls[2][1]).toEqual([
-      "--config",
-      path.join(CONFIG, ".html.prettierrc"),
-      "--write",
-      "--no-error-on-unmatched-pattern",
-      "*.{html,md}",
-      "src/**/*.{html,md}",
-    ]);
+    // both write the same files: prettier starts only once eslint has closed
+    expect(mocks.order).toEqual(["start eslint", "close eslint", "start prettier", "close prettier"]);
     // No .quark files outside skipped directories: nothing else happens.
     expect(console.warn).not.toHaveBeenCalled();
+    expect(console.error).not.toHaveBeenCalled();
     expect(console.log).toHaveBeenCalledWith("Formatting complete");
     expect(process.exitCode).toBeUndefined();
+  });
+
+  it("formats no HTML or Markdown: the site shells are written by hand", async () => {
+    await run(plain);
+    const globs = mocks.spawn.mock.calls.flatMap(([, args]) => args as string[]).filter((arg) => arg.includes("*"));
+    expect(globs.filter((glob) => /html|md/.test(glob))).toEqual([]);
+  });
+
+  it("fails when prettier fails, and says with which config", async () => {
+    mocks.exit.set(PRETTIER, 2);
+    await run(plain);
+    expect(console.error).toHaveBeenCalledWith("prettier: failed (exit code 2) with profiles/default/config/.prettierrc");
+    expect(process.exitCode).toBe(1);
+    expect(console.log).toHaveBeenCalledWith("Formatting complete");
+  });
+
+  it("does not fail on what eslint could not fix", async () => {
+    mocks.exit.set(ESLINT, 1);
+    await run(plain);
+    expect(console.error).not.toHaveBeenCalled();
+    expect(process.exitCode).toBeUndefined();
+  });
+
+  it("rejects when a CLI cannot be started", async () => {
+    mocks.spawn.mockImplementation(() => ({
+      on: (event: string, listener: (value: unknown) => void) =>
+        event === "error" && setTimeout(() => listener(new Error("spawn ENOENT")), 0),
+    }));
+    await expect(run(plain)).rejects.toThrow("spawn ENOENT");
   });
 
   it("formats .quark files with the package's own quark-formatter", async () => {
@@ -170,8 +209,8 @@ describe("format.mjs", () => {
     } finally {
       Object.defineProperty(process, "platform", platform);
     }
-    expect(mocks.execFile.mock.calls[0][0]).toBe(`${ESLINT}.cmd`);
-    expect(mocks.execFile.mock.calls[1][0]).toBe(`${PRETTIER}.cmd`);
+    expect(mocks.spawn.mock.calls[0][0]).toBe(`${ESLINT}.cmd`);
+    expect(mocks.spawn.mock.calls[1][0]).toBe(`${PRETTIER}.cmd`);
   });
 
   it("warns and skips .quark files when no formatter is available", async () => {

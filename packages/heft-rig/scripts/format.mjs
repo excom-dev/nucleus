@@ -1,4 +1,4 @@
-import { execFile } from "node:child_process";
+import { spawn } from "node:child_process";
 import { readdir, readFile, stat, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -22,34 +22,46 @@ const eslintConfigPath = path.join(
   "profiles/default/config/eslint.config.cjs",
 );
 
-function lintFix({ extensions }) {
-  return execFile(
-    eslintPath,
-    [
-      "--config",
-      eslintConfigPath,
-      "--fix",
-      "--no-error-on-unmatched-pattern",
-      `*.{${extensions.join(",")}}`,
-      `src/**/*.{${extensions.join(",")}}`,
-    ],
-    { stdio: "inherit" },
-  );
+/**
+ * Runs one of the rig's CLIs in the package, its output shown as it comes.
+ * @param {string} command
+ * @param {string[]} args
+ * @returns {Promise<number | null>} its exit code (`null`: killed by a signal)
+ */
+function run(command, args) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, { stdio: "inherit" });
+    child.on("error", reject);
+    child.on("close", resolve);
+  });
 }
 
-function format({ configPath, extensions }) {
-  return execFile(
-    prettierPath,
-    [
-      "--config",
-      configPath,
-      "--write",
-      "--no-error-on-unmatched-pattern",
-      `*.{${extensions.join(",")}}`,
-      `src/**/*.{${extensions.join(",")}}`,
-    ],
-    { stdio: "inherit" },
-  );
+/** `eslint --fix`. What it cannot fix it prints; that never fails the format. */
+function lintFix({ extensions }) {
+  return run(eslintPath, [
+    "--config",
+    eslintConfigPath,
+    "--fix",
+    "--no-error-on-unmatched-pattern",
+    `*.{${extensions.join(",")}}`,
+    `src/**/*.{${extensions.join(",")}}`,
+  ]);
+}
+
+/** `prettier --write`. A run that fails (a file it cannot parse, a config it cannot load) fails the format. */
+async function format({ configPath, extensions }) {
+  const code = await run(prettierPath, [
+    "--config",
+    configPath,
+    "--write",
+    "--no-error-on-unmatched-pattern",
+    `*.{${extensions.join(",")}}`,
+    `src/**/*.{${extensions.join(",")}}`,
+  ]);
+  if (code !== 0) {
+    console.error(`prettier: failed (exit code ${code}) with ${path.relative(rigRoot, configPath)}`);
+    process.exitCode = 1;
+  }
 }
 
 const QUARK_SKIP_DIRS = new Set([
@@ -150,14 +162,12 @@ await lintFix({
   extensions: ["ts", "tsx", "js", "jsx", "mjs", "cjs"],
 });
 
+// HTML and Markdown are not formatted here: the site shells are written by hand
+// (`.html.prettierrc` is the config for the day they are).
 await Promise.all([
   format({
     configPath: path.join(rigRoot, "profiles/default/config/.prettierrc"),
     extensions: ["ts", "js", "json", "css", "scss"],
-  }),
-  format({
-    configPath: path.join(rigRoot, "profiles/default/config/.html.prettierrc"),
-    extensions: ["html", "md"],
   }),
   formatQuark(),
 ]);

@@ -86,7 +86,7 @@ it("shows the price it fetched", async () => {
 - `findParseDifference(here, html)` returns the first place where a browser would parse `html` into other elements than `here` holds, or `null`. `here` is the document that `html` serializes (its doctype, then `documentElement.outerHTML`), where trees only scripts build show too (a `<div>` appended to a `<p>`, rows appended straight to a `<table>`), or a window that defines no element, whose parser then reads `html` as well. `findParseDifference(window, "<p><x-card><section>Menu</section></x-card></p>")` is `{ path: "html > body > p > x-card", here: "<section>", browser: "nothing", line: 1, column: 12 }`: a browser ends the `<p>` at `<section>`. `unclosed` names an element with no end tag that a browser reads the rest of the page into, such as `<title>`, `<textarea>` or `<select>`. Tags, nesting, order and attributes are compared, template content included; text, comments, namespaces and what a closed `<noscript>` / `<select>` holds are not. Without a doctype a browser parses `html` in quirks mode
 - `sameTree(html, other)` is `true` when a browser parses both documents into the same tree: nodes, text and attribute values exactly, the order of attributes within a tag aside. `parseTree(html)` returns that tree as plain data: `{ tag, attributes, children }`, `{ text }`, `{ comment }`, `{ doctype }`, a `<template>`'s content as its children
 
-[nucleus-ssr](/nucleus/packages/nucleus-ssr) builds on these to prerender a whole site.
+[nucleus-ssr](/packages/nucleus-ssr) builds on these to prerender a whole site.
 
 ### Shims
 

@@ -250,9 +250,13 @@ export class NeutronInternal {
     this.CustomElement = CustomElement;
   }
   private static getObservedAttrs() {
-    // `no-ssr` too: written late in a server render, it unmounts
+    /* `no-ssr` too: written late in a server render, it unmounts. A
+     * `reflectOnly` attr: observed only to undo foreign writes. */
     return Object.values(this.runtimeConfig.props ?? {})
-      .filter((propConfig) => propConfig.notify === "attr" && propConfig.attr)
+      .filter(
+        ({ attr, notify, reflectOnly }) =>
+          attr && (notify === "attr" || reflectOnly)
+      )
       .map((propConfig) => propConfig.attr as string)
       .concat(NO_SSR_ATTR);
   }
@@ -450,7 +454,18 @@ export class NeutronInternal {
       return;
     }
     const propConfig = this.ctr.CustomElement.getPropConfig({ attr: name });
-    if (propConfig) {
+    if (propConfig?.reflectOnly) {
+      /* Output only: a write from outside (a clone, parsed markup, an
+       * author) is never read; the attribute returns to what the element
+       * wrote, whatever the foreign value parses to. */
+      const stored = propConfig.get(this.element, this.propStore, propConfig);
+      const written = propConfig.serialize(
+        Converter.type(propConfig.type).prop.convert(stored)
+      );
+      if ((written ?? null) !== newValue) {
+        propConfig.set(this.element, this.propStore, propConfig, stored);
+      }
+    } else if (propConfig) {
       const converter = Converter.type(propConfig.type);
       const parsedOldVal = converter.attr.convert(
         propConfig.deserialize(oldValue)

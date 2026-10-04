@@ -45,7 +45,7 @@ load-json[is-success] { $user: prop("provision"); }
 load-json[is-error] [bind-message] { content: prop("provision").message; }
 ```
 
-Cancelled or superseded work calls `_resetLoadState` (no event) — pair with [abortable-element](/nucleus/packages/abortable-element) to abort the promise itself.
+Cancelled or superseded work calls `_resetLoadState` (no event) — pair with [abortable-element](/packages/abortable-element) to abort the promise itself.
 
 ### API Reference
 

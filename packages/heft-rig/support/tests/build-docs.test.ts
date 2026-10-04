@@ -375,7 +375,7 @@ describe("buildDocs", () => {
         "",
         "- Revert `w`",
         "",
-        "Older releases: https://excom.dev/nucleus/packages/noted-el",
+        "Older releases: https://nucleus.excom.dev/packages/noted-el",
         "",
         "## Demo sources",
       ].join("\n"),

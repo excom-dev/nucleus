@@ -29,7 +29,7 @@ import {
 import { renderMarkdown, renderMarkdownInline } from "./render-markdown.mjs";
 import { titleFromDocHtml, titleCaseKey } from "./build-search-docs.mjs";
 import { readReleaseNotes } from "./release-notes.mjs";
-import { SITE_BASE, SITE_HOME_DOC } from "./site-base.mjs";
+import { SITE_BASE, SITE_HOME, SITE_HOME_DOC } from "./site-base.mjs";
 import { umdExternals } from "./vite-config.mjs";
 
 export async function buildPackageMetas(packageRoot = process.cwd()) {
@@ -122,8 +122,8 @@ async function writePackageMeta(packageRoot, meta) {
  * (`README.md` → `readme`, `QUICK_START.md` → `quick_start`). `INTERNAL.md`
  * (contributor notes) is skipped. Relative links between those files
  * (`./PROPS.md`, `PROPS.md#md-x`) work on GitHub as authored and are
- * rewritten to the site routes here (`/nucleus/packages/<pkg>/props`, the
- * README to `/nucleus/packages/<pkg>`; site packages `/nucleus/docs/<page>`).
+ * rewritten to the site routes here (`/packages/<pkg>/props`, the
+ * README to `/packages/<pkg>`; site packages `/docs/<page>`).
  * The README is rendered through the same rewrite — its `./PAGE.md` links
  * get the base too.
  */
@@ -147,9 +147,9 @@ async function readSupportDocs(packageRoot, { shortName, packageType } = {}) {
  * (external `<a>`) and `route-href` (the `<spa-a>` the renderer emits for
  * relative links) alike.
  *
- * Site package: `/nucleus/docs/<page>`, except `INTRODUCTION.md` — the docs
- * home is `SITE_BASE` itself and `/nucleus/docs/introduction` is a 404.
- * Other packages: `/nucleus/packages/<pkg>/<page>`, README `/nucleus/packages/<pkg>`.
+ * Site package: `/docs/<page>`, except `INTRODUCTION.md` — the docs
+ * home is `SITE_HOME` (`/`) and `/docs/introduction` is a 404.
+ * Other packages: `/packages/<pkg>/<page>`, README `/packages/<pkg>`.
  */
 export function rewriteDocLinks(html, { shortName, packageType } = {}) {
   if (!html || !shortName) return html;
@@ -160,7 +160,7 @@ export function rewriteDocLinks(html, { shortName, packageType } = {}) {
       const route =
         packageType === "site"
           ? key === SITE_HOME_DOC
-            ? SITE_BASE
+            ? SITE_HOME
             : `${SITE_BASE}/docs/${key}`
           : key === "readme"
             ? `${SITE_BASE}/packages/${shortName}`

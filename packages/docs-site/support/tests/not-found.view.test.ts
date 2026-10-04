@@ -59,17 +59,17 @@ describe("not-found view", () => {
       [...page.querySelectorAll("nav spa-a")].map((a) =>
         a.getAttribute("route-href"),
       ),
-    ).toEqual(["/nucleus", "/nucleus/docs/quick_start"]);
+    ).toEqual(["/", "/docs/quick_start"]);
     expect(
       page.querySelector("nav dialog-anchor")?.getAttribute("target-ref"),
     ).toBe("#search-dialog");
   });
 
   it("reads the path from the route, not the location", async () => {
-    const page = await mountView("/nucleus/docs/introduction");
+    const page = await mountView("/docs/introduction");
 
     expect(page.querySelector("[bind-path]")?.textContent).toBe(
-      "/nucleus/docs/introduction",
+      "/docs/introduction",
     );
   });
 });

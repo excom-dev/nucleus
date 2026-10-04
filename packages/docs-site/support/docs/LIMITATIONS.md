@@ -4,11 +4,11 @@ Below are the costs the Nucleus Stack currently accepts, stated directly, with t
 
 ## May or may not play well with others
 
-Works very well with all Custom Elements that follow the [Adapter](/nucleus/docs/adapter_state_orchestrator) pattern. They do not need to be constructed by Neutron. You can even import Quark by itself into your own Custom Element project, if that suits your fancy.
+Works very well with all Custom Elements that follow the [Adapter](/docs/adapter_state_orchestrator) pattern. They do not need to be constructed by Neutron. You can even import Quark by itself into your own Custom Element project, if that suits your fancy.
 
 Nucleus Stack apps can always render other UI frameworks, not always the other way around:
 
-Nucleus is not out-of-the-box compatible with certain other UI frameworks/libraries that lock the DOM to their own internal state, such as React. Many of these frameworks treat the DOM as a compilation target, not the source of truth as Nucleus does. Therefore, any changes Nucleus elements or Quark make to the DOM will be seen as "unreconciled" by the other framework and will be obliterated. If you seek to integrate the Nucleus Stack into an app of another UI framework, that framework MUST either allow untracked DOM changes, or you must use a Shadow DOM as a boundary between it and the Nucleus stack. The same boundary serves the other direction: when a sheet hands a region to a framework that needs sole authority over its DOM, a shadow root around that region keeps the two apart ([Handing rendering to a framework](/nucleus/packages/quark/use#md-handing-rendering-to-a-framework)).
+Nucleus is not out-of-the-box compatible with certain other UI frameworks/libraries that lock the DOM to their own internal state, such as React. Many of these frameworks treat the DOM as a compilation target, not the source of truth as Nucleus does. Therefore, any changes Nucleus elements or Quark make to the DOM will be seen as "unreconciled" by the other framework and will be obliterated. If you seek to integrate the Nucleus Stack into an app of another UI framework, that framework MUST either allow untracked DOM changes, or you must use a Shadow DOM as a boundary between it and the Nucleus stack. The same boundary serves the other direction: when a sheet hands a region to a framework that needs sole authority over its DOM, a shadow root around that region keeps the two apart ([Handing rendering to a framework](/packages/quark/use#md-handing-rendering-to-a-framework)).
 
 ## Quark rules don't revert
 
@@ -64,7 +64,7 @@ Classes and ids are observed, but setting attributes is recommended over togglin
 
 ## Boundaries are absolute
 
-A shadow root or iframe opens a new State root, with its own Orchestrator. Quark never crosses that line, and neither does CSS. That is what makes isolation trustworthy for embedded widgets, and it is also why the stack avoids shadow DOM by default: a boundary is a wall in both directions. Build one on purpose where a rendering framework must own a region alone ([Handing rendering to a framework](/nucleus/packages/quark/use#md-handing-rendering-to-a-framework)).
+A shadow root or iframe opens a new State root, with its own Orchestrator. Quark never crosses that line, and neither does CSS. That is what makes isolation trustworthy for embedded widgets, and it is also why the stack avoids shadow DOM by default: a boundary is a wall in both directions. Build one on purpose where a rendering framework must own a region alone ([Handing rendering to a framework](/packages/quark/use#md-handing-rendering-to-a-framework)).
 
 ## Nobody truly owns the document
 
@@ -80,9 +80,9 @@ Nothing stops you from writing two rules, two effects, or a rule and an element 
 
 ## Prerendering happens at build time
 
-[Prerendering](/nucleus/docs/prerendering) writes one static file per route when the site is built. There is no per-request rendering, so a page holds nothing that only a request knows: the person, a cookie, the hour. The renderer is happy-dom rather than a browser, one page at a time in one process, and it leaves `shadow` / `iframe` render hosts, `pre-fetch="idle"` fetches and the elements that read the device or the person to the browser.
+[Prerendering](/docs/prerendering) writes one static file per route when the site is built. There is no per-request rendering, so a page holds nothing that only a request knows: the person, a cookie, the hour. The renderer is happy-dom rather than a browser, one page at a time in one process, and it leaves `shadow` / `iframe` render hosts, `pre-fetch="idle"` fetches and the elements that read the device or the person to the browser.
 
-*What to do.* Keep per-person content in elements that render in the browser, and look at a new page in a real browser: nucleus-ssr's [hydration test](/nucleus/packages/nucleus-ssr#md-test-hydration) runs on happy-dom too.
+*What to do.* Keep per-person content in elements that render in the browser, and look at a new page in a real browser: nucleus-ssr's [hydration test](/packages/nucleus-ssr#md-test-hydration) runs on happy-dom too.
 
 ## Commands need the Command API
 

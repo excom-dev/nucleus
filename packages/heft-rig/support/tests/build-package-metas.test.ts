@@ -2,7 +2,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { buildPackageMetas, rewriteDocLinks } from "../../scripts/build-package-metas.mjs";
-import { SITE_BASE } from "../../scripts/site-base.mjs";
+import { SITE_BASE, SITE_HOME } from "../../scripts/site-base.mjs";
 import {
   changelogJson,
   makeTempDir,
@@ -501,10 +501,10 @@ describe("buildPackageMetas", () => {
 
     expect(Object.keys(meta.docs).sort()).toEqual(["events", "props", "readme"]);
     expect(meta.readme).toContain(
-      '<spa-a route-href="/nucleus/packages/paged-lib/props" role="link">Props</spa-a>',
+      '<spa-a route-href="/packages/paged-lib/props" role="link">Props</spa-a>',
     );
-    expect(meta.readme).toContain('route-href="/nucleus/packages/paged-lib/events#md-emit"');
-    expect(meta.readme).toContain('route-href="/nucleus/packages/paged-lib"');
+    expect(meta.readme).toContain('route-href="/packages/paged-lib/events#md-emit"');
+    expect(meta.readme).toContain('route-href="/packages/paged-lib"');
     expect(meta.readme).toContain('<a href="https://example.com/X.md">out</a>');
     expect(meta.docSections).toEqual([
       { id: "define", title: "Defining", docs: [{ name: "props", title: "Props" }] },
@@ -618,21 +618,23 @@ describe("buildPackageMetas", () => {
         { shortName: "docs-site", packageType: "site" },
       ),
     ).toBe(
-      '<spa-a route-href="/nucleus/docs/quick_start">a</spa-a><a href="/x.md">b</a><a href="/nucleus/docs/readme">c</a>',
+      '<spa-a route-href="/docs/quick_start">a</spa-a><a href="/x.md">b</a><a href="/docs/readme">c</a>',
     );
     expect(rewriteDocLinks('<a href="./A.md">a</a>', {})).toBe('<a href="./A.md">a</a>');
     expect(rewriteDocLinks("", { shortName: "x" })).toBe("");
   });
 
-  it("rewriteDocLinks maps the site Introduction to SITE_BASE, not /nucleus/docs/introduction", () => {
-    expect(SITE_BASE).toBe("/nucleus");
+  it("rewriteDocLinks maps the site Introduction to the home route `/`, not /docs/introduction or an empty link", () => {
+    // an empty base: the docs own the root, and the home is `/`, never ""
+    expect(SITE_BASE).toBe("");
+    expect(SITE_HOME).toBe("/");
     expect(
       rewriteDocLinks(
         '<spa-a route-href="./INTRODUCTION.md">home</spa-a><a href="INTRODUCTION.md#md-why">why</a>',
         { shortName: "docs-site", packageType: "site" },
       ),
     ).toBe(
-      '<spa-a route-href="/nucleus">home</spa-a><a href="/nucleus#md-why">why</a>',
+      '<spa-a route-href="/">home</spa-a><a href="/#md-why">why</a>',
     );
     // Only the site package: a library page named the same stays a package route.
     expect(
@@ -640,6 +642,6 @@ describe("buildPackageMetas", () => {
         shortName: "some-lib",
         packageType: "library",
       }),
-    ).toBe('<a href="/nucleus/packages/some-lib/introduction">x</a>');
+    ).toBe('<a href="/packages/some-lib/introduction">x</a>');
   });
 });

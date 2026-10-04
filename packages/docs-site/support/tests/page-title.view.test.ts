@@ -112,7 +112,7 @@ describe("page titles", () => {
   });
 
   it("titles a site guide by its heading, an unknown one by its name", async () => {
-    const href = "/nucleus/docs/(?!introduction$):name";
+    const href = "/docs/(?!introduction$):name";
     const { route } = await mountRoutes({
       href,
       params: { name: "quick_start" },
@@ -128,7 +128,7 @@ describe("page titles", () => {
   });
 
   it("titles a package README by the package's display name", async () => {
-    const href = "/nucleus/packages/:packageName";
+    const href = "/packages/:packageName";
     const { route } = await mountRoutes({
       href,
       params: { packageName: "quark" },
@@ -137,7 +137,7 @@ describe("page titles", () => {
   });
 
   it("titles a package doc page by the page, then the package", async () => {
-    const href = "/nucleus/packages/:packageName/:docName";
+    const href = "/packages/:packageName/:docName";
     const { route } = await mountRoutes({
       href,
       params: { packageName: "neutron", docName: "props" },
@@ -148,8 +148,8 @@ describe("page titles", () => {
   });
 
   it("titles only the active route, and leaves the docs home to the page's own title", async () => {
-    const { host } = await mountRoutes({ href: "/nucleus", params: {} });
-    // the markup's own: the company page, the examples, the 404
+    const { host } = await mountRoutes({ href: "/", params: {} });
+    // the markup's own: the examples, the 404
     expect(titles(host)).toEqual(
       [...page.querySelectorAll("spa-route[document-title]")].map((route) =>
         route.getAttribute("document-title")

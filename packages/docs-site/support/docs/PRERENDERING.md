@@ -4,7 +4,7 @@ Render every route to static HTML when the site is built. The browser takes each
 
 ## Setup
 
-[nucleus-ssr](/nucleus/packages/nucleus-ssr) renders the built site in Node: a config module names the routes, an entry module loads the app. Build the site with [vite-plugin-nucleus](/nucleus/packages/vite-plugin-nucleus), then run `npx nucleus-ssr prerender.config.js`: it prerenders every route, reports each page and fails on a broken internal link. The nucleus-ssr page has the working example, the options and what fails a page. The app itself stays as it is: the same HTML, sheets, views and kit `<script>`. Prerender after every fresh build: a shell an earlier prerender wrote is refused.
+[nucleus-ssr](/packages/nucleus-ssr) renders the built site in Node: a config module names the routes, an entry module loads the app. Build the site with [vite-plugin-nucleus](/packages/vite-plugin-nucleus), then run `npx nucleus-ssr prerender.config.js`: it prerenders every route, reports each page and fails on a broken internal link. The nucleus-ssr page has the working example, the options and what fails a page. The app itself stays as it is: the same HTML, sheets, views and kit `<script>`. Prerender after every fresh build: a shell an earlier prerender wrote is refused.
 
 ## How it fits
 
@@ -31,7 +31,7 @@ Hydration ends once nothing holds it: kit requests, sheets and `@use` modules st
 
 A sheet needs no change: the same sheet runs in the prerender and in the browser.
 
-One contract to keep: **an `@on` write is a one-shot, on both sides.** `@on` blocks run during the prerender and their writes are in the HTML. In the browser the elements' events fire again (`provider-fetch-success`, `spa-route-did-render`), so a block applies again if its sheet is listening by then, the [load order](/nucleus/docs/orchestrating#md-load-order) rule of any cold load. The first pass, though, paints again whatever a declarative rule also paints, and a `$binding` only an `@on` block wrote is unbound in the browser until that block runs again. Content that must survive prerendering derives from state attributes and provisions:
+One contract to keep: **an `@on` write is a one-shot, on both sides.** `@on` blocks run during the prerender and their writes are in the HTML. In the browser the elements' events fire again (`provider-fetch-success`, `spa-route-did-render`), so a block applies again if its sheet is listening by then, the [load order](/docs/orchestrating#md-load-order) rule of any cold load. The first pass, though, paints again whatever a declarative rule also paints, and a `$binding` only an `@on` block wrote is unbound in the browser until that block runs again. Content that must survive prerendering derives from state attributes and provisions:
 
 ```quark
 /* derived from State: the browser's first pass paints the same */
@@ -79,7 +79,7 @@ A `provision` of plain data (what JSON carries) is restored from the page before
 ## Static hosting
 
 - **Slashless files.** `/docs/intro` is written to `docs/intro.html` and `/` to `index.html`. The host must serve `/docs/intro` from that file: many static hosts do, some need a rewrite rule.
-- **A real 404.** Prerender the not-found route to `404.html`. Once `/` is prerendered, `index.html` is the home page: a host that falls back to it would answer every unknown URL with the home page and a 200. With a `404.html`, every route needs its file: a route that depends on the person (a bag, an account) is written as the untouched shell, through [`shellRoutes`](/nucleus/packages/nucleus-ssr#md-options), and renders in the browser.
+- **A real 404.** Prerender the not-found route to `404.html`. Once `/` is prerendered, `index.html` is the home page: a host that falls back to it would answer every unknown URL with the home page and a 200. With a `404.html`, every route needs its file: a route that depends on the person (a bag, an account) is written as the untouched shell, through [`shellRoutes`](/packages/nucleus-ssr#md-options), and renders in the browser.
 - **A file served for another URL** still works: the content of a route the URL does not match is removed, and the matching route renders.
 - **Script loading.** Load the kit as a module or deferred script, so the page paints before the kit runs. A classic script works too: elements mount once the document is parsed.
 - **Public files.** Nothing a per-person response returned may be in a prerendered page. nucleus-ssr fails a page built from a response marked private.
@@ -87,6 +87,6 @@ A `provision` of plain data (what JSON carries) is restored from the page before
 ## Limits
 
 - **Build time only.** No per-request rendering: what only a request knows (the person, a cookie) renders in the browser.
-- **One renderer per process.** Pages render one at a time, or in a pool of worker processes; a cache writes a page again without rendering it while its shell and requests answer as in the last build. Both are [nucleus-ssr options](/nucleus/packages/nucleus-ssr#md-workers-cache).
-- **happy-dom, not a browser.** The prerender has no layout: every observed element counts as in view, so `lazy-load` views are in the page unless `no-ssr` keeps them out, and `matchMedia()` answers for one viewport. Where the browser derives something else, it writes it. Markup a browser would parse into other elements [fails the prerender](/nucleus/packages/nucleus-ssr#md-failures): most often block content rendered into an element that sits in a `<p>`, or rows rendered straight into a `<table>` (write the `<tbody>`). The [hydration test](/nucleus/packages/nucleus-ssr#md-test-hydration) runs on happy-dom too, so it cannot show what only a real browser does.
+- **One renderer per process.** Pages render one at a time, or in a pool of worker processes; a cache writes a page again without rendering it while its shell and requests answer as in the last build. Both are [nucleus-ssr options](/packages/nucleus-ssr#md-workers-cache).
+- **happy-dom, not a browser.** The prerender has no layout: every observed element counts as in view, so `lazy-load` views are in the page unless `no-ssr` keeps them out, and `matchMedia()` answers for one viewport. Where the browser derives something else, it writes it. Markup a browser would parse into other elements [fails the prerender](/packages/nucleus-ssr#md-failures): most often block content rendered into an element that sits in a `<p>`, or rows rendered straight into a `<table>` (write the `<tbody>`). The [hydration test](/packages/nucleus-ssr#md-test-hydration) runs on happy-dom too, so it cannot show what only a real browser does.
 - **Time and randomness.** A page that depends on them differs between builds, and from what the browser derives.

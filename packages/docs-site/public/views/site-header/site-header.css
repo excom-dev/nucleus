@@ -70,7 +70,7 @@ html #site-header {
       align-items: center;
       gap: var(--v-nav-element-spacing-horizontal);
       line-height: normal;
-      spa-a {
+      :is(spa-a, a) {
         display: inline-block;
       }
       /* height-sized: a wordmark or a square icon both fit */

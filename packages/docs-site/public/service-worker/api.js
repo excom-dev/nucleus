@@ -5,9 +5,9 @@ import { handleTodos } from "./todos.js";
 import { handleWebAuthn } from "./webauthn.js";
 
 /*
- * Only demo routes are mocked. Anything else under `/api/` (e.g.
- * `/api/release-subscribers`) goes to the network; the deployed site
- * has a real worker there.
+ * Only demo routes are mocked. Anything else under `/api/` goes to the
+ * network. The release-notice form posts to another origin, which this
+ * worker never sees.
  */
 export async function handleApi(request) {
   const path = new URL(request.url).pathname;
