@@ -22,7 +22,7 @@ Short rules with rationale. They exist because the document *is* the state — k
 - **`preserve` while loading.** `content: $todo.title or preserve;` keeps the last good value instead of flashing empty.
 - **Never render what you match.** A rule that renders children (via `content:`) that match its own selector re-triggers itself until the loop guard cuts it (50 nested paints, logged as `Loop guard: …`).
 - **Don't let rules gate on each other's writes.** `[data-a="1"] { data-b: "1"; }` next to `[data-b="1"] { data-a: "2"; }` is a cycle: Quark warns when the sheet builds (*rules gate on attributes they write for each other*) and the loop guard cuts it at run time if it never settles. Give the transition one attribute with a value, derive the second fact from the first in one direction only, or gate one side on a guard attribute. A rule cannot loop on the attribute it writes itself — that write never re-runs the same declaration.
-- **Gate a one-shot on the fact it writes.** Rules re-run, and every run restarts a [`@delay`](/nucleus/packages/quark/delay), so an unconditional `@delay 3000 { is-open: ""; }` reopens a dismissed banner. Write the fact with the effect and gate on it: `&:not([data-did-open]) { @delay 3000 { is-open: ""; data-did-open: ""; } }`.
+- **Gate a one-shot on the fact it writes.** Rules re-run, and every run restarts a [`@delay`](/packages/quark/delay), so an unconditional `@delay 3000 { is-open: ""; }` reopens a dismissed banner. Write the fact with the effect and gate on it: `&:not([data-did-open]) { @delay 3000 { is-open: ""; data-did-open: ""; } }`.
 - **Do not use variables to smuggle side effects.** An unused `$x: doThing();` is an element and an event in disguise.
 - **Put the fact in the document before branching on it.** `if()` is fine, but many rules testing the same condition (`if($user.role == "admin": …)`) mean a fact is missing from the State. Write it once as an attribute (`data-is-admin: $user.role == "admin";`), then select on it: `[data-is-admin] button { … }`. The condition becomes declarative, addressable by CSS as well as Quark, visible in devtools, and evaluated in one place.
 - **Prefer interpolation over concatenation.** `"Items: #{$n}"` and `"/api/users/#{$id}"`, not `"Items: " + $n` or `"/api/users/" + $id`. `+` stays for arithmetic.
@@ -46,11 +46,11 @@ Short rules with rationale. They exist because the document *is* the state — k
 
 ## Building Elements
 
-- **Avoid Shadow DOM** ASO applications are heavily data-driven. Shadow DOMs are a hard boundary and severely blunt the power of Quark and CSS. Instead, consider using `@scope`. The exception is a region handed to a rendering framework that must own its DOM alone ([Handing rendering to a framework](/nucleus/packages/quark/use#md-handing-rendering-to-a-framework)).
-- **Single responsibility.** One job, configurable, observable. See [Creating Elements](/nucleus/docs/creating_elements).
+- **Avoid Shadow DOM** ASO applications are heavily data-driven. Shadow DOMs are a hard boundary and severely blunt the power of Quark and CSS. Instead, consider using `@scope`. The exception is a region handed to a rendering framework that must own its DOM alone ([Handing rendering to a framework](/packages/quark/use#md-handing-rendering-to-a-framework)).
+- **Single responsibility.** One job, configurable, observable. See [Creating Elements](/docs/creating_elements).
 - **Generic** `<content-drawer>` is good, `<add-to-cart>` is bad. Business logic belongs to Quark and its modules.
 - **Never render children.** Composition is the design. The only caveat: an element may render fully author-controlled chilren, such as `<include-content>` does because this does not hinder composition.
-- **Own your region.** An element writes only its own attributes and is permitted to write its [sub-adapters'](/nucleus/docs/adapter_state_orchestrator) attributes. Coordination across elements belongs to Quark sheets. Nothing else writes state.
+- **Own your region.** An element writes only its own attributes and is permitted to write its [sub-adapters'](/docs/adapter_state_orchestrator) attributes. Coordination across elements belongs to Quark sheets. Nothing else writes state.
 - **Phrase booleans as assertions.** `is-loading`, `did-succeed`, `has-rendered`, `should-fetch`.
 - **Dashed attributes, tag-prefixed events (`my-element-change`, never `change`).** This is to prevent collisions with native attributes and events - now and in the future.
 - **Imperatives are commands, not events.** Accept "do this" as a `command` event with a short `--verb` (`onCommand("--submit")`), never as a bubbling `my-element-trigger` custom event. Commands are addressed to one element and never bubble, so the verb needs no tag prefix.

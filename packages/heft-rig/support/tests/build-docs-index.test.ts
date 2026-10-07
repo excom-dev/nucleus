@@ -23,19 +23,19 @@ const COUNTER_LINE =
 /** A docs-site `index.html` sidebar + route table, and the example view folders. */
 const SITE_FIXTURE = {
   "packages/docs-site/index.html": [
-    '<spa-a route-href="/nucleus/examples/todos" role="link" class="secondary">Todo App</spa-a>',
-    '<spa-a route-href="/nucleus/examples/counter" role="link"> Counter </spa-a>',
-    '<spa-a route-href="/nucleus/examples/counter" role="link">Second link</spa-a>',
-    '<spa-route route-href="/nucleus/docs/:name" template-ref="/views/package/package.html"></spa-route>',
-    '<!-- <spa-route route-href="/nucleus/examples/old" data-app="todo-app"></spa-route> -->',
-    '<spa-route route-href="/nucleus/examples/todos" template-ref="/views/live-app/live-app.html"',
+    '<spa-a route-href="/examples/todos" role="link" class="secondary">Todo App</spa-a>',
+    '<spa-a route-href="/examples/counter" role="link"> Counter </spa-a>',
+    '<spa-a route-href="/examples/counter" role="link">Second link</spa-a>',
+    '<spa-route route-href="/docs/:name" template-ref="/views/package/package.html"></spa-route>',
+    '<!-- <spa-route route-href="/examples/old" data-app="todo-app"></spa-route> -->',
+    '<spa-route route-href="/examples/todos" template-ref="/views/live-app/live-app.html"',
     '  data-app="todo-app" data-files="html quark css"></spa-route>',
-    '<spa-route route-href="/nucleus/examples/counter" template-ref="/views/live-app/live-app.html"',
+    '<spa-route route-href="/examples/counter" template-ref="/views/live-app/live-app.html"',
     '  data-app="counter-app" data-files="html quark"></spa-route>',
-    '<spa-route route-href="/nucleus/examples/cells" data-app="cells-app"></spa-route>',
-    '<spa-route route-href="/nucleus/examples/ghost" data-app="ghost-app"></spa-route>',
-    '<spa-route route-href="/nucleus/examples/bare"></spa-route>',
-    '<spa-route route-href="/nucleus/demo" data-app="demo-app"></spa-route>',
+    '<spa-route route-href="/examples/cells" data-app="cells-app"></spa-route>',
+    '<spa-route route-href="/examples/ghost" data-app="ghost-app"></spa-route>',
+    '<spa-route route-href="/examples/bare"></spa-route>',
+    '<spa-route route-href="/demo" data-app="demo-app"></spa-route>',
   ].join("\n"),
   "packages/docs-site/public/views/todo-app/todo-app.html": "<h1>todos</h1>",
   "packages/docs-site/public/views/todo-app/todo-app.quark": "h1 { content: 'x'; }",
@@ -85,10 +85,10 @@ describe("buildDocsIndex", () => {
       }),
       "packages/docs-site/support/dist-docs/docs/intro.md":
         "# Introduction\n\n> Quoted *first* sentence. Second one.\n\n" +
-        "See [guide](/nucleus/docs/extra) and [pkg](/nucleus/packages/a-el).\n\n" +
+        "See [guide](/docs/extra) and [pkg](/packages/a-el).\n\n" +
         '<include-content is-active template-ref="/views/live-app/live-app.html" data-app="todo-app"' +
         ' data-files="html quark css" data-mini></include-content>\n\n' +
-        "Try the [counter](/nucleus/examples/counter).\n\n" +
+        "Try the [counter](/examples/counter).\n\n" +
         '<include-content data-app="counter-app" />\n',
       ...SITE_FIXTURE,
       "packages/docs-site/support/dist-docs/docs/extra.md": "No heading here\n\nMore.",
@@ -216,40 +216,43 @@ describe("buildDocsIndex", () => {
     await expect(buildDocsIndex()).rejects.toThrow(/Could not find rush.json/);
   });
 
-  it("rewriteOfflineLinks maps SITE_BASE routes to sibling files, leaves the rest", () => {
-    expect(rewriteOfflineLinks("[g](/nucleus/docs/styling)")).toBe("[g](./styling.md)");
-    expect(rewriteOfflineLinks("[p](/nucleus/packages/quark-sheet)")).toBe(
+  it("rewriteOfflineLinks maps site routes to sibling files, leaves the rest", () => {
+    expect(rewriteOfflineLinks("[g](/docs/styling)")).toBe("[g](./styling.md)");
+    expect(rewriteOfflineLinks("[p](/packages/quark-sheet)")).toBe(
       "[p](../quark-sheet.md)",
     );
-    expect(rewriteOfflineLinks("[home](/nucleus)")).toBe("[home](./introduction.md)");
-    // No offline file: package sub-pages, examples and unbased paths stay put.
-    expect(rewriteOfflineLinks("[s](/nucleus/packages/quark/modules)")).toBe(
-      "[s](/nucleus/packages/quark/modules)",
+    expect(rewriteOfflineLinks("[home](/)")).toBe("[home](./introduction.md)");
+    // No offline file: package sub-pages, examples and non-route paths stay put.
+    expect(rewriteOfflineLinks("[s](/packages/quark/modules)")).toBe(
+      "[s](/packages/quark/modules)",
     );
-    expect(rewriteOfflineLinks("[e](/nucleus/examples/todos)")).toBe(
-      "[e](/nucleus/examples/todos)",
+    expect(rewriteOfflineLinks("[e](/examples/todos)")).toBe(
+      "[e](/examples/todos)",
     );
-    expect(rewriteOfflineLinks("[old](/docs/styling)")).toBe("[old](/docs/styling)");
+    // the Markdown mirror, a hash on the home, an empty target and the old address are no routes
+    for (const md of ["[m](/docs/styling.md)", "[h](/#md-why)", "[none]()", "[old](/nucleus/docs/styling)", "[old](/nucleus)"]) {
+      expect(rewriteOfflineLinks(md)).toBe(md);
+    }
     // With the example apps known, their routes map to the copied HTML.
-    const todo = { app: "todo-app", route: "/nucleus/examples/todos", name: "Todo App", files: [] };
-    expect(rewriteOfflineLinks("[e](/nucleus/examples/todos) [f](/nucleus/examples/todos)", [todo])).toBe(
+    const todo = { app: "todo-app", route: "/examples/todos", name: "Todo App", files: [] };
+    expect(rewriteOfflineLinks("[e](/examples/todos) [f](/examples/todos)", [todo])).toBe(
       "[e](./examples/todo-app/todo-app.html) [f](./examples/todo-app/todo-app.html)",
     );
-    expect(rewriteOfflineLinks("[x](/nucleus/examples/timer)", [todo])).toBe(
-      "[x](/nucleus/examples/timer)",
+    expect(rewriteOfflineLinks("[x](/examples/timer)", [todo])).toBe(
+      "[x](/examples/timer)",
     );
   });
 
   describe("example apps", () => {
     const todo = {
       app: "todo-app",
-      route: "/nucleus/examples/todos",
+      route: "/examples/todos",
       name: "Todo App",
       files: ["todo-app.css", "todo-app.html", "todo-app.quark", "notes.txt"],
     };
     const cells = {
       app: "cells-app",
-      route: "/nucleus/examples/cells",
+      route: "/examples/cells",
       name: "Cells",
       files: ["cells-app.css", "cells-app.html", "cells-app.js", "cells-app.quark"],
     };
@@ -296,20 +299,20 @@ describe("buildDocsIndex", () => {
       expect(await readExampleApps(site)).toEqual([
         {
           app: "todo-app",
-          route: "/nucleus/examples/todos",
+          route: "/examples/todos",
           name: "Todo App",
           files: ["todo-app.css", "todo-app.html", "todo-app.quark"],
         },
         {
           app: "counter-app",
-          route: "/nucleus/examples/counter",
+          route: "/examples/counter",
           name: "Counter",
           files: ["counter-app.html", "counter-app.quark"],
         },
         // No sidebar link: named from the app.
         {
           app: "cells-app",
-          route: "/nucleus/examples/cells",
+          route: "/examples/cells",
           name: "Cells",
           files: ["cells-app.html", "cells-app.js"],
         },
@@ -381,23 +384,70 @@ describe("buildDocsIndex", () => {
       [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-        "  <url><loc>https://excom.dev/</loc></url>",
-        "  <url><loc>https://excom.dev/nucleus</loc></url>",
-        "  <url><loc>https://excom.dev/nucleus/docs/intro</loc></url>",
-        "  <url><loc>https://excom.dev/nucleus/docs/blank</loc></url>",
-        "  <url><loc>https://excom.dev/nucleus/docs/extra</loc></url>",
-        "  <url><loc>https://excom.dev/nucleus/examples/todos</loc></url>",
-        "  <url><loc>https://excom.dev/nucleus/examples/counter</loc></url>",
-        "  <url><loc>https://excom.dev/nucleus/examples/cells</loc></url>",
+        // the docs home, once: `/`, not a second entry without the slash
+        "  <url><loc>https://nucleus.excom.dev/</loc></url>",
+        "  <url><loc>https://nucleus.excom.dev/docs/intro</loc></url>",
+        "  <url><loc>https://nucleus.excom.dev/docs/blank</loc></url>",
+        "  <url><loc>https://nucleus.excom.dev/docs/extra</loc></url>",
+        "  <url><loc>https://nucleus.excom.dev/examples/todos</loc></url>",
+        "  <url><loc>https://nucleus.excom.dev/examples/counter</loc></url>",
+        "  <url><loc>https://nucleus.excom.dev/examples/cells</loc></url>",
         "</urlset>",
         "",
       ].join("\n"),
     );
   });
 
+  it("flags the packages whose own markdown file it mirrored in the site's package index", async () => {
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const site = path.join(tmp, "flag-repo");
+    const indexFile = "packages/docs-site/dist/package-metas/index.json";
+    writeFiles(site, {
+      "rush.json": "{}",
+      "packages/a/support/dist-docs/a-el.md": "# a-el",
+      // a mixin named for no package, and a guide named for one: not their own
+      "packages/b/support/dist-docs/helper-mixin.md": "# HelperMixin",
+      "packages/docs-site/support/dist-docs/docs/quark.md": "# Quark",
+      [indexFile]: JSON.stringify({
+        packages: [
+          { shortName: "a-el", packageType: "kit-element", version: "1.0.0" },
+          { shortName: "helper", packageType: "element-base", version: "1.0.0" },
+          { shortName: "quark", packageType: "library", docSections: [{ id: "a", title: "A" }] },
+        ],
+        docs: [{ name: "quark", title: "Quark" }],
+      }),
+    });
+    await buildDocsIndex(site);
+    expect(JSON.parse(read(site, indexFile))).toEqual({
+      packages: [
+        { shortName: "a-el", packageType: "kit-element", version: "1.0.0", markdown: true },
+        { shortName: "helper", packageType: "element-base", version: "1.0.0" },
+        { shortName: "quark", packageType: "library", docSections: [{ id: "a", title: "A" }] },
+      ],
+      docs: [{ name: "quark", title: "Quark" }],
+    });
+    expect(read(site, indexFile).endsWith("}\n")).toBe(true);
+  });
+
+  it("leaves a package index without packages as it is", async () => {
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const site = path.join(tmp, "flag-empty-repo");
+    const indexFile = "packages/docs-site/dist/package-metas/index.json";
+    writeFiles(site, {
+      "rush.json": "{}",
+      "packages/a/support/dist-docs/a-el.md": "# a-el",
+      "packages/docs-site/support/dist-docs/docs/intro.md": "# Introduction",
+      [indexFile]: "[]",
+    });
+    await buildDocsIndex(site);
+    expect(read(site, indexFile)).toBe("[]");
+  });
+
   it("writes a sitemap of the docs home, guides, packages with their doc pages, and examples", async () => {
     const log = vi.spyOn(console, "log").mockImplementation(() => {});
     const site = path.join(tmp, "sitemap-repo");
+    const meta = (...pages: string[]) =>
+      JSON.stringify({ docs: Object.fromEntries(pages.map((page) => [page, `<h1>${page}</h1>`])) });
     writeFiles(site, {
       "rush.json": "{}",
       ...SITE_FIXTURE,
@@ -410,6 +460,8 @@ describe("buildDocsIndex", () => {
       "packages/docs-site/dist/package-metas/index.json": JSON.stringify({
         packages: [
           { shortName: "content-tabs", packageType: "kit-element" },
+          // no docs-sections.json: its one extra page is in no section
+          { shortName: "nucleus-kit", packageType: "library" },
           {
             shortName: "quark",
             packageType: "library",
@@ -419,31 +471,48 @@ describe("buildDocsIndex", () => {
               { id: "c", title: "C", docs: [{ name: "sheets" }, { name: "js_api" }] },
             ],
           },
+          // no meta of its own: the sections alone
+          { shortName: "neutron", packageType: "library", docSections: [{ docs: [{ name: "props" }] }] },
         ],
         docs: [],
       }),
+      "packages/docs-site/dist/package-metas/content-tabs.json": meta("readme"),
+      "packages/docs-site/dist/package-metas/nucleus-kit.json": meta("readme", "breaking_changes"),
+      "packages/docs-site/dist/package-metas/quark.json": meta("syntax", "readme", "sheets", "js_api", "faq"),
     });
     await buildDocsIndex(site);
     expect(read(site, "packages/docs-site/dist/sitemap.xml")).toBe(
       [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-        "  <url><loc>https://excom.dev/</loc></url>",
-        "  <url><loc>https://excom.dev/nucleus</loc></url>",
-        // `introduction` is the docs home, not `/nucleus/docs/introduction`.
-        "  <url><loc>https://excom.dev/nucleus/docs/styling</loc></url>",
-        "  <url><loc>https://excom.dev/nucleus/packages/content-tabs</loc></url>",
-        "  <url><loc>https://excom.dev/nucleus/packages/quark</loc></url>",
-        "  <url><loc>https://excom.dev/nucleus/packages/quark/sheets</loc></url>",
-        "  <url><loc>https://excom.dev/nucleus/packages/quark/syntax</loc></url>",
-        "  <url><loc>https://excom.dev/nucleus/packages/quark/js_api</loc></url>",
-        "  <url><loc>https://excom.dev/nucleus/examples/todos</loc></url>",
-        "  <url><loc>https://excom.dev/nucleus/examples/counter</loc></url>",
-        "  <url><loc>https://excom.dev/nucleus/examples/cells</loc></url>",
+        // the docs home, once: `/`, not a second entry without the slash
+        "  <url><loc>https://nucleus.excom.dev/</loc></url>",
+        // `introduction` is the docs home, not `/docs/introduction`.
+        "  <url><loc>https://nucleus.excom.dev/docs/styling</loc></url>",
+        "  <url><loc>https://nucleus.excom.dev/packages/content-tabs</loc></url>",
+        "  <url><loc>https://nucleus.excom.dev/packages/nucleus-kit</loc></url>",
+        "  <url><loc>https://nucleus.excom.dev/packages/nucleus-kit/breaking_changes</loc></url>",
+        "  <url><loc>https://nucleus.excom.dev/packages/quark</loc></url>",
+        // the sidebar's order, then the pages no section lists
+        "  <url><loc>https://nucleus.excom.dev/packages/quark/sheets</loc></url>",
+        "  <url><loc>https://nucleus.excom.dev/packages/quark/syntax</loc></url>",
+        "  <url><loc>https://nucleus.excom.dev/packages/quark/js_api</loc></url>",
+        "  <url><loc>https://nucleus.excom.dev/packages/quark/faq</loc></url>",
+        "  <url><loc>https://nucleus.excom.dev/packages/neutron</loc></url>",
+        "  <url><loc>https://nucleus.excom.dev/packages/neutron/props</loc></url>",
+        "  <url><loc>https://nucleus.excom.dev/examples/todos</loc></url>",
+        "  <url><loc>https://nucleus.excom.dev/examples/counter</loc></url>",
+        "  <url><loc>https://nucleus.excom.dev/examples/cells</loc></url>",
         "</urlset>",
         "",
       ].join("\n"),
     );
-    expect(log).toHaveBeenCalledWith("Wrote 11 URL(s) → packages/docs-site/dist/sitemap.xml");
+    expect(log).toHaveBeenCalledWith("Wrote 15 URL(s) → packages/docs-site/dist/sitemap.xml");
+    // each page once, and every one a path on the docs origin
+    const locs = [...read(site, "packages/docs-site/dist/sitemap.xml").matchAll(/<loc>([^<]*)<\/loc>/g)].map(
+      ([, loc]) => loc,
+    );
+    expect(new Set(locs).size).toBe(locs.length);
+    expect(locs.every((loc) => loc!.startsWith("https://nucleus.excom.dev/"))).toBe(true);
   });
 });

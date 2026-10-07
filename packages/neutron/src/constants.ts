@@ -1,6 +1,6 @@
 import { CommonElement } from "./common-element";
 import type { DefaultConfig } from "./types";
-import { camelToDash } from "@excom/kit-utils";
+import { camelToDash, NO_SSR_ATTR } from "@excom/kit-utils";
 
 const ALWAYS_IGNORE = [undefined, NaN, 0n];
 export const IGNORED_STR_VALUES = [false, 0, ...ALWAYS_IGNORE];
@@ -95,6 +95,7 @@ export const PROTECTED_ATTR_NAMES = [
   /^n-/,
   /^on-/,
   /^off-/,
+  new RegExp(`^${NO_SSR_ATTR}$`),
   ...PROTECTED_PROP_NAMES.map((p) => new RegExp(`^${camelToDash(p)}$`)),
 ];
 

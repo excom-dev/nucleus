@@ -57,8 +57,6 @@ export const createWorkspace = async (): Promise<Workspace> => {
     "packages/site/index.html": "<!doctype html><title>site</title>\n",
     "packages/site/sandbox.html": "<!doctype html><title>sandbox</title>\n",
     "packages/site/shell.ts": "export const shell = 'shell';\n",
-    "packages/site/index.ts": "export const site = 1;\n",
-    "packages/site/index.css": ".site { color: red }\n",
     "packages/site/public/demo-utils.ts": "export const demo = 1;\n",
     "packages/site/public/views/demo/demo.js": "export default 'demo';\n",
     "packages/site/public/views/demo/demo.html": "<p>demo</p>\n",

@@ -75,7 +75,7 @@ see the declaration that produced it.
 ```
 
 Rows are muted for no-ops / wipes and red for a failed expression (which
-never wipes — see [Orchestrating](/nucleus/docs/orchestrating)).
+never wipes — see [Orchestrating](/docs/orchestrating)).
 
 ### Heatmap
 
@@ -218,5 +218,5 @@ Quark.attachDevtools({
 ```
 
 Publications are `["neutron", …]` / `["quark", …]` paths with JSON-safe
-metadata; see the [neutron](/nucleus/packages/neutron) and [quark](/nucleus/packages/quark)
+metadata; see the [neutron](/packages/neutron) and [quark](/packages/quark)
 package pages for the full list.

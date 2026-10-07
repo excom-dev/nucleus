@@ -201,6 +201,20 @@
       "disableBuildCache": false
     },
     {
+      "name": "build:prerender",
+      "commandKind": "bulk",
+      "summary": "Prerender site routes to static HTML",
+      "description": "Runs each project's build:prerender script after a fresh site build (and, for the docs site, build:docs-index). Each site renders its routes to slashless pages in its dist/ (plus 404.html) from workspace source, in a pool of workers, reusing pages whose inputs did not change; it fails on a page that fails to render or on an internal link that leads to no page. A dist an earlier prerender wrote is refused: rebuild the site first (a skipped incremental `rush build` leaves it prerendered).",
+      "safeForSimultaneousRushProcesses": false,
+      "enableParallelism": true,
+      "ignoreDependencyOrder": false,
+      "ignoreMissingScript": true,
+      "allowWarningsInSuccessfulBuild": true,
+      "incremental": false,
+      "watchForChanges": false,
+      "disableBuildCache": true
+    },
+    {
       "name": "rebuild:docs",
       "commandKind": "bulk",
       "summary": "Re-render per-package Markdown documentation without caching",

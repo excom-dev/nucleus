@@ -1,4 +1,4 @@
-import { readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, realpath, rm, symlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import {
@@ -7,6 +7,7 @@ import {
   progressiveChunks,
   resolveCoverageReporters,
   resolveCoverageThresholds,
+  resolveTestExclude,
   resolveVitestMaxWorkers,
   UMD_SHARED_GLOBALS,
   umdExternals,
@@ -33,7 +34,6 @@ afterAll(async () => {
 });
 
 afterEach(() => {
-  delete process.env.DOCS_SITE_BASE;
   vi.unstubAllEnvs();
 });
 
@@ -144,6 +144,32 @@ describe("createRigViteConfig", () => {
       ]);
     });
 
+    it("adds the packages of the rig's repository for a package of another repository that links the rig", async () => {
+      // `ws/packages/linked` holds a rig folder; a package of a second repository links it
+      const other = path.join(ws.root, "other-repo");
+      const app = path.join(other, "packages/app");
+      await writeTree(other, {
+        "rush.json": JSON.stringify({ projects: [{ packageName: "app", projectFolder: "packages/app" }] }),
+        "packages/app/package.json": "{}",
+      });
+      await mkdir(path.join(app, "node_modules/@excom"), { recursive: true });
+      await symlink(
+        path.join(ws.linked, "node_modules/@excom/heft-rig"),
+        path.join(app, "node_modules/@excom/heft-rig"),
+      );
+      const config = await createRigViteConfig({ mode: "test", root: app });
+      const alias = config.resolve!.alias as unknown as { find: RegExp | string; replacement: string }[];
+      // its own repository first, then the rig's
+      expect(alias.map((a) => String(a.find))).toEqual([
+        "/^app\\/(.+)$/",
+        "/^@excom\\/alpha$/",
+        "/^@excom\\/alpha\\/(.+)$/",
+        "/^@excom\\/beta\\/(.+)$/",
+        "@vitest/coverage-v8",
+      ]);
+      expect(alias[1].replacement).toBe(path.join(await realpath(ws.rushRoot), "packages/alpha/index.ts"));
+    });
+
     it("tolerates a rush.json without projects", async () => {
       const bare = path.join(ws.root, "bare-rush/packages/pkg");
       await writeTree(bare, { "package.json": "{}" });
@@ -152,6 +178,22 @@ describe("createRigViteConfig", () => {
       expect((config.resolve!.alias as unknown as { find: unknown }[]).map((a) => a.find)).toEqual([
         "@vitest/coverage-v8",
       ]);
+    });
+
+    it("keeps a package's excom.testExclude globs out of its tests and its coverage", async () => {
+      expect(resolveTestExclude(undefined)).toEqual([]);
+      expect(resolveTestExclude({ testExclude: "api/**" })).toEqual([]);
+      expect(resolveTestExclude({ testExclude: ["api/**", 5] })).toEqual(["api/**"]);
+
+      const own = path.join(ws.root, "test-exclude/packages/own");
+      await writeTree(own, {
+        "package.json": JSON.stringify({ name: "own", excom: { packageType: "app", testExclude: ["api/**"] } }),
+      });
+      const { test } = await createRigViteConfig({ mode: "test", root: own });
+      expect(test!.exclude).toEqual(expect.arrayContaining(["**/node_modules/**", "api/**"]));
+      expect(test!.coverage!.exclude).toContain("api/**");
+      // without the key, Vitest's own default stays
+      expect("exclude" in (await createRigViteConfig({ mode: "test", root: ws.site })).test!).toBe(false);
     });
 
     it("omits the thresholds for an opted-out package and keeps them for its neighbour", async () => {
@@ -440,45 +482,30 @@ describe("createRigViteConfig", () => {
   });
 
   describe("build-site", () => {
-    it("adds sandbox.html and the quark modules as stable inputs", async () => {
+    it("is the site build, with the rig's chunk warning and Rolldown checks", async () => {
       const config = await createRigViteConfig({ mode: "build-site", root: ws.site });
-      expect(config.base).toBe("/");
       expect(config.publicDir).toBe(path.join(ws.site, "public"));
-      expect(names(config.plugins as unknown[])).toEqual(["sandbox-html-rewrite", "site-service-worker"]);
+      expect(names(config.plugins as unknown[])).toEqual(["nucleus-modules", "nucleus-service-worker"]);
       const build = config.build!;
-      expect(build.outDir).toBe(path.join(ws.site, "dist"));
-      expect(build.emptyOutDir).toBe(true);
-      expect(build.chunkSizeWarningLimit).toBe(2000);
-      expect(build.rolldownOptions!.preserveEntrySignatures).toBe("exports-only");
+      expect([build.outDir, build.emptyOutDir, build.chunkSizeWarningLimit]).toEqual([path.join(ws.site, "dist"), true, 2000]);
+      expect(build.rolldownOptions!.checks).toEqual({ pluginTimings: false });
       expect(build.rolldownOptions!.input).toEqual({
-        main: path.join(ws.site, "index.html"),
+        index: path.join(ws.site, "index.html"),
         sandbox: path.join(ws.site, "sandbox.html"),
         shell: path.join(ws.site, "shell.ts"),
         "demo-utils": path.join(ws.site, "public/demo-utils.ts"),
       });
-      const output = build.rolldownOptions!.output as {
-        entryFileNames: (c: { name: string }) => string;
-        chunkFileNames: string;
-        assetFileNames: string;
-      };
-      expect(output.entryFileNames({ name: "shell" })).toBe("[name].js");
-      expect(output.entryFileNames({ name: "demo-utils" })).toBe("[name].js");
-      expect(output.entryFileNames({ name: "main" })).toBe("assets/[name]-[hash].js");
-      expect(output.chunkFileNames).toBe("assets/[name]-[hash].js");
-      expect(output.assetFileNames).toBe("assets/[name]-[hash][extname]");
       // Site builds bundle their dependencies: no externals were read.
       expect(build.rolldownOptions!.external).toBeUndefined();
     });
 
-    it("omits sandbox.html when the site has none and honours DOCS_SITE_BASE", async () => {
-      process.env.DOCS_SITE_BASE = "/docs/";
-      const config = await createRigViteConfig({ mode: "build-site", root: ws.lib, packageRoot: ws.lib });
-      expect(config.base).toBe("/docs/");
-      expect(config.build!.rolldownOptions!.input).toEqual({
-        main: path.join(ws.lib, "index.html"),
-        shell: path.join(ws.lib, "shell.ts"),
-        "demo-utils": path.join(ws.lib, "public/demo-utils.ts"),
+    it("passes the kit switch to the site build", async () => {
+      await writeTree(ws.site, {
+        "node_modules/@excom/nucleus-kit/package.json": JSON.stringify({ version: "1.2.3" }),
       });
+      const config = await createRigViteConfig({ mode: "build-site", root: ws.site, kit: "unpkg" });
+      expect(names(config.plugins as unknown[])[0]).toBe("nucleus-kit");
+      await expect(createRigViteConfig({ mode: "build-site", root: ws.site, kit: "x" as never })).rejects.toThrow('kit "x"');
     });
   });
 
@@ -487,10 +514,10 @@ describe("createRigViteConfig", () => {
       const config = await createRigViteConfig({ mode: "dev", root: ws.site });
       expect(config.server).toMatchObject({ port: 3001, host: true, watch: { usePolling: true } });
       expect(names(config.plugins as unknown[])).toEqual([
-        "dev-server-compress",
-        "quark-module-extensionless",
-        "sandbox-html-rewrite",
-        "site-service-worker",
+        "nucleus-compress",
+        "nucleus-rewrites",
+        "nucleus-modules",
+        "nucleus-service-worker",
         "serve-workspace-packages",
         "serve-demo-html",
         "strip-vite-client-from-subtemplates",
@@ -537,13 +564,13 @@ describe("createRigViteConfig", () => {
       }
     });
 
-    it("skips the service-worker and workspace plugins without a package root or rush root", async () => {
+    it("skips the workspace plugin without a rush root (the worker plugin does nothing without a worker)", async () => {
       const config = await createRigViteConfig({ mode: "dev", root: ws.orphan });
       expect(names(config.plugins as unknown[])).toEqual([
-        "dev-server-compress",
-        "quark-module-extensionless",
-        "sandbox-html-rewrite",
-        "site-service-worker",
+        "nucleus-compress",
+        "nucleus-rewrites",
+        "nucleus-modules",
+        "nucleus-service-worker",
         "serve-demo-html",
         "strip-vite-client-from-subtemplates",
       ]);
@@ -551,38 +578,33 @@ describe("createRigViteConfig", () => {
   });
 
   describe("dev-site", () => {
-    it("serves the package root with public/ and the site plugins", async () => {
-      process.env.DOCS_SITE_BASE = "/base/";
+    it("serves the package root with public/, the site plugins and the workspace files", async () => {
       const config = await createRigViteConfig({ mode: "dev-site", root: ws.site, packageRoot: ws.site });
-      expect(config.base).toBe("/base/");
+      expect(config.base).toBeUndefined();
       expect(config.publicDir).toBe(path.join(ws.site, "public"));
       expect(config.css).toBeDefined();
       expect(config.server).toMatchObject({ port: 3001, host: true });
       expect(names(config.plugins as unknown[])).toEqual([
-        "dev-server-compress",
-        "quark-module-extensionless",
-        "sandbox-html-rewrite",
-        "site-service-worker",
+        "nucleus-compress",
+        "nucleus-rewrites",
+        "nucleus-modules",
+        "nucleus-service-worker",
         "serve-workspace-packages",
       ]);
     });
 
-    it("defaults the base to /", async () => {
+    it("has no workspace files outside a rush workspace", async () => {
       const config = await createRigViteConfig({ mode: "dev-site", root: ws.orphan });
-      expect(config.base).toBe("/");
       expect(names(config.plugins as unknown[])).not.toContain("serve-workspace-packages");
     });
   });
 
   describe("preview", () => {
-    it("serves dist with compression and the module rewrite", async () => {
+    it("serves dist as the host does, on 4173", async () => {
       const config = await createRigViteConfig({ mode: "preview", root: ws.site });
       expect(config.build).toEqual({ outDir: path.join(ws.site, "dist") });
       expect(config.preview).toEqual({ port: 4173, host: true });
-      expect(names(config.plugins as unknown[])).toEqual([
-        "dev-server-compress",
-        "quark-module-extensionless",
-      ]);
+      expect(names(config.plugins as unknown[])).toEqual(["nucleus-compress", "nucleus-host"]);
     });
   });
 });

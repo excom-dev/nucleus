@@ -246,6 +246,45 @@ describe("Effects: effector()", () => {
     expect(div.title).toBe("later");
   });
 
+  it("does nothing once the element behind its WeakRef was collected", () => {
+    const div = document.createElement("div");
+    const ref = new WeakRef(div);
+    vi.spyOn(ref, "deref").mockReturnValue(undefined);
+    const fn = vi.fn(() => ({ title: "gone" }));
+    expect(effector(fn).call(ref)).toBeUndefined();
+    expect(fn).not.toHaveBeenCalled();
+  });
+
+  it("a window listener of a collected element neither throws nor runs its effect", async () => {
+    // the network-status shape: a method registered on `window` by the element itself
+    const handled = vi.fn();
+    Neutron({ tag: "collected-listener", props: { stepText: String } })
+      .defineMethods({
+        handleOnline: () => {
+          handled();
+          return { stepText: "online" };
+        },
+      })
+      .onConnected(({ handleOnline }) => {
+        window.addEventListener("online", handleOnline);
+      })
+      .define();
+    const el = fixture<any>(`<collected-listener></collected-listener>`);
+    await wait(0);
+    const deref = vi
+      .spyOn(WeakRef.prototype, "deref")
+      .mockReturnValue(undefined);
+    try {
+      expect(() => el.handleOnline()).not.toThrow();
+      window.dispatchEvent(new Event("online"));
+    } finally {
+      deref.mockRestore();
+      window.removeEventListener("online", el.handleOnline);
+    }
+    expect(handled).not.toHaveBeenCalled();
+    expect(el.stepText).not.toBe("online");
+  });
+
   it("processEffectorResult ignores non-object results and merges style", () => {
     const div = document.createElement("div");
     expect(processEffectorResult(div, null)).toBeUndefined();

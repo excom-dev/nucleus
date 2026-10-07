@@ -1,6 +1,7 @@
 // A fake platform authenticator holding one discoverable passkey, with real ES256 (or RS256) keys on Node's WebCrypto.
 // `create` / `get` stand in for navigator.credentials; `register` / `authenticate` take and return the JSON that
-// @simplewebauthn/browser exchanges with the server. Written apart from backend/passkeys.js: the two share no code.
+// @simplewebauthn/browser exchanges with the server. Written apart from public/service-worker/passkeys.js: the two
+// share no code.
 import { webcrypto } from "node:crypto";
 
 const { subtle } = webcrypto;

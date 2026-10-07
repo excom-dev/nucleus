@@ -1,0 +1,18 @@
+// Deploy (publish.yml, deploy-docs.yml): the published-kit check, a deploy build
+// (`pnpm run build --kit=unpkg`), `build:docs-index`, `build:prerender`, then
+// `wrangler deploy`. The API token needs Workers Scripts:Edit (account), plus Workers Routes:Edit and
+// DNS:Edit on the zone of the custom domain. Assets only: `_headers` and
+// `_redirects` in `dist` apply.
+{
+  "name": "excom-docs",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./dist",
+    // every route is a prerendered page; any other path answers 404.html
+    "not_found_handling": "404-page"
+  },
+  // The site origin (SITE_ORIGIN in heft-rig's build-npm-readmes.mjs). No API on
+  // it: the release-notice form posts to https://excom.dev/api (cross-origin).
+  "routes": [{ "pattern": "nucleus.excom.dev", "custom_domain": true }],
+  "workers_dev": false
+}

@@ -49,7 +49,7 @@ Neutron({
 
 ## Built-in instance props
 
-`isMounted`, `isMoving`, `isAdopted`, `wasMounted` exist on every element. They are instance-only; list them in `reflectDefaultProps: ["isMounted"]` to reflect them as attributes (`is-mounted`).
+`isMounted`, `isMoving`, `isAdopted`, `wasMounted` exist on every element. They are instance-only; list them in `reflectDefaultProps: ["isMounted"]` to reflect them as attributes (`is-mounted`). The element writes these attributes and never reads them: an `is-mounted` in markup or on a clone mounts nothing.
 
 ## Naming rules
 

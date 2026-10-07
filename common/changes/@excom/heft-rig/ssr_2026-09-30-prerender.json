@@ -1,0 +1,40 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/heft-rig",
+      "comment": "Add `prerender.mjs`: prerender a package's site from workspace source through `@excom/nucleus-ssr` (a package's `build:prerender` script; `rush build:prerender`) in a pool of workers (`--concurrency`), reusing pages whose inputs did not change (`--no-cache`); it exits non-zero when a page fails or an internal link leads to no page",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/heft-rig",
+      "comment": "Update the site build to `@excom/vite-plugin-nucleus`, which now holds it: `site` and `app` packages build, serve and preview through the plugin, `--kit=unpkg` loads the Nucleus Kit from unpkg in deploy builds, and `kit-check.mjs` stops a deploy when unpkg does not serve the workspace's Kit",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/heft-rig",
+      "comment": "Update `preview` to serve a built site as Cloudflare Workers static assets do: the rewrites of `_redirects`, the headers of `_headers`, the `assets` options of `wrangler.jsonc`, and `404.html` with a 404 for an unknown page",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/heft-rig",
+      "comment": "Fix an issue where the sitemap missed doc pages of packages without a `docs-sections.json`",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/heft-rig",
+      "comment": "Update the library build: a root `server.ts` entry builds as ESM only, like `testing.ts`; root files listed in `files` are exported as they are; and the docs index marks packages that have a markdown page",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/heft-rig",
+      "comment": "Fix an issue where a custom element alone on its lines in docs markdown was wrapped in `<p>`, which a browser's parser ends at the first block element the custom element renders",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/heft-rig",
+      "comment": "Fix an issue where the publish check read import paths out of doc comments and failed a package whose JSDoc showed an example import",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/heft-rig"
+}

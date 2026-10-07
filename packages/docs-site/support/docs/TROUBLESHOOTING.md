@@ -4,7 +4,7 @@ Symptom first, then cause, then fix. Nearly every problem comes from one of thre
 
 ## A rule doesn't run
 
-**The Quark sheet did not load.** A sheet that holds an at-rule Quark does not have (`@media`, `@keyframes`, `@supports`, …) or an `!important` fails to load: the console names the offender (`@media is not a Quark at-rule`), the sheet gets an `is-error` attribute, and none of its rules run. Keep those in the stylesheet.
+**The Quark sheet did not load.** A sheet that holds an at-rule Quark does not have (`@media`, `@keyframes`, `@supports`, …) or an `!important` fails to load: the console names the offender (`@media is not a Quark at-rule`), the sheet gets an `is-error` attribute, and none of its rules run. Keep those in the stylesheet. An inline sheet that fails to parse though it reads right may hold text the browser took for markup: see [quark-sheet](/packages/quark-sheet#md-usage).
 
 **It's outside the host.** A sheet matches only strict descendants of its parent element. Move the sheet, target the host with `:scope`, or use `is-global` if the rule truly must reach the whole document.
 
@@ -47,7 +47,7 @@ The target keeps what it had, and the console says `Quark: content does not awai
 
 - **Data from a server or a store** belongs to an Adapter: `provider-fetch` publishes the response, and a rule reads it with `prop("provision")`.
 - **A library that has to load first:** `await` it at the top level of the module. The first rule run waits for `@use` imports.
-- **Work that depends on the arguments:** create the element, return it at once, and fill it when the work finishes. See [Asynchronous work](/nucleus/packages/quark/use#md-asynchronous-work).
+- **Work that depends on the arguments:** create the element, return it at once, and fill it when the work finishes. See [Asynchronous work](/packages/quark/use#md-asynchronous-work).
 
 ## "Loop guard: …" in the console
 
@@ -90,8 +90,6 @@ The loop guard stops this after 50 nested paints, but the fix is the selector: m
 
 ## An element ignores its attributes
 
-**Set before upgrade with a property.** If script ran before the element's definition loaded, `el.someProp = x` is lost. Use `el.setAttribute("some-prop", x)`, which is honored on upgrade.
-
 **Wrong attribute name.** Attributes are kebab-case (`targetRef` → `target-ref`). Booleans are presence attributes (`is-paused`, not `is-paused="false"`).
 
 ## A form control shows a stale value
@@ -125,7 +123,7 @@ The loop guard stops this after 50 nested paints, but the fix is the selector: m
 
 - **The inspector is the debugger.** Application state *is* the DOM. Watch attributes change in the Elements panel; that is your state timeline.
 - **Nucleus DevTools** First-party devtools that will upgrade your Chromium dev tools to assist in inspectablility of both Neutron elements and Quark rules.
-- **Coding agents** The extension's probe exposes selector-addressed JSON tools (`diagnostics`, `state_snapshot`, `explain_attribute`, …) that chrome-devtools-mcp discovers as a "Nucleus Stack" tool group, or any browser automation calls as `__NUCLEUS_DEVTOOLS__.tools.*`; the pane's **Copy for AI** button copies a one-file bug report. Works on production sites with no app changes. See [Debugging with Agents](/nucleus/docs/debugging_with_agents).
+- **Coding agents** The extension's probe exposes selector-addressed JSON tools (`diagnostics`, `state_snapshot`, `explain_attribute`, …) that chrome-devtools-mcp discovers as a "Nucleus Stack" tool group, or any browser automation calls as `__NUCLEUS_DEVTOOLS__.tools.*`; the pane's **Copy for AI** button copies a one-file bug report. Works on production sites with no app changes. See [Debugging with Agents](/docs/debugging_with_agents).
 - **Custom debugging** `Neutron.attachDevtools()` is available.
 - **`QuarkRegistry`** is exposed on `window` in development. `QuarkRegistry.findRules("bind-title")` returns the rules that touch a selector; each rule tracks `numberOfRuns`.
 - **`is-error` attributes** on sheets, providers, forms, and includes reflect failures, and matching `*-error` events carry the detail.

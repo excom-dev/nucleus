@@ -2,20 +2,39 @@ import { Window } from "happy-dom";
 import { describe, expect, it, vi } from "@excom/heft-rig/node_modules/vitest";
 import {
   createDom,
+  ignoreStrayMarkup,
   installCommandShim,
   installMissingApis,
   installShims,
+  keepEventPaths,
+  keepFormParents,
   pinMutationObservers,
-  scopeQueriesToDocument,
+  supportSelectors,
+  supportTableTemplates,
+  upgradeClones,
   type DomWindow,
 } from "../../index";
+
+const happyDOM = (win: DomWindow) => (win as unknown as Window).happyDOM;
+
+/** happy-dom's internal method `name`, found on `target`'s prototype chain. */
+const internalMethod = (target: object, name: string): unknown => {
+  const key = Object.getOwnPropertySymbols(target).find((symbol) => symbol.description === name);
+  return key ? (target as Record<symbol, unknown>)[key] : internalMethod(Object.getPrototypeOf(target), name);
+};
 
 const patchedFunctions = (win: DomWindow | typeof globalThis) => [
   win.Element.prototype.querySelector,
   win.Element.prototype.querySelectorAll,
+  win.Element.prototype.matches,
+  win.Element.prototype.closest,
   win.MutationObserver.prototype.observe,
   win.MutationObserver.prototype.disconnect,
   win.Element.prototype.checkVisibility,
+  win.Event.prototype.composedPath,
+  win.document.importNode,
+  win.customElements.define,
+  internalMethod(win.Node.prototype, "connectedToNode"),
   (win as { ServiceWorkerContainer?: unknown }).ServiceWorkerContainer,
 ];
 
@@ -64,6 +83,41 @@ describe("createDom", () => {
     expect(tick).not.toHaveBeenCalled();
   });
 
+  it("sizes the viewport", async () => {
+    const phone = createDom({ viewport: { width: 390, height: 844 } });
+    const desktop = createDom({ settings: { viewport: { width: 1280, devicePixelRatio: 2 } } });
+    expect([phone.window.innerWidth, phone.window.innerHeight]).toEqual([390, 844]);
+    expect(phone.window.matchMedia("(max-width: 600px)").matches).toBe(true);
+    expect([desktop.window.innerWidth, desktop.window.innerHeight, desktop.window.devicePixelRatio]).toEqual([
+      1280, 768, 2,
+    ]);
+    await Promise.all([phone.dispose(), desktop.dispose()]);
+  });
+
+  it("never loads JavaScript files or navigates the main frame, unless settings say so", async () => {
+    const { window, document, dispose } = createDom({ url: "https://shop.test/" });
+    const script = Object.assign(document.createElement("script"), { src: "/app.js" });
+    const events: string[] = [];
+    for (const type of ["load", "error"]) script.addEventListener(type, () => events.push(type));
+    document.head.append(script);
+    window.location.href = "https://shop.test/cart";
+    const { settings, virtualConsolePrinter } = happyDOM(window);
+    expect(events).toEqual(["load"]);
+    expect(virtualConsolePrinter.readAsString()).toBe("");
+    expect([window.location.href, window.document === document]).toEqual(["https://shop.test/cart", true]);
+    expect([settings.enableJavaScriptEvaluation, settings.disableJavaScriptFileLoading]).toEqual([false, true]);
+    await dispose();
+
+    const strict = createDom({
+      settings: { handleDisabledFileLoadingAsSuccess: false, navigation: { disableChildFrameNavigation: true } },
+    });
+    const { navigation, handleDisabledFileLoadingAsSuccess } = happyDOM(strict.window).settings;
+    expect([handleDisabledFileLoadingAsSuccess, navigation.disableMainFrameNavigation, navigation.disableChildFrameNavigation]).toEqual([
+      false, true, true,
+    ]);
+    await strict.dispose();
+  });
+
   it("disposing one window leaves another working", async () => {
     const first = createDom();
     const { window, document, dispose } = createDom({
@@ -94,7 +148,17 @@ describe("installShims", () => {
     });
     const patched = patchedFunctions(window);
     installShims(window);
-    for (const install of [scopeQueriesToDocument, pinMutationObservers, installCommandShim, installMissingApis]) {
+    for (const install of [
+      supportSelectors,
+      pinMutationObservers,
+      installCommandShim,
+      installMissingApis,
+      upgradeClones,
+      keepFormParents,
+      supportTableTemplates,
+      ignoreStrayMarkup,
+      keepEventPaths,
+    ]) {
       install(window);
     }
     expect(patchedFunctions(window)).toEqual(patched);
@@ -103,6 +167,13 @@ describe("installShims", () => {
     document.querySelector("button")!.click();
     expect(events).toHaveLength(1);
     await dispose();
+  });
+
+  it("ignores define() on a closed window's registry, as happy-dom does", async () => {
+    const { window, dispose } = createDom();
+    await dispose();
+    window.customElements.define("x-closed", class extends window.HTMLElement {});
+    expect(window.customElements.get("x-closed")).toBeUndefined();
   });
 
   it("patches the test environment's window through globalThis", () => {

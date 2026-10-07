@@ -13,11 +13,12 @@
  *   - `<repo>/packages/<pkg>/support/custom-elements.json` — summaries
  *     for index entries
  *   - `<repo>/packages/docs-site/index.html` — the example apps: every
- *     `<spa-route route-href="/nucleus/examples/<slug>" data-app="<app>">`,
+ *     `<spa-route route-href="/examples/<slug>" data-app="<app>">`,
  *     named by the sidebar `<spa-a>` linking the same route; sources from
  *     `packages/docs-site/public/views/<app>/`
- *   - `<repo>/packages/docs-site/dist/package-metas/index.json` — the
- *     documented packages and their `docSections` (sitemap only)
+ *   - `<repo>/packages/docs-site/dist/package-metas/index.json` and
+ *     `<package>.json` — the documented packages, their `docSections` and
+ *     doc pages (sitemap), and the entries to flag (see Outputs)
  *
  * Outputs (generated, not committed):
  *   - `<repo>/dist-docs/<element>.md` — flat mirror by element/mixin name
@@ -35,9 +36,12 @@
  *     `docs/examples/<app>/` when `dist/` exists — the Markdown mirror, so
  *     the relative links inside `llms.txt` and the guides resolve on the
  *     deployed site instead of falling through to the SPA
+ *   - `<repo>/packages/docs-site/dist/package-metas/index.json` when `dist/`
+ *     exists — each package entry whose `<shortName>.md` was mirrored gets
+ *     `markdown: true` (the page links that file), the others nothing
  *   - `<repo>/packages/docs-site/dist/sitemap.xml` when `dist/` exists —
- *     the site root, the docs home, every guide, package, package doc page
- *     and example route
+ *     the docs home, every guide, package, package doc page and example
+ *     route, each once: the routes `build:prerender` writes
  *
  * CI (`publish.yml`, the Release workflow) runs this after the site build. Repo-level only —
  * sibling aggregation doesn't fit a per-package Rush phase. Per-package
@@ -50,7 +54,7 @@ import { fileURLToPath } from "node:url";
 import { realpath } from "node:fs/promises";
 
 import { SITE_ORIGIN } from "./build-npm-readmes.mjs";
-import { SITE_BASE, SITE_HOME_DOC } from "./site-base.mjs";
+import { SITE_BASE, SITE_HOME, SITE_HOME_DOC } from "./site-base.mjs";
 
 const SITE_PACKAGE = "packages/docs-site";
 
@@ -145,6 +149,10 @@ export async function buildDocsIndex(repoRoot = findRepoRoot()) {
  * every link is served the SPA fallback. The guides link the example apps
  * as `./examples/<app>/<app>.html`, so `docs/examples/` is mirrored too.
  *
+ * The site's `package-metas/index.json` then flags the packages whose own
+ * `<shortName>.md` was mirrored. Not every package has one, and the index
+ * is the only list the site's pages load.
+ *
  * @param {string} repoRoot
  * @param {string} [srcDir]
  */
@@ -162,6 +170,7 @@ export async function copyLlmsToSiteDist(
     copied += 1;
   }
   let mirrored = 0;
+  const elementFiles = new Set();
   for (const rel of ["", "docs"]) {
     const from = path.join(srcDir, rel);
     if (!existsSync(from)) continue;
@@ -175,8 +184,10 @@ export async function copyLlmsToSiteDist(
       }
       await copyFile(path.join(from, file), path.join(to, file));
       mirrored += 1;
+      if (!rel) elementFiles.add(file);
     }
   }
+  await flagMarkdownPackages(destDir, elementFiles);
   let apps = 0;
   const examplesFrom = path.join(srcDir, "docs/examples");
   if (existsSync(examplesFrom)) {
@@ -190,6 +201,23 @@ export async function copyLlmsToSiteDist(
       `Copied ${copied} llms file(s) + ${mirrored} markdown file(s) + ${apps} example app(s) → ${SITE_PACKAGE}/dist`,
     );
   }
+}
+
+/**
+ * `markdown: true` on each package entry of `<distDir>/package-metas/index.json`
+ * whose `<shortName>.md` is in `files`. No-op without an index.
+ *
+ * @param {string} distDir
+ * @param {Set<string>} files names of the mirrored element docs
+ */
+async function flagMarkdownPackages(distDir, files) {
+  const file = path.join(distDir, "package-metas/index.json");
+  const index = await readJson(file);
+  if (!index?.packages) return;
+  const packages = index.packages.map((entry) =>
+    files.has(`${entry.shortName}.md`) ? { ...entry, markdown: true } : entry,
+  );
+  await writeFile(file, JSON.stringify({ ...index, packages }, null, 2) + "\n", "utf8");
 }
 
 // --- Example apps ---------------------------------------------------------
@@ -311,17 +339,24 @@ function getAttr(attrs, name) {
 // --- Sitemap ------------------------------------------------------------
 
 /**
- * `<site dist>/sitemap.xml` when the site build exists: the site root, the
- * docs home, every guide, every documented package with the doc pages its
- * `docSections` lists (the site's own `package-metas/index.json`, i.e.
- * exactly what the deployed sidebar offers), and every example route.
+ * `<site dist>/sitemap.xml` when the site build exists: the docs home
+ * (`SITE_HOME`), every guide, every documented package (the site's own
+ * `package-metas/index.json`) with every doc page its route renders, and
+ * every example route. Each page once.
+ *
+ * A package's doc pages are the `docs` of its meta
+ * (`package-metas/<package>.json`: each `support/docs/<PAGE>.md` but the
+ * README), not only the ones its `docSections` lists: a package without a
+ * `support/docs-sections.json` has none, and its pages (nucleus-devtools'
+ * `PRIVACY.md`, nucleus-kit's `BREAKING_CHANGES.md`) are routed all the
+ * same. Sidebar order first, then the unlisted pages by name.
  */
 async function writeSitemap(repoRoot, { siteSections, examples }) {
   const distDir = path.resolve(repoRoot, SITE_PACKAGE, "dist");
   if (!existsSync(distDir)) return;
   const metas = await readJson(path.join(distDir, "package-metas/index.json"));
 
-  const routes = ["/", SITE_BASE];
+  const routes = [SITE_HOME];
   for (const section of siteSections) {
     for (const { name } of section.docs) {
       if (name !== SITE_HOME_DOC) routes.push(`${SITE_BASE}/docs/${name}`);
@@ -329,11 +364,14 @@ async function writeSitemap(repoRoot, { siteSections, examples }) {
   }
   for (const pkg of metas?.packages ?? []) {
     const base = `${SITE_BASE}/packages/${pkg.shortName}`;
+    const meta = await readJson(path.join(distDir, "package-metas", `${pkg.shortName}.json`));
+    const pages = [
+      ...(pkg.docSections ?? []).flatMap((section) => (section.docs ?? []).map(({ name }) => name)),
+      ...Object.keys(meta?.docs ?? {}).sort(),
+    ];
     routes.push(base);
-    for (const section of pkg.docSections ?? []) {
-      for (const { name } of section.docs ?? []) {
-        if (name !== "readme") routes.push(`${base}/${name}`);
-      }
+    for (const name of pages) {
+      if (name !== "readme") routes.push(`${base}/${name}`);
     }
   }
   for (const { route } of examples) routes.push(route);
@@ -438,15 +476,15 @@ function renderDocsIndex(sections) {
 
 /**
  * Site routes in a guide → the mirrored files beside it in `dist-docs/docs/`.
- * The docs home (`SITE_BASE`) is the Introduction guide; an example route
- * (`/nucleus/examples/<slug>`) is its app's copied HTML when `examples`
- * names it. Package sub-pages (`/nucleus/packages/<pkg>/<page>`) have no
+ * The docs home (`SITE_HOME`) is the Introduction guide; an example route
+ * (`/examples/<slug>`) is its app's copied HTML when `examples`
+ * names it. Package sub-pages (`/packages/<pkg>/<page>`) have no
  * offline file and stay as written.
  */
 const OFFLINE_LINKS = [
   [new RegExp(`\\]\\(${SITE_BASE}/docs/([a-z0-9_]+)\\)`, "g"), "](./$1.md)"],
   [new RegExp(`\\]\\(${SITE_BASE}/packages/([a-z0-9-]+)\\)`, "g"), "](../$1.md)"],
-  [new RegExp(`\\]\\(${SITE_BASE}\\)`, "g"), `](./${SITE_HOME_DOC}.md)`],
+  [new RegExp(`\\]\\(${SITE_HOME}\\)`, "g"), `](./${SITE_HOME_DOC}.md)`],
 ];
 
 export function rewriteOfflineLinks(md, examples = []) {

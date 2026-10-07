@@ -1,5 +1,6 @@
 // Golden master: runs the scenarios and a wide request sweep on a fixed clock and writes every response verbatim.
-// node support/tests/backend/golden.mjs <out.txt> [root]; record before and after a refactor, the two files must be identical.
+// node support/tests/backend/golden.mjs <out.txt> [root] (where the catalogue is read); record before and after a
+// refactor, the two files must be identical.
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { loadWorker, ORIGIN, ROOT } from "./worker.mjs";

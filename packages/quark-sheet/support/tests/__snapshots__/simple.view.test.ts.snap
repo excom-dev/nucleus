@@ -9,6 +9,7 @@ exports[`simple view > labels the details panel open and closed > complexity 1`]
   "listenerRuns": 0,
   "matches": 2,
   "parentElement": 0,
+  "parentNode": 0,
   "quarkRuns": 1,
   "queryScopeCost": 2,
   "querySelectorAll": 1,

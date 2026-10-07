@@ -109,52 +109,6 @@ export const measureComplexity = (quark: Quark) => {
   };
 };
 
-/**
- * happy-dom caches `matches()` / `querySelectorAll()` per node and only
- * drops the cache when that node, or a node the match walked through,
- * changes. A `:has()` or sibling-combinator result goes stale after a
- * descendant / sibling changes on its own. Browsers do not cache. Call
- * from `beforeAll` in suites that rely on those selectors; returns the
- * restore function for `afterAll`.
- */
-export const bypassSelectorCache = () => {
-  const cacheOf = (node: Node) => {
-    const sym = Object.getOwnPropertySymbols(node).find(
-      (s) => s.description === "cache"
-    );
-    return sym
-      ? (
-          node as unknown as Record<
-            symbol,
-            Record<string, Map<string, unknown>>
-          >
-        )[sym]
-      : undefined;
-  };
-  const patch = <T extends Node>(
-    proto: T,
-    name: "matches" | "querySelectorAll"
-  ) => {
-    const original = (proto as unknown as Record<string, Function>)[name];
-    (proto as unknown as Record<string, Function>)[name] = function (
-      this: Node,
-      selector: string
-    ) {
-      cacheOf(this)?.[name]?.delete(selector);
-      return original.call(this, selector);
-    };
-    return () => {
-      (proto as unknown as Record<string, Function>)[name] = original;
-    };
-  };
-  const restores = [
-    patch(Element.prototype, "matches"),
-    patch(Element.prototype, "querySelectorAll"),
-    patch(Document.prototype, "querySelectorAll"),
-  ];
-  return () => restores.forEach((restore) => restore());
-};
-
 /** One `document.startViewTransition()` call seen by the stub. */
 export type StubViewTransition = {
   types: Set<string>;

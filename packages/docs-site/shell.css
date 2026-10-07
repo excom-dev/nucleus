@@ -38,24 +38,6 @@ body {
   --release-notice-height: 4.5rem;
 }
 
-/* The static pointer to the plain-text docs (index.html, first child of `<body>`).
-   Styled for the CSS-loads-but-JS-fails path */
-.agent-notice {
-  display: none;
-  padding: var(--v-spacing, 1rem);
-  font-size: 0.75rem;
-  line-height: 1.5;
-  color: var(--v-muted-color, #6c757d);
-  > p {
-    margin: 0;
-  }
-}
-@media (scripting: none) {
-  .agent-notice {
-    display: block !important;
-  }
-}
-
 /* wait until loaded so no FOUC */
 #site-header {
   visibility: hidden;
@@ -217,12 +199,20 @@ body > main > provider-fetch > aside {
   overscroll-behavior-y: contain;
 }
 
-/* The company page runs without docs chrome: no nav column, full-width content.
-   `.chromeless` is static flavour, `is-active` carries the state. */
-body:has(spa-route.chromeless[is-active]) > main {
-  grid-template-columns: minmax(0, 1fr);
-  > provider-fetch > aside {
-    display: none;
+/* Links to the page's markdown file and the docs index (index.html): small and
+   muted, under every page. The first is painted only for a page with a file. */
+body > main > provider-fetch > spa-manager > footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--v-spacing);
+  padding: var(--v-spacing);
+  font-size: 0.75rem;
+  color: var(--v-muted-color);
+  a {
+    color: inherit;
+    &:not([href]) {
+      display: none;
+    }
   }
 }
 
@@ -344,10 +334,10 @@ main
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      > li:has(> spa-a[route-href="/nucleus/packages/quark"]) {
+      > li:has(> spa-a[route-href="/packages/quark"]) {
         order: -1;
       }
-      > li:has(> spa-a[route-href="/nucleus/packages/valence"]) {
+      > li:has(> spa-a[route-href="/packages/valence"]) {
         order: 1;
       }
       > li > spa-a {
@@ -371,7 +361,7 @@ main
     flex-direction: column;
     align-items: flex-start;
 
-    > li:has(> spa-a[route-href="/nucleus/packages/neutron"]) {
+    > li:has(> spa-a[route-href="/packages/neutron"]) {
       order: -1;
     }
   }
@@ -627,14 +617,6 @@ body {
   #site-header {
     height: 0;
   }
-  /* Chromeless: the tab bar goes, taking its menu trigger, and so does the
-     gutter reserved for it. */
-  body:has(spa-route.chromeless[is-active]) {
-    padding-bottom: 0;
-    #site-header {
-      display: none;
-    }
-  }
   body > main {
     /* `minmax(0, …)`: long code lines must not widen the page */
     grid-template-columns: minmax(0, 1fr);
@@ -712,7 +694,7 @@ body {
         margin: 0;
         padding: 0;
       }
-      spa-a:has(img[src*="excom"]) {
+      a:has(img[src*="excom"]) {
         display: flex;
         flex-direction: column;
         align-items: center;

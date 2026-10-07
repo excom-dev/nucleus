@@ -1,4 +1,4 @@
-# Cloudflare Pages negotiates Brotli (br) then gzip from Accept-Encoding.
+# The host (Workers static assets) negotiates Brotli (br) then gzip from Accept-Encoding.
 # Vary keeps the two encodings in separate cache entries.
 /*
   Vary: Accept-Encoding
@@ -9,7 +9,19 @@
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
-/index.html
+# Prerendered pages (`build:prerender`): `/` is index.html, the others the
+# slashless `.html` files under `/docs`, `/packages` and `/examples`. Rules
+# match request paths. `/docs/*` is also the Markdown mirror (`/docs/<page>.md`).
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
+/docs/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/packages/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/examples/*
   Cache-Control: public, max-age=0, must-revalidate
 
 /sandbox.html
@@ -47,9 +59,6 @@
   Cache-Control: public, max-age=0, must-revalidate
 
 /*.md
-  Cache-Control: public, max-age=0, must-revalidate
-
-/docs/*
   Cache-Control: public, max-age=0, must-revalidate
 
 # Icons and the social card have stable, unhashed names: a day's cache, not immutable.

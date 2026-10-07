@@ -13,6 +13,7 @@ import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { renderMarkdown } from "@excom/heft-rig/scripts/render-markdown.mjs";
+import { NOT_FOUND } from "../prerender/prerender.config";
 import {
   addLengths,
   buildAppFileLink,
@@ -42,6 +43,7 @@ import {
   resetDemo,
   searchResultHref,
   SITE_BASE,
+  SITE_HOME,
   SITE_HOME_DOC,
   SITE_PACKAGE,
   siteDocHref,
@@ -145,10 +147,12 @@ describe("catalog helpers", () => {
     expect(displayName("")).toBe("");
   });
 
-  it("siteDocHref puts the home guide at the site base, every other guide under /docs", () => {
-    expect(SITE_BASE).toBe("/nucleus");
-    expect(siteDocHref(SITE_HOME_DOC)).toBe("/nucleus");
-    expect(siteDocHref("quick_start")).toBe("/nucleus/docs/quick_start");
+  it("siteDocHref puts the home guide at the home route, every other guide under /docs", () => {
+    // an empty base: the docs own the root, and the home is `/`, never ""
+    expect(SITE_BASE).toBe("");
+    expect(SITE_HOME).toBe("/");
+    expect(siteDocHref(SITE_HOME_DOC)).toBe("/");
+    expect(siteDocHref("quick_start")).toBe("/docs/quick_start");
   });
 
   /* `index.html`'s guides route excludes the home guide with a lookahead, which
@@ -159,7 +163,7 @@ describe("catalog helpers", () => {
       () => {}
     );
     expect(route.match(`${SITE_BASE}/docs/${SITE_HOME_DOC}`).match).toBeNull();
-    expect(route.match("/nucleus/docs/quick_start").params).toEqual({
+    expect(route.match("/docs/quick_start").params).toEqual({
       name: "quick_start",
     });
   });
@@ -205,11 +209,11 @@ describe("catalog helpers", () => {
     };
     expect(docNeighbors(paged)).toEqual({
       prev: null,
-      next: { href: "/nucleus/packages/neutron/props", title: "Props" },
+      next: { href: "/packages/neutron/props", title: "Props" },
     });
     expect(docNeighbors(paged, "effects")).toEqual({
-      prev: { href: "/nucleus/packages/neutron/props", title: "Props" },
-      next: { href: "/nucleus/packages/neutron/events", title: "Events" },
+      prev: { href: "/packages/neutron/props", title: "Props" },
+      next: { href: "/packages/neutron/events", title: "Events" },
     });
     expect(docNeighbors(paged, "events").next).toBeNull();
     expect(docNeighbors(paged, "missing")).toEqual({ prev: null, next: null });
@@ -246,12 +250,12 @@ describe("catalog helpers", () => {
     // the first guide starts the walk: no `/packages/docs-site` overview
     expect(docNeighbors(guides, "introduction")).toEqual({
       prev: null,
-      next: { href: "/nucleus/docs/quick_start", title: "Quick Start" },
+      next: { href: "/docs/quick_start", title: "Quick Start" },
     });
     // the Introduction is the docs home route, so it is linked as the site base
     expect(docNeighbors(guides, "quick_start")).toEqual({
-      prev: { href: "/nucleus", title: "Introduction" },
-      next: { href: "/nucleus/docs/styling", title: "Styling" },
+      prev: { href: "/", title: "Introduction" },
+      next: { href: "/docs/styling", title: "Styling" },
     });
     expect(docNeighbors(guides, "styling").next).toBeNull();
     expect(docNeighbors(guides, "missing")).toEqual({ prev: null, next: null });
@@ -392,6 +396,24 @@ describe("renderLang / renderPre", () => {
     expect(overlay2.innerHTML).toContain("shiki");
     expect(overlay2.innerHTML).toContain("hi");
   });
+
+  it("renderPre keeps an overlay that shows the same code already (a prerendered page)", () => {
+    document.body.innerHTML = `
+      <div data-language="css">
+        <textarea>p { color: red; }</textarea>
+        <div data-highlight></div>
+      </div>`;
+    const textarea = document.querySelector("textarea")!;
+    const overlay = document.querySelector("[data-highlight]")!;
+    renderPre({ target: textarea });
+    const pre = overlay.firstElementChild;
+    renderPre({ target: textarea });
+    expect(overlay.firstElementChild).toBe(pre);
+    textarea.value = "p { color: blue; }";
+    renderPre({ target: textarea });
+    expect(overlay.firstElementChild).not.toBe(pre);
+    expect(overlay.textContent).toBe("p { color: blue; }");
+  });
 });
 
 describe("editor helpers", () => {
@@ -452,6 +474,16 @@ describe("editor helpers", () => {
     expect(noLang.querySelector("template")!.innerHTML).toContain("shiki");
     expect(noLang.querySelector("template")!.innerHTML).toContain("plain");
   });
+
+  it("upgradeTemplateCode leaves a highlighted template alone (a prerendered page)", () => {
+    document.body.innerHTML = `
+      <div data-language="js"><template>const a = 1;</template></div>`;
+    const host = document.querySelector("div")!;
+    upgradeTemplateCode({ target: host });
+    const highlighted = host.querySelector("template")!.innerHTML;
+    upgradeTemplateCode({ target: host });
+    expect(host.querySelector("template")!.innerHTML).toBe(highlighted);
+  });
 });
 
 describe("didCompleteLink", () => {
@@ -471,22 +503,22 @@ describe("didCompleteLink", () => {
   };
 
   it("is true when the link's route is a state before the active one", () => {
-    const past = [{ url: "/nucleus" }, { url: "/nucleus/docs/quick_start" }];
-    expect(didCompleteLink(linkIn("/nucleus/docs/quick_start", past))).toBe(
+    const past = [{ url: "/" }, { url: "/docs/quick_start" }];
+    expect(didCompleteLink(linkIn("/docs/quick_start", past))).toBe(
       true
     );
   });
 
   it("is false for an unvisited route or one only reachable forward", () => {
-    const past = [{ url: "/nucleus" }];
-    expect(didCompleteLink(linkIn("/nucleus/docs/styling", past))).toBe(false);
-    expect(didCompleteLink(linkIn("/nucleus/docs/styling", []))).toBe(false);
+    const past = [{ url: "/" }];
+    expect(didCompleteLink(linkIn("/docs/styling", past))).toBe(false);
+    expect(didCompleteLink(linkIn("/docs/styling", []))).toBe(false);
   });
 
   it("is false outside a spa-manager or before it has a router", () => {
-    document.body.innerHTML = `<spa-a route-href="/nucleus"></spa-a>`;
+    document.body.innerHTML = `<spa-a route-href="/"></spa-a>`;
     expect(didCompleteLink(document.querySelector("spa-a")!)).toBe(false);
-    expect(didCompleteLink(linkIn("/nucleus"))).toBe(false);
+    expect(didCompleteLink(linkIn("/"))).toBe(false);
   });
 });
 
@@ -525,37 +557,37 @@ describe("search", () => {
   it("searchResultHref routes docs, doc pages and packages", () => {
     // the home guide has no `/docs/…` url
     expect(searchResultHref({ kind: "doc", package: SITE_HOME_DOC })).toBe(
-      "/nucleus"
+      "/"
     );
     expect(searchResultHref({ kind: "doc", package: "styling" })).toBe(
-      "/nucleus/docs/styling"
+      "/docs/styling"
     );
     expect(searchResultHref({ kind: "element", package: "spa-route" })).toBe(
-      "/nucleus/packages/spa-route"
+      "/packages/spa-route"
     );
     expect(
       searchResultHref({ kind: "page", package: "neutron", doc: "props" })
-    ).toBe("/nucleus/packages/neutron/props");
+    ).toBe("/packages/neutron/props");
     expect(searchResultHref({ kind: "page", package: "neutron" })).toBe(
-      "/nucleus/packages/neutron"
+      "/packages/neutron"
     );
   });
 
-  it("searchResultHref sends site-package pages under /nucleus/docs, home page to the base", () => {
+  it("searchResultHref sends site-package pages under /docs, home page to the home route", () => {
     expect(
       searchResultHref({
         kind: "page",
         package: SITE_PACKAGE,
         doc: "core_concepts",
       })
-    ).toBe("/nucleus/docs/core_concepts");
+    ).toBe("/docs/core_concepts");
     expect(
       searchResultHref({
         kind: "page",
         package: SITE_PACKAGE,
         doc: SITE_HOME_DOC,
       })
-    ).toBe("/nucleus");
+    ).toBe("/");
   });
 
   it("mapPackageType labels results by kind and package type", () => {
@@ -646,47 +678,65 @@ const activate = (routes: SiteRoute[], pathname: string) => {
 describe("site route table", () => {
   const routes = siteRoutes();
 
-  it("opens with the chromeless company page and closes with the 404", () => {
+  it("opens with the docs home and closes with the 404", () => {
     expect(routes[0]).toMatchObject({
-      key: "/",
-      flavour: "chromeless",
-      templateRef: "/views/company/company.html",
+      key: SITE_HOME,
+      docName: SITE_HOME_DOC,
+      templateRef: "/views/package/package.html",
       isFallback: false,
     });
     expect(routes.filter((r) => r.isFallback)).toHaveLength(1);
     expect(routes.at(-1)!.isFallback).toBe(true);
   });
 
-  /* The two areas differ only by the company route's title: every docs route
-     is untitled, so `spa-manager` puts `index.html`'s own `<title>` back. */
-  it("carries the company title on the company route alone", () => {
-    const shell = readFileRelative(import.meta.url, "../../index.html");
-    expect(shell).toContain("<title>Nucleus · docs</title>");
-    expect(routes[0]!.documentTitle).toBe("Excom");
-    expect(routes.filter((r) => r.documentTitle)).toHaveLength(1);
+  it("every route is a docs page: none runs without the docs chrome", () => {
+    expect(routes.map((r) => r.flavour).filter(Boolean)).toEqual([]);
+    expect(routes.every((r) => r.templateRef?.startsWith("/views/"))).toBe(true);
+    expect(new Set(routes.map((r) => String(r.key))).size).toBe(routes.length);
   });
 
-  it("/ activates the company page and nothing else", () => {
+  /* Markup titles the pages whose names are no data: each example, the 404.
+     The shell sheet titles guides and package pages; the docs home keeps
+     `index.html`'s own `<title>`. */
+  it("titles each example and the 404 in markup", () => {
+    const shell = readFileRelative(import.meta.url, "../../index.html");
+    expect(shell).toContain("<title>Nucleus · docs</title>");
+    const titled = routes.filter((r) => r.documentTitle);
+    expect(titled.map((r) => r.key)).toEqual([
+      ...routes
+        .map((r) => r.key)
+        .filter((key) => String(key).startsWith(`${SITE_BASE}/examples/`)),
+      /.*/,
+    ]);
+    for (const { documentTitle } of titled) {
+      expect(documentTitle).toMatch(/^[A-Z][\w ]+ · Nucleus · docs$/);
+    }
+    expect(activate(routes, SITE_HOME).route.documentTitle).toBeNull();
+  });
+
+  it("renders the not-found page from a path only the fallback matches", () => {
+    expect(activate(routes, NOT_FOUND).route.isFallback).toBe(true);
+  });
+
+  it("/ activates the Introduction guide and nothing else", () => {
     expect(routes.filter((r) => !r.isFallback && matches(r, "/").match)).toEqual(
       [routes[0]]
     );
-    expect(activate(routes, "/").route.flavour).toBe("chromeless");
-  });
-
-  it("the site base activates the Introduction guide", () => {
-    expect(activate(routes, SITE_BASE).route).toMatchObject({
+    expect(activate(routes, "/").route).toMatchObject({
       docName: SITE_HOME_DOC,
       templateRef: "/views/package/package.html",
       flavour: "",
     });
   });
 
+  /* The paths of the old address (`/nucleus…`) are no pages here. */
   it("the pre-move urls and the excluded home guide fall through to the 404", () => {
     for (const path of [
-      "/docs/quick_start",
-      "/examples/todos",
-      "/packages/neutron",
-      "/packages/neutron/props",
+      "/nucleus",
+      "/nucleus/docs/quick_start",
+      "/nucleus/examples/todos",
+      "/nucleus/packages/neutron",
+      "/nucleus/packages/neutron/props",
       `${SITE_BASE}/docs/${SITE_HOME_DOC}`,
     ]) {
       expect(activate(routes, path).route.isFallback).toBe(true);
@@ -709,11 +759,11 @@ describe("site route table", () => {
   });
 });
 
-describe("site base trailing slash", () => {
+describe("docs home route", () => {
   let router: KitRouter;
 
   beforeEach(() => {
-    history.replaceState(null, "", "/");
+    history.replaceState(null, "", `${SITE_BASE}/docs/quick_start`);
   });
 
   afterEach(() => {
@@ -722,9 +772,8 @@ describe("site base trailing slash", () => {
     history.replaceState(null, "", "/");
   });
 
-  /* No route spells the base with a slash, so the router drops it and the
-     docs home matches the stripped path. */
-  it("`/nucleus/` lands on the docs home", () => {
+  /* The base is empty: its home is `/`, a path the router keeps as it is. */
+  it("`/` lands on the docs home, from another page", () => {
     router = new KitRouter();
     const home = vi.fn();
     for (const route of siteRoutes()) {
@@ -734,9 +783,9 @@ describe("site base trailing slash", () => {
     }
     home.mockClear();
 
-    router.pushState({ url: `${SITE_BASE}/` });
+    router.pushState({ url: SITE_HOME });
 
-    expect(location.pathname).toBe(SITE_BASE);
+    expect(location.pathname).toBe(SITE_HOME);
     expect(home).toHaveBeenCalledTimes(1);
     expect(home.mock.lastCall![0].match).not.toBeNull();
   });
@@ -753,7 +802,7 @@ describe("site guides", () => {
 
   it("link only to guides that exist", () => {
     const broken = guides.flatMap(({ file, md }) =>
-      [...md.matchAll(/\]\(\/nucleus\/docs\/(\w+)/g)]
+      [...md.matchAll(/\]\(\/docs\/(\w+)/g)]
         .filter(([, name]) => !names.has(name))
         .map(([, name]) => `${file} → ${name}`)
     );
@@ -800,5 +849,32 @@ describe("shiki grammar imports", () => {
     for (const clause of clauses) {
       expect(clause).not.toMatch(/,\s*\}$/);
     }
+  });
+});
+
+describe("inline sheets", () => {
+  // An inline `<quark-sheet>` is ordinary HTML content: a browser reads `<`
+  // followed by a letter, `/`, `!` or `?` as markup, even inside a sheet
+  // comment, and a title or textarea tag then swallows the rest of the page.
+  // happy-dom parses those differently, so no view test sees it.
+  it("hold no text a browser would parse as markup", () => {
+    const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
+    const pages = [
+      "index.html",
+      "sandbox.html",
+      ...readdirSync(resolve(root, "public"), { recursive: true })
+        .map((file) => `public/${file}`)
+        .filter((file) => file.endsWith(".html")),
+    ];
+    const hazards = pages.flatMap((page) => {
+      const html = readFileSync(resolve(root, page), "utf8");
+      return [
+        ...html.matchAll(/<quark-sheet\b[^>]*>([\s\S]*?)<\/quark-sheet>/g),
+      ]
+        .flatMap(([, sheet]) => sheet!.match(/<[a-zA-Z/!?][^\n]{0,40}/g) ?? [])
+        .map((text) => `${page}: ${text}`);
+    });
+    expect(pages.length).toBeGreaterThan(2);
+    expect(hazards).toEqual([]);
   });
 });

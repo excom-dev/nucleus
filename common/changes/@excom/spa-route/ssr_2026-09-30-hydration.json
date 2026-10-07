@@ -1,0 +1,25 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/spa-route",
+      "comment": "Add `default-title` to `<spa-manager>`: the title a route without `document-title` falls back to, recorded from the page's `<title>` when a route first retitles the page",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/spa-route",
+      "comment": "Add hydration of prerendered pages: the first update runs without a View Transition or `transition-delay`, a reload restores its saved scroll position as the manager mounts, and a page served for a URL another route matches drops its content and renders the matching route",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/spa-route",
+      "comment": "Fix an issue where `render-timeout` left a route hidden while it waited for its `ready-on` event: it now reveals the route",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/spa-route",
+      "comment": "Fix an issue where a `same-route=\"refresh\"` route tore down on its first registration match",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/spa-route"
+}

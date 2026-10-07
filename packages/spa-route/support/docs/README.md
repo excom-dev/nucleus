@@ -140,11 +140,7 @@ spa-a[is-active] {
 
 #### Document title
 
-`document-title` sets `document.title` while its route is active. It keys off
-activation, not clicks, so cold loads and back / forward retitle too. The
-outermost `<spa-manager>` applies the last active route carrying one — a
-nested route beats its ancestor — and restores the page's own `<title>` once
-no active route has a title.
+`document-title` sets `document.title` while its route is active. It keys off activation, not clicks, so cold loads and back / forward retitle too. The outermost `<spa-manager>` applies the last active route carrying one — a nested route beats its ancestor — and applies its `default-title` (unless authored, the page's own `<title>`, recorded when a route first retitles the page) once no active route has a title.
 
 ```html
 <title>Nucleus · docs</title>
@@ -192,7 +188,7 @@ no active route has a title.
 
 #### View Transitions
 
-The outermost `<spa-manager>` wraps each navigation in one `document.startViewTransition()`; nested managers join it. None runs when the API is missing, with reduced motion, in a hidden page, on the first paint (unless `transition-first-render`), or when the update only changes provisions. `document.title` follows every update all the same, and `spa-manager-rendered` fires once per update chain: a navigation that arrives during a running update joins or follows it and shares its event. Style with `::view-transition-*`; set per-link types via `transition-types` (e.g. card expansion); opt a route out with `no-transition`.
+The outermost `<spa-manager>` wraps each navigation in one `document.startViewTransition()`; nested managers join it. None runs when the API is missing, with reduced motion, in a hidden page, on the first paint (unless `transition-first-render`) or a [prerendered page](/docs/prerendering)'s first update, or when the update only changes provisions. `document.title` follows every update all the same, and `spa-manager-rendered` fires once per update chain: a navigation that arrives during a running update joins or follows it and shares its event. Style with `::view-transition-*`; set per-link types via `transition-types` (e.g. card expansion); opt a route out with `no-transition`.
 
 ```css
 ::view-transition-old(root),
@@ -271,7 +267,7 @@ The outermost `<spa-manager>` owns scroll: while it is connected the browser's o
 - resets scroll to top-left on `push` / `replace`, only when a route rendered — a move that renders nothing (a param or query change on a `reuse` route) keeps its position, and a `#fragment` target wins over the reset
 - restores the saved scroll position on `back` / `forward` / reload, and holds it for about 2 seconds against late content, or until the person scrolls, taps or types, or the app scrolls
 
-The write lands once the routes are ready (capped by `render-timeout`), so `ready-on` remains the way to get late data into the restored view. An update settled by `render-timeout` logs one warning (`spa-manager: update settled by render-timeout (2000 ms); a route is still pending`), visible at log level 2 or higher.
+The write lands once the routes are ready (capped by `render-timeout`), so `ready-on` remains the way to get late data into the restored view. An update settled by `render-timeout` logs one warning (`spa-manager: update settled by render-timeout (2000 ms); a route is still pending`), visible at log level 2 or higher, and shows a route still waiting for its `ready-on` event. On a prerendered page (`has-rendered` in its markup) a reload or back / forward restores its saved position as the manager mounts, unless the person has scrolled already, and a fresh visit keeps the browser's.
 
 Override per axis with `scroll-reset-y` / `scroll-reset-x` — space-separated moves that should reset to `0` (omitted moves restore instead):
 

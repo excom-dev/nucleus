@@ -100,3 +100,7 @@ CHANGELOG.md
 
 # wrangler local cache (account/project lookups)
 .wrangler/
+
+# prerender cache (heft-rig prerender.mjs)
+**/temp/prerender-cache/
+**/temp/prerender-shell.html

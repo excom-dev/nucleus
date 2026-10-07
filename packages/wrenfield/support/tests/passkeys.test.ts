@@ -1,6 +1,15 @@
 import { describe, expect, it } from "@excom/heft-rig/node_modules/vitest";
 import { createPasskey, decodeBase64url, encodeBase64url } from "./backend/authenticator.mjs";
 import { loadWorker, ORIGIN } from "./backend/worker.mjs";
+import {
+  derToRaw,
+  fromBase64url,
+  parseAuthenticatorData,
+  parseClientData,
+  sha256,
+  toBase64url,
+  utf8,
+} from "../../public/service-worker/passkeys.js";
 
 type Api = (method: string, path: string, body?: unknown) => Promise<{ status: number; body: any }>;
 type Json = Record<string, any>;
@@ -250,26 +259,24 @@ describe("passkeys", () => {
   });
 
   describe("helpers", () => {
-    const { binding } = loadWorker();
     const bytes = (value: ArrayLike<number>) => Array.from(value);
 
     it("base64url encodes and decodes every byte, unpadded", () => {
       const all = Uint8Array.from({ length: 256 }, (_, i) => i);
-      const encoded = binding("toBase64url")(all);
+      const encoded = toBase64url(all);
       expect(encoded).toBe(encodeBase64url(all));
-      expect(bytes(binding("fromBase64url")(encoded))).toEqual(bytes(all));
-      expect(binding("toBase64url")([0xfb, 0xff])).toBe("-_8");
-      expect(() => binding("fromBase64url")("*")).toThrow();
+      expect(bytes(fromBase64url(encoded))).toEqual(bytes(all));
+      expect(toBase64url([0xfb, 0xff])).toBe("-_8");
+      expect(() => fromBase64url("*")).toThrow();
     });
 
     it("hashes with SHA-256", async () => {
-      const digest = await binding("sha256")(binding("utf8")("localhost"));
+      const digest = await sha256(utf8("localhost"));
       const hex = bytes(digest).map((byte) => byte.toString(16).padStart(2, "0")).join("");
       expect(hex).toBe("49960de5880e8c687434170f6476605b8fe4aeb9a28632c7995cf3ba831d9763");
     });
 
     it("turns a DER ECDSA signature into raw r ‖ s", () => {
-      const derToRaw = binding("derToRaw");
       const r = [0x00, 0x80, ...Array(31).fill(1)]; // sign byte before a high bit
       const s = Array(31).fill(2); // a short integer
       const der = [0x30, 4 + r.length + s.length, 0x02, r.length, ...r, 0x02, s.length, ...s];
@@ -287,21 +294,21 @@ describe("passkeys", () => {
 
     it("reads client data and authenticator data", () => {
       const clientData = { type: "webauthn.get", challenge: "abc", origin: ORIGIN, crossOrigin: false };
-      expect(binding("parseClientData")(encodeBase64url(jsonBytes(clientData)))).toEqual({
+      expect(parseClientData(encodeBase64url(jsonBytes(clientData)))).toEqual({
         type: "webauthn.get",
         challenge: "abc",
         origin: ORIGIN,
         crossOrigin: false,
       });
-      expect(() => binding("parseClientData")(encodeBase64url(jsonBytes(null)))).toThrow();
+      expect(() => parseClientData(encodeBase64url(jsonBytes(null)))).toThrow();
       const authData = new Uint8Array([...Array(32).fill(7), 0x05, 0, 0, 1, 2, 9]);
-      const parsed = binding("parseAuthenticatorData")(authData.subarray(0, 37));
+      const parsed = parseAuthenticatorData(authData.subarray(0, 37));
       expect({ ...parsed, rpIdHash: bytes(parsed.rpIdHash) }).toEqual({
         rpIdHash: Array(32).fill(7),
         flags: 5,
         counter: 258,
       });
-      expect(() => binding("parseAuthenticatorData")(authData.subarray(0, 36))).toThrow();
+      expect(() => parseAuthenticatorData(authData.subarray(0, 36))).toThrow();
     });
   });
 });

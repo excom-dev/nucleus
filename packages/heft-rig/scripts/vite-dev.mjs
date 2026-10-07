@@ -2,7 +2,7 @@ import { access } from "node:fs/promises";
 import { createServer } from "vite";
 import path from "node:path";
 import { createRigViteConfig } from "./vite-config.mjs";
-import { isAppPackage, isSitePackage } from "./package-type.mjs";
+import { isSitePackage, usesSiteBuild } from "./package-type.mjs";
 import { prepareSiteDocs } from "./collect-docs-metas.mjs";
 
 const packageRoot = process.cwd();
@@ -16,36 +16,21 @@ async function fileExists(filePath) {
   }
 }
 
-const site = await isSitePackage(packageRoot);
-const app = !site && (await isAppPackage(packageRoot));
 const demoIndex = path.resolve(packageRoot, "support/demos/index.html");
 const siteIndex = path.resolve(packageRoot, "index.html");
 
 let config;
-if (site) {
+if (await usesSiteBuild(packageRoot)) {
   if (!(await fileExists(siteIndex))) {
     throw new Error(
       `Site package is missing ${siteIndex}. Expected index.html at the package root.`,
     );
   }
-  await prepareSiteDocs(packageRoot);
+  if (await isSitePackage(packageRoot)) await prepareSiteDocs(packageRoot);
   config = await createRigViteConfig({
     mode: "dev-site",
     root: packageRoot,
     packageRoot,
-    entry: siteIndex,
-  });
-} else if (app) {
-  if (!(await fileExists(siteIndex))) {
-    throw new Error(
-      `App package is missing ${siteIndex}. Expected index.html at the package root.`,
-    );
-  }
-  config = await createRigViteConfig({
-    mode: "dev-site",
-    root: packageRoot,
-    packageRoot,
-    entry: siteIndex,
   });
 } else if (await fileExists(demoIndex)) {
   config = await createRigViteConfig({

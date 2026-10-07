@@ -1,4 +1,5 @@
 import { isNumber, isPojo } from "./common";
+import { canAdopt, isServerRender, STAMP_ATTR } from "./hydration";
 import { LoopGuard } from "./loop-guard";
 
 export const createElement = (
@@ -46,14 +47,36 @@ export const getChildren = (element: Element) => {
  * Returns whether the child list changed: `false` also when the loop
  * guard dropped the write (child insertions are one causal hop, keyed
  * `"content"` on the parent, the same key a childList observer maps to).
+ *
+ * `identity` names the source being rendered (`templateIdentity`,
+ * `htmlIdentity`). A server render writes it on the host as `n-tpl`. On the
+ * prerendered page, while the hydration window is open, a host that still
+ * holds what the server rendered from that same source keeps its nodes, and
+ * the call returns `"adopted"` (truthy: callers treat it as rendered).
  */
 export const replaceNonTemplateChildren = (
   element: Element,
-  newChildren: Node[] = []
-): boolean =>
-  LoopGuard.write(element, "content", () =>
-    replaceChildrenUnguarded(element, newChildren)
-  );
+  newChildren: Node[] = [],
+  options: { identity?: string | null } = {}
+): boolean | "adopted" =>
+  newChildren.length > 0 && canAdopt(element, options.identity)
+    ? "adopted"
+    : LoopGuard.write(element, "content", () => {
+        const changed = replaceChildrenUnguarded(element, newChildren);
+        markSource(
+          element,
+          isServerRender() && newChildren.length > 0 ? options.identity : null
+        );
+        return changed;
+      });
+
+/** Server render: `n-tpl` names the source now in `host`. Any other write removes an `n-tpl` that no longer would. */
+const markSource = (host: Element, identity?: string | null) => {
+  // a ShadowRoot host carries no attributes: it hydrates cold
+  if (!host.setAttribute) return;
+  if (identity) host.setAttribute(STAMP_ATTR, identity);
+  else if (host.hasAttribute(STAMP_ATTR)) host.removeAttribute(STAMP_ATTR);
+};
 
 const replaceChildrenUnguarded = (
   element: Element,

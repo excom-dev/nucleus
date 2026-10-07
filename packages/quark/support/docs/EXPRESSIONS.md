@@ -4,7 +4,7 @@ A value is an expression: names resolve through keywords, modules, built-ins and
 
 ## Evaluation
 
-- **Names** resolve in order: value keywords → `@use` exports (bare `as *` exports, then namespaces) → built-in functions → `$bindings`. A `$binding` is read by walking up from the matched element to the nearest ancestor-or-self that holds it; an unbound `$name` is `undefined` (a wipe), while an unknown bare identifier is an error (a no-op). A module export shadows a built-in of the same name.
+- **Names** resolve in order: value keywords → `@use` exports (bare `as *` exports, then namespaces) → built-in functions → `$bindings`. A `$binding` is read by walking up from the matched element to the nearest ancestor-or-self that holds it; an unbound `$name` is `undefined` (a wipe; while a [prerendered page](/docs/prerendering#md-sheets) hydrates, what is painted is kept instead), while an unknown bare identifier is an error (a no-op). A module export shadows a built-in of the same name.
 - **Literals**: unitless numbers are numbers; a number with a unit (`10px`, `50%`) and a color (`#ccc`) evaluate to strings. Strings unescape `\n`, `\t`, `\r`, and `\x` → `x`. Interpolated strings and `url(…)` join their parts, with `null` / `undefined` parts rendered empty.
 - **`&`** in an expression is the matched element's tag name.
 - **Accessors** never throw: `.field` and `[index]` on `null` / `undefined` yield `undefined`. `object.$name` reads the property literally named `$name` (namespaced variables: `math.$pi`).

@@ -25,7 +25,6 @@ import {
 import { clearFetchCaches, LoopGuard, type LoopGuardTrip } from "@excom/kit-utils";
 import type { QuarkRenderer } from "../../src/devtools-hook";
 import {
-  bypassSelectorCache,
   createSheet,
   flush,
   installViewTransitionStub,
@@ -816,35 +815,30 @@ describe("@view-transition", () => {
     });
 
     it("waits until a fact clears (:not) or a descendant appears (:has)", async () => {
-      const restore = bypassSelectorCache();
-      try {
-        stub = installViewTransitionStub();
-        const { root } = mount(
-          `<div id="a"><p id="a-msg"></p></div><div id="b"><p id="b-msg"></p><ul></ul></div>`,
-          `#a[is-open] { @view-transition (until: ":not([is-busy])") { #a-msg { content: "open"; } } }
-           #b[is-open] { @view-transition (until: ":has(li)") { #b-msg { content: "open"; } } }`
-        );
-        await settle();
-        const a = root.querySelector("#a")!;
-        a.setAttribute("is-busy", "");
-        a.setAttribute("is-open", "");
-        await waitFor(() => !!stub!.calls[0]?.isUpdating);
-        await wait(40);
-        expect(stub.calls[0].isUpdated).toBe(false);
-        a.removeAttribute("is-busy");
-        await stub.calls[0].updateCallbackDone;
-        await stub.calls[0].finished;
-        const b = root.querySelector("#b")!;
-        b.setAttribute("is-open", "");
-        await waitFor(() => !!stub!.calls[1]?.isUpdating);
-        await wait(40);
-        expect(stub.calls[1].isUpdated).toBe(false);
-        b.querySelector("ul")!.append(document.createElement("li"));
-        await stub.calls[1].updateCallbackDone;
-        expect(root.querySelector("#b-msg")!.textContent).toBe("open");
-      } finally {
-        restore();
-      }
+      stub = installViewTransitionStub();
+      const { root } = mount(
+        `<div id="a"><p id="a-msg"></p></div><div id="b"><p id="b-msg"></p><ul></ul></div>`,
+        `#a[is-open] { @view-transition (until: ":not([is-busy])") { #a-msg { content: "open"; } } }
+         #b[is-open] { @view-transition (until: ":has(li)") { #b-msg { content: "open"; } } }`
+      );
+      await settle();
+      const a = root.querySelector("#a")!;
+      a.setAttribute("is-busy", "");
+      a.setAttribute("is-open", "");
+      await waitFor(() => !!stub!.calls[0]?.isUpdating);
+      await wait(40);
+      expect(stub.calls[0].isUpdated).toBe(false);
+      a.removeAttribute("is-busy");
+      await stub.calls[0].updateCallbackDone;
+      await stub.calls[0].finished;
+      const b = root.querySelector("#b")!;
+      b.setAttribute("is-open", "");
+      await waitFor(() => !!stub!.calls[1]?.isUpdating);
+      await wait(40);
+      expect(stub.calls[1].isUpdated).toBe(false);
+      b.querySelector("ul")!.append(document.createElement("li"));
+      await stub.calls[1].updateCallbackDone;
+      expect(root.querySelector("#b-msg")!.textContent).toBe("open");
     });
 
     it("checks the block's own element: a block on a descendant waiting on an ancestor fact times out", async () => {

@@ -9,6 +9,7 @@ exports[`temperature-app view > writes each field onto the host and converts the
   "listenerRuns": 0,
   "matches": 5,
   "parentElement": 10,
+  "parentNode": 0,
   "quarkRuns": 1,
   "queryScopeCost": 8,
   "querySelectorAll": 1,

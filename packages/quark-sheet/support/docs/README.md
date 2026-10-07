@@ -9,7 +9,7 @@ Drop a Quark sheet next to your markup — bind, render, and react without a com
 - **Sibling scope** Sheet + targets share a parent — Quark watches that host
 - **Global sheets** `is-global` runs top-level rules document-wide
 - **Inline or remote** Paste Quark in the element, or load `src-url`
-- **Lifecycle state** `is-loading` / `is-success` / `is-error` + matching events (from [loadable-element](/nucleus/packages/loadable-element))
+- **Lifecycle state** `is-loading` / `is-success` / `is-error` + matching events (from [loadable-element](/packages/loadable-element))
 - **Reload** The `--reload` command drops the shared cache entry for `src-url` and fetches again
 - **Auto (un)register** Connect registers; disconnect tears down cleanly
 
@@ -38,7 +38,9 @@ Inline Quark text is enough for most apps.
 By default the sheet is scoped to its parent. Add `is-global` to run
 top-level rules in the root context (e.g. reading a provider above the
 host); rules inside an explicit `@scope { }` block stay host-scoped either
-way. Language details live in the [`quark`](/nucleus/packages/quark) docs.
+way. Language details live in the [`quark`](/packages/quark) docs.
+
+An inline sheet is HTML content: a browser reads `<` followed by a letter, `/`, `!` or `?` as markup, in a sheet comment or string too, and a `<title>` or `<textarea>` there takes the rest of the page as its text (the sheet fails with a parse error far from the cause). Keep such text out of an inline sheet, or load the sheet with `src-url`.
 
 ### API Reference
 

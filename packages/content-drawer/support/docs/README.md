@@ -14,7 +14,7 @@ Slide-in drawers and sheets for nav menus, filters, confirmations, and side pane
 - **Auto-dismiss** `disappear-after` for toast-style confirmations
 - **Singleton groups** One open drawer per `singleton-name`
 - **Layout modes** Viewport sheet (default, `position: fixed`), `.absolute` (inside its parent), `.relative`, or `.sticky`
-- **Scrubbable** Wrap in [`gesture-handler`](/nucleus/packages/gesture-handler): the sheet follows the finger via `is-scrubbing` + `--content-drawer-open-progress`
+- **Scrubbable** Wrap in [`gesture-handler`](/packages/gesture-handler): the sheet follows the finger via `is-scrubbing` + `--content-drawer-open-progress`
 
 ## Installation
 

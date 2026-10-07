@@ -12,13 +12,14 @@ import {
   setClipboardWriter,
   setDevtoolsAdapterFactory,
 } from "../../lib/devtools-selection";
-import type { LifecycleRecord } from "../../lib/protocol";
+import type { LifecycleRecord, SelectionInfo } from "../../lib/protocol";
 import {
   afterEach,
   beforeEach,
   describe,
   expect,
   it,
+  vi,
   wait,
 } from "@excom/nucleus-test";
 import { readFileSync } from "node:fs";
@@ -41,9 +42,19 @@ const settle = async () => {
   for (let i = 0; i < 16; i++) await wait(0);
 };
 
-/** Poll until `condition` is true, up to `ticks` macrotask yields. */
-const waitFor = async (condition: () => boolean, ticks = 80) => {
-  for (let i = 0; i < ticks && !condition(); i++) await wait(0);
+/**
+ * A record the page publishes while the pane is open: the page's history now
+ * holds it (the pane's debounced re-read of `$0` is authoritative, so a fake
+ * that kept the old history would make that re-read drop the live row) and
+ * the extension delivers it.
+ */
+const publishLive = (
+  fake: ReturnType<typeof createFakeAdapter>,
+  info: SelectionInfo,
+  record: LifecycleRecord,
+) => {
+  fake.setInfo({ ...info, lifecycles: [...info.lifecycles, record] });
+  fake.deliverRuntime(record);
 };
 
 const mountPane = async (fake: ReturnType<typeof createFakeAdapter>) => {
@@ -220,18 +231,17 @@ describe("Element pane view", () => {
   });
 
   it("appends live records for the selected element without a page round-trip", async () => {
-    fake.setInfo(infoFor("x-el", "7", [effect(1, "a", { a: 1 })]));
+    const info = infoFor("x-el", "7", [effect(1, "a", { a: 1 })]);
+    fake.setInfo(info);
     const pane = await mountPane(fake);
     expect(rows(pane, "bind-neutron-log")).toHaveLength(1);
 
-    fake.deliverRuntime(effect(2, "b", { b: 2 }));
-    await waitFor(() => {
-      const r = rows(pane, "bind-neutron-log");
-      return r.length >= 2 && q(r[1], "[bind-signature]").textContent === "b";
+    publishLive(fake, info, effect(2, "b", { b: 2 }));
+    await vi.waitFor(() => {
+      const items = rows(pane, "bind-neutron-log");
+      expect(items).toHaveLength(2);
+      expect(q(items[1], "[bind-signature]").textContent).toBe("b");
     });
-    const items = rows(pane, "bind-neutron-log");
-    expect(items).toHaveLength(2);
-    expect(q(items[1], "[bind-signature]").textContent).toBe("b");
 
     // duplicate delivery over the port is ignored
     fake.deliverPort(effect(2, "b", { b: 2 }));
@@ -239,20 +249,32 @@ describe("Element pane view", () => {
     expect(rows(pane, "bind-neutron-log")).toHaveLength(2);
   });
 
-  it("keeps existing rows (and their open state) when new records arrive", async () => {
+  it("re-reads the page after a live record, so the page's history wins", async () => {
     fake.setInfo(infoFor("x-el", "7", [effect(1, "a", { a: 1 })]));
+    const pane = await mountPane(fake);
+
+    // delivered but absent from the page's history: dropped by the re-read
+    const evals = fake.evalCount;
+    fake.deliverRuntime(effect(2, "b", { b: 2 }));
+    await vi.waitFor(() => expect(fake.evalCount).toBe(evals + 1));
+    await vi.waitFor(() => expect(rows(pane, "bind-neutron-log")).toHaveLength(1));
+  });
+
+  it("keeps existing rows (and their open state) when new records arrive", async () => {
+    const info = infoFor("x-el", "7", [effect(1, "a", { a: 1 })]);
+    fake.setInfo(info);
     const pane = await mountPane(fake);
     const firstRow = rows(pane, "bind-neutron-log")[0];
     const details = q<HTMLDetailsElement>(firstRow, 'details[data-role="lifecycle"]');
     details.open = false;
 
-    fake.deliverRuntime(effect(2, "b", { b: 2 }));
-    await waitFor(() => {
-      const r = rows(pane, "bind-neutron-log");
-      return r.length >= 2 && q(r[1], "[bind-signature]").textContent !== "";
+    publishLive(fake, info, effect(2, "b", { b: 2 }));
+    await vi.waitFor(() => {
+      const items = rows(pane, "bind-neutron-log");
+      expect(items).toHaveLength(2);
+      expect(q(items[1], "[bind-signature]").textContent).toBe("b");
     });
-    const items = rows(pane, "bind-neutron-log");
-    expect(items[0]).toBe(firstRow);
+    expect(rows(pane, "bind-neutron-log")[0]).toBe(firstRow);
     expect(details.open).toBe(false);
   });
 

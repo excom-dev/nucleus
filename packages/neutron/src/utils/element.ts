@@ -36,6 +36,8 @@ const defaultGetProp = (
   propStore: Record<string, unknown>,
   propConfig: PropConfig
 ) => {
+  // `reflectOnly`: stored like a rich prop, the attr is output
+  const isAttrBacked = propConfig.attr && !propConfig.reflectOnly;
   const validatePropValue = (
     value: unknown,
     { canSetDefault = false }: { canSetDefault: boolean }
@@ -48,7 +50,7 @@ const defaultGetProp = (
       if (canSetDefault) {
         /* `setAttr()` serializes; defaults are props, so store raw
          * (or serialized only when there is no attr). */
-        propStore[propConfig.prop] = propConfig.attr
+        propStore[propConfig.prop] = isAttrBacked
           ? defaultValue
           : propConfig.serialize(defaultValue);
       }
@@ -59,7 +61,7 @@ const defaultGetProp = (
     }
     return value;
   };
-  if (propStore.hasOwnProperty(propConfig.prop) && propConfig.attr) {
+  if (propStore.hasOwnProperty(propConfig.prop) && isAttrBacked) {
     /*
      * Observed attrs: `attributeChangedCallback` already wrote
      * `propStore` (`canSetDefault: true`), so later reads skip
@@ -71,7 +73,7 @@ const defaultGetProp = (
     return validatePropValue(propStore[propConfig.prop], {
       canSetDefault: true,
     });
-  } else if (!propConfig.attr) {
+  } else if (!isAttrBacked) {
     // rich prop: deserialize from `propStore`
     return validatePropValue(
       propConfig.deserialize(propStore[propConfig.prop]),
@@ -94,13 +96,15 @@ const defaultSetProp = (
 ) => {
   const name = propConfig.prop;
   const attrName = propConfig.attr;
-  if (attrName) {
+  // prop → attribute
+  const reflect = () =>
     setAttr(
       element,
-      attrName,
-      // prop → attribute
+      attrName as string,
       propConfig.serialize(Converter.type(propConfig.type).prop.convert(value))
     );
+  if (attrName && !propConfig.reflectOnly) {
+    reflect();
   } else {
     // prop → `propStore`
     propStore[name] = propConfig.serialize(value);
@@ -117,6 +121,8 @@ const defaultSetProp = (
         queue.settle(value);
       }
     }
+    // stored first: the attribute then mirrors a value already held
+    if (propConfig.reflectOnly) reflect();
   }
 };
 
@@ -156,6 +162,8 @@ export const createPropConfig = (
     ...configuredObject,
     type: configuredObject.type,
   };
+  // internal: only `reflectDefaultProps` sets it (`createRuntimeConfig`)
+  delete (result as PropConfig).reflectOnly;
   if (!isDefault && PROTECTED_PROP_NAMES.includes(name)) {
     throw new NeutronError(`Cannot use protected prop name: "${name}"`);
   }
@@ -182,8 +190,10 @@ export const initRenderRootConfig = (
 
 export const createBuiltConfig = (optsConfig: OptsConfig): BuiltConfig => ({
   ...optsConfig,
-  reflectDefaultProps: optsConfig.reflectDefaultProps || [],
-  renderRoot: initRenderRootConfig(optsConfig.renderRoot),
+  // stated only, as `reflectDefaultProps` and `ssr`: `compose` inherits it
+  ...(optsConfig.renderRoot && {
+    renderRoot: initRenderRootConfig(optsConfig.renderRoot),
+  }),
   events: optsConfig.events || {},
   broadcasts: optsConfig.broadcasts || {},
   methods: optsConfig.methods || [],
@@ -265,6 +275,7 @@ export const createRuntimeConfig = (
             )
           ) {
             acc[propName].attr = camelToDash(propName);
+            acc[propName].reflectOnly = true;
           }
           return acc;
         }, {}),
@@ -284,7 +295,9 @@ export const createRuntimeConfig = (
 };
 
 function buildPropNotify(propConfig: PropConfig): "attr" | "prop" {
-  return propConfig.attr && isPrimitiveConstructor(propConfig.type)
+  return propConfig.attr &&
+    !propConfig.reflectOnly &&
+    isPrimitiveConstructor(propConfig.type)
     ? "attr"
     : "prop";
 }
@@ -313,7 +326,10 @@ export const compose = <T extends any[]>(inheriting: [...T]) => {
           if (!acc) return conf;
           return {
             ...acc,
-            ...conf,
+            // what a builder leaves undefined, it inherits
+            ...Object.fromEntries(
+              Object.entries(conf).filter(([, value]) => value !== undefined)
+            ),
             events: {
               ...acc.events,
               ...conf.events,

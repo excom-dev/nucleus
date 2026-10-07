@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/event-handler",
+      "comment": "Update demos and complexity snapshots: the snapshots count `parentNode` reads",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/event-handler"
+}

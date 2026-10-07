@@ -2,7 +2,7 @@
 
 One HTML file is enough. No install, no build, no framework.
 
-What follows is our [Todo App example](/nucleus/examples/todos), verbatim, with one deliberate change — it reads from the public [JSONPlaceholder](https://jsonplaceholder.typicode.com) API and sorts the list with a built-in module. Open the example to edit any of it live.
+What follows is our [Todo App example](/examples/todos), verbatim, with one deliberate change — it reads from the public [JSONPlaceholder](https://jsonplaceholder.typicode.com) API and sorts the list with a built-in module. Open the example to edit any of it live.
 
 ## 1. Load Nucleus Kit
 
@@ -61,7 +61,7 @@ Drop this `<article>` into the `<main>`, and save the two files beside it. It is
 </article>
 ```
 
-[`provider-fetch`](/nucleus/packages/provider-fetch) does the reading and publishes the response for the sheet to pick up. [`super-form`](/nucleus/packages/super-form) wraps a `<form>` you write yourself and submits it over `fetch`, so `method="patch"` and `method="delete"` work where the browser only offers GET and POST.
+[`provider-fetch`](/packages/provider-fetch) does the reading and publishes the response for the sheet to pick up. [`super-form`](/packages/super-form) wraps a `<form>` you write yourself and submits it over `fetch`, so `method="patch"` and `method="delete"` work where the browser only offers GET and POST.
 
 JSONPlaceholder returns `{ userId, id, title, completed }` — the same field names the example already binds, so `title` and `completed` are untouched. Only the URLs changed: `/api/todos` became the JSONPlaceholder URL, and `?_limit=5` keeps the list to five rows.
 
@@ -99,13 +99,13 @@ Nine declarations carry the entire app. `iterate()` is keyed on `"id"`, so a re-
 
 ### Calling a module
 
-The one deviation from the example app is `list.sort-by($todos, "title")`. `@use "quark:list" as list;` imports one of Quark's [built-in modules](/nucleus/packages/quark/modules), with no file and no fetch, and namespaces its functions under `list`; `sort-by` returns a sorted copy for Quark to render.
+The one deviation from the example app is `list.sort-by($todos, "title")`. `@use "quark:list" as list;` imports one of Quark's [built-in modules](/packages/quark/modules), with no file and no fetch, and namespaces its functions under `list`; `sort-by` returns a sorted copy for Quark to render.
 
-Your own module loads the same way (`@use "./utils.js" as utils;`) and should hold the same kind of function: one that receives values as arguments, returns a value for Quark to write, and has no idea a document exists. Querying the DOM and writing to it is the Orchestrator's job, and Quark is already doing it. Reach for a module of your own only when the built-in modules fall short. [Business Logic](/nucleus/docs/business_logic) covers where that line sits and why calculations belong on this side of it.
+Your own module loads the same way (`@use "./utils.js" as utils;`) and should hold the same kind of function: one that receives values as arguments, returns a value for Quark to write, and has no idea a document exists. Querying the DOM and writing to it is the Orchestrator's job, and Quark is already doing it. Reach for a module of your own only when the built-in modules fall short. [Business Logic](/docs/business_logic) covers where that line sits and why calculations belong on this side of it.
 
 ## 4. The styling
 
-Trimmed to what you need to see it work — the [example](/nucleus/examples/todos) carries the full file. The first two rules are the interesting ones: CSS selects on the same facts Quark writes, so an error message and a struck-through title need no extra state.
+Trimmed to what you need to see it work — the [example](/examples/todos) carries the full file. The first two rules are the interesting ones: CSS selects on the same facts Quark writes, so an error message and a struck-through title need no extra state.
 
 ```css
 @scope {
@@ -149,15 +149,15 @@ That is the API being honest about being a fixture, not the app being broken. Po
 - **The document** held every fact the app knows.
 - **Quark** observed that state and cascadingly updated it in response.
 
-That loop is the entire architecture. [Core Concepts](/nucleus/docs/core_concepts) walks through it in one sitting.
+That loop is the entire architecture. [Core Concepts](/docs/core_concepts) walks through it in one sitting.
 
 ## Next steps
 
-- [Quick Start - A working page, in five minutes.](/nucleus/docs/quick_start)
-- [Core Concepts - The mental model, in one sitting.](/nucleus/docs/core_concepts)
-- [Using Elements - The Nucleus Kit catalog and how elements behave.](/nucleus/docs/using_elements)
-- [Orchestrating - Get familiar with Quark.](/nucleus/docs/orchestrating)
-- [Styling - Valence.css themes, tokens, and state-driven CSS.](/nucleus/docs/styling)
-- [Building Views - Structure a real app: routes, views, lazy loading.](/nucleus/docs/building_views)
-- Other Guides - [Business Logic](/nucleus/docs/business_logic), [Creating Elements](/nucleus/docs/creating_elements), [Best Practices](/nucleus/docs/best_practices), [Troubleshooting](/nucleus/docs/troubleshooting), [Debugging with Agents](/nucleus/docs/debugging_with_agents)
-- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](/nucleus/docs/diving_deeper)
+- [Quick Start - A working page, in five minutes.](/docs/quick_start)
+- [Core Concepts - The mental model, in one sitting.](/docs/core_concepts)
+- [Using Elements - The Nucleus Kit catalog and how elements behave.](/docs/using_elements)
+- [Orchestrating - Get familiar with Quark.](/docs/orchestrating)
+- [Styling - Valence.css themes, tokens, and state-driven CSS.](/docs/styling)
+- [Building Views - Structure a real app: routes, views, lazy loading.](/docs/building_views)
+- Other Guides - [Business Logic](/docs/business_logic), [Creating Elements](/docs/creating_elements), [Best Practices](/docs/best_practices), [Troubleshooting](/docs/troubleshooting), [Debugging with Agents](/docs/debugging_with_agents)
+- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](/docs/diving_deeper)

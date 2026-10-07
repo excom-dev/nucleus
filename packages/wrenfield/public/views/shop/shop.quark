@@ -1,0 +1,140 @@
+@use "quark:list" as list;
+@use "quark:map" as map;
+@use "quark:string" as *;
+@use "quark:url" as url;
+
+:scope {
+  $shop-path: if(
+    $route.params.category: "/shop/#{$route.params.category}";
+    else: "/shop"
+  );
+  $shop-query: url.query($query);
+  $filter-count: list.compact(
+    map.values(map.pick($query, "era", "material", "priceMax", "q"))
+  ).length;
+}
+
+provider-fetch {
+  api-url: "/api/products?#{url.query(map.merge($query, (category: $route.params.category)))}";
+  @on provider-fetch-success {
+    @dispatch view-title (detail: event.detail.body.title);
+  }
+}
+/* The markup's defaults (skeleton shown) hold until the first load and come back on an error: a prerendered page,
+   written not loaded, keeps its content while it loads again. */
+provider-fetch[is-error] {
+  [bind-products],
+  [bind-empty] {
+    hidden: "";
+  }
+  [bind-skeleton] {
+    hidden: none;
+  }
+}
+provider-fetch[did-load] {
+  $listing: prop("provision").body;
+  $products: $listing.items;
+  $count: $listing.total;
+  [bind-products] {
+    hidden: none;
+  }
+  [bind-skeleton] {
+    hidden: "";
+  }
+  [bind-title] {
+    content: $listing.title;
+  }
+  [bind-empty] {
+    hidden: $listing.total > 0;
+  }
+  [bind-eras] {
+    content: iterate($listing.facets.eras, none, "slug");
+    [bind-facet] {
+      set-query: "era=#{item.slug}";
+    }
+  }
+  [bind-materials] {
+    content: iterate($listing.facets.materials, none, "slug");
+    [bind-facet] {
+      set-query: "material=#{item.slug}";
+    }
+  }
+  [bind-facet] {
+    is-empty: item.count == 0;
+  }
+}
+
+[shop-path],
+[set-query],
+[bind-shop-search] {
+  route-href: "#{$next-path}#{if($next-query: "?#{$next-query}"; else: "")}";
+}
+[shop-path] {
+  $next-path: attr("shop-path");
+  $next-query: $shop-query;
+  aria-current: if(attr("shop-path") == $shop-path: "page"; else: none);
+}
+[set-query] {
+  $delta: url.params(attr("set-query"));
+  $with: url.query(map.merge($query, $delta));
+  $is-set: $with == $shop-query;
+  $next-path: $shop-path;
+  $next-query: if(
+    $is-set: url.query(map.omit($query, map.keys($delta)...));
+    else: $with
+  );
+}
+li > [set-query] {
+  aria-current: if($is-set: "true"; else: none);
+}
+[bind-shop-search] {
+  $next-path: $shop-path;
+  $next-query: $shop-query;
+  @on input {
+    $next-query: url.query(map.merge($query, (q: event.target.value)));
+  }
+  input {
+    value: $query.q or "";
+  }
+}
+
+[bind-filter-count] {
+  content: $filter-count;
+}
+[bind-filter-count],
+[bind-clear] {
+  hidden: $filter-count == 0;
+}
+[bind-active] {
+  hidden: not $query[attr("bind-active")];
+  aria-label: "Remove #{$filter-label}";
+  span {
+    content: $filter-label;
+  }
+}
+[bind-active="q"] {
+  $filter-label: "“#{$query.q}”";
+}
+[bind-active="era"] {
+  $filter-label: capitalize($query.era);
+}
+[bind-active="material"] {
+  $filter-label: capitalize($query.material);
+}
+[bind-active="priceMax"] {
+  $filter-label: (
+      1000: "Under $1,000",
+      2500: "Under $2,500",
+      5000: "Under $5,000",
+      10000: "Under $10,000"
+    )[$query.priceMax] or
+    "Under $#{$query.priceMax}";
+}
+[bind-active="sort"] {
+  $filter-label: (
+    featured: "Featured",
+    newest: "Newest first",
+    price-asc: "Price, low to high",
+    price-desc: "Price, high to low"
+  )[$query.sort];
+}

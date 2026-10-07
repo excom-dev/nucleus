@@ -88,6 +88,22 @@ describe("service-worker", () => {
     );
   });
 
+  it("a copy that never connects is not mounted and listens to nothing", () => {
+    const el = fixture<HTMLServiceWorkerElement>(
+      `<service-worker relay-events></service-worker>`,
+    );
+    const added = swMock.addEventListener.mock.calls.length;
+    // `equalTag` parses copies of the element off the document
+    expect(el).dom.to.equalTag(
+      `<service-worker is-mounted is-supported relay-events></service-worker>`,
+    );
+    expect(swMock.addEventListener).toHaveBeenCalledTimes(added);
+    const clone = el.cloneNode(true) as HTMLServiceWorkerElement;
+    expect(swMock.addEventListener).toHaveBeenCalledTimes(added);
+    expect(clone.isMounted).toBe(false);
+    expect(clone.hasAttribute("is-mounted")).toBe(false);
+  });
+
   it("relays all default SW events when relay-events is bare", () => {
     const el = fixture<HTMLServiceWorkerElement>(
       `<service-worker relay-events></service-worker>`,

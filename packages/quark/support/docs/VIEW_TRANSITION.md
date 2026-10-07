@@ -36,7 +36,7 @@ li { view-transition-name: match-element; view-transition-class: todo; }
 
 | Option | Effect |
 | --- | --- |
-| `types: "a b"` | Names for `:active-view-transition-type()`: a string (space-separated) or a list; `"todo-#{$op}"` interpolates. The types of every write in one transition are combined. |
+| `types: "a b"` | Names for `:active-view-transition-type()`: a string (space-separated) or a list; `"todo-#{$op}"` interpolates. The types of every write in one transition are combined. A write that a later one replaces in the same tick (the same attribute, `class` string or text `content` of one element) is not written: it adds no types and starts no transition. |
 | `timeout: <ms>` | How long the transition waits for Quark to settle before the new state is captured. Default 300, or 1000 with `until`. On expiry it captures what is there and warns once per block. |
 | `delay: <ms>` | Hold these writes back first, then commit them in their own transition. Other writes of the same tick are not held and land first. |
 | `first-render` | Also animate the sheet's first render (off by default, like `spa-manager`'s `transition-first-render`). |

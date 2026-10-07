@@ -10,7 +10,7 @@ What the current engine does not observe or support, and the pitfalls that follo
 - Rules do not revert when they stop matching — see [No reversion](./NO_REVERSION.md)
 - `@view-transition` relies on `document.startViewTransition()`: one transition per document, no scoped transitions yet; `until` freezes the page while it waits (short waits only)
 
-See the related section under [Limitations](/nucleus/docs/limitations) in the guides.
+See the related section under [Limitations](/docs/limitations) in the guides.
 
 ## Pitfalls
 

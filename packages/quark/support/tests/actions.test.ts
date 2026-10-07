@@ -459,12 +459,6 @@ describe("@on nested sibling rules", () => {
       seen.push((e.target as Element).id);
     });
     click(root.querySelector("#b"));
-    /*
-     * happy-dom resolves `~` to the first following sibling only (a
-     * browser matches every later one), so the environment can show
-     * "after-1" but not "after-2". What matters here is the direction:
-     * never the earlier sibling, never a descendant of either.
-     */
-    expect(seen).toEqual(["after-1"]);
+    expect(seen).toEqual(["after-1", "after-2"]);
   });
 });

@@ -81,21 +81,21 @@ State describes only the present, so an animation — a description of change ov
 - **Transitions** on state attributes: `[data-open] { translate: 0; transition: translate 200ms; }`
 - **View transitions** between routes: `spa-manager` batches route changes into one `document.startViewTransition()`, and `spa-route` / `spa-a` reflect `is-active` / `was-active` so you can style enter and exit. `last-move` on the manager (`push` / `back` / `forward`) picks direction-aware transitions.
 - **Card expansion and shared-element effects** come from CSS `view-transition-name` keyed to those same attributes.
-- **List and content changes** from Quark: wrap the writes in `@view-transition (types: "…") { … }` and style the result. `view-transition-name: match-element` plus a `view-transition-class` on rows gives each row its own group, so `::view-transition-new(.row):only-child` animates rows that enter and `::view-transition-old(.row):only-child` rows that leave, and `:root:active-view-transition-type(…)` scopes the rules to that change. Keyed `iterate()` keeps rows alive, so moved rows slide instead of fading. Where `match-element` is not available, let the sheet name the rows (`--vt-name: "row-#{item.id}"`) and read it in CSS (`view-transition-name: var(--vt-name)`). The [View Transitions](/nucleus/examples/view-transitions) example shows a card expansion, a page slide, a list reflow and a text crossfade built this way.
+- **List and content changes** from Quark: wrap the writes in `@view-transition (types: "…") { … }` and style the result. `view-transition-name: match-element` plus a `view-transition-class` on rows gives each row its own group, so `::view-transition-new(.row):only-child` animates rows that enter and `::view-transition-old(.row):only-child` rows that leave, and `:root:active-view-transition-type(…)` scopes the rules to that change. Keyed `iterate()` keeps rows alive, so moved rows slide instead of fading. Where `match-element` is not available, let the sheet name the rows (`--vt-name: "row-#{item.id}"`) and read it in CSS (`view-transition-name: var(--vt-name)`). The [View Transitions](/examples/view-transitions) example shows a card expansion, a page slide, a list reflow and a text crossfade built this way.
 
 Quark writes are batched and not frame-aligned, so it is the wrong tool for per-frame values. Reach for CSS or the Web Animations API instead.
 
 ## Views
 
-Each view owns its stylesheet, loaded by a `<link>` at the top of the fragment. Scope view CSS to the view's root element and keep shared layout in one site-wide stylesheet. See [Building Views](/nucleus/docs/building_views).
+Each view owns its stylesheet, loaded by a `<link>` at the top of the fragment. Scope view CSS to the view's root element and keep shared layout in one site-wide stylesheet. See [Building Views](/docs/building_views).
 
 ## Next steps
 
-- [Quick Start - A working page, in five minutes.](/nucleus/docs/quick_start)
-- [Core Concepts - The mental model, in one sitting.](/nucleus/docs/core_concepts)
-- [Using Elements - The Nucleus Kit catalog and how elements behave.](/nucleus/docs/using_elements)
-- [Orchestrating - Get familiar with Quark.](/nucleus/docs/orchestrating)
-- [Styling - Valence.css themes, tokens, and state-driven CSS.](/nucleus/docs/styling)
-- [Building Views - Structure a real app: routes, views, lazy loading.](/nucleus/docs/building_views)
-- Other Guides - [Business Logic](/nucleus/docs/business_logic), [Creating Elements](/nucleus/docs/creating_elements), [Best Practices](/nucleus/docs/best_practices), [Troubleshooting](/nucleus/docs/troubleshooting), [Debugging with Agents](/nucleus/docs/debugging_with_agents)
-- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](/nucleus/docs/diving_deeper)
+- [Quick Start - A working page, in five minutes.](/docs/quick_start)
+- [Core Concepts - The mental model, in one sitting.](/docs/core_concepts)
+- [Using Elements - The Nucleus Kit catalog and how elements behave.](/docs/using_elements)
+- [Orchestrating - Get familiar with Quark.](/docs/orchestrating)
+- [Styling - Valence.css themes, tokens, and state-driven CSS.](/docs/styling)
+- [Building Views - Structure a real app: routes, views, lazy loading.](/docs/building_views)
+- Other Guides - [Business Logic](/docs/business_logic), [Creating Elements](/docs/creating_elements), [Best Practices](/docs/best_practices), [Troubleshooting](/docs/troubleshooting), [Debugging with Agents](/docs/debugging_with_agents)
+- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](/docs/diving_deeper)

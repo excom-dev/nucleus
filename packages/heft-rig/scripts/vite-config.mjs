@@ -1,16 +1,17 @@
-import { access, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { access, readdir, readFile, realpath, writeFile } from "node:fs/promises";
 import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { resolve, dirname, relative, extname, basename } from "node:path";
 import { fileURLToPath } from "node:url";
-import { constants as zlibConstants } from "node:zlib";
-import compression from "compression";
-import { build as esbuildBuild, transform } from "esbuild";
+import { transform } from "esbuild";
 import dts from "vite-plugin-dts";
-import { coverageConfigDefaults } from "vitest/config";
+import { configDefaults, coverageConfigDefaults } from "vitest/config";
 import { cssConfig } from "./css-config.mjs";
 import { readPackageJson } from "./package-type.mjs";
+// The public site plugin, by path: a dependency on it would be a cycle (it
+// devDepends on the rig).
+import { siteConfig } from "../../vite-plugin-nucleus/index.mjs";
 // import { analyzer } from 'vite-bundle-analyzer'
 
 /** Minimum % for statements / branches / functions / lines in `pnpm run coverage`. */
@@ -44,6 +45,18 @@ export function resolveCoverageReporters(env = process.env) {
 }
 
 /**
+ * Globs a package keeps out of its test run and its coverage: `excom.testExclude`
+ * in its `package.json` (a folder with a test suite of its own, run by another
+ * runner). Anything but an array of strings is ignored.
+ * @param {{ testExclude?: unknown } | null | undefined} excom
+ * @returns {string[]}
+ */
+export function resolveTestExclude(excom) {
+  const globs = excom?.testExclude;
+  return Array.isArray(globs) ? globs.filter((glob) => typeof glob === "string") : [];
+}
+
+/**
  * Coverage thresholds for a package, or `undefined` when its `package.json`
  * carries `excom.coverageThreshold: false`. Packages outside the project's
  * quality bar still run coverage and still report their numbers — only the
@@ -63,20 +76,6 @@ export function resolveCoverageThresholds(excom) {
 
 /** Forward-slash a path for picomatch globs on Windows. */
 const slash = (p) => p.replace(/\\/g, "/");
-
-/**
- * Quark `@use` TypeScript modules: transform in dev, emit stable `[name].js`
- * at build. Plain JS under `public/` (`views/<app>/<app>.js`) needs no entry
- * — static files, imported with their `.js` extension. Extensionless Quark
- * URLs resolve to `<path>.js` here (`quarkModuleRewritePlugin`), but
- * production only rewrites the two modules above (`_redirects`): a
- * `/views/<app>/<app>` line would also capture `/views/<app>/<app>.html`,
- * which Cloudflare Pages 308s to that clean URL.
- */
-const SITE_QUARK_MODULES = {
-  shell: "shell.ts",
-  "demo-utils": "public/demo-utils.ts",
-};
 
 /**
  * Packages every element UMD leaves external, and the global each is read
@@ -158,10 +157,11 @@ export function progressiveChunks(ownPackageDir) {
  *   root: string;
  *   entry?: string | { name: string; type: string; path: string };
  *   packageRoot?: string;
- * }} options
+ *   kit?: "bundled" | "unpkg";
+ * }} options `kit`: where a site build takes the Nucleus Kit from (`@excom/vite-plugin-nucleus`)
  * @returns {Promise<import("vite").UserConfig>}
  */
-export async function createRigViteConfig({ mode, root, entry, packageRoot }) {
+export async function createRigViteConfig({ mode, root, entry, packageRoot, kit }) {
   const rigRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
   const pkgRoot = packageRoot ?? root;
   const externalDependencies = [];
@@ -182,7 +182,7 @@ export async function createRigViteConfig({ mode, root, entry, packageRoot }) {
   return {
     root,
     configFile: false,
-    ...(await getConfig(mode, entry, externalDependencies, rigRoot, pkgRoot, packageName)),
+    ...(await getConfig(mode, entry, externalDependencies, rigRoot, pkgRoot, packageName, kit)),
   };
 }
 
@@ -229,216 +229,11 @@ const MIME = {
   ".md": "text/markdown; charset=utf-8",
 };
 
-const JS_TYPE = "application/javascript; charset=utf-8";
-
-/** `/views/todo-app/todo-app` yes; `/`, `/a/`, `/x.js` no. */
-function isExtensionless(pathname) {
-  return (
-    pathname.length > 1 &&
-    !pathname.endsWith("/") &&
-    !pathname.slice(pathname.lastIndexOf("/") + 1).includes(".")
-  );
-}
-
-/** A request a module loader made (dynamic `import()`, `<script>`). */
-function isScriptRequest(req) {
-  return req.headers["sec-fetch-dest"] === "script";
-}
-
-function fail(res, status, message) {
-  res.statusCode = status;
-  res.setHeader("content-type", "text/plain; charset=utf-8");
-  res.end(message);
-}
-
-/**
- * Quark `@use "/shell"` uses native `import()` (`@excom/kit-utils`
- * `resolveModuleReference`), so modules must answer at a stable extensionless URL:
- *
- * - `SITE_QUARK_MODULES`: TS — transform on request in dev, `[name].js` at
- *   build, preview rewrites to it.
- * - Other extensionless paths: rewrite to `<path>.js` under `public/` (dev)
- *   or build output (preview). New example-app modules need no config.
- * - Unresolved module → 404 / 500, not Vite's SPA `index.html` (browser
- *   would reject `text/html` as a module).
- */
-function quarkModuleRewritePlugin(packageRoot) {
-  const names = Object.keys(SITE_QUARK_MODULES);
-  const rewriteMiddleware = (jsRoot) => async (req, res, next) => {
-    const [pathname, search] = (req.url ?? "").split("?");
-    // Vite URLs (`/@vite/client`, `/@fs/…`, `/@id/…`) and prebundled deps — leave them.
-    if (pathname.startsWith("/@") || pathname.startsWith("/node_modules/")) return next();
-    if (!isExtensionless(pathname)) return next();
-    const name = names.find((n) => pathname === `/${n}`);
-    if (name || (await fileExists(resolve(jsRoot, `${pathname.slice(1)}.js`)))) {
-      req.url = `${pathname}.js${search ? `?${search}` : ""}`;
-      return next();
-    }
-    if (pathname.startsWith("/views/") || isScriptRequest(req)) {
-      return fail(res, 404, `No module at ${pathname} (expected ${pathname}.js)`);
-    }
-    next();
-  };
-  return {
-    name: "quark-module-extensionless",
-    configureServer(server) {
-      if (!packageRoot) return;
-      // TypeScript sources: `/shell`, `/shell.ts`, `/shell.js` → transformed.
-      server.middlewares.use(async (req, res, next) => {
-        const [pathname] = (req.url ?? "").split("?");
-        const name = names.find(
-          (n) =>
-            pathname === `/${n}` ||
-            pathname === `/${n}.ts` ||
-            pathname === `/${n}.js`,
-        );
-        if (!name) return next();
-        try {
-          const result = await server.transformRequest(
-            "/@fs/" + resolve(packageRoot, SITE_QUARK_MODULES[name]),
-          );
-          if (!result) throw new Error("transformRequest returned nothing");
-          res.setHeader("content-type", JS_TYPE);
-          res.end(result.code);
-        } catch (err) {
-          server.config.logger.error(
-            `[quark-module] "/${name}" failed to transform: ${err?.message ?? err}`,
-          );
-          fail(res, 500, `Module /${name} failed to transform:\n${err?.message ?? err}`);
-        }
-      });
-      // Plain-JS modules under public/ (example apps).
-      server.middlewares.use(rewriteMiddleware(resolve(packageRoot, "public")));
-    },
-    configurePreviewServer(server) {
-      const outDir = resolve(server.config.root, server.config.build.outDir);
-      server.middlewares.use(rewriteMiddleware(outDir));
-    },
-  };
-}
-
-function compressible(req, res) {
-  const type = res.getHeader?.("Content-Type") || res.getHeader?.("content-type");
-  if (!type) {
-    const url = req.url?.split("?")[0] ?? "";
-    return (
-      /\.(json|js|mjs|css|html|quark|svg|txt|md|xml|map)$/i.test(url) ||
-      url.endsWith("/")
-    );
-  }
-  return compression.filter(req, res);
-}
-
-function siteCompressPlugin() {
-  const apply = (server) => {
-    server.middlewares.use(
-      compression({
-        threshold: 0,
-        filter: compressible,
-        brotli: {
-          params: {
-            [zlibConstants.BROTLI_PARAM_QUALITY]: 4,
-          },
-        },
-      }),
-    );
-  };
-  return {
-    name: "dev-server-compress",
-    configureServer: apply,
-    configurePreviewServer: apply,
-  };
-}
-
-function siteServiceWorkerPlugin(packageRoot) {
-  const swEntry = resolve(packageRoot, "public/service-worker/service-worker.js");
-  const bundle = () =>
-    esbuildBuild({
-      absWorkingDir: packageRoot,
-      entryPoints: [swEntry],
-      bundle: true,
-      format: "iife",
-      write: false,
-      platform: "browser",
-    }).then((r) => r.outputFiles[0].text);
-
-  return {
-    name: "site-service-worker",
-    configureServer(server) {
-      server.middlewares.use(async (req, res, next) => {
-        if (req.url?.split("?")[0] !== "/service-worker/service-worker.js") {
-          return next();
-        }
-        res.setHeader("content-type", "application/javascript");
-        res.setHeader("cache-control", "no-store");
-        res.setHeader("service-worker-allowed", "/");
-        res.end(await bundle());
-      });
-    },
-    configurePreviewServer(server) {
-      server.middlewares.use((req, res, next) => {
-        if (req.url?.split("?")[0] === "/service-worker/service-worker.js") {
-          res.setHeader("service-worker-allowed", "/");
-          res.setHeader("cache-control", "no-store");
-        }
-        next();
-      });
-    },
-    async writeBundle(options) {
-      const dir = resolve(options.dir, "service-worker");
-      await mkdir(dir, { recursive: true });
-      await writeFile(resolve(dir, "service-worker.js"), await bundle());
-      await Promise.all(
-        Object.values(SITE_QUARK_MODULES)
-          .filter((rel) => rel.startsWith("public/"))
-          .map((rel) =>
-            rm(resolve(options.dir, rel.slice("public/".length)), {
-              force: true,
-            }),
-          ),
-      );
-      await Promise.all(
-        ["api.js", "cache.js", "echo.js", "sandbox.js", "todos.js", "webauthn.js"].map((f) =>
-          rm(resolve(dir, f), { force: true }),
-        ),
-      );
-    },
-  };
-}
-
-/**
- * `/sandbox/<app>` → `sandbox.html` (example-app playground). Production
- * uses `public/_redirects`; dev/preview need this before Vite's SPA fallback.
- */
-function sandboxHtmlRewritePlugin() {
-  const rewrite = (req, _res, next) => {
-    const [pathname, search] = (req.url ?? "").split("?");
-    if (/^\/sandbox\/[^/]+\/?$/.test(pathname)) {
-      req.url = `/sandbox.html${search ? `?${search}` : ""}`;
-    }
-    next();
-  };
-  return {
-    name: "sandbox-html-rewrite",
-    configureServer(server) {
-      server.middlewares.use(rewrite);
-    },
-    configurePreviewServer(server) {
-      server.middlewares.use(rewrite);
-    },
-  };
-}
-
-function siteDevPlugins({ rushRoot, packageRoot }) {
-  const plugins = [
-    siteCompressPlugin(),
-    quarkModuleRewritePlugin(packageRoot),
-    sandboxHtmlRewritePlugin(),
-    ...(packageRoot ? [siteServiceWorkerPlugin(packageRoot)] : []),
-  ];
-  // Serve `/packages/<pkg>/<...rest>` from the rush root for docs-site local assets.
-  if (rushRoot) {
-    plugins.push({
+/** Workspace files at `/packages/<pkg>/…`, from the Rush root (dev). */
+function workspacePackagesPlugins(rushRoot) {
+  if (!rushRoot) return [];
+  return [
+    {
       name: "serve-workspace-packages",
       configureServer(server) {
         server.middlewares.use(async (req, res, next) => {
@@ -459,9 +254,8 @@ function siteDevPlugins({ rushRoot, packageRoot }) {
           createReadStream(abs).pipe(res);
         });
       },
-    });
-  }
-  return plugins;
+    },
+  ];
 }
 
 async function getConfig(
@@ -471,6 +265,7 @@ async function getConfig(
   rigRoot,
   packageRoot,
   packageName,
+  kit,
 ) {
   const configs = {
     // Demo playground rooted at `support/demos` (element packages).
@@ -483,7 +278,8 @@ async function getConfig(
       const entryUrl = "/" + relative(viteRoot, entryPath);
       const rushRoot = await findRushRoot(packageRoot);
       const plugins = [
-        ...siteDevPlugins({ rushRoot, packageRoot }),
+        ...(await siteConfig({ command: "serve", root: packageRoot })).plugins,
+        ...workspacePackagesPlugins(rushRoot),
         {
           name: "serve-demo-html",
           configureServer(server) {
@@ -525,14 +321,12 @@ async function getConfig(
         },
       };
     },
-    // Full site (e.g. docs-site) rooted at the package root with `public/`.
+    // Site and app packages: the site build (`@excom/vite-plugin-nucleus`) at the package root.
     "dev-site": async () => {
-      const rushRoot = await findRushRoot(packageRoot);
+      const site = await siteConfig({ command: "serve", root: packageRoot });
       return {
-        base: process.env.DOCS_SITE_BASE || "/",
-        publicDir: resolve(packageRoot, "public"),
-        css: cssConfig,
-        plugins: siteDevPlugins({ rushRoot, packageRoot }),
+        ...site,
+        plugins: [...site.plugins, ...workspacePackagesPlugins(await findRushRoot(packageRoot))],
         server: {
           port: 3001,
           host: true,
@@ -544,48 +338,15 @@ async function getConfig(
       };
     },
     "build-site": async () => {
-      const quarkInputs = Object.fromEntries(
-        Object.entries(SITE_QUARK_MODULES).map(([name, rel]) => [
-          name,
-          resolve(packageRoot, rel),
-        ]),
-      );
-      const quarkNames = Object.keys(SITE_QUARK_MODULES);
-      // Optional second page: the example-app playground preview document.
-      const sandboxHtml = resolve(packageRoot, "sandbox.html");
-      const pageInputs = (await fileExists(sandboxHtml))
-        ? { sandbox: sandboxHtml }
-        : {};
+      const site = await siteConfig({ command: "build", root: packageRoot, kit });
       return {
-        base: process.env.DOCS_SITE_BASE || "/",
-        publicDir: resolve(packageRoot, "public"),
-        css: cssConfig,
-        plugins: [sandboxHtmlRewritePlugin(), siteServiceWorkerPlugin(packageRoot)],
+        ...site,
         build: {
-          outDir: resolve(packageRoot, "dist"),
-          emptyOutDir: true,
-          // Docs site graph is large (~500 kB). Vite's chunk warning is a Rush
+          ...site.build,
+          // A site graph is large (~500 kB). Vite's chunk warning is a Rush
           // warning and fails CI (`allowWarningsInSuccessfulBuild=false`).
           chunkSizeWarningLimit: 2000,
-          rolldownOptions: {
-            checks: ROLLDOWN_CHECKS,
-            // Quark loads these via `import(origin + "/demo-utils")`. Without
-            // preserved entry exports, the bundler tree-shakes them (no static import).
-            preserveEntrySignatures: "exports-only",
-            input: {
-              main: resolve(packageRoot, "index.html"),
-              ...pageInputs,
-              ...quarkInputs,
-            },
-            output: {
-              entryFileNames: (chunk) =>
-                quarkNames.includes(chunk.name)
-                  ? "[name].js"
-                  : "assets/[name]-[hash].js",
-              chunkFileNames: "assets/[name]-[hash].js",
-              assetFileNames: "assets/[name]-[hash][extname]",
-            },
-          },
+          rolldownOptions: { ...site.build.rolldownOptions, checks: ROLLDOWN_CHECKS },
         },
       };
     },
@@ -614,7 +375,9 @@ async function getConfig(
         .map((d) => `${slash(packagesDir)}/${d.name}/**`);
 
       const maxWorkers = resolveVitestMaxWorkers();
-      const thresholds = resolveCoverageThresholds((await readPackageJson(packageRoot))?.excom);
+      const excom = (await readPackageJson(packageRoot))?.excom;
+      const thresholds = resolveCoverageThresholds(excom);
+      const testExclude = resolveTestExclude(excom);
       const testAliases = await buildWorkspaceAliases(packageRoot);
       testAliases.push({
         find: "@vitest/coverage-v8",
@@ -628,6 +391,7 @@ async function getConfig(
         test: {
           projects: isIndividualPackage ? undefined : ['packages/*'],
           include: ["**/*.test.ts"],
+          ...(testExclude.length ? { exclude: [...configDefaults.exclude, ...testExclude] } : {}),
           globals: true,
           passWithNoTests: true,
           environment: "happy-dom",
@@ -662,6 +426,7 @@ async function getConfig(
               "**/public/service-worker/**",
               "**/*.config.*",
               "**/*.d.ts",
+              ...testExclude,
             ],
             // Every metric ≥ 90%, unless the package opted out.
             ...(thresholds ? { thresholds } : {}),
@@ -788,15 +553,13 @@ async function getConfig(
         },
       },
     }),
-    preview: () => ({
-      build: {
-        outDir: resolve(packageRoot, "dist"),
-      },
+    // `dist` as the host serves it (`@excom/vite-plugin-nucleus/host`)
+    preview: async () => ({
+      ...(await siteConfig({ command: "preview", root: packageRoot })),
       preview: {
         port: 4173,
         host: true,
       },
-      plugins: [siteCompressPlugin(), quarkModuleRewritePlugin()],
     }),
   };
   return configs[mode] ? await configs[mode]() : undefined;
@@ -899,6 +662,26 @@ async function buildWorkspaceAliases(packageRoot) {
   if (!rushRoot) {
     return [];
   }
+  const aliases = await rushProjectAliases(rushRoot);
+  // A package of another repository that links the rig from a sibling checkout
+  // also gets the packages of the rig's repository, after its own.
+  const rigRushRoot = await linkedRigRushRoot(packageRoot);
+  if (rigRushRoot && rigRushRoot !== (await realpath(rushRoot))) {
+    aliases.push(...(await rushProjectAliases(rigRushRoot)));
+  }
+  return aliases;
+}
+
+/** The Rush repository that `node_modules/@excom/heft-rig` of the package really lives in, or `null`. */
+async function linkedRigRushRoot(packageRoot) {
+  try {
+    return await findRushRoot(await realpath(resolve(packageRoot, "node_modules/@excom/heft-rig")));
+  } catch {
+    return null;
+  }
+}
+
+async function rushProjectAliases(rushRoot) {
   const rushPath = resolve(rushRoot, "rush.json");
   const rushConfig = JSON.parse(await readFile(rushPath, "utf-8"));
   const aliases = [];

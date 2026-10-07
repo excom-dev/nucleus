@@ -1,9 +1,10 @@
-# The site is a JavaScript application. Plain-text documentation:
-#   /llms.txt       index of every guide and package page
-#   /llms-full.txt  all docs inlined in one file
-# Per page: /docs/<page>.md and /<package>.md
+# Plain-text documentation, as markdown:
+#   /llms.txt         index of every guide and package page
+#   /llms-full.txt    all docs in one file
+#   /docs/<page>.md   one guide
+#   /<package>.md     one package page
 
 User-agent: *
 Allow: /
 
-Sitemap: https://excom.dev/sitemap.xml
+Sitemap: https://nucleus.excom.dev/sitemap.xml

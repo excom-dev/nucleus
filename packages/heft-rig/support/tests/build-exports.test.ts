@@ -110,6 +110,25 @@ describe("buildExports", () => {
     }
   });
 
+  it("exports an ESM entry built only minified under its plain name too, never a UMD", async () => {
+    const map = await buildMap();
+    for (const key of [
+      "./nucleus-kit.progressive",
+      "./dist/nucleus-kit.progressive",
+      "./nucleus-kit.progressive.js",
+      "./dist/nucleus-kit.progressive.js",
+    ]) {
+      expect(map[key]).toEqual({
+        types: "./dist/nucleus-kit.progressive.d.ts",
+        import: "./dist/nucleus-kit.progressive.min.js",
+        default: "./dist/nucleus-kit.progressive.min.js",
+      });
+    }
+    // `index.min.js` has its plain `index.js`; the UMD is not an entry of its own
+    expect(map["./index"].import).toBe("./dist/index.js");
+    for (const key of ["./index.umd", "./index.umd.js", "./dist/index.umd"]) expect(map[key]).toBeUndefined();
+  });
+
   it("omits the types condition when no matching declaration exists", async () => {
     const map = await buildMap();
     expect(map["./other"]).toEqual({
@@ -125,6 +144,32 @@ describe("buildExports", () => {
     expect(typed.length).toBeGreaterThan(0);
     for (const { types } of typed) {
       await expect(access(path.join(root, types))).resolves.toBeUndefined();
+    }
+  });
+
+  it("exports each root file that `files` lists as itself, and nothing else of `files`", async () => {
+    const pkg = await mkdtemp(path.join(os.tmpdir(), "heft-rig-build-exports-files-"));
+    try {
+      await mkdir(path.join(pkg, "dist"), { recursive: true });
+      await mkdir(path.join(pkg, "icons"));
+      for (const file of ["dist/index.js", "chrome.mjs", "tool.js", "LICENSE.md", "index.js"])
+        await writeFile(path.join(pkg, file), "");
+      const files = ["dist", "chrome.mjs", "./tool.js", "LICENSE.md", "index.js", "icons", "profiles/**", "missing.mjs"];
+      await writeFile(path.join(pkg, "package.json"), JSON.stringify({ files }));
+      await buildExports(pkg);
+      const map = JSON.parse(await readFile(path.join(pkg, "dist/exports.generated.json"), "utf8"));
+      expect(map["./chrome.mjs"]).toEqual({ import: "./chrome.mjs", default: "./chrome.mjs" });
+      expect(map["./tool.js"]).toEqual({ import: "./tool.js", default: "./tool.js" });
+      expect(map["./LICENSE.md"]).toEqual({ default: "./LICENSE.md" });
+      // a `dist/` key keeps its target
+      expect(map["./index.js"]).toEqual({ import: "./dist/index.js", default: "./dist/index.js" });
+      const keys = Object.keys(map);
+      expect(keys).toEqual([...keys].sort((a, b) => a.localeCompare(b)));
+      // a directory, a glob, a file that is not there
+      for (const key of ["./dist", "./icons", "./profiles/**", "./missing.mjs"])
+        expect(map[key]).toBeUndefined();
+    } finally {
+      await rm(pkg, { recursive: true, force: true });
     }
   });
 

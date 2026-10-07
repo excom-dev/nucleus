@@ -3,7 +3,6 @@ import "@excom/quark-sheet";
 import "@excom/spa-route";
 import {
   afterEach,
-  beforeEach,
   describe,
   expect,
   it,
@@ -11,7 +10,6 @@ import {
   waitForEvent,
 } from "@excom/nucleus-test";
 import {
-  bypassSelectorCache,
   flush,
 } from "@excom/quark/support/tests/view-helpers";
 
@@ -48,8 +46,6 @@ const mountView = async (pathname: string) => {
 };
 
 describe("not-found view", () => {
-  beforeEach(bypassSelectorCache);
-
   afterEach(() => {
     document.body.innerHTML = "";
   });
@@ -63,17 +59,17 @@ describe("not-found view", () => {
       [...page.querySelectorAll("nav spa-a")].map((a) =>
         a.getAttribute("route-href"),
       ),
-    ).toEqual(["/nucleus", "/nucleus/docs/quick_start"]);
+    ).toEqual(["/", "/docs/quick_start"]);
     expect(
       page.querySelector("nav dialog-anchor")?.getAttribute("target-ref"),
     ).toBe("#search-dialog");
   });
 
   it("reads the path from the route, not the location", async () => {
-    const page = await mountView("/nucleus/docs/introduction");
+    const page = await mountView("/docs/introduction");
 
     expect(page.querySelector("[bind-path]")?.textContent).toBe(
-      "/nucleus/docs/introduction",
+      "/docs/introduction",
     );
   });
 });

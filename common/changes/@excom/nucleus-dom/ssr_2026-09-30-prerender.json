@@ -1,0 +1,30 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/nucleus-dom",
+      "comment": "Add server rendering and whole-page test support: `serve()` (each request it answers carries a `digest` of the body), `whenIdle()`, `resetDocument()`, `installGlobals()`, and the `createDom()` options `viewport`, `holdTimersAbove`, `intersectAll` and `settings`",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-dom",
+      "comment": "Add `supportSelectors` (part of `installShims()`): `matches()`, `closest()` and `querySelector(All)()` answer as Chrome does, including complex selectors inside `:not()`, `:is()`, `:where()` and `:has()`, sibling combinators, structural and form pseudo-classes, `:empty`, `:defined`, attribute flags and escapes",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-dom",
+      "comment": "Remove `scopeQueriesToDocument`: `supportSelectors` does its work",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-dom",
+      "comment": "Add `findParseDifference()`, `parseTree()` and `sameTree()`: the tree a browser builds from markup, where happy-dom's tree departs from it, and whether two documents are the same tree",
+      "type": "minor"
+    },
+    {
+      "packageName": "@excom/nucleus-dom",
+      "comment": "Add shims for cloned template content (`upgradeClones`), `<template>` inside tables (`supportTableTemplates`), the parents of controls attached with a `<form>` or `<select>` (`keepFormParents`), event paths (`keepEventPaths`) and stray markup (`ignoreStrayMarkup`: a stray end tag no longer closes elements a browser leaves open, and text holding `-->` or `>` is no longer repeated or split); `installMissingApis` adds `DOMException#code`",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@excom/nucleus-dom"
+}

@@ -17,7 +17,6 @@ import {
   wait,
 } from "@excom/nucleus-test";
 import {
-  bypassSelectorCache,
   createSheet,
   expectComplexity,
   flush,
@@ -2464,27 +2463,22 @@ describe("Quark features", () => {
     ])(
       "re-runs a binding read when a gate on %s flips",
       async (_, on, off, gate) => {
-        const restore = bypassSelectorCache();
-        try {
-          const { root, quark, register } = createSheet(
-            `<article><p bind-x><i></i></p></article>`,
-            `:scope { $label: "LBL"; }
-           ${on} { title: $label; }
-           ${off} { title: "off"; }`
-          );
-          register();
+        const { root, quark, register } = createSheet(
+          `<article><p bind-x><i></i></p></article>`,
+          `:scope { $label: "LBL"; }
+         ${on} { title: $label; }
+         ${off} { title: "off"; }`
+        );
+        register();
+        await flush();
+        const el = root.querySelector("[bind-x]")!;
+        const target = gate ? root.querySelector(gate)! : root;
+        for (const state of [true, false, true]) {
+          target.toggleAttribute("on", state);
           await flush();
-          const el = root.querySelector("[bind-x]")!;
-          const target = gate ? root.querySelector(gate)! : root;
-          for (const state of [true, false, true]) {
-            target.toggleAttribute("on", state);
-            await flush();
-            expect(el.getAttribute("title")).toBe(state ? "LBL" : "off");
-          }
-          quark.unregister();
-        } finally {
-          restore();
+          expect(el.getAttribute("title")).toBe(state ? "LBL" : "off");
         }
+        quark.unregister();
       }
     );
 
@@ -2513,33 +2507,28 @@ describe("Quark features", () => {
     it.each(structureCases)(
       "re-runs binding reads when a child flips %s, starting with it: %s",
       async (_, startWith, [present, absent, parent]) => {
-        const restore = bypassSelectorCache();
-        try {
-          const { root, quark, register } = createSheet(
-            `<div bind-x></div><i></i>`,
-            `:scope { $label: "LBL"; $off-label: "off"; }
-             ${present} { title: $label; }
-             ${absent} { title: $off-label; }`
-          );
-          const el = root.querySelector("[bind-x]")!;
-          const host = root.querySelector(parent)!;
-          if (startWith) host.append(document.createElement("b"));
-          register();
+        const { root, quark, register } = createSheet(
+          `<div bind-x></div><i></i>`,
+          `:scope { $label: "LBL"; $off-label: "off"; }
+           ${present} { title: $label; }
+           ${absent} { title: $off-label; }`
+        );
+        const el = root.querySelector("[bind-x]")!;
+        const host = root.querySelector(parent)!;
+        if (startWith) host.append(document.createElement("b"));
+        register();
+        await flush();
+        const states = startWith
+          ? [true, false, true, false]
+          : [false, true, false, true];
+        for (const withChild of states) {
+          const child = host.querySelector("b");
+          if (withChild && !child) host.append(document.createElement("b"));
+          if (!withChild) child?.remove();
           await flush();
-          const states = startWith
-            ? [true, false, true, false]
-            : [false, true, false, true];
-          for (const withChild of states) {
-            const child = host.querySelector("b");
-            if (withChild && !child) host.append(document.createElement("b"));
-            if (!withChild) child?.remove();
-            await flush();
-            expect(el.getAttribute("title")).toBe(withChild ? "LBL" : "off");
-          }
-          quark.unregister();
-        } finally {
-          restore();
+          expect(el.getAttribute("title")).toBe(withChild ? "LBL" : "off");
         }
+        quark.unregister();
       }
     );
 
@@ -2579,7 +2568,6 @@ describe("Quark features", () => {
     it.each(Object.entries(SELF_WRITES))(
       "settles when a gated rule writes under its own subject (%s)",
       async (_, [rule, prepare, change, isApplied]) => {
-        const restore = bypassSelectorCache();
         const trips: unknown[] = [];
         const stopTrips = LoopGuard.onTrip((trip) => trips.push(trip));
         try {
@@ -2607,7 +2595,6 @@ describe("Quark features", () => {
           quark.unregister();
         } finally {
           stopTrips();
-          restore();
         }
       }
     );

@@ -64,4 +64,4 @@ main {
 
 ## Load order
 
-Imports (`@use`) and `src-url` sheets resolve before the first rule run, so a sheet that registers late misses events fired meanwhile — react to state attributes (`is-*`) rather than one-shot events, and put the sheet first in its host when it must hear boot-time events.
+Imports (`@use`) and `src-url` sheets resolve before the first rule run, so a sheet that registers late misses events fired meanwhile — react to state attributes (`is-*`) rather than one-shot events, and put the sheet first in its host when it must hear boot-time events. A [prerendered page](/docs/prerendering#md-sheets) relies on the same habit.

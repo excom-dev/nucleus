@@ -178,7 +178,11 @@ export interface OptsPropConfig {
    */
 }
 
-export type PropConfig = Required<OptsPropConfig>;
+export type PropConfig = Required<OptsPropConfig> & {
+  /* Internal, set by `reflectDefaultProps`: the value lives in `propStore`,
+   * `attr` only mirrors it and is never read. */
+  reflectOnly?: boolean;
+};
 
 export type DefaultProps = {
   isMounted: boolean;
@@ -208,26 +212,36 @@ export interface OptsConfig {
   definitionOpts?: ElementDefinitionOptions;
   methods?: [string, AnyFunction][];
   lifecycles?: Lifecycles<[string[], AnyFunction]>;
+  /**
+   * `false`: this tag's own code cannot run in a prerender. Its instances
+   * stay out of it and mount in the browser only; what they hold prerenders
+   * as usual (`no-ssr` keeps a whole region out). Methods called from
+   * outside still run on a kept-out instance.
+   * @default true
+   */
+  ssr?: boolean;
 }
 export type BuiltConfig = {
   tag: string;
   props: Record<string, PropConfig>;
-  reflectDefaultProps: DefaultPropName[];
+  reflectDefaultProps?: DefaultPropName[];
   renderRoot?: ConfigRenderRoot;
   events: EventsConfig;
   broadcasts: EventsConfig;
   definitionOpts?: ElementDefinitionOptions;
   methods: [string, AnyFunction][];
   lifecycles: Lifecycles<[string[], AnyFunction]>;
+  ssr?: boolean;
 };
 export interface RuntimeConfig {
   tag: string;
   props: Record<string, PropConfig>;
-  reflectDefaultProps: DefaultPropName[];
+  reflectDefaultProps?: DefaultPropName[];
   renderRoot?: ConfigRenderRoot;
   events: EventsConfig;
   broadcasts: EventsConfig;
   definitionOpts?: ElementDefinitionOptions;
+  ssr?: boolean;
   methods: [string, Effector<any, any>][];
   lifecycles: Lifecycles<[string[], Effector<any, any>]>;
 }

@@ -13,7 +13,6 @@ import {
 } from "@excom/nucleus-test";
 import { Quark } from "@excom/quark";
 import {
-  bypassSelectorCache,
   flush,
 } from "@excom/quark/support/tests/view-helpers";
 import {
@@ -124,13 +123,10 @@ const linksOf = (group: Element | null) =>
     href: a.getAttribute("route-href"),
   }));
 
-const hrefs = (names: string[]) => names.map((n) => `/nucleus/packages/${n}`);
+const hrefs = (names: string[]) => names.map((n) => `/packages/${n}`);
 
 describe("site nav packages", () => {
-  let restoreSelectors: () => void;
-
   beforeEach(() => {
-    restoreSelectors = bypassSelectorCache();
     Quark.moduleLoader = async (url: string) => {
       if (url.includes("shell")) return { displayName, getPackagesByType };
       throw new Error(`unexpected @use module: ${url}`);
@@ -139,7 +135,6 @@ describe("site nav packages", () => {
 
   afterEach(() => {
     document.body.innerHTML = "";
-    restoreSelectors();
     Quark.moduleLoader = originalLoader;
     vi.restoreAllMocks();
   });
@@ -157,7 +152,7 @@ describe("site nav packages", () => {
     }
   });
 
-  it("puts every nav-group package in a collapsed Libraries group after the top level", async () => {
+  it("puts every nav-group package in a collapsed Libraries group between Tools and Element Bases", async () => {
     for (const nav of await mountNav()) {
       const order = [...nav.querySelector(".package-links")!.children].map(
         (el) =>
@@ -181,7 +176,7 @@ describe("site nav packages", () => {
       expect(linksOf(group)).toEqual(
         GROUPED.map((name) => ({
           text: name,
-          href: `/nucleus/packages/${name}`,
+          href: `/packages/${name}`,
         }))
       );
     }
@@ -204,12 +199,12 @@ describe("site nav packages", () => {
   it("leaves Elements and Element Bases as they were", async () => {
     for (const nav of await mountNav()) {
       expect(linksOf(nav.querySelector("[bind-elements]"))).toEqual([
-        { text: "content-tabs", href: "/nucleus/packages/content-tabs" },
+        { text: "content-tabs", href: "/packages/content-tabs" },
       ]);
       expect(linksOf(nav.querySelector("[bind-element-bases]"))).toEqual([
         {
           text: "fetchable-element",
-          href: "/nucleus/packages/fetchable-element",
+          href: "/packages/fetchable-element",
         },
       ]);
     }
@@ -221,7 +216,7 @@ describe("site nav packages", () => {
     expect(group.hasAttribute("open")).toBe(false);
 
     group
-      .querySelector('spa-a[route-href="/nucleus/packages/nucleus-dom"]')!
+      .querySelector('spa-a[route-href="/packages/nucleus-dom"]')!
       .setAttribute("is-active", "");
     for (let i = 0; i < 3; i++) await flush();
 

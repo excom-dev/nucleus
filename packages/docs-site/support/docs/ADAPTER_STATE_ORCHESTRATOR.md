@@ -105,8 +105,8 @@ Quark is also a derivative of CSS, written in CSS syntax: rules, selectors, nest
 
 ## How it differs
 
-**Component frameworks** (React and similar frameworks) put a memory model in charge, run it through custom app logic, and target the document as output. The component conflates view, orchestration, and adapter (and sometimes even styling) in one imperative unit, which is why composition and reuse are difficult. A parent cannot reshape a child's logic without forking it. ASO separates these three roles into three languages — HTML, Quark, plain functions — and deletes the memory model. Where an ASO app hands a region to such a framework, a shadow root is the boundary between them ([Handing rendering to a framework](/nucleus/packages/quark/use#md-handing-rendering-to-a-framework)).
+**Component frameworks** (React and similar frameworks) put a memory model in charge, run it through custom app logic, and target the document as output. The component conflates view, orchestration, and adapter (and sometimes even styling) in one imperative unit, which is why composition and reuse are difficult. A parent cannot reshape a child's logic without forking it. ASO separates these three roles into three languages — HTML, Quark, plain functions — and deletes the memory model. Where an ASO app hands a region to such a framework, a shadow root is the boundary between them ([Handing rendering to a framework](/packages/quark/use#md-handing-rendering-to-a-framework)).
 
 **MVC / MVVM** keeps a model separate from a view and spends its lifecycles synchronizing the two. ASO has one surface. There is nothing to bind.
 
-**Nearest relatives** are the Blackboard pattern and CSS itself: see [Prior Art](/nucleus/docs/prior_art).
+**Nearest relatives** are the Blackboard pattern and CSS itself: see [Prior Art](/docs/prior_art).

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Wren Café</title>
+    <link rel="stylesheet" href="/site.css" />
+  </head>
+  <body>
+    <spa-manager>
+      <spa-route route-href="/">
+        <template><h1>Welcome to Wren Café</h1></template>
+      </spa-route>
+      <spa-route route-href="/menu" template-ref="/views/menu.html" document-title="Menu" ready-on="menu-ready" same-route="refresh"></spa-route>
+      <spa-route route-href="/specials" template-ref="/views/menu.html" document-title="Specials"></spa-route>
+      <spa-route route-href="/scripts" template-ref="/views/scripts.html"></spa-route>
+      <spa-route route-href="/broken" template-ref="/views/missing.html"></spa-route>
+      <spa-route route-regex=".*" is-fallback>
+        <template><h1>Not found</h1></template>
+      </spa-route>
+    </spa-manager>
+  </body>
+</html>

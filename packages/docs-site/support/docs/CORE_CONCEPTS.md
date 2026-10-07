@@ -81,11 +81,11 @@ A module should be pure business logic: it takes values and returns a value. It 
 
 ## Next steps
 
-- [Quick Start - A working page, in five minutes.](/nucleus/docs/quick_start)
-- [Core Concepts - The mental model, in one sitting.](/nucleus/docs/core_concepts)
-- [Using Elements - The Nucleus Kit catalog and how elements behave.](/nucleus/docs/using_elements)
-- [Orchestrating - Get familiar with Quark.](/nucleus/docs/orchestrating)
-- [Styling - Valence.css themes, tokens, and state-driven CSS.](/nucleus/docs/styling)
-- [Building Views - Structure a real app: routes, views, lazy loading.](/nucleus/docs/building_views)
-- Other Guides - [Business Logic](/nucleus/docs/business_logic), [Creating Elements](/nucleus/docs/creating_elements), [Best Practices](/nucleus/docs/best_practices), [Troubleshooting](/nucleus/docs/troubleshooting), [Debugging with Agents](/nucleus/docs/debugging_with_agents)
-- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](/nucleus/docs/diving_deeper)
+- [Quick Start - A working page, in five minutes.](/docs/quick_start)
+- [Core Concepts - The mental model, in one sitting.](/docs/core_concepts)
+- [Using Elements - The Nucleus Kit catalog and how elements behave.](/docs/using_elements)
+- [Orchestrating - Get familiar with Quark.](/docs/orchestrating)
+- [Styling - Valence.css themes, tokens, and state-driven CSS.](/docs/styling)
+- [Building Views - Structure a real app: routes, views, lazy loading.](/docs/building_views)
+- Other Guides - [Business Logic](/docs/business_logic), [Creating Elements](/docs/creating_elements), [Best Practices](/docs/best_practices), [Troubleshooting](/docs/troubleshooting), [Debugging with Agents](/docs/debugging_with_agents)
+- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](/docs/diving_deeper)

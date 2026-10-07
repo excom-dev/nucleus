@@ -25,8 +25,13 @@ import {
 } from "./utils";
 import { KitLogger } from "@excom/kit-logger";
 import {
+  bootHydration,
+  claimProvision,
   defineObservableProperty,
+  isIslandPending,
+  isServerRender,
   LoopGuard,
+  NO_SSR_ATTR,
   TokenList,
 } from "@excom/kit-utils";
 import {
@@ -36,6 +41,27 @@ import {
   createElement,
   QueueManager,
 } from "@excom/kit-utils";
+
+/** Run `fn`; its error is reported instead of thrown, so a loop goes on. */
+const isolated = (fn: () => void) => {
+  try {
+    fn();
+  } catch (error) {
+    if (typeof reportError === "function") reportError(error);
+    else console.error(error);
+  }
+};
+
+/* A classic kit script runs before the parser reaches a prerendered page's
+ * island: first mounts wait for the parsed document. One that throws must
+ * not keep the others from mounting. */
+const gatedMounts = new Set<NeutronInternal>();
+const releaseMounts = () => {
+  isolated(bootHydration);
+  const internals = [...gatedMounts];
+  gatedMounts.clear();
+  internals.forEach((internal) => isolated(() => internal.connectedCallback()));
+};
 
 export class NeutronInternal {
   static builtConfig: BuiltConfig;
@@ -58,6 +84,15 @@ export class NeutronInternal {
   queueManager = new QueueManager();
   batchManager: BatchManager;
   execDisconnect?: null | (() => void);
+  /* Pre-upgrade values of attribute-backed props, set at first connect. An
+   * upgrade queues an `attributeChangedCallback` per parsed attribute, run
+   * after the constructor with the parsed value: it would overwrite a value
+   * set in the constructor, whose own attribute write queues none. A write
+   * through the setter drops the pending value. */
+  private upgradedAttrValues = new Map<string, unknown>();
+  /* Server render: kept out of the prerender, unmounted, its reactions held
+   * until it mounts. */
+  private heldOut = false;
   debug?: {
     effects: {
       getTrace: () => string;
@@ -74,6 +109,8 @@ export class NeutronInternal {
       .definitionOpts
   ) {
     if (!customElements.get(tag)) {
+      // provisions land on the page's elements before any upgrades
+      bootHydration();
       this.runtimeConfig = createRuntimeConfig(this.builtConfig);
       this.CustomElement.observedAttributes = this.getObservedAttrs();
       this.buildBatching();
@@ -213,9 +250,15 @@ export class NeutronInternal {
     this.CustomElement = CustomElement;
   }
   private static getObservedAttrs() {
+    /* `no-ssr` too: written late in a server render, it unmounts. A
+     * `reflectOnly` attr: observed only to undo foreign writes. */
     return Object.values(this.runtimeConfig.props ?? {})
-      .filter((propConfig) => propConfig.notify === "attr" && propConfig.attr)
-      .map((propConfig) => propConfig.attr as string);
+      .filter(
+        ({ attr, notify, reflectOnly }) =>
+          attr && (notify === "attr" || reflectOnly)
+      )
+      .map((propConfig) => propConfig.attr as string)
+      .concat(NO_SSR_ATTR);
   }
   private static buildBatching() {
     const linkTracker = {};
@@ -252,6 +295,13 @@ export class NeutronInternal {
     this.element = element;
     this.elementRef = new WeakRef(element);
     this.ctr = this.constructor as unknown as typeof NeutronInternal;
+    /* A value set on the instance before it upgraded (app JS, a hydration
+     * provision) would be lost under the accessors: set it again below. */
+    const ownValues = Object.keys(this.ctr.builtConfig.props)
+      .filter(
+        (name) => Object.hasOwn(element, name) && element[name] !== undefined
+      )
+      .map((name): [string, unknown] => [name, element[name]]);
     /* Props first: methods may still be declared as props. */
     this.defineProps();
     this.ctr.runtimeConfig.methods.forEach(([name, fn]) => {
@@ -265,6 +315,15 @@ export class NeutronInternal {
         this.element.isMounted || this.element.wasMounted ? {} : notifs,
     });
     this.batchManager.notify("message:constructed", null);
+    const isAttr = ([name]: [string, unknown]) =>
+      !!this.ctr.runtimeConfig.props[name].attr;
+    // a setter may reach the element's queues through `_n_`
+    this.element._n_ = this;
+    // through the setter: notifications wait for mount, like parse-time attrs
+    ownValues
+      .filter((entry) => !isAttr(entry))
+      .forEach(([name, value]) => (this.element[name] = value));
+    this.upgradedAttrValues = new Map(ownValues.filter(isAttr));
     publicize(["neutron", "constructed"], {
       weakElement: this.elementRef,
       tag: this.ctr.builtConfig.tag,
@@ -282,11 +341,39 @@ export class NeutronInternal {
      */
   }
   connectedCallback() {
+    // `no-ssr` here or above, or `ssr: false`: the browser mounts it
+    if (
+      isServerRender() &&
+      (this.ctr.runtimeConfig.ssr === false ||
+        this.element.closest(`[${NO_SSR_ATTR}]`))
+    )
+      return this.holdOut();
+    if (this.heldOut) {
+      this.heldOut = false;
+      // what changed meanwhile reacts, then it mounts
+      this.batchManager.unlock();
+    }
+    // a move or a remount never waits: only a first mount needs the island
+    const isFirst = !this.element.isMounted && !this.element.wasMounted;
+    if (isFirst && isIslandPending()) {
+      if (!gatedMounts.size) {
+        document.addEventListener("DOMContentLoaded", releaseMounts, {
+          once: true,
+        });
+      }
+      gatedMounts.add(this);
+      return;
+    }
     const execConnect = () => {
       const isFirstMount = !this.element.wasMounted;
       if (this.element.wasMounted) {
         this.reconnectListeners();
       } else {
+        const pending = [...this.upgradedAttrValues];
+        this.upgradedAttrValues.clear();
+        pending.forEach(([name, value]) => (this.element[name] = value));
+        const claim = claimProvision(this.element);
+        if (claim) this.element["provision"] = claim.value;
         this.setConfiguredRenderRoot();
         this.linkBatching();
         this.connectListeners();
@@ -326,6 +413,8 @@ export class NeutronInternal {
     this.element.isAdopted = true;
   }
   disconnectedCallback() {
+    // gated or held out: not mounted
+    if (gatedMounts.delete(this) || this.heldOut) return;
     const _execDisconnect = () => {
       this.batch(() => {
         this.element.isAdopted = false;
@@ -356,8 +445,27 @@ export class NeutronInternal {
     oldValue: string | null,
     newValue: string | null
   ) {
+    if (name === NO_SSR_ATTR) {
+      // server render: written late, it unmounts; removed, it mounts
+      if (isServerRender() && this.element.isConnected) {
+        if (newValue !== null) this.holdOut();
+        else if (this.heldOut) this.connectedCallback();
+      }
+      return;
+    }
     const propConfig = this.ctr.CustomElement.getPropConfig({ attr: name });
-    if (propConfig) {
+    if (propConfig?.reflectOnly) {
+      /* Output only: a write from outside (a clone, parsed markup, an
+       * author) is never read; the attribute returns to what the element
+       * wrote, whatever the foreign value parses to. */
+      const stored = propConfig.get(this.element, this.propStore, propConfig);
+      const written = propConfig.serialize(
+        Converter.type(propConfig.type).prop.convert(stored)
+      );
+      if ((written ?? null) !== newValue) {
+        propConfig.set(this.element, this.propStore, propConfig, stored);
+      }
+    } else if (propConfig) {
       const converter = Converter.type(propConfig.type);
       const parsedOldVal = converter.attr.convert(
         propConfig.deserialize(oldValue)
@@ -388,6 +496,18 @@ export class NeutronInternal {
   }
 
   /* --- PRIVATE: INSTANCE HELPERS --- */
+  /* Unmounted at once, as when disconnected (a pending disconnect lands
+   * now); held so until `connectedCallback` mounts it, whatever batch it was
+   * taken in (that batch's reactions, `onDisconnected` included, wait too). */
+  private holdOut() {
+    if (this.heldOut) return;
+    if (this.element.isMounted) {
+      this.disconnectedCallback();
+      this.execDisconnect?.();
+    }
+    this.heldOut = true;
+    this.batchManager.lock();
+  }
   private defineProps() {
     if (this.ctr.runtimeConfig.props) {
       Object.keys(this.ctr.runtimeConfig.props).forEach((propName) => {
@@ -398,6 +518,7 @@ export class NeutronInternal {
         defineObservableProperty(this.element, propName, {
           get: () => propConfig.get(this.element, this.propStore, propConfig),
           set: (newValue) => {
+            this.upgradedAttrValues.delete(propName);
             const oldValue = propConfig.get(
               this.element,
               this.propStore,
@@ -533,7 +654,8 @@ export class NeutronInternal {
       if (doLock) this.batchManager.lock();
       fn();
     } finally {
-      if (doLock) {
+      // a hold taken meanwhile (`holdOut`) keeps the lock
+      if (doLock && !this.heldOut) {
         // snapshot first: `unlock` → `flushHandlers` → `clearNotifs`
         const changedProps = Object.keys(this.batchManager.notifs);
         this.batchManager.unlock();

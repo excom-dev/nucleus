@@ -140,9 +140,9 @@ export const SpaRoute = Neutron.compose([
        * @option
        * `document.title` while this route is active. The outermost
        * `<spa-manager>` applies the last active route carrying one — so a
-       * nested route beats its ancestor — and restores the page's own
-       * `<title>` once no active route has one. Cold loads and back /
-       * forward retitle too: it keys off activation, not clicks.
+       * nested route beats its ancestor — and restores its `default-title`
+       * (the page's own `<title>`) once no active route has one. Cold loads
+       * and back / forward retitle too: it keys off activation, not clicks.
        */
       documentTitle: String,
       /**
@@ -179,6 +179,10 @@ export const SpaRoute = Neutron.compose([
     ) => ({
       returns:
         caller === "startTeardown" ||
+        // Kept prerendered content: ready as the server left it
+        caller === "adopted" ||
+        // `<spa-manager>` stopped waiting: shown as it is
+        caller === "render-timeout" ||
         (readyOn
           ? caller instanceof Event
           : // Without `ready-on`: ready once rendered (if this activation
@@ -276,12 +280,15 @@ export const SpaRoute = Neutron.compose([
             query: routeData.query,
           } as SpaRouteProvision)
         : null;
+      // A first request (a prerendered route registers active) has nothing
+      // to refresh
       const shouldRefresh =
         sameRoute === "refresh" &&
         willStayActive &&
+        !!_requested &&
         (queryChanged ||
-          _requested?.match?.[0] !== routeData.match?.[0] ||
-          !deepCompare(_requested?.params || {}, routeData.params || {}));
+          _requested.match?.[0] !== routeData.match?.[0] ||
+          !deepCompare(_requested.params || {}, routeData.params || {}));
       const willReuse = willStayActive && !shouldRefresh;
       return [
         shouldRefresh && {

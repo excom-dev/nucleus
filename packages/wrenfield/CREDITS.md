@@ -57,7 +57,7 @@ Wrenfield is fictional. Product names, makers, origins, prices and descriptions 
 
 | What | Source | License | How it is used |
 | --- | --- | --- | --- |
-| Nucleus Kit elements, Quark, Valence.css | [`@excom/nucleus-kit`](https://excom.dev/nucleus) 0.2.0 | MIT | Loaded from unpkg |
+| Nucleus Kit elements, Quark, Valence.css | [`@excom/nucleus-kit`](https://nucleus.excom.dev) 0.2.0 | MIT | Loaded from unpkg |
 | Icons | [Lucide](https://lucide.dev) 1.48.0 | [ISC](https://lucide.dev/license) | The icons the app uses, as one SVG sprite in `img/icons.svg` |
 | Display type | [Cormorant Garamond](https://fonts.google.com/specimen/Cormorant+Garamond), by Christian Thalmann | [SIL Open Font License 1.1](https://openfontlicense.org) | Loaded from Google Fonts |
 | 3D viewer | [`@google/model-viewer`](https://modelviewer.dev) 4.3.1 | [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0) | Loaded from unpkg |

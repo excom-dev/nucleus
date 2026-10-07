@@ -319,7 +319,7 @@ option    = ident [ ":" space-list ]
 name-list = ( ident | string ) { "," ( ident | string ) }
 ```
 
-`@use` imports a JS module. `@scope` takes a block and no prelude. `@on` takes its listeners in the options group: `handle: fn`, `handle: (a, b)`, or a call that returns the listener. The expression is evaluated each time the event fires, so such a call runs on every event (runtime semantics: quark's [`@on`](/nucleus/packages/quark/on) page). A bare expression after the event names is an error that points at `handle:`, and so is an `@on` statement with neither options nor a block (nothing to do). There is no `@off`: gate a listener with its options or with event data inside its block. `@dispatch` and `@command` are statements: a block is an error. `@view-transition` and `@delay` have no statement form: a missing block is an error, and so is a missing `@delay` duration.
+`@use` imports a JS module. `@scope` takes a block and no prelude. `@on` takes its listeners in the options group: `handle: fn`, `handle: (a, b)`, or a call that returns the listener. The expression is evaluated each time the event fires, so such a call runs on every event (runtime semantics: quark's [`@on`](/packages/quark/on) page). A bare expression after the event names is an error that points at `handle:`, and so is an `@on` statement with neither options nor a block (nothing to do). There is no `@off`: gate a listener with its options or with event data inside its block. `@dispatch` and `@command` are statements: a block is an error. `@view-transition` and `@delay` have no statement form: a missing block is an error, and so is a missing `@delay` duration.
 
 ```quark
 @use "/helpers.js" as *;

@@ -9,6 +9,7 @@ exports[`dispatch view > relays a click to the panel as a custom event the panel
   "listenerRuns": 0,
   "matches": 0,
   "parentElement": 1,
+  "parentNode": 0,
   "quarkRuns": 0,
   "queryScopeCost": 0,
   "querySelectorAll": 1,

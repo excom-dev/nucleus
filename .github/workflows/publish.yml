@@ -9,8 +9,9 @@
 #      snippets, npm READMEs and the docs site carry the new versions.
 #   3. Publish to npm (and the VS Code extension).
 #   4. Deploy the docs site and Wrenfield, on every push: a docs-only change
-#      has nothing to publish but still needs a deploy. Wrenfield pins the Kit
-#      version just bumped, so it runs after the publish.
+#      has nothing to publish but still needs a deploy. Their deploy builds load
+#      the Kit from unpkg at the version just bumped, so they run after the
+#      publish, once a check confirms npm has that Kit as built here.
 #   5. Push the bump commit last, so `main` only records versions that
 #      reached npm.
 # Why one pipeline: a site deployed in parallel is built from the pre-bump
@@ -36,7 +37,7 @@ jobs:
     # not get that far.
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     permissions:
       contents: write
     env:
@@ -136,18 +137,84 @@ jobs:
         with:
           path: size-baseline
           key: size-baseline-${{ runner.os }}-${{ github.sha }}
-      - name: Deploy to Cloudflare Pages
+      # Deploy builds (`--kit=unpkg`): the Nucleus Kit loads from unpkg at the
+      # version published above, not bundled. First, that version on unpkg must
+      # be the Kit built here, or prerendered pages would hydrate with other
+      # code. The site build empties dist: the docs index (sitemap, llms.txt,
+      # markdown) is written again.
+      - name: Check the published Nucleus Kit
+        working-directory: packages/docs-site
+        run: node node_modules/@excom/heft-rig/scripts/kit-check.mjs
+      - name: Build the docs site for deploy
+        working-directory: packages/docs-site
+        run: pnpm run build --kit=unpkg
+      - run: node common/scripts/install-run-rush.js build:docs-index
+      # Pages whose inputs did not change are reused from the last run's cache.
+      - name: Restore prerender cache
+        uses: actions/cache/restore@v5
+        with:
+          path: packages/docs-site/temp/prerender-cache
+          key: prerender-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            prerender-${{ runner.os }}-
+      # Every sitemap URL → a static page in the site dist, plus 404.html.
+      # After the publish on purpose: a page that fails to prerender stops
+      # the site deploy, never the packages. Each site right after its own
+      # deploy build.
+      - run: node common/scripts/install-run-rush.js build:prerender --only @excom/docs-site
+      - name: Save prerender cache
+        uses: actions/cache/save@v5
+        with:
+          path: packages/docs-site/temp/prerender-cache
+          key: prerender-${{ runner.os }}-${{ github.sha }}
+      # Chrome's sandbox needs unprivileged user namespaces, which Ubuntu restricts through AppArmor.
+      # continue-on-error on this and the Chrome steps: temporary, until the suites prove stable on the runner.
+      - name: Allow user namespaces for Chrome's sandbox
+        continue-on-error: true
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+      # The prerendered pages in headless Chrome: they hydrate without a change and match a cold render.
+      - name: Check the docs site in headless Chrome
+        continue-on-error: true
+        timeout-minutes: 8
+        working-directory: packages/docs-site
+        run: node support/tests/browser/run.mjs --detail
+      # Both sites are Workers with static assets on custom domains
+      # (wrangler.jsonc): the token needs Workers Scripts:Edit (account), plus
+      # Workers Routes:Edit and DNS:Edit on the excom.dev zone. From the repo
+      # root: the action installs wrangler with npm where it runs.
+      - name: Deploy the docs site to Cloudflare Workers
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy packages/docs-site/dist --project-name=excom-docs
-      # Wrenfield (wrenfield.excom.dev), a Worker with static assets. The token
-      # also needs Workers Scripts:Edit (account), plus Workers Routes:Edit and
-      # DNS:Edit on the excom.dev zone for the custom domain. The stage step
-      # reads the bumped Kit version, which the publish above put on npm.
-      - name: Stage Wrenfield
-        run: node packages/wrenfield/scripts/stage.mjs
+          command: deploy --config packages/docs-site/wrangler.jsonc
+      - name: Check the published Nucleus Kit for Wrenfield
+        working-directory: packages/wrenfield
+        run: node node_modules/@excom/heft-rig/scripts/kit-check.mjs
+      - name: Build Wrenfield for deploy
+        working-directory: packages/wrenfield
+        run: pnpm run build --kit=unpkg
+      - name: Restore Wrenfield prerender cache
+        uses: actions/cache/restore@v5
+        with:
+          path: packages/wrenfield/temp/prerender-cache
+          key: prerender-wrenfield-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            prerender-wrenfield-${{ runner.os }}-
+      # The catalogue's pages → static pages in the app's dist, the person's
+      # pages as the shell, plus 404.html.
+      - run: node common/scripts/install-run-rush.js build:prerender --only wrenfield
+      - name: Save Wrenfield prerender cache
+        uses: actions/cache/save@v5
+        with:
+          path: packages/wrenfield/temp/prerender-cache
+          key: prerender-wrenfield-${{ runner.os }}-${{ github.sha }}
+      # The prerender, the app and its boot in headless Chrome. continue-on-error: temporary, as above.
+      - name: Check Wrenfield in headless Chrome
+        continue-on-error: true
+        timeout-minutes: 8
+        working-directory: packages/wrenfield
+        run: node support/tests/browser/run.mjs
       - name: Deploy Wrenfield to Cloudflare Workers
         uses: cloudflare/wrangler-action@v4
         with:

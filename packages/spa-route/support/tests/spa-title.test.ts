@@ -163,8 +163,32 @@ describe("spa-route document-title", () => {
     await wait(5);
 
     expect(document.title).toBe(PAGE_TITLE);
-    // nothing claimed the title, so the page's own was never captured
-    expect(manager._defaultTitle ?? null).toBeNull();
+    // nothing claimed the title, so the page's own was never recorded
+    expect(manager.hasAttribute("default-title")).toBe(false);
+  });
+
+  it("records the page's own title as default-title once a route retitles", async () => {
+    await coldLoad("/company", twoRoutes, "Experimental Company");
+    const manager = q<HTMLSpaManagerElement>("spa-manager");
+    expect(manager.getAttribute("default-title")).toBe(PAGE_TITLE);
+
+    // driven from the markup, e.g. a prerendered page whose <title> is a route's
+    manager.setAttribute("default-title", "Recorded shell");
+    await navigate(manager, () => kitRouter.pushState({ url: "/docs" }));
+    expect(document.title).toBe("Recorded shell");
+  });
+
+  it("applies an authored default-title to untitled routes", async () => {
+    await coldLoad(
+      "/docs",
+      twoRoutes.replace("<spa-manager>", `<spa-manager default-title="Authored">`),
+      "Authored"
+    );
+    const manager = q<HTMLSpaManagerElement>("spa-manager");
+    await navigate(manager, () => kitRouter.pushState({ url: "/company" }));
+    expect(document.title).toBe("Experimental Company");
+    await navigate(manager, () => kitRouter.pushState({ url: "/docs" }));
+    expect(document.title).toBe("Authored");
   });
 
   it("titles the is-fallback route", async () => {
@@ -199,6 +223,6 @@ describe("spa-route document-title", () => {
     await navigate(manager, () => kitRouter.pushState({ url: "/b" }));
 
     expect(document.title).toBe("Set by the app");
-    expect(manager._defaultTitle ?? null).toBeNull();
+    expect(manager.hasAttribute("default-title")).toBe(false);
   });
 });

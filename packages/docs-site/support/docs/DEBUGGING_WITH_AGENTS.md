@@ -1,6 +1,6 @@
 # Debugging with Agents
 
-An LLM agent can troubleshoot a Nucleus Stack app the way you would in DevTools: read the State, ask why an attribute has its value, test an expression, then edit the sheet. The [Nucleus DevTools](/nucleus/packages/nucleus-devtools) extension exposes that as tools, on development and production pages alike, with no change to the app and no runtime cost.
+An LLM agent can troubleshoot a Nucleus Stack app the way you would in DevTools: read the State, ask why an attribute has its value, test an expression, then edit the sheet. The [Nucleus DevTools](/packages/nucleus-devtools) extension exposes that as tools, on development and production pages alike, with no change to the app and no runtime cost.
 
 ## What the agent gets
 

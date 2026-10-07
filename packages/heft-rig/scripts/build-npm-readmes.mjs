@@ -24,15 +24,15 @@
  *   - `<repo>/packages/<pkg>/README.md`
  *
  * Link rewriting — npm renders the README off-site, so every in-repo link
- * is made absolute against `https://excom.dev`:
- *   - `/nucleus/docs/<x>`, `/nucleus/packages/<x>[/<page>]`, any root-relative
- *     path → `https://excom.dev<path>`
+ * is made absolute against `https://nucleus.excom.dev`:
+ *   - `/docs/<x>`, `/packages/<x>[/<page>]`, any root-relative
+ *     path → `https://nucleus.excom.dev<path>`
  *   - `./PAGE.md[#hash]` (the site maps these to package sub-pages, see
  *     `rewriteDocLinks` in `build-package-metas.mjs`) →
- *     `https://excom.dev/nucleus/packages/<pkg>/<page>[#hash]`;
- *     `./README.md` → `https://excom.dev/nucleus/packages/<pkg>`
+ *     `https://nucleus.excom.dev/packages/<pkg>/<page>[#hash]`;
+ *     `./README.md` → `https://nucleus.excom.dev/packages/<pkg>`
  *   - any other relative reference (images, assets) → resolved against
- *     `https://excom.dev/nucleus/packages/<pkg>/`
+ *     `https://nucleus.excom.dev/packages/<pkg>/`
  *   - `http(s):`, `mailto:`, other schemes, `//host` and `#hash` are left as
  *     written
  * Only Markdown link/image targets (`](…)`) are touched, so HTML `src` /
@@ -51,7 +51,7 @@ import { realpath } from "node:fs/promises";
 import { SITE_BASE } from "./site-base.mjs";
 
 /** Origin the published docs are served from. */
-export const SITE_ORIGIN = "https://excom.dev";
+export const SITE_ORIGIN = "https://nucleus.excom.dev";
 
 /** `scheme:`, `//host` and same-page `#hash` targets are already final. */
 const NON_RELATIVE = /^([a-z][a-z0-9+.-]*:|\/\/|#)/i;

@@ -1,5 +1,5 @@
 # Quark loads the two site TypeScript modules via extensionless import() URLs.
-# Never add a `/views/<app>/<app>` line: Pages strips `.html` (308 to the clean
+# Never add a `/views/<app>/<app>` line: the host strips `.html` (307 to the clean
 # URL), so it would also capture `/views/<app>/<app>.html`. Example-app modules
 # are imported with their `.js` extension instead.
 /shell                      /shell.js                      200
@@ -8,5 +8,6 @@
 # Example-app playground preview documents (see sandbox.html).
 /sandbox/*     /sandbox          200
 
-# SPA fallback for /nucleus/packages/:name deep links.
-/*             /index.html       200
+# No SPA fallback: every route is a prerendered page (`build:prerender`);
+# 404.html is the not-found page the host serves for any other path
+# (`not_found_handling: "404-page"` in wrangler.jsonc).

@@ -2,7 +2,11 @@ export type * from "./types";
 import type { DiagnosticLevel } from "./ast";
 import { type ListenerOptionSource, listenerOptionsText } from "./ast";
 import { writeBinding } from "./bindings";
-import { ATTRIBUTE_BLACKLIST_REGEXES, isNoop } from "./constants";
+import {
+  ATTRIBUTE_BLACKLIST_REGEXES,
+  isNoop,
+  SYMBOL_FAILED,
+} from "./constants";
 import { publicize } from "./devtools-hook";
 import {
   collectAttrCalls,
@@ -302,10 +306,8 @@ export class Diagnostic extends Property {
     return "diagnostic";
   }
   _run(element: TQuarkElement, options: QuarkOptions) {
-    if (this.level !== "debug") {
-      if (this.spoken.has(element)) return false;
-      this.spoken.add(element);
-    }
+    const once = this.level !== "debug";
+    if (once && this.spoken.has(element)) return false;
     const args = {
       element,
       key: this.key,
@@ -314,7 +316,11 @@ export class Diagnostic extends Property {
       hash: this.parent.quarkInstance.hash,
     };
     const resolved = resolveExpression(args);
-    // a failed expression already logged and published an error
+    // said once: a report, or a failure (its error is logged and published);
+    // a preserve, or a read with no value yet, keeps it for a later run
+    if (once && (resolved === SYMBOL_FAILED || !isNoop(resolved))) {
+      this.spoken.add(element);
+    }
     if (isNoop(resolved)) return false;
     const node = this.parsedValue as {
       type?: string;

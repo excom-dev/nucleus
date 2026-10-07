@@ -1,15 +1,15 @@
 import { describe, expect, it } from "@excom/nucleus-test";
-import { $, $$, hold, idle, openApp, SIZES, until } from "./app";
+import { $$, hold, idle, openApp, SIZES, until } from "./app";
 
 /** What a person sees: elements outside any `hidden` subtree. */
 const shown = (selector: string) => $$(selector).filter((element) => !element.closest("[hidden]"));
 
 describe.each(Object.entries(SIZES))("%s", (_name, size) => {
-  // The controller is the test's stand-in: this pins the shell's gate on it, not real control.
+  // Control is index.html's script, which waits for it before the kit loads (public.test.ts); here the stand-in answers.
   it("home renders 24 cards and the service worker is in control", async () => {
     await openApp("/", { size });
     await until(() => $$("#home data-product").length).toBe(24);
-    expect($("service-worker[has-controller] ~ [bind-app][is-active]")).not.toBeNull();
+    expect(document.body.getAttribute("data-layout")).toBe(size === SIZES.phone ? "compact" : "regular");
   });
 
   it("home shows a hero and 4 cards per rail as skeletons until the showroom loads", async () => {

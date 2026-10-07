@@ -27,7 +27,7 @@ Nucleus DevTools adds an "Element" pane to the Elements panel for pages built wi
 
 Zero setup: no app changes, no debug flags. Works on any page using the Nucleus Stack; does nothing on other pages. Collects no data and makes no network requests.
 
-Documentation: https://excom.dev/nucleus/packages/nucleus-devtools
+Documentation: https://nucleus.excom.dev/packages/nucleus-devtools
 
 **Category**: Developer Tools
 
@@ -35,14 +35,14 @@ Documentation: https://excom.dev/nucleus/packages/nucleus-devtools
 
 **Store icon**: `public/icon/128.png` (the dashboard reads it from the manifest; upload the same file if asked)
 
-**Screenshots** (1280×800 or 640×400, PNG, 1–5): take on https://excom.dev/nucleus/examples/todos with DevTools docked right, Elements panel, Element pane open:
+**Screenshots** (1280×800 or 640×400, PNG, 1–5): take on https://nucleus.excom.dev/examples/todos with DevTools docked right, Elements panel, Element pane open:
 1. Quark tab — a `<li>` inside the todo list selected, rule rows expanded.
 2. Neutron tab — a `provider-fetch` or `content-drawer` selected, lifecycle rows expanded.
 3. Hover state — the declaration tooltip over a key.
 4. Heatmap — toolbar popup with the toggle on and the overlay visible on the page.
 
 **Official URL**: https://excom.dev
-**Homepage URL**: https://excom.dev/nucleus/packages/nucleus-devtools
+**Homepage URL**: https://nucleus.excom.dev/packages/nucleus-devtools
 **Support URL**: https://github.com/excom-dev/nucleus/issues
 
 ## Privacy practices
@@ -63,7 +63,7 @@ The probe must be installed at document_start on any page that might use the Nuc
 - I do not use or transfer user data for purposes that are unrelated to my item's single purpose
 - I do not use or transfer user data to determine creditworthiness or for lending purposes
 
-**Privacy policy URL**: https://excom.dev/nucleus/packages/nucleus-devtools/privacy
+**Privacy policy URL**: https://nucleus.excom.dev/packages/nucleus-devtools/privacy
 
 ## Distribution
 

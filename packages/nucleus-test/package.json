@@ -8,7 +8,8 @@
   },
   "type": "module",
   "files": [
-    "dist"
+    "dist",
+    "chrome.mjs"
   ],
   "scripts": {
     "build": "node node_modules/@excom/heft-rig/scripts/vite-build.mjs",

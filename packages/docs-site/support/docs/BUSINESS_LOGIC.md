@@ -215,7 +215,7 @@ Emptiness is a fact too. A value below a threshold that resolves to `""` disappe
 
 Selectors compare and combine; they do not iterate and accumulate. A weighted total, a tax table, an amortisation schedule — those are arithmetic, and arithmetic belongs in a function.
 
-Check the [built-in modules](/nucleus/packages/quark/modules) first: `quark:list` counts, filters, groups and sums, `quark:math` clamps and rounds, `quark:string` pluralises, `quark:date` does calendar arithmetic. Only write your own when they fall short.
+Check the [built-in modules](/packages/quark/modules) first: `quark:list` counts, filters, groups and sums, `quark:math` clamps and rounds, `quark:string` pluralises, `quark:date` does calendar arithmetic. Only write your own when they fall short.
 
 When you do, `@use` it and let it return a value for Quark to write:
 
@@ -270,7 +270,7 @@ It works, and it costs you four things.
 - **Its conclusion never reaches the document.** `total === 0` is the decisive fact, and it dies as a local variable. No CSS rule and no other Quark rule can see it, so the next feature that needs it computes it again.
 - **It is untestable without a DOM,** and uninspectable with one — the selection is on screen, the reasoning is not.
 
-The test is simple: **if a function reads the DOM or writes the DOM, it is doing the Orchestrator's job.** Give it arguments and let it return a value. A narrow allowance is a node the function builds itself: a chart is `[bind-chart] { content: createChart($series); }`, where `createChart` creates its own element, renders into it and returns it, and still never reads or writes the document around it ([Asynchronous work](/nucleus/packages/quark/use#md-asynchronous-work) covers a render that finishes later). Talking to a server, a store or a payment provider is not a module's job: that is an Adapter's protocol, and its outcome reaches the document as attributes and a provision.
+The test is simple: **if a function reads the DOM or writes the DOM, it is doing the Orchestrator's job.** Give it arguments and let it return a value. A narrow allowance is a node the function builds itself: a chart is `[bind-chart] { content: createChart($series); }`, where `createChart` creates its own element, renders into it and returns it, and still never reads or writes the document around it ([Asynchronous work](/packages/quark/use#md-asynchronous-work) covers a render that finishes later). Talking to a server, a store or a payment provider is not a module's job: that is an Adapter's protocol, and its outcome reaches the document as attributes and a provision.
 
 ## Checklist
 
@@ -286,4 +286,4 @@ The test is simple: **if a function reads the DOM or writes the DOM, it is doing
 - [ ] Every module function takes values and returns a value — no state, no attributes, no DOM beyond a node it builds and returns
 - [ ] The reason a control is disabled is a fact, and the message the user reads comes from it
 
-Related: [Orchestrating](/nucleus/docs/orchestrating) for the language itself, [Best Practices](/nucleus/docs/best_practices) for the short rules, [Building Views](/nucleus/docs/building_views) for where these files live.
+Related: [Orchestrating](/docs/orchestrating) for the language itself, [Best Practices](/docs/best_practices) for the short rules, [Building Views](/docs/building_views) for where these files live.

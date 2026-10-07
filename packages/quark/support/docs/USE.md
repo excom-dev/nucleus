@@ -94,4 +94,4 @@ export const renderCalendar = (events) => {
 };
 ```
 
-Quark never enters a shadow root, so the framework never meets a write it did not make. See [May or may not play well with others](/nucleus/docs/limitations#md-may-or-may-not-play-well-with-others) in the guides.
+Quark never enters a shadow root, so the framework never meets a write it did not make. See [May or may not play well with others](/docs/limitations#md-may-or-may-not-play-well-with-others) in the guides.

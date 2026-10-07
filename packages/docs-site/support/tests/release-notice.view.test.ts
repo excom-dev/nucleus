@@ -67,7 +67,8 @@ describe("release notice view", () => {
     const page = mountView();
 
     const form = page.querySelector<HTMLFormElement>("form")!;
-    expect(form.getAttribute("action")).toBe("/api/release-subscribers");
+    // another origin: nothing answers `/api/release-subscribers` on the docs host
+    expect(form.getAttribute("action")).toBe("https://excom.dev/api/release-subscribers");
     expect(form.getAttribute("method")).toBe("post");
 
     const email = form.querySelector<HTMLInputElement>('[name="email"]')!;
@@ -129,7 +130,7 @@ describe("release notice view", () => {
     await flush();
 
     const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
-    expect(String(url)).toContain("/api/release-subscribers");
+    expect(String(url)).toBe("https://excom.dev/api/release-subscribers");
     expect(init.method).toBe("POST");
     expect(JSON.parse(init.body as string)).toEqual({
       email: "ada@example.com",

@@ -1,7 +1,7 @@
 import { openDB } from "idb";
 
 /**
- * Playground file overlay (`/nucleus/examples/*`) via `/api/sandbox/<path>`:
+ * Playground file overlay (`/examples/*`) via `/api/sandbox/<path>`:
  *   GET    → override, or the original at `<path>`
  *   PUT    → `{ content }` stores an override
  *   DELETE → drop one file, or a whole app dir

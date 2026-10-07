@@ -5,6 +5,8 @@ import {
   isRenderPromise,
   isThenable,
   isWipe,
+  PENDING_READ,
+  SYMBOL_FAILED,
   SYMBOL_NOOP,
 } from "./constants";
 import { getDevtoolsHook, publicize } from "./devtools-hook";
@@ -23,26 +25,68 @@ import type { ContextField, ExpressionResult, TransitionSpec } from "./types";
 import { QuarkLogger } from "./utils";
 import { createScope } from "./variables";
 import {
+  canAdopt,
   getChildren,
+  htmlIdentity,
+  INERT_ATTR,
+  isHydrating,
   isPojo,
+  isServerRender,
   LoopGuard,
   objToAttrs,
   Queue,
   replaceNonTemplateChildren,
+  STAMP_ATTR,
   tc,
 } from "@excom/kit-utils";
+
+/** Content that no longer renders a stamped source drops the stamp (no stale adoption). */
+const unstamp = (host: Node) => {
+  if ((host as Element).hasAttribute?.(STAMP_ATTR)) {
+    (host as Element).removeAttribute(STAMP_ATTR);
+  }
+};
+
+/** Every `<script>` below `root`, the contents of its `<template>`s included. */
+const scriptsIn = (root: ParentNode): Element[] => [
+  ...root.querySelectorAll("script"),
+  ...[...root.querySelectorAll("template")].flatMap((template) =>
+    scriptsIn((template as HTMLTemplateElement).content)
+  ),
+];
+
+/**
+ * After an html write: a server render stamps its source and marks every
+ * script it inserted, template contents included (inert when inserted as
+ * html, live once the page is parsed: the prerenderer neutralizes them);
+ * any other write leaves no stale stamp. `into`: where the html went (a
+ * `<template>` host's content).
+ */
+const markHtmlSource = (
+  host: Element,
+  into: ParentNode,
+  identity: string | null
+) => {
+  if (!isServerRender()) return unstamp(host);
+  if (identity) host.setAttribute(STAMP_ATTR, identity);
+  else unstamp(host);
+  scriptsIn(into).forEach((script) => script.setAttribute(INERT_ATTR, ""));
+};
 
 /**
  * Write text only when it differs from what's painted: one text node
  * holding `text` (or no children for `""`). Same-string re-runs skip
  * the DOM. Anything else in the target (elements, several nodes) is
- * replaced as before.
+ * replaced as before. Replaced by a later text paint of the commit, it
+ * writes nothing but drops the stamp its write would have.
  */
-const paintText = (target: Node, text: string) => {
+const paintText = (target: Node, text: string, isReplaced = false) => {
   const first = target.firstChild;
   if (!(first === null ? text === "" : isSoleText(first, text))) {
-    target.textContent = text;
+    if (!isReplaced) target.textContent = text;
+    unstamp(target);
   }
+  if (isReplaced) return;
   // a <textarea>'s text is only its default value: mirror it to .value
   syncTextControl(target, text);
 };
@@ -59,6 +103,7 @@ const wipeContent = (element: Element) => {
     replaceNonTemplateChildren(element, []);
   } else {
     element.textContent = "";
+    unstamp(element);
   }
   syncTextControl(element, "");
 };
@@ -70,12 +115,24 @@ export const resolveExpression = ({
   key,
 }: ContextField) => {
   if (!value) return undefined;
+  // a rule's own declaration, not an `@on` block, an option or an action
+  const { property } = options;
+  const declaration =
+    property && key === property.key && !property.parent.isEventBlock
+      ? property
+      : undefined;
+  let isPending = false;
   try {
     const ast = getExpressionAst(value);
     // names resolve lazily as the evaluator reaches them
     const scope = createScope({ element, options });
     return evaluateExpression(ast, { scope, element });
   } catch (error) {
+    // a read with no value yet: keep what is painted, quietly
+    if (error === PENDING_READ) {
+      isPending = true;
+      return SYMBOL_NOOP;
+    }
     QuarkLogger.error({
       method: "resolveExpression",
       message: "Could not resolve expression",
@@ -97,7 +154,13 @@ export const resolveExpression = ({
       errorName: err?.name ? String(err.name) : undefined,
     });
     // failed evaluations never destroy state, they no-op
-    return SYMBOL_NOOP;
+    return SYMBOL_FAILED;
+  } finally {
+    declaration?.parent.quarkInstance.trackPendingRead(
+      element,
+      declaration,
+      isPending
+    );
   }
 };
 
@@ -613,9 +676,9 @@ export const FIELD_RESOLVERS = {
           )
         : [];
     schedulePaint(
-      () => {
+      (isReplaced) => {
         if (value !== undefined) {
-          elementInternal.setAttr(hash, key, value);
+          elementInternal.setAttr(hash, key, value, isReplaced);
           return;
         }
         const toggles = flips();
@@ -630,7 +693,8 @@ export const FIELD_RESOLVERS = {
         value !== undefined
           ? attrWillChange(element, key, value)
           : flips().length > 0
-      )
+      ),
+      value !== undefined ? elementInternal.ledger(key) : undefined
     );
     return result;
   },
@@ -691,13 +755,14 @@ export const FIELD_RESOLVERS = {
     }
     const value = isWipe(result) ? null : result;
     schedulePaint(
-      () => {
-        elementInternal.setAttr(hash, key, value);
+      (isReplaced) => {
+        elementInternal.setAttr(hash, key, value, isReplaced);
       },
       1,
       withTransition(paintTransition(args), () =>
         attrWillChange(element, key, value)
-      )
+      ),
+      elementInternal.ledger(key)
     );
     return result;
   },
@@ -784,24 +849,42 @@ export const FIELD_RESOLVERS = {
             );
           } else if (res?.type === "nodes") {
             const nodeArray = res.value;
+            const { identity } = res;
             schedulePaint(
               () => {
-                replaceNonTemplateChildren(element, nodeArray);
+                // `"adopted"` (the server rendered this source here) is painted
+                replaceNonTemplateChildren(element, nodeArray, { identity });
                 if (nodeArray.length && !willRenderIntoTemplate) {
                   res?.after?.();
                 }
               },
               0,
-              withTransition(transition, () =>
-                childrenWillChange(element, nodeArray)
+              withTransition(
+                transition,
+                () =>
+                  !canAdopt(element, identity) &&
+                  childrenWillChange(element, nodeArray)
               )
             );
           } else if (res?.type === "html") {
+            const html = res.value as string;
+            // what the write shows: a number or a boolean is its own source
+            const source = String(html);
+            // only a server render (stamps it) and hydration (adopts by it)
+            // need the source; a template's fragment is never adopted
+            const identity =
+              source &&
+              !willRenderIntoTemplate &&
+              (isServerRender() || isHydrating())
+                ? htmlIdentity(source)
+                : null;
             schedulePaint(
               () => {
+                if (canAdopt(element, identity)) return res.after?.();
                 // element insertions are one causal hop (see LoopGuard)
                 LoopGuard.write(element, "content", () => {
-                  element.innerHTML = res.value as string;
+                  element.innerHTML = html;
+                  markHtmlSource(element, textTarget, identity);
                   if (!willRenderIntoTemplate) {
                     res?.after?.();
                   }
@@ -810,22 +893,26 @@ export const FIELD_RESOLVERS = {
               0,
               withTransition(
                 transition,
-                () => element.innerHTML !== (res.value as string)
+                () =>
+                  !canAdopt(element, identity) && element.innerHTML !== source
               )
             );
           } else {
             const text = res + "";
             schedulePaint(
-              () => {
+              (isReplaced) => {
                 /*
                  * `textContent` / `innerText` do not write a template's
                  * document fragment (unlike `innerHTML`), so templates go
                  * through `.content`.
                  */
-                paintText(textTarget, text);
+                paintText(textTarget, text, isReplaced);
               },
               0,
-              withTransition(transition, () => textWillChange(textTarget, text))
+              withTransition(transition, () =>
+                textWillChange(textTarget, text)
+              ),
+              elementInternal.ledger("content")
             );
           }
         })
@@ -843,12 +930,14 @@ export const FIELD_RESOLVERS = {
       // nearness) works for plain string results too
       elementInternal.setContentAttr(hash);
       const text = result + "";
+      // text replaces all content: keyed, a commit's last text paint writes
       schedulePaint(
-        () => {
-          paintText(textTarget, text);
+        (isReplaced) => {
+          paintText(textTarget, text, isReplaced);
         },
         0,
-        withTransition(transition, () => textWillChange(textTarget, text))
+        withTransition(transition, () => textWillChange(textTarget, text)),
+        elementInternal.ledger("content")
       );
     }
     return result;

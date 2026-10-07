@@ -1,6 +1,6 @@
 # Using Nucleus Kit Elements
 
-Every Nucleus Kit element obeys the same contract: it is an [Adapter](/nucleus/docs/adapter_state_orchestrator), bridging one protocol and the document. Learn that contract once and any package page becomes readable in a minute.
+Every Nucleus Kit element obeys the same contract: it is an [Adapter](/docs/adapter_state_orchestrator), bridging one protocol and the document. Learn that contract once and any package page becomes readable in a minute.
 
 ## The contract
 
@@ -72,11 +72,11 @@ The sidebar lists every package with its current API. `nucleus-kit` installs the
 
 ## Three you'll use constantly
 
-**`include-content`** renders a view when and where you need it — lazily on scroll, on idle, on an event, or immediately — from a `<template>` or a URL. It is the unit of composition for views. See [Building Views](/nucleus/docs/building_views).
+**`include-content`** renders a view when and where you need it — lazily on scroll, on idle, on an event, or immediately — from a `<template>` or a URL. It is the unit of composition for views. See [Building Views](/docs/building_views).
 
 **`provider-fetch`** turns a URL into a provision. Set `api-url`, read `prop("provision")` in Quark, react to `is-loading` / `is-success` / `is-error`. Pair it with `is-paused` to hold a request until the page is ready.
 
-**`event-handler`** stitches behavior together: turn any event into a custom event or a command aimed at any element (`target-ref`), listen globally for keyboard shortcuts, or debounce input. Most "glue" that would otherwise be a click handler becomes one of these tags — or, where a sheet is already present, an `@on` block with `@dispatch` / `@command` (see [Orchestrating](/nucleus/docs/orchestrating)). Often no tag is needed at all: elements accept their imperatives as native commands, so a plain `<button command="--toggle" commandfor="menu">` drives a drawer with nothing in between.
+**`event-handler`** stitches behavior together: turn any event into a custom event or a command aimed at any element (`target-ref`), listen globally for keyboard shortcuts, or debounce input. Most "glue" that would otherwise be a click handler becomes one of these tags — or, where a sheet is already present, an `@on` block with `@dispatch` / `@command` (see [Orchestrating](/docs/orchestrating)). Often no tag is needed at all: elements accept their imperatives as native commands, so a plain `<button command="--toggle" commandfor="menu">` drives a drawer with nothing in between.
 
 ```html
 <button type="button" command="--toggle" commandfor="menu">Menu</button>
@@ -102,15 +102,15 @@ The Nucleus Kit catalog exists to give the *same* contract to protocols the plat
 ## Two habits worth forming
 
 - **Select on state, not on classes.** Setting attributes is recommended over toggling / mutating classes and ids, since the latter has a heavier impact on Quark's performance. Keep classes for static styling.
-- **Set attributes, not properties, before upgrade.** If script runs before an element's definition has loaded, `setAttribute()` is honored on upgrade; a property assignment is not.
+- **Prefer attributes before upgrade.** If script runs before an element's definition has loaded, `setAttribute()` is in the document at once, for CSS and Quark to select on; an assignment to a declared property is applied when the element upgrades.
 
 ## Next steps
 
-- [Quick Start - A working page, in five minutes.](/nucleus/docs/quick_start)
-- [Core Concepts - The mental model, in one sitting.](/nucleus/docs/core_concepts)
-- [Using Elements - The Nucleus Kit catalog and how elements behave.](/nucleus/docs/using_elements)
-- [Orchestrating - Get familiar with Quark.](/nucleus/docs/orchestrating)
-- [Styling - Valence.css themes, tokens, and state-driven CSS.](/nucleus/docs/styling)
-- [Building Views - Structure a real app: routes, views, lazy loading.](/nucleus/docs/building_views)
-- Other Guides - [Business Logic](/nucleus/docs/business_logic), [Creating Elements](/nucleus/docs/creating_elements), [Best Practices](/nucleus/docs/best_practices), [Troubleshooting](/nucleus/docs/troubleshooting), [Debugging with Agents](/nucleus/docs/debugging_with_agents)
-- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](/nucleus/docs/diving_deeper)
+- [Quick Start - A working page, in five minutes.](/docs/quick_start)
+- [Core Concepts - The mental model, in one sitting.](/docs/core_concepts)
+- [Using Elements - The Nucleus Kit catalog and how elements behave.](/docs/using_elements)
+- [Orchestrating - Get familiar with Quark.](/docs/orchestrating)
+- [Styling - Valence.css themes, tokens, and state-driven CSS.](/docs/styling)
+- [Building Views - Structure a real app: routes, views, lazy loading.](/docs/building_views)
+- Other Guides - [Business Logic](/docs/business_logic), [Creating Elements](/docs/creating_elements), [Best Practices](/docs/best_practices), [Troubleshooting](/docs/troubleshooting), [Debugging with Agents](/docs/debugging_with_agents)
+- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](/docs/diving_deeper)

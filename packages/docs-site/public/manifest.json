@@ -1,10 +1,10 @@
 {
-  "id": "/nucleus",
+  "id": "/",
   "name": "Nucleus Stack",
   "short_name": "Nucleus",
   "description": "Live demos and API docs for the Nucleus Stack",
   "lang": "en",
-  "start_url": "/nucleus",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#13171f",

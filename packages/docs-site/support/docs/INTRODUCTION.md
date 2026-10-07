@@ -1,6 +1,6 @@
 # The Nucleus Stack
 
-Rich HTML apps - implementing the novel [ASO architectural pattern](/nucleus/docs/adapter_state_orchestrator).
+Rich HTML apps - implementing the novel [ASO architectural pattern](/docs/adapter_state_orchestrator).
 
 Live demo: fully RESTful Todo app - under 50 lines of code, zero app JS, no build process.
 
@@ -43,7 +43,7 @@ Every piece stands alone. Use one element on an existing site, or compose the wh
 
 ## Where it shines
 
-Content-rich sites, complex data-driven business rules, progressive enhancement of static/server-rendered pages, embedded user experiences. See [Limitations](/nucleus/docs/limitations) for the edges.
+Content-rich sites, complex data-driven business rules, progressive enhancement of static/server-rendered pages, embedded user experiences. See [Limitations](/docs/limitations) for the edges.
 
 The Nucleus Stack also opens up new possibilities that were not easily served by any UI technology before:
 - zero-build-tool UIs (e.g. on-the-fly generation)
@@ -55,7 +55,7 @@ The Nucleus Stack also opens up new possibilities that were not easily served by
 
 ## Dogfood is nutritious
 
-This entire site - including the complex bits, like the text editors - was built entirely using this UI stack alone. Due to the declarative design of these technologies, inspecting the document will give you a very strong understanding of the application's composition and features. Open your inspector! Installing [Nucleus DevTools](/nucleus/packages/nucleus-devtools) will also provide even stronger insight.
+This entire site - including the complex bits, like the text editors - was built entirely using this UI stack alone. Due to the declarative design of these technologies, inspecting the document will give you a very strong understanding of the application's composition and features. Open your inspector! Installing [Nucleus DevTools](/packages/nucleus-devtools) will also provide even stronger insight.
 
 The Nucleus Stack is currently being used in production by partnering companies.
 
@@ -72,15 +72,15 @@ The Nucleus Stack is MIT licensed and will remain free and open source, with lon
   </ul>
 </section>
 
-[Code contribution is welcome](/nucleus/docs/contributing).
+[Code contribution is welcome](/docs/contributing).
 
 ## Start here
 
-- [Quick Start - A working page, in five minutes.](/nucleus/docs/quick_start)
-- [Core Concepts - The mental model, in one sitting.](/nucleus/docs/core_concepts)
-- [Using Elements - The Nucleus Kit catalog and how elements behave.](/nucleus/docs/using_elements)
-- [Orchestrating - Get familiar with Quark.](/nucleus/docs/orchestrating)
-- [Styling - Valence.css themes, tokens, and state-driven CSS.](/nucleus/docs/styling)
-- [Building Views - Structure a real app: routes, views, lazy loading.](/nucleus/docs/building_views)
-- Other Guides - [Business Logic](/nucleus/docs/business_logic), [Creating Elements](/nucleus/docs/creating_elements), [Best Practices](/nucleus/docs/best_practices), [Troubleshooting](/nucleus/docs/troubleshooting), [Debugging with Agents](/nucleus/docs/debugging_with_agents)
-- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](/nucleus/docs/diving_deeper)
+- [Quick Start - A working page, in five minutes.](/docs/quick_start)
+- [Core Concepts - The mental model, in one sitting.](/docs/core_concepts)
+- [Using Elements - The Nucleus Kit catalog and how elements behave.](/docs/using_elements)
+- [Orchestrating - Get familiar with Quark.](/docs/orchestrating)
+- [Styling - Valence.css themes, tokens, and state-driven CSS.](/docs/styling)
+- [Building Views - Structure a real app: routes, views, lazy loading.](/docs/building_views)
+- Other Guides - [Business Logic](/docs/business_logic), [Creating Elements](/docs/creating_elements), [Best Practices](/docs/best_practices), [Troubleshooting](/docs/troubleshooting), [Debugging with Agents](/docs/debugging_with_agents)
+- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](/docs/diving_deeper)

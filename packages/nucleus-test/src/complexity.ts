@@ -15,6 +15,7 @@ const METRICS = [
   "matches",
   "closest",
   "parentElement",
+  "parentNode",
   "setAttribute",
   "removeAttribute",
   "textContent",
@@ -25,10 +26,11 @@ export type ComplexityMetric = (typeof METRICS)[number];
 
 /**
  * Units of work (not time) done while measuring. Engine metrics come from
- * the `EngineMeter` (0 when it has no such count); DOM metrics count calls
- * on the prototypes. `queryScopeCost`: each of the engine's per-rule
- * subtree queries adds the number of elements it scanned, sampled at
- * `take()`.
+ * the `EngineMeter` (0 when it has no such count); DOM metrics count the
+ * calls the code under test makes on the prototypes, not what the DOM
+ * emulation does to answer a selector (browsers match natively, reading no
+ * `parentNode`). `queryScopeCost`: each of the engine's per-rule subtree
+ * queries adds the number of elements it scanned, sampled at `take()`.
  */
 export type ComplexityBudget = Record<ComplexityMetric, number>;
 
@@ -61,6 +63,7 @@ export const measureComplexity = (engine: EngineMeter) => {
     closest: vi.spyOn(Element.prototype, "closest"),
     // upward traversal (binding resolution walks ancestors)
     parentElement: vi.spyOn(Node.prototype, "parentElement", "get"),
+    parentNode: vi.spyOn(Node.prototype, "parentNode", "get"),
     setAttribute: vi.spyOn(Element.prototype, "setAttribute"),
     removeAttribute: vi.spyOn(Element.prototype, "removeAttribute"),
     textContent: vi.spyOn(Element.prototype, "textContent", "set"),

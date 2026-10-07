@@ -18,7 +18,7 @@ format(`provider-fetch[is-success]{$todos:prop("provision").body;ul{content:iter
 
 - **One style** Two-space indent, 80-column wrapping, one selector per line, single blank lines between groups
 - **Safe** Invalid Quark throws instead of rewriting; comments stay where they were written; formatting is idempotent
-- **Editor / CLI ready** Powers Format Document in the [Nucleus & Quark extension](/nucleus/packages/nucleus-quark-highlighter) and the monorepo `format` script
+- **Editor / CLI ready** Powers Format Document in the [Nucleus & Quark extension](/packages/nucleus-quark-highlighter) and the monorepo `format` script
 - **Self-contained** Parser bundled in; runs in Node, bundlers and browsers
 
 ## Installation
@@ -29,17 +29,21 @@ format(`provider-fetch[is-success]{$todos:prop("provision").body;ul{content:iter
 
 `format(source, options?)` returns the formatted sheet as a string. The only option is `indent` (default two spaces).
 
-<include-content data-language="js"><template>import { format } from "@excom/quark-formatter";
+```js
+import { format } from "@excom/quark-formatter";
 
-const pretty = format(source, { indent: "\t" });</template></include-content>
+const pretty = format(source, { indent: "\t" });
+```
 
 Invalid input throws `QuarkParseError` (from `@excom/quark-parser`) with the line and column, so callers leave the original file untouched:
 
-<include-content data-language="js"><template>try {
+```js
+try {
   fs.writeFileSync(file, format(fs.readFileSync(file, "utf8")));
 } catch (error) {
   console.error(`${file}: ${error.message}`);
-}</template></include-content>
+}
+```
 
 ### What gets normalized
 
@@ -67,4 +71,4 @@ Quark is a derivative of CSS with at-rules of its own, and the formatter prints 
 
 ### In the editor
 
-Install the [Nucleus & Quark Syntax Highlighter](/nucleus/packages/nucleus-quark-highlighter) to format `.quark` files with Format Document and inline `<quark-sheet>` blocks with a command.
+Install the [Nucleus & Quark Syntax Highlighter](/packages/nucleus-quark-highlighter) to format `.quark` files with Format Document and inline `<quark-sheet>` blocks with a command.

@@ -197,6 +197,34 @@ describe("@warn / @debug / @error", () => {
     expect(built).toContain("Quark: @delay must be written inside a rule");
   });
 
+  it("says nothing on a preserve, and speaks once it has something to say", async () => {
+    const { root } = mount(
+      `<p id="p"></p>`,
+      `#p { @warn if(attr("data-bad"): "bad"; else: preserve); }`
+    );
+    await flush();
+    expect(messages(warn)).toEqual([]);
+    root.querySelector("#p")!.setAttribute("data-bad", "1");
+    await flush();
+    expect(messages(warn)).toEqual(["Quark @warn (#p): bad"]);
+  });
+
+  it("logs a failing expression's error once per element, however often it re-runs", async () => {
+    // `attr("data-n")` re-runs the rule on each change; `nope` fails each time
+    const { root } = mount(`<p id="p"></p>`, `#p { @warn nope(attr("data-n")); }`);
+    await flush();
+    const p = root.querySelector("#p")!;
+    p.setAttribute("data-n", "1");
+    await flush();
+    p.setAttribute("data-n", "2");
+    await flush();
+    const failures = error.mock.calls.filter(([arg]) =>
+      String((arg as LogArg)?.message).includes("Could not resolve expression")
+    );
+    expect(failures).toHaveLength(1);
+    expect(messages(warn)).toEqual([]);
+  });
+
   it("reports a failing expression as an error, not a diagnostic", async () => {
     mount(`<p id="p"></p>`, `#p { @warn nope(); }`);
     await flush();

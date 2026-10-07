@@ -101,7 +101,7 @@ spa-route[is-active] {
 }
 ```
 
-Nested layouts (`match-nested`), scroll restoration, history actions, and per-direction transition styling are all attributes on these tags. See the [spa-route](/nucleus/packages/spa-route) package for the full set.
+Nested layouts (`match-nested`), scroll restoration, history actions, and per-direction transition styling are all attributes on these tags. See the [spa-route](/packages/spa-route) package for the full set.
 
 ## An app skeleton
 
@@ -142,7 +142,7 @@ Name every custom attribute with a dash (`data-duration`, `is-open`), never a ba
 
 ## Long lists
 
-`iterate()` keeps the DOM proportional to your data. For heavy rows, stamp a lightweight `<include-content lazy-load>` per item and put the expensive markup in a commonly referenced template; only rows on screen materialize, and they can unrender as they scroll away (via the `lazy-unload` attr). This will ensure linear performance: only a single node per iteration. That covers most lists comfortably. At six figures of rows, node count itself becomes the limit — see [Limitations](/nucleus/docs/limitations).
+`iterate()` keeps the DOM proportional to your data. For heavy rows, stamp a lightweight `<include-content lazy-load>` per item and put the expensive markup in a commonly referenced template; only rows on screen materialize, and they can unrender as they scroll away (via the `lazy-unload` attr). This will ensure linear performance: only a single node per iteration. That covers most lists comfortably. At six figures of rows, node count itself becomes the limit — see [Limitations](/docs/limitations).
 
 ## Enhancing existing static pages
 
@@ -150,15 +150,15 @@ Everything above works on a server-rendered or CMS page. Start with one element 
 
 ## Load order
 
-Put `<quark-sheet>` first inside its host so it registers before sibling elements connect. Prefer reacting to state attributes (`is-success`, `is-active`) over one-shot events for anything that can happen during boot. See [Orchestrating](/nucleus/docs/orchestrating).
+Put `<quark-sheet>` first inside its host so it registers before sibling elements connect. Prefer reacting to state attributes (`is-success`, `is-active`) over one-shot events for anything that can happen during boot. See [Orchestrating](/docs/orchestrating).
 
 ## Next steps
 
-- [Quick Start - A working page, in five minutes.](/nucleus/docs/quick_start)
-- [Core Concepts - The mental model, in one sitting.](/nucleus/docs/core_concepts)
-- [Using Elements - The Nucleus Kit catalog and how elements behave.](/nucleus/docs/using_elements)
-- [Orchestrating - Get familiar with Quark.](/nucleus/docs/orchestrating)
-- [Styling - Valence.css themes, tokens, and state-driven CSS.](/nucleus/docs/styling)
-- [Building Views - Structure a real app: routes, views, lazy loading.](/nucleus/docs/building_views)
-- Other Guides - [Business Logic](/nucleus/docs/business_logic), [Creating Elements](/nucleus/docs/creating_elements), [Best Practices](/nucleus/docs/best_practices), [Troubleshooting](/nucleus/docs/troubleshooting), [Debugging with Agents](/nucleus/docs/debugging_with_agents)
-- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](/nucleus/docs/diving_deeper)
+- [Quick Start - A working page, in five minutes.](/docs/quick_start)
+- [Core Concepts - The mental model, in one sitting.](/docs/core_concepts)
+- [Using Elements - The Nucleus Kit catalog and how elements behave.](/docs/using_elements)
+- [Orchestrating - Get familiar with Quark.](/docs/orchestrating)
+- [Styling - Valence.css themes, tokens, and state-driven CSS.](/docs/styling)
+- [Building Views - Structure a real app: routes, views, lazy loading.](/docs/building_views)
+- Other Guides - [Business Logic](/docs/business_logic), [Creating Elements](/docs/creating_elements), [Best Practices](/docs/best_practices), [Troubleshooting](/docs/troubleshooting), [Debugging with Agents](/docs/debugging_with_agents)
+- [Diving Deeper - The architecture behind it all, for the curious and the skeptical.](/docs/diving_deeper)

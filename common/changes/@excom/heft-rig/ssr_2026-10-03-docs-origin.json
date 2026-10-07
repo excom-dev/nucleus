@@ -1,0 +1,20 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/heft-rig",
+      "comment": "Update the docs links the rig emits to the docs site's new address: `SITE_ORIGIN` is `https://nucleus.excom.dev` and `SITE_BASE` is empty, so pages are `/docs/<page>`, `/packages/<pkg>[/<page>]` and `/examples/<app>`, and the Introduction is `/` (`SITE_HOME`). The sitemap lists the home once, and generated npm READMEs, package metas and the offline Markdown mirror link the new routes",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/heft-rig",
+      "comment": "Fix `format`: ESLint finishes before Prettier starts, their output is shown, and a Prettier run that fails now fails the script. The HTML / Markdown step, which never ran (its config could not be loaded), is removed",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/heft-rig",
+      "comment": "Add `excom.testExclude` (globs a package keeps out of its test run and coverage), alias the rig's own repository for a package of another repository that links the rig, and stop adding a default `bugs` URL to a private package",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/heft-rig"
+}

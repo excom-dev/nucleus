@@ -108,7 +108,7 @@ label {
 body {
   -webkit-font-smoothing: antialiased;
 
-  &[data-layout="regular"] {
+  @media (width >= 768px) {
     --wf-gutter: 2.5rem;
   }
   &:has(content-drawer[is-open]) {
@@ -127,15 +127,17 @@ body {
     transition: 0.4s 0.1s;
     transition-property: opacity, visibility;
   }
-  &:has(spa-manager[has-rendered]) > [role="status"] {
+  /* a prerendered page arrives rendered: no splash */
+  &:has(spa-manager[has-rendered]):not([needs-service-worker])
+    > [role="status"] {
     opacity: 0;
     visibility: hidden;
   }
-  > service-worker:defined:not([is-supported]) ~ [role="status"]::after {
+  &[needs-service-worker] > [role="status"]::after {
     content: "This shop needs a browser with service workers.";
   }
 }
-:is(content-drawer, include-content, spa-route):not(:defined) {
+content-drawer:not(:defined) {
   display: none;
 }
 
@@ -297,120 +299,126 @@ spa-manager > header {
     display: none;
   }
 
-  [data-layout="regular"] & {
-    container-type: inline-size;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    height: var(--wf-header);
-    padding-inline: max(var(--wf-gutter), (100% - var(--wf-page)) / 2);
-    border-bottom: 1px solid var(--v-muted-border-color);
-    background: var(--wf-glass);
-    backdrop-filter: var(--wf-blur);
-    view-transition-name: header;
+  /* Phone below 768px, wide from there. A layout rule is `:root &`: it
+     outweighs the rule it adapts, here and in views. */
+  @media (width >= 768px) {
+    :root & {
+      container-type: inline-size;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      height: var(--wf-header);
+      padding-inline: max(var(--wf-gutter), (100% - var(--wf-page)) / 2);
+      border-bottom: 1px solid var(--v-muted-border-color);
+      background: var(--wf-glass);
+      backdrop-filter: var(--wf-blur);
+      view-transition-name: header;
 
-    > [bind-search] {
-      flex: 1 1 8rem;
-      max-width: 13rem;
-      margin-inline-start: auto;
-    }
-    input {
-      height: 2.25rem;
-      margin: 0;
-      padding-block: 0;
-      background-color: transparent;
-      font-size: 0.8125rem;
-    }
-    #tabs {
-      svg,
-      [data-tab="home"] {
-        display: none;
+      > [bind-search] {
+        flex: 1 1 8rem;
+        max-width: 13rem;
+        margin-inline-start: auto;
       }
-      [data-tab="shop"] {
-        order: -2;
+      input {
+        height: 2.25rem;
+        margin: 0;
+        padding-block: 0;
+        background-color: transparent;
+        font-size: 0.8125rem;
       }
-      [data-tab="account"] {
-        order: -1;
+      #tabs {
+        svg,
+        [data-tab="home"] {
+          display: none;
+        }
+        [data-tab="shop"] {
+          order: -2;
+        }
+        [data-tab="account"] {
+          order: -1;
+        }
+        .badge {
+          margin-inline-start: 0.5em;
+          vertical-align: 0.1em;
+        }
       }
-      .badge {
-        margin-inline-start: 0.5em;
-        vertical-align: 0.1em;
+      @container (width >= 68rem) {
+        #tabs [data-tab="shop"] {
+          display: none;
+        }
       }
-    }
-    @container (width >= 68rem) {
-      #tabs [data-tab="shop"] {
-        display: none;
+      @container (width < 68rem) {
+        > nav:not(#tabs) {
+          display: none;
+        }
       }
-    }
-    @container (width < 68rem) {
-      > nav:not(#tabs) {
-        display: none;
-      }
-    }
-    /* the row is tight below the full page width: the pill drops its label */
-    @container (width < 75rem) {
-      > #source-link {
-        width: 2.25rem;
-        padding: 0;
+      /* the row is tight below the full page width: the pill drops its label */
+      @container (width < 75rem) {
+        > #source-link {
+          width: 2.25rem;
+          padding: 0;
 
-        span {
-          position: absolute;
-          clip-path: inset(50%);
+          span {
+            position: absolute;
+            clip-path: inset(50%);
+          }
         }
       }
     }
   }
 
-  [data-layout="compact"] & {
-    display: contents;
+  @media (width < 768px) {
+    :root & {
+      display: contents;
 
-    > :not(#tabs, #source-link) {
-      display: none;
-    }
-    #tabs {
-      position: fixed;
-      inset: auto 0 0;
-      z-index: 10;
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 0;
-      padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom)
-        env(safe-area-inset-left);
-      border-top: 1px solid var(--v-muted-border-color);
-      background: var(--wf-glass);
-      backdrop-filter: var(--wf-blur);
-      view-transition-name: tabs;
-    }
-    #tabs spa-a {
-      position: relative;
-      display: grid;
-      justify-items: center;
-      gap: 0.15rem;
-      padding: 0.45rem 0 0.3rem;
-      color: var(--v-muted-color);
-      font-size: 0.625rem;
-      letter-spacing: 0.02em;
-      text-decoration: none;
-      text-transform: none;
-
-      &[aria-current] {
-        color: var(--v-primary);
+      > :not(#tabs, #source-link) {
+        display: none;
       }
-    }
-    #tabs svg {
-      width: 1.5rem;
-      height: 1.5rem;
-    }
-    #tabs .badge {
-      position: absolute;
-      top: 0.25rem;
-      left: calc(50% + 0.25rem);
-      min-width: 1.1rem;
-      padding: 0.15rem 0.3rem;
-      text-align: center;
+      #tabs {
+        position: fixed;
+        inset: auto 0 0;
+        z-index: 10;
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0;
+        padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom)
+          env(safe-area-inset-left);
+        border-top: 1px solid var(--v-muted-border-color);
+        background: var(--wf-glass);
+        backdrop-filter: var(--wf-blur);
+        view-transition-name: tabs;
+      }
+      #tabs spa-a {
+        position: relative;
+        display: grid;
+        justify-items: center;
+        gap: 0.15rem;
+        padding: 0.45rem 0 0.3rem;
+        color: var(--v-muted-color);
+        font-size: 0.625rem;
+        letter-spacing: 0.02em;
+        text-decoration: none;
+        text-transform: none;
+
+        &[aria-current] {
+          color: var(--v-primary);
+        }
+      }
+      #tabs svg {
+        width: 1.5rem;
+        height: 1.5rem;
+      }
+      #tabs .badge {
+        position: absolute;
+        top: 0.25rem;
+        left: calc(50% + 0.25rem);
+        min-width: 1.1rem;
+        padding: 0.15rem 0.3rem;
+        text-align: center;
+      }
     }
   }
 }
@@ -445,25 +453,27 @@ spa-manager > header {
     height: 1.1rem;
     fill: currentColor;
   }
-  [data-layout="compact"] & {
-    position: fixed;
-    --offset: 0.75rem;
-    @media (width < 400px) {
-      --offset: 0.25rem;
-    }
-    top: max(var(--offset), env(safe-area-inset-top));
-    right: max(var(--offset), env(safe-area-inset-right));
-    z-index: 11;
-    background: var(--wf-glass);
-    backdrop-filter: var(--wf-blur);
+  @media (width < 768px) {
+    :root & {
+      position: fixed;
+      --offset: 0.75rem;
+      @media (width < 400px) {
+        --offset: 0.25rem;
+      }
+      top: max(var(--offset), env(safe-area-inset-top));
+      right: max(var(--offset), env(safe-area-inset-right));
+      z-index: 11;
+      background: var(--wf-glass);
+      backdrop-filter: var(--wf-blur);
 
-    @media (width < 400px) {
-      width: 2.25rem;
-      padding: 0;
+      @media (width < 400px) {
+        width: 2.25rem;
+        padding: 0;
 
-      span {
-        position: absolute;
-        clip-path: inset(50%);
+        span {
+          position: absolute;
+          clip-path: inset(50%);
+        }
       }
     }
   }
@@ -471,8 +481,10 @@ spa-manager > header {
 
 main {
   min-height: 100dvh;
-  [data-layout="compact"] & {
-    padding-bottom: var(--wf-tabs);
+  @media (width < 768px) {
+    :root & {
+      padding-bottom: var(--wf-tabs);
+    }
   }
   > spa-route > * {
     display: block;
@@ -488,16 +500,20 @@ main {
     &.narrow {
       max-width: calc(42rem + 2 * var(--wf-gutter));
     }
-    [data-layout="compact"] &:has(.actions) {
-      padding-bottom: 8.5rem;
+    @media (width < 768px) {
+      :root &:has(.actions) {
+        padding-bottom: 8.5rem;
+      }
     }
   }
   h1 {
     margin-block: 0.5rem 1.25rem;
 
-    [data-layout="regular"] & {
-      --v-font-size: 3.25rem;
-      margin-block: 2.5rem 2rem;
+    @media (width >= 768px) {
+      :root & {
+        --v-font-size: 3.25rem;
+        margin-block: 2.5rem 2rem;
+      }
     }
     &:has(+ .count) {
       margin-bottom: 0.25rem;
@@ -544,37 +560,41 @@ main {
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  [data-layout="regular"] & {
-    margin-top: 1.5rem;
+  @media (width >= 768px) {
+    :root & {
+      margin-top: 1.5rem;
 
-    &:not(:has(> [route-action="back"])),
-    > strong {
-      display: none;
+      &:not(:has(> [route-action="back"])),
+      > strong {
+        display: none;
+      }
     }
   }
-  [data-layout="compact"] & {
-    position: sticky;
-    top: 0;
-    z-index: 5;
-    margin-top: calc(env(safe-area-inset-top) * -1);
-    padding-top: env(safe-area-inset-top);
-    border-bottom: 1px solid var(--v-muted-border-color);
-    background: var(--wf-glass);
-    backdrop-filter: var(--wf-blur);
+  @media (width < 768px) {
+    :root & {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      margin-top: calc(env(safe-area-inset-top) * -1);
+      padding-top: env(safe-area-inset-top);
+      border-bottom: 1px solid var(--v-muted-border-color);
+      background: var(--wf-glass);
+      backdrop-filter: var(--wf-blur);
 
-    @supports (animation-timeline: scroll()) {
-      border-color: transparent;
-      background: none;
-      backdrop-filter: none;
-      animation: bar-ground linear both;
-      animation-timeline: scroll();
-      animation-range: 1rem 4rem;
-
-      > strong {
-        opacity: 0;
-        animation: bar-title linear both;
+      @supports (animation-timeline: scroll()) {
+        border-color: transparent;
+        background: none;
+        backdrop-filter: none;
+        animation: bar-ground linear both;
         animation-timeline: scroll();
-        animation-range: 3rem 5rem;
+        animation-range: 1rem 4rem;
+
+        > strong {
+          opacity: 0;
+          animation: bar-title linear both;
+          animation-timeline: scroll();
+          animation-range: 3rem 5rem;
+        }
       }
     }
   }
@@ -610,15 +630,17 @@ main {
     font-size: 1.125rem;
     font-weight: 600;
   }
-  [data-layout="compact"] & {
-    position: fixed;
-    inset: auto 0 var(--wf-tabs);
-    z-index: 5;
-    padding: 0.75rem max(var(--wf-gutter), env(safe-area-inset-right)) 0.75rem
-      max(var(--wf-gutter), env(safe-area-inset-left));
-    border-top: 1px solid var(--v-muted-border-color);
-    background: var(--wf-glass);
-    backdrop-filter: var(--wf-blur);
+  @media (width < 768px) {
+    :root & {
+      position: fixed;
+      inset: auto 0 var(--wf-tabs);
+      z-index: 5;
+      padding: 0.75rem max(var(--wf-gutter), env(safe-area-inset-right)) 0.75rem
+        max(var(--wf-gutter), env(safe-area-inset-left));
+      border-top: 1px solid var(--v-muted-border-color);
+      background: var(--wf-glass);
+      backdrop-filter: var(--wf-blur);
+    }
   }
 }
 spa-manager > footer {
@@ -630,8 +652,10 @@ spa-manager > footer {
   color: var(--v-muted-color);
   text-align: center;
 
-  [data-layout="compact"] & {
-    display: none;
+  @media (width < 768px) {
+    :root & {
+      display: none;
+    }
   }
   nav {
     gap: 2rem;
@@ -647,8 +671,10 @@ spa-manager > footer {
 section:where(:not(spa-route > *)) {
   margin-block: 3.5rem;
 
-  [data-layout="regular"] & {
-    margin-block: 5.5rem;
+  @media (width >= 768px) {
+    :root & {
+      margin-block: 5.5rem;
+    }
   }
   > header {
     display: grid;
@@ -705,29 +731,33 @@ section:where(:not(spa-route > *)) {
     margin: 0;
     list-style: none;
   }
-  [data-layout="regular"] & {
-    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
-    gap: 3.5rem 1.5rem;
+  @media (width >= 768px) {
+    :root & {
+      grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+      gap: 3.5rem 1.5rem;
+    }
   }
 }
-[data-layout="compact"] .rail {
-  grid-template-columns: none;
-  grid-auto-columns: var(--wf-column, min(62vw, 16rem));
-  grid-auto-flow: column;
-  gap: 1rem;
-  margin-inline: calc(var(--wf-gutter) * -1);
-  padding-inline: var(--wf-gutter);
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scroll-padding-inline: var(--wf-gutter);
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
+@media (width < 768px) {
+  :root .rail {
+    grid-template-columns: none;
+    grid-auto-columns: var(--wf-column, min(62vw, 16rem));
+    grid-auto-flow: column;
+    gap: 1rem;
+    margin-inline: calc(var(--wf-gutter) * -1);
+    padding-inline: var(--wf-gutter);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-padding-inline: var(--wf-gutter);
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
 
-  > * {
-    scroll-snap-align: start;
-  }
-  &[bind-products] {
-    min-height: calc(min(62vw, 16rem) * 1.25 + 5.5rem);
+    > * {
+      scroll-snap-align: start;
+    }
+    &[bind-products] {
+      min-height: calc(min(62vw, 16rem) * 1.25 + 5.5rem);
+    }
   }
 }
 .list {
@@ -1265,22 +1295,24 @@ content-drawer {
   }
 }
 
-:root:has([data-layout="compact"]):not(:active-view-transition-type(tab)) {
-  &:has(spa-manager:is([last-move="push"], [last-move="forward"])) {
-    &::view-transition-old(root) {
-      animation: 0.3s var(--wf-ease-out) both push-under;
+@media (width < 768px) {
+  :root:not(:active-view-transition-type(tab)) {
+    &:has(spa-manager:is([last-move="push"], [last-move="forward"])) {
+      &::view-transition-old(root) {
+        animation: 0.3s var(--wf-ease-out) both push-under;
+      }
+      &::view-transition-new(root) {
+        animation: 0.3s var(--wf-ease-out) both push-over;
+      }
     }
-    &::view-transition-new(root) {
-      animation: 0.3s var(--wf-ease-out) both push-over;
-    }
-  }
-  &:has(spa-manager[last-move="back"]) {
-    &::view-transition-old(root) {
-      z-index: 1;
-      animation: 0.3s var(--wf-ease-out) both reverse push-over;
-    }
-    &::view-transition-new(root) {
-      animation: 0.3s var(--wf-ease-out) both reverse push-under;
+    &:has(spa-manager[last-move="back"]) {
+      &::view-transition-old(root) {
+        z-index: 1;
+        animation: 0.3s var(--wf-ease-out) both reverse push-over;
+      }
+      &::view-transition-new(root) {
+        animation: 0.3s var(--wf-ease-out) both reverse push-under;
+      }
     }
   }
 }

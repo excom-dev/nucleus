@@ -4,7 +4,7 @@
  * promises, and the DevTools result presentation of each shape.
  */
 import { Quark } from "../../index";
-import { SYMBOL_NOOP } from "../../src/constants";
+import { isNoop, SYMBOL_FAILED } from "../../src/constants";
 import { FIELD_RESOLVERS, resolveField } from "../../src/resolvers";
 import { QuarkLogger } from "../../src/utils";
 import { NUCLEUS_DEVTOOLS_HOOK_KEY } from "@excom/kit-devtools";
@@ -204,15 +204,16 @@ describe("resolvers", () => {
         },
       });
       const element = document.createElement("p");
-      expect(
-        resolveField({
-          element,
-          key: "data-x",
-          value: "nope()",
-          options: {},
-          hash: "h",
-        })
-      ).toBe(SYMBOL_NOOP);
+      const failed = resolveField({
+        element,
+        key: "data-x",
+        value: "nope()",
+        options: {},
+        hash: "h",
+      });
+      // a no-op, never a wipe; told apart from `preserve`
+      expect(failed).toBe(SYMBOL_FAILED);
+      expect(isNoop(failed)).toBe(true);
       const [err] = publications.filter(
         (p) => p.path.join("/") === "quark/error"
       );

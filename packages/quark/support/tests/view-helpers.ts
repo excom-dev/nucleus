@@ -7,7 +7,6 @@ import * as demoUtils from "../../../docs-site/public/demo-utils";
 import { flush } from "./helpers";
 
 export {
-  bypassSelectorCache,
   expectComplexity,
   flush,
   measureComplexity,

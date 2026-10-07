@@ -1,8 +1,8 @@
 <section>
-  <event-handler target-ref=":scope + content-drawer" command-name="--open">
-    Open drawer
+  <event-handler target-ref=":scope + content-drawer" command-name="--toggle">
+    Toggle drawer
   </event-handler>
-  <content-drawer id="demo-enter-close-drawer" is-open>
+  <content-drawer id="demo-enter-close-drawer" is-open class="absolute">
     <event-handler listen-for="keydown" keycode-filter="enter" target-ref="#demo-enter-close-drawer" command-name="--close">
       <label>
         Favorite color

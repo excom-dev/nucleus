@@ -1,0 +1,5 @@
+[data-demo] {
+  no-ssr: "";
+  template-ref: "/views/demo.html";
+  lazy-load: "";
+}

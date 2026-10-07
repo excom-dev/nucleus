@@ -4,11 +4,11 @@ This section is for technically curious deep-divers. It explains *why* the Nucle
 
 ## Reading order
 
-1. [Origin Story](/nucleus/docs/origin_story) — why Quark exists, and the platform gap it fills.
-2. [Adapter, State, Orchestrator](/nucleus/docs/adapter_state_orchestrator) — the pattern, defined precisely.
-3. [Prior Art](/nucleus/docs/prior_art) — where the ideas overlap and descend from existing ones, and what ASO is not.
-4. [Limitations](/nucleus/docs/limitations) — the edges, the divergences, and the unresolved bits of this implementation
-5. [Glossary](/nucleus/docs/glossary) — every term - one definition each.
+1. [Origin Story](/docs/origin_story) — why Quark exists, and the platform gap it fills.
+2. [Adapter, State, Orchestrator](/docs/adapter_state_orchestrator) — the pattern, defined precisely.
+3. [Prior Art](/docs/prior_art) — where the ideas overlap and descend from existing ones, and what ASO is not.
+4. [Limitations](/docs/limitations) — the edges, the divergences, and the unresolved bits of this implementation
+5. [Glossary](/docs/glossary) — every term - one definition each.
 
 ## Design principles
 
@@ -38,4 +38,4 @@ An **Adapter** is a located element — or a family of elements — that bridges
 
 The **Orchestrator** is a declarative, selector-driven observer that watches State changes and writes coordinated changes back to it, holding no separate state of its own.
 
-Continue to [Adapter, State, Orchestrator](/nucleus/docs/adapter_state_orchestrator).
+Continue to [Adapter, State, Orchestrator](/docs/adapter_state_orchestrator).

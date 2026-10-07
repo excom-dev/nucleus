@@ -122,19 +122,22 @@ export const displayName = (shortName: string): string =>
  */
 export const SITE_PACKAGE = "docs-site";
 
-/** Every docs url hangs off this base; `/` is the company page. */
-export const SITE_BASE = "/nucleus";
+/** Every docs url hangs off this base. Empty: the docs own the root of their origin. */
+export const SITE_BASE = "";
 
 /** The guide that is the docs home route; it has no `<base>/docs/…` url. */
 export const SITE_HOME_DOC = "introduction";
 
-/** Url of a site guide — the home guide is the base, the rest sit under `/docs`. */
+/** The docs home route. `/` for an empty base, never `""` (no link, no route). */
+export const SITE_HOME = SITE_BASE || "/";
+
+/** Url of a site guide — the home guide is the home route, the rest sit under `/docs`. */
 export const siteDocHref = (docName: string): string =>
-  docName === SITE_HOME_DOC ? SITE_BASE : `${SITE_BASE}/docs/${docName}`;
+  docName === SITE_HOME_DOC ? SITE_HOME : `${SITE_BASE}/docs/${docName}`;
 
 /**
  * `<base>/packages/:packageName[/:docName]` read the package meta (README or
- * one of its doc pages); `<base>` and `<base>/docs/:name` read the site guides.
+ * one of its doc pages); the home route and `<base>/docs/:name` read the site guides.
  */
 export const docMetaUrl = (
   docName?: string,
@@ -294,6 +297,10 @@ export const renderLang = (
 export const renderLangCopy = (val: string, lang: string) =>
   renderLang(val, lang, { includeCopyButton: true });
 
+const textOf = (html: string) =>
+  Object.assign(document.createElement("template"), { innerHTML: html }).content
+    .textContent;
+
 /**
  * Re-renders the `[data-highlight]` overlay next to the event target. The
  * language comes from the closest `[data-language]` (default `html`).
@@ -306,8 +313,10 @@ export const _renderPre =
     const lang =
       e.target.closest("[data-language]")?.getAttribute("data-language") ||
       "html";
-    e.target.parentElement.querySelector("[data-highlight]").innerHTML =
-      renderLang(shouldFormat ? formatCode(value) : value, lang);
+    const overlay = e.target.parentElement.querySelector("[data-highlight]");
+    const html = renderLang(shouldFormat ? formatCode(value) : value, lang);
+    // the same code shows already (a prerendered page): keep its nodes
+    if (overlay.textContent !== textOf(html)) overlay.innerHTML = html;
   };
 
 export const renderPreFormatted = _renderPre({ shouldFormat: true });
@@ -375,7 +384,7 @@ export const resetDemo = (src: string) => (e) => {
 const GITHUB_PACKAGES =
   "https://github.com/excom-dev/nucleus/tree/main/packages";
 
-/** GitHub link for an example-app file (`/nucleus/examples/*` playground). */
+/** GitHub link for an example-app file (`/examples/*` playground). */
 export const buildAppFileLink = (app: string, ext: string): string =>
   `${GITHUB_PACKAGES}/docs-site/public/views/${app}/${app}.${ext}`;
 
@@ -391,7 +400,8 @@ export const upgradeTemplateCode = (e) => {
   const template = e.target.querySelector("template");
   const language = e.target.getAttribute("data-language");
   const content = template.innerHTML;
-  if (!content) return;
+  // highlighted already (a prerendered page): again would show its markup
+  if (!content || template.content.querySelector(".shiki")) return;
   template.innerHTML = renderLang(unescapeHtml(content), language || "txt", {
     includeCopyButton: true,
   });

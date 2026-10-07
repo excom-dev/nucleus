@@ -15,7 +15,6 @@ import {
 } from "@excom/nucleus-test";
 import { Quark } from "@excom/quark";
 import {
-  bypassSelectorCache,
   flush,
 } from "@excom/quark/support/tests/view-helpers";
 import { renderMarkdown } from "@excom/heft-rig/scripts/render-markdown.mjs";
@@ -204,7 +203,6 @@ const originalLoader = Quark.moduleLoader;
 
 describe("package view", () => {
   beforeEach(() => {
-    bypassSelectorCache();
     requested.length = 0;
     Quark.moduleLoader = async (url: string) => {
       if (url.includes("shell")) return shellStub;
@@ -231,18 +229,18 @@ describe("package view", () => {
     expect(page.querySelector(".md-content h1")?.textContent).toBe("Props");
 
     const crumb = page.querySelector("[bind-package-link]")!;
-    expect(crumb.getAttribute("route-href")).toBe("/nucleus/packages/neutron");
+    expect(crumb.getAttribute("route-href")).toBe("/packages/neutron");
     expect(crumb.textContent).toBe("neutron");
 
     expect(page.hasAttribute("data-has-prev")).toBe(true);
     expect(page.hasAttribute("data-has-next")).toBe(true);
     expect(
       page.querySelector("[bind-prev-page]")?.getAttribute("route-href"),
-    ).toBe("/nucleus/packages/neutron");
+    ).toBe("/packages/neutron");
     expect(page.querySelector("[bind-prev-page]")?.textContent).toBe("neutron");
     expect(
       page.querySelector("[bind-next-page]")?.getAttribute("route-href"),
-    ).toBe("/nucleus/packages/neutron/effects");
+    ).toBe("/packages/neutron/effects");
     expect(page.querySelector("[bind-next-page]")?.textContent).toBe("Effects");
   });
 
@@ -251,12 +249,13 @@ describe("package view", () => {
 
     expect(requested).toEqual(["/package-metas/neutron.json"]);
     expect(page.hasAttribute("data-is-package-doc")).toBe(false);
+    expect(page.querySelector("[bind-package-link]")?.hasAttribute("route-href")).toBe(false);
     expect(page.querySelector(".md-content h1")?.textContent).toBe("neutron");
     expect(page.hasAttribute("data-has-prev")).toBe(false);
     expect(page.hasAttribute("data-has-next")).toBe(true);
     expect(
       page.querySelector("[bind-next-page]")?.getAttribute("route-href"),
-    ).toBe("/nucleus/packages/neutron/props");
+    ).toBe("/packages/neutron/props");
   });
 
   it("hides the next link on the last page", async () => {
@@ -268,7 +267,7 @@ describe("package view", () => {
     expect(page.hasAttribute("data-has-next")).toBe(false);
     expect(
       page.querySelector("[bind-prev-page]")?.getAttribute("route-href"),
-    ).toBe("/nucleus/packages/neutron/props");
+    ).toBe("/packages/neutron/props");
   });
 
   it("renders a site guide from the docs-site meta with no package chrome", async () => {
@@ -276,6 +275,10 @@ describe("package view", () => {
 
     expect(requested).toEqual(["/package-metas/docs-site.json"]);
     expect(page.hasAttribute("data-is-package-doc")).toBe(false);
+    // the hidden breadcrumb links nowhere: `/packages/` is no page
+    const crumb = page.querySelector("[bind-package-link]")!;
+    expect(crumb.hasAttribute("route-href")).toBe(false);
+    expect(crumb.textContent).toBe("");
     expect(page.querySelector(".md-content h1")?.textContent).toBe(
       "Introduction",
     );
@@ -284,7 +287,7 @@ describe("package view", () => {
     expect(page.hasAttribute("data-has-next")).toBe(true);
     expect(
       page.querySelector("[bind-next-page]")?.getAttribute("route-href"),
-    ).toBe("/nucleus/docs/core_concepts");
+    ).toBe("/docs/core_concepts");
     expect(page.querySelector("[bind-next-page]")?.textContent).toBe(
       "Core Concepts",
     );
@@ -300,16 +303,16 @@ describe("package view", () => {
     );
   });
 
-  it("keeps guide neighbors inside /nucleus/docs, and links the home guide as /nucleus", async () => {
+  it("keeps guide neighbors inside /docs, and links the home guide as /", async () => {
     const { page } = await mountPage({ name: "core_concepts" });
 
     expect(
       page.querySelector("[bind-prev-page]")?.getAttribute("route-href"),
-    ).toBe("/nucleus");
+    ).toBe("/");
     expect(page.hasAttribute("data-has-next")).toBe(false);
   });
 
-  it("renders nothing for a hand-typed /nucleus/packages/docs-site route", async () => {
+  it("renders nothing for a hand-typed /packages/docs-site route", async () => {
     const { page } = await mountPage(
       { packageName: "docs-site" },
       { expectFetch: false },
@@ -321,7 +324,7 @@ describe("package view", () => {
     expect(page.querySelector(".md-content")?.innerHTML).toBe("");
   });
 
-  it("renders nothing for a hand-typed /nucleus/packages/docs-site/<doc> route", async () => {
+  it("renders nothing for a hand-typed /packages/docs-site/<doc> route", async () => {
     const { page } = await mountPage(
       { packageName: "docs-site", docName: "core_concepts" },
       { expectFetch: false },
@@ -357,11 +360,11 @@ describe("package view", () => {
   });
 
   it("marks guide links the router has a past visit to", async () => {
-    const quickStart = "/nucleus/docs/quick_start";
-    const styling = "/nucleus/docs/styling";
+    const quickStart = "/docs/quick_start";
+    const styling = "/docs/styling";
     const { page } = await mountPage(
       { name: "guide_links" },
-      { previousUrls: ["/nucleus", quickStart, styling] },
+      { previousUrls: ["/", quickStart, styling] },
     );
     await vi.waitFor(() =>
       expect(

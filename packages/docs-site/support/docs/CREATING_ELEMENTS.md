@@ -90,7 +90,9 @@ Consumers now have a state attribute to style (`copy-button[did-copy]`), an even
 
 **Provisions.** To publish rich data, set the `provision` prop (tag it `@provision` in JSDoc). Quark reads it with `prop("provision")` and re-runs when it is assigned; Neutron also fires `neutron-provision` for app JS. Provisions must be plain objects or arrays — assign a new one, in-place mutation is not observed.
 
-See the [neutron](/nucleus/packages/neutron) package for the complete API.
+**Prerendering.** An element composed from `fetchable-element` / `renderable-element` hydrates on a [prerendered page](/docs/prerendering) with nothing to add. One that calls `fetch()` and replaces its own content still works there, fetching and rendering again; to keep the prerendered result it uses `fetchRecord()`, the `{ identity }` option of `replaceNonTemplateChildren()` and `holdHydration()` from `@excom/kit-utils`: see [Your own elements](/docs/prerendering#md-your-own-elements).
+
+See the [neutron](/packages/neutron) package for the complete API.
 
 ## Naming Recommendations
 
@@ -107,7 +109,7 @@ Property and method names must not collide with anything on `HTMLElement`, now o
 
 ## Don't
 
-- **Don't use shadow DOM** unless isolation is absolutely necessary, as around a region a rendering framework owns ([Handing rendering to a framework](/nucleus/packages/quark/use#md-handing-rendering-to-a-framework)). It blocks the state-driven CSS and Quark rules the whole stack depends on and severely hampers composability even with slots.
+- **Don't use shadow DOM** unless isolation is absolutely necessary, as around a region a rendering framework owns ([Handing rendering to a framework](/packages/quark/use#md-handing-rendering-to-a-framework)). It blocks the state-driven CSS and Quark rules the whole stack depends on and severely hampers composability even with slots.
 - **Don't hold hard references to other elements.** Use `WeakRef` / `WeakSet`, and clear any parent reference in `onDisconnected`.
 - **Don't render or mutate children** beyond the caveat above. If a parent must coordinate, fire events at children.
 - **Don't add cross-cutting features.** `super-form` should not grow a `success-scroll-to` attribute; it should fire `super-form-success` and let `scroll-into-view` do the scrolling.
@@ -115,4 +117,4 @@ Property and method names must not collide with anything on `HTMLElement`, now o
 
 ## Documenting
 
-Elements are documented from JSDoc: `@option` and `@state` on props, `@provision` on the provision prop, `@fires` / `@listens` with `@type` naming the event type. Events deserve the most care: say exactly when they fire, the shape of `detail`, and whether `preventDefault()` skips a default action. Package READMEs open with a one-sentence pitch and the simplest possible demo, then a Features list in the consumer's own words. The [docs site](/nucleus) generates the rest.
+Elements are documented from JSDoc: `@option` and `@state` on props, `@provision` on the provision prop, `@fires` / `@listens` with `@type` naming the event type. Events deserve the most care: say exactly when they fire, the shape of `detail`, and whether `preventDefault()` skips a default action. Package READMEs open with a one-sentence pitch and the simplest possible demo, then a Features list in the consumer's own words. The [docs site](/) generates the rest.
