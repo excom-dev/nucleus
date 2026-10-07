@@ -2,6 +2,30 @@
   "name": "@excom/detect-media",
   "entries": [
     {
+      "version": "0.1.6",
+      "tag": "@excom/detect-media_v0.1.6",
+      "date": "Wed, 07 Oct 2026 20:47:39 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/include-content\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/nucleus-test\" to `^0.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/quark\" to `^0.4.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/quark-sheet\" to `^0.1.6`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.5",
       "tag": "@excom/detect-media_v0.1.5",
       "date": "Thu, 01 Oct 2026 17:34:22 GMT",

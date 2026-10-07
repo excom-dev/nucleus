@@ -2,6 +2,58 @@
   "name": "@excom/quark",
   "entries": [
     {
+      "version": "0.4.0",
+      "tag": "@excom/quark_v0.4.0",
+      "date": "Wed, 07 Oct 2026 20:47:39 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add hydration of prerendered pages: `iterate()` rows are adopted by their `q-key`, content painted by `template()` or `dangerous-html()` is kept when its source matches, and a `$binding` nobody has written yet keeps the server's paint until hydration ends"
+          },
+          {
+            "comment": "Improve paints when two rules write the same attribute, `class` string or text `content` of one element in one pass: only the later one writes, so the element never shows the replaced value and a replaced write starts no view transition"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "Fix an issue where a rule rewrote an attribute whose value already read the same as text (`data-n: 0` over `data-n=\"0\"`)"
+          },
+          {
+            "comment": "Fix an issue where `Quark.whenSettled({ timeout: Infinity })` resolved `\"timeout\"` at once: it now waits with no cap"
+          },
+          {
+            "comment": "Fix an issue where a `@warn` or `@error` whose value was a preserve reported nothing later: it now stays silent and reports on a later run that has a value"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/hash-object\" to `^0.1.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-devtools\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-logger\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-utils\" to `^0.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/quark-parser\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/nucleus-test\" to `^0.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/provider-fetch\" to `^0.1.5`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/provider-storage\" to `^0.1.4`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.3.0",
       "tag": "@excom/quark_v0.3.0",
       "date": "Thu, 01 Oct 2026 17:34:22 GMT",

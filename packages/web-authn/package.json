@@ -1,6 +1,6 @@
 {
   "name": "@excom/web-authn",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "<web-authn> custom element",
   "license": "MIT",
   "engines": {

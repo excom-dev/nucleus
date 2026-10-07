@@ -2,6 +2,26 @@
   "name": "@excom/kit-utils",
   "entries": [
     {
+      "version": "0.3.0",
+      "tag": "@excom/kit-utils_v0.3.0",
+      "date": "Wed, 07 Oct 2026 20:47:39 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add hydration helpers for prerendered pages: `fetchRecord()` answers identical GET and HEAD requests from the page's hydration island, `replaceNonTemplateChildren()` takes `{ identity }` (from `templateIdentity()` or `htmlIdentity()`) and returns `\"adopted\"` when the server already rendered that source, `holdHydration()` keeps hydration open for start-up work and `whenHydrated()` resolves when it ends"
+          },
+          {
+            "comment": "Add `NO_SSR_ATTR`, the name of the `no-ssr` attribute that keeps a region of a page out of a prerender"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/nucleus-test\" to `^0.3.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.2.1",
       "tag": "@excom/kit-utils_v0.2.1",
       "date": "Thu, 01 Oct 2026 17:34:22 GMT",

@@ -2,6 +2,44 @@
   "name": "@excom/gesture-handler",
   "entries": [
     {
+      "version": "0.2.2",
+      "tag": "@excom/gesture-handler_v0.2.2",
+      "date": "Wed, 07 Oct 2026 20:47:39 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix a type error in projects that load Node's timer types: the element's animation frame handle is typed as a number"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/kit-utils\" to `^0.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/content-carousel\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/content-drawer\" to `^0.2.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/event-handler\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/nucleus-test\" to `^0.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/quark\" to `^0.4.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/quark-sheet\" to `^0.1.6`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.2.1",
       "tag": "@excom/gesture-handler_v0.2.1",
       "date": "Thu, 01 Oct 2026 17:34:22 GMT",

@@ -2,6 +2,30 @@
   "name": "@excom/nucleus-dom",
   "entries": [
     {
+      "version": "0.2.0",
+      "tag": "@excom/nucleus-dom_v0.2.0",
+      "date": "Wed, 07 Oct 2026 20:47:39 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add server rendering and whole-page test support: `serve()` (each request it answers carries a `digest` of the body), `whenIdle()`, `resetDocument()`, `installGlobals()`, and the `createDom()` options `viewport`, `holdTimersAbove`, `intersectAll` and `settings`"
+          },
+          {
+            "comment": "Add `supportSelectors` (part of `installShims()`): `matches()`, `closest()` and `querySelector(All)()` answer as Chrome does, including complex selectors inside `:not()`, `:is()`, `:where()` and `:has()`, sibling combinators, structural and form pseudo-classes, `:empty`, `:defined`, attribute flags and escapes"
+          },
+          {
+            "comment": "Remove `scopeQueriesToDocument`: `supportSelectors` does its work"
+          },
+          {
+            "comment": "Add `findParseDifference()`, `parseTree()` and `sameTree()`: the tree a browser builds from markup, where happy-dom's tree departs from it, and whether two documents are the same tree"
+          },
+          {
+            "comment": "Add shims for cloned template content (`upgradeClones`), `<template>` inside tables (`supportTableTemplates`), the parents of controls attached with a `<form>` or `<select>` (`keepFormParents`), event paths (`keepEventPaths`) and stray markup (`ignoreStrayMarkup`: a stray end tag no longer closes elements a browser leaves open, and text holding `-->` or `>` is no longer repeated or split); `installMissingApis` adds `DOMException#code`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.0",
       "tag": "@excom/nucleus-dom_v0.1.0",
       "date": "Thu, 01 Oct 2026 17:34:22 GMT",

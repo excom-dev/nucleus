@@ -2,6 +2,55 @@
   "name": "@excom/spa-route",
   "entries": [
     {
+      "version": "0.4.0",
+      "tag": "@excom/spa-route_v0.4.0",
+      "date": "Wed, 07 Oct 2026 20:47:39 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add `default-title` to `<spa-manager>`: the title a route without `document-title` falls back to, recorded from the page's `<title>` when a route first retitles the page"
+          },
+          {
+            "comment": "Add hydration of prerendered pages: the first update runs without a View Transition or `transition-delay`, a reload restores its saved scroll position as the manager mounts, and a page served for a URL another route matches drops its content and renders the matching route"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "Fix an issue where `render-timeout` left a route hidden while it waited for its `ready-on` event: it now reveals the route"
+          },
+          {
+            "comment": "Fix an issue where a `same-route=\"refresh\"` route tore down on its first registration match"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/kit-logger\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-router\" to `^0.2.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-utils\" to `^0.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/listenable-element\" to `^0.2.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/renderable-element\" to `^0.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/routable-element\" to `^0.2.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/nucleus-test\" to `^0.3.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.3.0",
       "tag": "@excom/spa-route_v0.3.0",
       "date": "Thu, 01 Oct 2026 17:34:22 GMT",

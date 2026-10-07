@@ -1,6 +1,6 @@
 {
   "name": "@excom/nucleus-test",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Vitest setup, matchers and helpers for testing Nucleus Stack apps and elements on happy-dom",
   "license": "MIT",
   "engines": {

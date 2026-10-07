@@ -1,6 +1,6 @@
 {
   "name": "@excom/content-carousel",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "<content-carousel> custom element",
   "license": "MIT",
   "engines": {

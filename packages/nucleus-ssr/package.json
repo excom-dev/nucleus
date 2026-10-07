@@ -1,6 +1,6 @@
 {
   "name": "@excom/nucleus-ssr",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Prerender Nucleus Stack pages to static HTML that hydrates in the browser without re-rendering",
   "license": "MIT",
   "engines": {

@@ -1,6 +1,6 @@
 {
   "name": "@excom/hash-object",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "hash-object library",
   "license": "MIT",
   "engines": {

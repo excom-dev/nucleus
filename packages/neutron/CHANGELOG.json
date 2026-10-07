@@ -2,6 +2,49 @@
   "name": "@excom/neutron",
   "entries": [
     {
+      "version": "0.2.0",
+      "tag": "@excom/neutron_v0.2.0",
+      "date": "Wed, 07 Oct 2026 20:47:39 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add hydration of prerendered pages: an element takes its `provision` from the page's hydration island before it mounts, and deferred event defaults keep hydration open"
+          },
+          {
+            "comment": "Add `no-ssr` and `Neutron({ ssr: false })` to keep elements out of a prerender: the attribute keeps every Neutron element on or inside its element unmounted until the browser, and the option does the same for one tag's own instances"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "Fix an issue where a value assigned to a declared prop before the element's definition loaded was dropped: it is now applied at upgrade"
+          },
+          {
+            "comment": "Fix an issue where `Neutron.compose()` lost `reflectDefaultProps` when a later builder left it out: an option a builder leaves out is inherited, and the last builder that states it wins"
+          },
+          {
+            "comment": "Fix an error thrown when a `window` or `document` listener fires after its element was removed and garbage-collected: the listener now does nothing"
+          },
+          {
+            "comment": "Fix an issue where a reflected lifecycle attribute (`reflectDefaultProps`) was read back: an `is-mounted` in markup or on a clone no longer runs `onConnected` on an element that is not mounted, and the attribute returns to the element's real state"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/kit-devtools\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-logger\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-utils\" to `^0.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/nucleus-test\" to `^0.3.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.3",
       "tag": "@excom/neutron_v0.1.3",
       "date": "Thu, 01 Oct 2026 17:34:22 GMT",

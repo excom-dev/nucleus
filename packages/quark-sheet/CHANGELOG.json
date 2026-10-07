@@ -2,6 +2,38 @@
   "name": "@excom/quark-sheet",
   "entries": [
     {
+      "version": "0.1.6",
+      "tag": "@excom/quark-sheet_v0.1.6",
+      "date": "Wed, 07 Oct 2026 20:47:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update docs and complexity snapshots: the snapshots count `parentNode` reads"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/kit-logger\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-utils\" to `^0.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/loadable-element\" to `^0.2.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/quark\" to `^0.4.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/nucleus-test\" to `^0.3.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.5",
       "tag": "@excom/quark-sheet_v0.1.5",
       "date": "Thu, 01 Oct 2026 17:34:22 GMT",

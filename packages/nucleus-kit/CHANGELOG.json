@@ -2,6 +2,116 @@
   "name": "@excom/nucleus-kit",
   "entries": [
     {
+      "version": "0.4.0",
+      "tag": "@excom/nucleus-kit_v0.4.0",
+      "date": "Wed, 07 Oct 2026 20:47:39 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add `@excom/nucleus-kit/server`: the Kit without the elements that read the device or the person, for prerendering with `@excom/nucleus-ssr`; `SERVER_EXCLUDED_TAGS` lists their tags"
+          },
+          {
+            "comment": "Improve the progressive entry for prerendered pages: hydration stays open until the packages for the Kit tags present at startup are imported, so those elements keep their prerendered content"
+          },
+          {
+            "comment": "Add the `@excom/nucleus-kit/nucleus-kit.progressive` import path: the progressive entry is exported under its plain name as well as `nucleus-kit.progressive.min`"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/content-carousel\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/content-drawer\" to `^0.2.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/content-tabs\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/data-table\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/detect-browser\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/detect-features\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/detect-media\" to `^0.1.6`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/dialog-anchor\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/dismiss-watcher\" to `^0.1.6`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/dom-observer\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/event-handler\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/gesture-handler\" to `^0.2.2`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/include-content\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-logger\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/kit-utils\" to `^0.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/network-status\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/neutron\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/provider-fetch\" to `^0.1.5`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/provider-geolocation\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/provider-orientation\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/provider-storage\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/quark\" to `^0.4.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/quark-sheet\" to `^0.1.6`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/scroll-into-view\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/service-worker\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/spa-route\" to `^0.4.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/super-form\" to `^0.1.6`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/super-input\" to `^0.1.4`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/web-authn\" to `^0.1.5`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/nucleus-test\" to `^0.3.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.3.0",
       "tag": "@excom/nucleus-kit_v0.3.0",
       "date": "Thu, 01 Oct 2026 17:34:22 GMT",

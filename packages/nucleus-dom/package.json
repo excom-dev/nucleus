@@ -1,6 +1,6 @@
 {
   "name": "@excom/nucleus-dom",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "happy-dom with browser-parity shims, for testing and server-rendering Nucleus Stack apps",
   "license": "MIT",
   "engines": {
