@@ -84,7 +84,7 @@ describe("kitPlugin", () => {
     expect(await kit.transform.call(stopper, "p { background: url(./x.svg); } /* url(@excom/quark/x) */", id)).toBeNull();
   });
 
-  it("points a stylesheet's Nucleus Kit @import at unpkg, whatever its quotes, and leaves the rest", async () => {
+  it("takes a stylesheet's Nucleus Kit @import out, whatever its quotes, and leaves the rest", async () => {
     const kit = await pluginFor(tmp);
     const id = path.join(tmp, "s/shell.css");
     for (const line of [
@@ -93,10 +93,13 @@ describe("kitPlugin", () => {
       "@import url(@excom/nucleus-kit/basic.css);",
       "@import url( '@excom/nucleus-kit/basic.css' );",
     ])
-      expect(await kit.transform.call(stopper, `${line}\np{}`, id)).toEqual({
-        code: '@import "https://unpkg.com/@excom/nucleus-kit@9.9.9/dist/basic.css";\np{}',
-        map: null,
-      });
+      expect(await kit.transform.call(stopper, `${line}\np{}`, id)).toEqual({ code: "\np{}", map: null });
+    // linked once by the page that links the sheet
+    writeFiles(tmp, { "s/index.html": page('<link rel="stylesheet" href="./shell.css">') });
+    expect(kit.transformIndexHtml.handler("", { filename: path.join(tmp, "s/index.html") })).toEqual([
+      { tag: "link", attrs: { rel: "preconnect", href: "https://unpkg.com", crossorigin: true }, injectTo: "head-prepend" },
+      { tag: "link", attrs: { rel: "stylesheet", href: "https://unpkg.com/@excom/nucleus-kit@9.9.9/dist/basic.css", crossorigin: true }, injectTo: "head-prepend" },
+    ]);
     expect(await kit.transform.call(stopper, "p{}", `${tmp}/s/index.html?html-proxy&inline-css&index=0.css`)).toBeNull();
     expect(await kit.transform.call(stopper, 'import "@excom/nucleus-kit/basic.css";', `${tmp}/s/x.js`)).toBeNull();
   });
@@ -116,7 +119,8 @@ describe("an unpkg build", () => {
       "shell.css": "@import url('@excom/nucleus-kit/basic.css');\n@import \"@excom/valence/src/mixins.css\";\n@import \"./nested.css\";\np { @mixin quiet; }\n",
       "nested.css": ".nested { color: red; }\n",
     });
-    expect(output.match(/https:\/\/unpkg\.com\/@excom\/nucleus-kit@9\.9\.9\/dist\/basic\.css/g)).toHaveLength(2);
+    expect(output).not.toMatch(/@import/);
+    expect(output.match(/<link rel="stylesheet" href="https:\/\/unpkg\.com\/@excom\/nucleus-kit@9\.9\.9\/dist\/basic\.css" crossorigin>/g)).toHaveLength(1);
     expect(output).toContain("https://unpkg.com/@excom/nucleus-kit@9.9.9/dist/nucleus-kit.progressive.min.js");
     expect(output).toContain(".nested");
     for (const marker of ["kit-code-marker", "kit-marker", "valence-marker"]) expect(output).not.toContain(marker);
@@ -224,7 +228,8 @@ describe("a kit shaped as published", () => {
         published
       );
       expect(output).toContain(`<script type="module" crossorigin src="${MIN}"></script>`);
-      expect(output).toContain(`@import "${CSS}"`);
+      expect(output).toContain(`href="${CSS}"`);
+      expect(output).not.toMatch(/@import/);
       expect(output).not.toMatch(/published-(index-|code-)?marker/);
     }
   });
@@ -244,6 +249,149 @@ describe("a kit shaped as published", () => {
     await expect(built("bare-published", { "index.html": entry("@excom/nucleus-kit") }, "unpkg", published)).rejects.toThrow(
       /kit "unpkg": assets\/index-[\w-]+\.js holds \.\.\/node_modules\/@excom\/nucleus-kit\/dist\/index\.js: import @excom\/nucleus-kit\/<entry>, loaded from unpkg/
     );
+  });
+});
+
+describe("the kit's stylesheet in an unpkg build", () => {
+  const BASE = "https://unpkg.com/@excom/nucleus-kit@9.9.9/dist";
+  const head = (html: string) => /<head>([\s\S]*?)<\/head>/.exec(html)![1];
+  const pages = (site: string) =>
+    ["index.html", "other.html"].map((name) => readFileSync(path.join(tmp, site, "dist", name), "utf8"));
+  const SITE = { "shell.css": '@import "@excom/nucleus-kit/basic.css";\np { color: red; }\n' };
+
+  it("links the sheet from the head of every page, after a preconnect, before the site's own", async () => {
+    await built("linked", {
+      "index.html": page('<link rel="stylesheet" href="./shell.css">'),
+      "other.html": page('<style>@import "@excom/nucleus-kit/basic.css"; b { color: red; }</style>'),
+      ...SITE,
+    });
+    const [index, other] = pages("linked");
+    for (const html of [index, other]) {
+      const [preconnect, sheet] = [
+        head(html).indexOf('<link rel="preconnect" href="https://unpkg.com" crossorigin>'),
+        head(html).indexOf(`<link rel="stylesheet" href="${BASE}/basic.css" crossorigin>`),
+      ];
+      expect(preconnect).toBeGreaterThanOrEqual(0);
+      expect(sheet).toBeGreaterThan(preconnect);
+      expect(html).not.toMatch(/@import/);
+    }
+    expect(head(index).indexOf('href="/assets/')).toBeGreaterThan(head(index).indexOf(BASE));
+    expect(head(other)).toContain("<style");
+    expect(head(other).indexOf("<style")).toBeGreaterThan(head(other).indexOf(BASE));
+    const css = readdirSync(path.join(tmp, "linked/dist/assets")).filter((file) => file.endsWith(".css"));
+    expect(css.length).toBeGreaterThan(0);
+    for (const file of css) expect(readFileSync(path.join(tmp, "linked/dist/assets", file), "utf8")).not.toContain("unpkg");
+  });
+
+  it("links the minified file when a workspace kit's dist has one, the plain one otherwise", async () => {
+    const workspace = path.join(tmp, "min-workspace");
+    writeFiles(workspace, {
+      "node_modules/@excom/nucleus-kit/package.json": JSON.stringify({ name: "@excom/nucleus-kit", version: "9.9.9" }),
+      "node_modules/@excom/nucleus-kit/dist/basic.css": ".a{}",
+      "node_modules/@excom/nucleus-kit/dist/basic.min.css": ".a{}",
+      "node_modules/@excom/nucleus-kit/dist/plain.css": ".b{}",
+    });
+    const output = await built(
+      "min-workspace-site",
+      {
+        "index.html": page('<link rel="stylesheet" href="./shell.css">'),
+        "shell.css": '@import "@excom/nucleus-kit/basic.css";\n@import "@excom/nucleus-kit/plain.css";\n',
+      },
+      "unpkg",
+      workspace
+    );
+    expect(output).toContain(`href="${BASE}/basic.min.css"`);
+    expect(output).not.toContain(`${BASE}/basic.css`);
+    expect(output).toContain(`href="${BASE}/plain.css"`);
+  });
+
+  it("links the minified file when a published kit exports one", async () => {
+    const published = path.join(tmp, "min-published");
+    const kit = path.join(published, "node_modules/@excom/nucleus-kit");
+    writeFiles(kit, {
+      "package.json": JSON.stringify({ name: "@excom/nucleus-kit", version: "9.9.9", type: "module" }),
+      "dist/basic.css": ".a{}",
+      "dist/basic.min.css": ".a{}",
+      "dist/plain.css": ".b{}",
+    });
+    await buildExports(kit);
+    writeFiles(kit, {
+      "package.json": JSON.stringify({
+        name: "@excom/nucleus-kit",
+        version: "9.9.9",
+        exports: JSON.parse(readFileSync(path.join(kit, "dist/exports.generated.json"), "utf8")),
+      }),
+    });
+    const output = await built(
+      "min-published-site",
+      { "index.html": page('<link rel="stylesheet" href="./shell.css">'), "shell.css": '@import "@excom/nucleus-kit/basic.css";\n@import "@excom/nucleus-kit/plain.css";\n' },
+      "unpkg",
+      published
+    );
+    expect(output).toContain(`href="${BASE}/basic.min.css"`);
+    expect(output).not.toContain(`${BASE}/basic.css`);
+    expect(output).toContain(`href="${BASE}/plain.css"`);
+  });
+
+  const hasKit = (site: string, name: string) => {
+    const html = readFileSync(path.join(tmp, site, "dist", name), "utf8");
+    expect(html.includes('rel="preconnect"')).toBe(html.includes(BASE));
+    return html.includes(BASE);
+  };
+
+  it("links the sheet only on the pages that use it", async () => {
+    await built("scoped", {
+      "index.html": page('<link rel="stylesheet" href="./shell.css">'),
+      "bare.html": page('<link rel="stylesheet" href="/plain.css">'),
+      "shell.css": '@import "@excom/nucleus-kit/basic.css";\np { color: red; }\n',
+      "plain.css": "p { color: blue; }\n",
+    });
+    expect([hasKit("scoped", "index.html"), hasKit("scoped", "bare.html")]).toEqual([true, false]);
+  });
+
+  it("links a sheet two pages share on both", async () => {
+    await built("shared", {
+      "index.html": page('<link rel="stylesheet" href="./shell.css">'),
+      "other.html": page('<link rel="stylesheet" href="/shell.css">'),
+      "bare.html": page(""),
+      ...SITE,
+    });
+    expect(["index.html", "other.html", "bare.html"].map((name) => hasKit("shared", name))).toEqual([true, true, false]);
+  });
+
+  it("keeps an inline <style>'s kit import on its own page", async () => {
+    await built("inline", {
+      "index.html": page('<style>@import "@excom/nucleus-kit/basic.css"; b { color: red; }</style>'),
+      "other.html": page("<style>b { color: red; }</style>"),
+    });
+    expect([hasKit("inline", "index.html"), hasKit("inline", "other.html")]).toEqual([true, false]);
+  });
+
+  it("links a sheet a script imports on every page", async () => {
+    await built("imported", {
+      "index.html": page('<script type="module" src="./main.js"></script>'),
+      "other.html": page(""),
+      "main.js": 'import "./shell.css";\n',
+      ...SITE,
+    });
+    expect(["index.html", "other.html"].map((name) => hasKit("imported", name))).toEqual([true, true]);
+  });
+
+  it("adds nothing to a page of a site that imports no kit stylesheet, nor to a bundled build", async () => {
+    const files = { "index.html": page('<link rel="stylesheet" href="./shell.css">'), "shell.css": "p { color: red; }\n" };
+    expect(await built("no-kit-css", files)).not.toContain("unpkg.com");
+    const bundled = await built("bundled-css", { ...files, "shell.css": '@import "@excom/nucleus-kit/basic.css";\n' }, "bundled");
+    expect(bundled).toContain("kit-marker");
+    expect(bundled).not.toContain("unpkg.com");
+  });
+
+  it("stops on a kit @import that carries a media query, layer or supports condition", async () => {
+    await expect(
+      built("conditioned", {
+        "index.html": page('<link rel="stylesheet" href="./shell.css">'),
+        "shell.css": '@import "@excom/nucleus-kit/basic.css" layer(kit);\n',
+      })
+    ).rejects.toThrow(/kit "unpkg": .*shell\.css has `@import "@excom\/nucleus-kit\/basic\.css" layer\(kit\)`:/);
   });
 });
 

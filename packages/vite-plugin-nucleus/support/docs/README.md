@@ -51,7 +51,7 @@ public/
 A page loads the kit from a module script: `import "@excom/nucleus-kit/nucleus-kit.progressive";`. That path resolves from the first NucleusKit release after 0.3.0; with 0.3.0 write `…/nucleus-kit.progressive.min`, which works in both modes.
 
 - `kit: "bundled"` (default) Vite bundles the kit like any dependency
-- `kit: "unpkg"` `vite build` loads it from unpkg at the installed version, so the kit must be installed in the app. Imports of `@excom/nucleus-kit/<entry>` in a script and of `@excom/nucleus-kit/<name>.css` in a stylesheet are rewritten; the bare `@excom/nucleus-kit` is not. The build stops when kit code would ship, or on a path the kit does not export
+- `kit: "unpkg"` `vite build` loads it from unpkg at the installed version, so the kit must be installed in the app. Imports of `@excom/nucleus-kit/<entry>` in a script are rewritten; the bare `@excom/nucleus-kit` is not. An `@import "@excom/nucleus-kit/<name>.css"` in a stylesheet (or a page's `<style>`) leaves it and becomes a `<link rel="stylesheet">` at the start of the `<head>` of each page that uses it (one a script imports goes on every page), after a `preconnect` to unpkg: the browser fetches it with the page, not after your stylesheet, and the minified file (`<name>.min.css`) when the kit has one. The cascade is unchanged: kit first, yours after. The build stops when kit code would ship, on a path the kit does not export, or on a kit `@import` with a media query, `layer()` or `supports()`
 
 ### What the plugin sets
 

@@ -5,18 +5,28 @@
 // stylesheet a page links or by a page's `<style>`) and stops the build, naming
 // the file, on the rest.
 import { transformCss } from "../css.mjs";
-import { access, readFile, realpath } from "node:fs/promises";
+import { readFileSync } from "node:fs";
+import { access, readdir, readFile, realpath } from "node:fs/promises";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 
 export const KIT = "@excom/nucleus-kit";
 const KIT_IMPORT = /^@excom\/nucleus-kit\/(.+)$/;
-const KIT_CSS_IMPORT = /@import\s+(?:url\(\s*)?(["']?)@excom\/nucleus-kit\/([^"')\s;]+\.css)\1\s*\)?/g;
+const KIT_CSS_IMPORT = /@import\s+(?:url\(\s*)?(["']?)@excom\/nucleus-kit\/([^"')\s;]+\.css)\1\s*\)?([^;]*);?/g;
 const CSS_IMPORT = /@import\s+(?:url\(\s*)?(["']?)([^"')\s;]+)\1/g;
 const CSS_URL = /url\(\s*(["']?)([^"')\s]+)\1\s*\)/g;
 const CSS_REQUEST = /\.css(?:$|\?)/;
 const PACKAGE = /^(@[^/]+\/[^/]+|[^/@.][^/]*)(?:\/(.*))?$/;
 /** The `exports` conditions a page's `import` meets. */
 const CONDITIONS = ["browser", "import", "module", "default"];
+
+const STYLESHEET_HREFS = /<link\b[^>]*>/gi;
+/** The files (resolved) a page's source links as stylesheets: root-relative from `root`, else from the page. */
+const linkedSheets = (page, root) =>
+  [...readFileSync(page, "utf8").replace(/<!--[\s\S]*?-->/g, "").matchAll(STYLESHEET_HREFS)]
+    .map(([tag]) => [/\brel=["']?stylesheet/i.test(tag), /\bhref=["']?([^"'\s>]+)/i.exec(tag)?.[1]])
+    .filter(([sheet, href]) => sheet && href && !/^[a-z][a-z\d+.-]*:|^\/\//i.test(href))
+    .map(([, href]) => href.split(/[?#]/)[0])
+    .map((href) => (href.startsWith("/") ? join(root, href) : resolve(dirname(page), href)));
 
 const exists = (file) => access(file).then(() => true, () => false);
 const inside = (dir, file) => {
@@ -55,7 +65,8 @@ const exportedFile = (value) =>
  * on unpkg of `@excom/nucleus-kit/<path>` (the file its `exports` name, none when
  * it exports no such path; without `exports`, as in a workspace, `dist/<path>.min.js`
  * or the stylesheet), whether a file is `owned` by the kit or a package it
- * bundles, whether a specifier `names` one of them.
+ * bundles, whether a specifier `names` one of them. `stylesheet(path)` is the
+ * URL of a `.css` path to link: its `.min.css` sibling when the kit has one.
  * @param {string} root
  */
 export async function unpkgKitOf(root) {
@@ -68,12 +79,19 @@ export async function unpkgKitOf(root) {
     exports === undefined
       ? `dist/${path.endsWith(".css") ? path : `${path}.min.js`}`
       : exportedFile(exports[`./${path}`])?.replace(/^\.\//, "");
+  // a workspace kit has no `exports`: its minified sheets are the ones in `dist`
+  const built = exports === undefined ? await readdir(join(kit.dir, "dist")).catch(() => []) : [];
+  const url = (path) => {
+    const file = fileOf(path);
+    return file && `${base}/${file}`;
+  };
   return {
     root,
     version: kit.version,
-    url: (path) => {
-      const file = fileOf(path);
-      return file && `${base}/${file}`;
+    url,
+    stylesheet: (path) => {
+      const min = path.replace(/\.css$/, ".min.css");
+      return (exports === undefined ? built.includes(min) : fileOf(min)) ? url(min) : url(path);
     },
     owned: (file) => owners.some((dir) => inside(dir, file)),
     names: (specifier) => [KIT, ...bundled].includes(PACKAGE.exec(specifier)?.[1]),
@@ -104,9 +122,12 @@ const emits = async (file) =>
 
 /**
  * The plugin of an unpkg build; `unpkg()` is the kit of the site being built
- * (`unpkgKitOf`). A script's `@excom/nucleus-kit/<path>` and a stylesheet's
- * `@import` of `@excom/nucleus-kit/<name>.css` load the file the kit exports
- * there from unpkg. Stops the build on a path the kit does not export, a chunk
+ * (`unpkgKitOf`). A script's `@excom/nucleus-kit/<path>` loads the file the kit
+ * exports there from unpkg. A stylesheet's `@import` of `@excom/nucleus-kit/<name>.css`
+ * leaves the stylesheet and becomes a `<link rel="stylesheet">` of its own at the
+ * start of the `<head>` of each page that uses it (the minified file when the kit
+ * has one), after a `preconnect` to unpkg: the browser finds it with the page, not after
+ * the site's sheet, and it stays cached by the CDN. Stops the build on a path the kit does not export, a chunk
  * holding code of the kit or of a package it bundles (a bare
  * `@excom/nucleus-kit`, `@excom/quark`), a stylesheet that pulls in their CSS
  * through a nested `@import`, and a stylesheet's `url()` naming them (the kit's
@@ -116,6 +137,9 @@ const emits = async (file) =>
 export function kitPlugin(unpkg) {
   const shown = (file) => relative(unpkg().root, file) || file;
   const stop = (context, message) => context.error(`kit "unpkg": ${message}`);
+  /** The kit sheets taken out of stylesheets, in the order found, with the file (a sheet, or the page of an inline `<style>`) that held each. */
+  const found = [];
+  let inputs = [];
   const urlOf = (context, path) =>
     unpkg().url(path) ?? stop(context, `${KIT}/${path} is not a path ${KIT}@${unpkg().version} exports`);
   /** A stylesheet and its nested imports: no `url()` naming the kit, no kit file that adds CSS. */
@@ -141,12 +165,45 @@ export function kitPlugin(unpkg) {
       const path = KIT_IMPORT.exec(source)?.[1];
       return path ? { id: urlOf(this, path), external: true } : null;
     },
+    options({ input }) {
+      inputs = [input ?? []].flat().flatMap((entry) => (typeof entry === "string" ? [entry] : Object.values(entry)));
+    },
     // before PostCSS inlines the imports
     async transform(code, id) {
       if (!CSS_REQUEST.test(id)) return null;
-      const rewritten = code.replace(KIT_CSS_IMPORT, (_, __, path) => `@import "${urlOf(this, path)}"`);
+      const rewritten = code.replace(KIT_CSS_IMPORT, (statement, _, path, condition) => {
+        if (condition.trim()) stop(this, `${shown(id.split("?")[0])} has \`${statement.trim().replace(/;$/, "")}\`: a kit stylesheet is linked by the page, so its @import takes no media query, layer or supports condition`);
+        urlOf(this, path);
+        found.push({ holder: id.split("?")[0], url: unpkg().stylesheet(path) });
+        return "";
+      });
       await check(this, id.split("?")[0], rewritten);
       return rewritten === code ? null : { code: rewritten, map: null };
+    },
+    transformIndexHtml: {
+      order: "post",
+      // a page uses a sheet it links, or inlines in a `<style>`; a sheet no page links
+      // (imported by a script) can't be attributed cheaply: every page links it
+      handler: (_, { filename }) => {
+        const { root } = unpkg();
+        const pages = [...new Set([filename, ...inputs.map((input) => resolve(root, input)).filter((input) => input.endsWith(".html"))])];
+        const linked = pages.map((page) => [page, new Set(linkedSheets(page, root))]);
+        const mine = linked.find(([page]) => page === filename)[1];
+        const urls = [
+          ...new Set(
+            found
+              .filter(({ holder }) => holder === filename || mine.has(holder) || (holder.endsWith(".css") && !linked.some(([, sheets]) => sheets.has(holder))))
+              .map(({ url }) => url)
+          ),
+        ];
+        return urls.length === 0
+          ? []
+          : [
+              { tag: "link", attrs: { rel: "preconnect", href: "https://unpkg.com", crossorigin: true }, injectTo: "head-prepend" },
+              // crossorigin, as the preconnect: one connection serves both
+              ...urls.map((href) => ({ tag: "link", attrs: { rel: "stylesheet", href, crossorigin: true }, injectTo: "head-prepend" })),
+            ];
+      },
     },
     generateBundle(_, bundle) {
       for (const chunk of Object.values(bundle).filter(({ type }) => type === "chunk")) {

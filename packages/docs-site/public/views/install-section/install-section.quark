@@ -2,6 +2,8 @@
    `$package-meta` is a binding published by the package view on the
    ancestor `provider-fetch.doc-page`. */
 @use "/shell" as *;
+/* the highlighter: only sheets that paint code wait for it */
+@use "/highlight.js" as *;
 
 :scope {
   $install: $package-meta.installation;

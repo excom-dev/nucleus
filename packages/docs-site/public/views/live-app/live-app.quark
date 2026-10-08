@@ -3,9 +3,9 @@
    name on [data-app] and its editable file extensions on [data-files].
    Files are read / saved through the service worker's /api/sandbox overlay;
    the preview iframe (/sandbox/<app>) is rebuilt by the `--reload` command
-   after every save or reset (wired in the HTML). */
-@use "/shell" as *;
-@use "quark:list" as list;
+   after every save or reset (wired in the HTML). `$app` and `$files` are
+   also read by the editors' own sheet (inline in live-app.html). No `@use`
+   here: the preview waits for no module. */
 
 :scope {
   $app: closest("[data-app]").getAttribute("data-app");
@@ -15,15 +15,16 @@
     template-ref: "/views/demo-headers/#{$app}.html";
     is-active: "";
   }
-  /* preview renders once the mount-time DELETE settled (error too: no worker, still show the app) */
+  /* preview renders once the mount-time DELETE settled (error too: no worker, still show the app),
+     and only on screen: the frame is a second document, with a boot of its own */
   &:has(provider-fetch.fresh:is([is-success], [is-error])) [aria-label="preview"] include-content {
-    is-active: "";
+    lazy-load: "";
   }
   [aria-label="preview"] iframe {
     src: "/sandbox/#{$app}";
   }
 
-  /* Every mount drops the app's saved edits; the editors render once that succeeded.
+  /* Every mount drops the app's saved edits; the editors may render once that succeeded.
      Paused until the `service-worker` observer before it mounts, which a prerender never does. */
   provider-fetch.fresh {
     api-url: "/api/sandbox/views/#{$app}";
@@ -45,36 +46,10 @@
       }
     }
   }
-  provider-fetch.fresh[is-success] [bind-file-bodies] {
-    content: iterate($files);
-    content-tabs-body {
-      tab-name: item;
-      provider-fetch {
-        api-url: "/api/sandbox/views/#{$app}/#{$app}.#{item}";
-      }
-      .code-editor {
-        data-language: item;
-      }
-      [aria-label="github"] {
-        href: buildAppFileLink($app, item);
-      }
-      provider-fetch.source[is-success] {
-        $src: prop("provision").body;
-        /* "override" | "original" — the service worker says whether an edit is stored (live-app.css marks the tab) */
-        data-file-source: list.find(
-          prop("provision").headers,
-          "0",
-          "x-sandbox-source"
-        )[1];
-        textarea {
-          content: $src;
-          @on input (handle: renderPre);
-        }
-        [data-highlight] {
-          content: dangerous-html(renderLang($src, item));
-        }
-      }
-    }
+  /* The editors load once on screen: beside the preview on a wide viewport, in the
+     opened sheet on a narrow one. Their sheet (live-app.html) loads the highlighter. */
+  provider-fetch.fresh[is-success] [bind-editors] {
+    lazy-load: "";
   }
   /* The Code button and ✕ address the editor sheet by id (native command API). */
   [aria-label="editor"] {

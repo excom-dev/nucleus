@@ -3,6 +3,8 @@
    `$package-meta` are bindings published by the package view on the
    ancestor `provider-fetch.doc-page`. */
 @use "/shell" as *;
+/* the highlighter: only sheets that paint code wait for it */
+@use "/highlight.js" as *;
 
 :scope {
   $demo-ref: closest("include-content[data-demo]").getAttribute("data-demo");

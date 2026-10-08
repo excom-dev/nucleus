@@ -393,7 +393,12 @@ describe("a real build", () => {
       '<script type="module" crossorigin src="https://unpkg.com/@excom/nucleus-kit@9.9.9/dist/nucleus-kit.progressive.min.js"></script>'
     );
     const [css] = files.filter((file) => file.endsWith(".css"));
-    expect(read(css)).toMatch(/^@import "https:\/\/unpkg\.com\/@excom\/nucleus-kit@9\.9\.9\/dist\/basic\.css";/);
+    expect(read(css)).not.toContain("@import");
+    // both pages link shell.css: both carry the kit's sheet, before their own
+    for (const page of ["index.html", "sandbox.html"])
+      expect(read(page)).toMatch(
+        /<link rel="preconnect" href="https:\/\/unpkg\.com" crossorigin>\s*<link rel="stylesheet" href="https:\/\/unpkg\.com\/@excom\/nucleus-kit@9\.9\.9\/dist\/basic\.css" crossorigin>[\s\S]*<link rel="stylesheet" crossorigin href="\/assets\//
+      );
     expect(all).not.toContain("kit-code-marker");
     expect(all).not.toContain(".kit-marker");
     expect(files.filter((file) => file.startsWith("assets/"))).toEqual([css]);

@@ -12,7 +12,8 @@
             <header class="imported-header">
                 <include-content></include-content>
             </header>
-            <!-- activated by live-app.quark once the mount-time DELETE has settled: one load, fresh files -->
+            <!-- `lazy-load` set by live-app.quark once the mount-time DELETE has settled: one load, fresh files,
+                 and only on screen. live-app.css keeps its room meanwhile. -->
             <section aria-label="preview">
                 <include-content>
                     <template>
@@ -52,63 +53,104 @@
                             </content-tabs-header>
                         </template>
                     </div>
-                    <div bind-file-bodies>
+                    <!-- The editors load once on screen: beside the preview on a wide viewport, in the opened
+                         sheet on a narrow one (`lazy-load`, set by live-app.quark). Their sheet is the one that
+                         waits for the highlighter, and is inline: no request the page did not make before. -->
+                    <include-content bind-editors class="instant">
                         <template>
-                            <content-tabs-body class="show-scrollbar">
-                                <!-- Reloading the source (initial load, reset) rebuilds the editor block for a fresh <textarea>. -->
-                                <event-handler listen-for="provider-fetch-success" selector-filter=".source"
-                                    target-ref=":scope include-content" command-name="--reload">
-                                    <provider-fetch class="source">
-                                        <include-content is-active>
-                                            <template>
-                                                <!-- Reset: drop the override, then re-read the original into the editor. -->
-                                                <event-handler listen-for="provider-fetch-success"
-                                                    selector-filter="[api-method='delete']"
-                                                    target-ref="content-tabs-body:has(:scope) provider-fetch.source"
-                                                    command-name="--fetch">
-                                                    <div class="file-actions">
-                                                        <small role="status">Saving failed — is the service worker
-                                                            active?</small>
-                                                        <event-handler
-                                                            target-ref="content-tabs-body:has(:scope) textarea"
-                                                            fire-event="copy-source" role="button" aria-label="copy"
-                                                            aria-description="Copy source" class="icon-button">
-                                                            <span class="ico-copy" aria-hidden="true"></span>
+                            <!-- `$app` and `$files` are published by live-app.quark, on the playground -->
+                            <quark-sheet>
+                                @use "/shell" as *;
+                                @use "/highlight.js" as *;
+                                @use "quark:list" as list;
+
+                                [bind-file-bodies] {
+                                  content: iterate($files);
+                                  content-tabs-body {
+                                    tab-name: item;
+                                    provider-fetch {
+                                      api-url: "/api/sandbox/views/#{$app}/#{$app}.#{item}";
+                                    }
+                                    .code-editor {
+                                      data-language: item;
+                                    }
+                                    [aria-label="github"] {
+                                      href: buildAppFileLink($app, item);
+                                    }
+                                    provider-fetch.source[is-success] {
+                                      $src: prop("provision").body;
+                                      /* "override" | "original": the service worker says whether an edit is stored (live-app.css marks the tab) */
+                                      data-file-source: list.find(prop("provision").headers, "0", "x-sandbox-source")[1];
+                                      textarea {
+                                        content: $src;
+                                        @on input (handle: renderPre);
+                                      }
+                                      [data-highlight] {
+                                        content: dangerous-html(renderLang($src, item));
+                                      }
+                                    }
+                                  }
+                                }
+                            </quark-sheet>
+                            <div bind-file-bodies>
+                                <template>
+                                    <content-tabs-body class="show-scrollbar">
+                                        <!-- Reloading the source (initial load, reset) rebuilds the editor block for a fresh <textarea>. -->
+                                        <event-handler listen-for="provider-fetch-success" selector-filter=".source"
+                                            target-ref=":scope include-content" command-name="--reload">
+                                            <provider-fetch class="source">
+                                                <include-content is-active>
+                                                    <template>
+                                                        <!-- Reset: drop the override, then re-read the original into the editor. -->
+                                                        <event-handler listen-for="provider-fetch-success"
+                                                            selector-filter="[api-method='delete']"
+                                                            target-ref="content-tabs-body:has(:scope) provider-fetch.source"
+                                                            command-name="--fetch">
+                                                            <div class="file-actions">
+                                                                <small role="status">Saving failed — is the service worker
+                                                                    active?</small>
+                                                                <event-handler
+                                                                    target-ref="content-tabs-body:has(:scope) textarea"
+                                                                    fire-event="copy-source" role="button" aria-label="copy"
+                                                                    aria-description="Copy source" class="icon-button">
+                                                                    <span class="ico-copy" aria-hidden="true"></span>
+                                                                </event-handler>
+                                                                <event-handler target-ref=":scope > provider-fetch"
+                                                                    command-name="--fetch" role="button"
+                                                                    aria-label="reset" aria-description="Reset file"
+                                                                    class="icon-button">
+                                                                    <provider-fetch is-paused
+                                                                        api-method="delete"></provider-fetch>
+                                                                    <span class="ico-reload" aria-hidden="true"></span>
+                                                                </event-handler>
+                                                                <a target="_blank" rel="noopener" aria-label="github"
+                                                                    aria-description="View on GitHub" class="icon-button">
+                                                                    <span class="ico-github" aria-hidden="true"></span>
+                                                                </a>
+                                                            </div>
+                                                            <!-- Debounced typing saves the file (PUT); success bubbles to the preview reload above. -->
+                                                            <event-handler listen-for="input" delay-ms="600" is-debounced
+                                                                target-ref=":scope > provider-fetch"
+                                                                command-name="--fetch">
+                                                                <provider-fetch is-paused api-method="put"
+                                                                    form-ref=":scope form">
+                                                                    <form class="code-editor">
+                                                                        <textarea name="content" spellcheck="false"
+                                                                            aria-label="source"></textarea>
+                                                                        <div data-highlight aria-hidden="true"></div>
+                                                                    </form>
+                                                                </provider-fetch>
+                                                            </event-handler>
                                                         </event-handler>
-                                                        <event-handler target-ref=":scope > provider-fetch"
-                                                            command-name="--fetch" role="button"
-                                                            aria-label="reset" aria-description="Reset file"
-                                                            class="icon-button">
-                                                            <provider-fetch is-paused
-                                                                api-method="delete"></provider-fetch>
-                                                            <span class="ico-reload" aria-hidden="true"></span>
-                                                        </event-handler>
-                                                        <a target="_blank" rel="noopener" aria-label="github"
-                                                            aria-description="View on GitHub" class="icon-button">
-                                                            <span class="ico-github" aria-hidden="true"></span>
-                                                        </a>
-                                                    </div>
-                                                    <!-- Debounced typing saves the file (PUT); success bubbles to the preview reload above. -->
-                                                    <event-handler listen-for="input" delay-ms="600" is-debounced
-                                                        target-ref=":scope > provider-fetch"
-                                                        command-name="--fetch">
-                                                        <provider-fetch is-paused api-method="put"
-                                                            form-ref=":scope form">
-                                                            <form class="code-editor">
-                                                                <textarea name="content" spellcheck="false"
-                                                                    aria-label="source"></textarea>
-                                                                <div data-highlight aria-hidden="true"></div>
-                                                            </form>
-                                                        </provider-fetch>
-                                                    </event-handler>
-                                                </event-handler>
-                                            </template>
-                                        </include-content>
-                                    </provider-fetch>
-                                </event-handler>
-                            </content-tabs-body>
+                                                    </template>
+                                                </include-content>
+                                            </provider-fetch>
+                                        </event-handler>
+                                    </content-tabs-body>
+                                </template>
+                            </div>
                         </template>
-                    </div>
+                    </include-content>
                 </content-tabs>
                 </provider-fetch>
             </small>

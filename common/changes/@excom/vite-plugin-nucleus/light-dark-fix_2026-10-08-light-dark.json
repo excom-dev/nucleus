@@ -4,6 +4,11 @@
       "packageName": "@excom/vite-plugin-nucleus",
       "comment": "Fix colours set with `light-dark()` in a site build: every one was invalid, because the build rewrote the function into a form that only works in a stylesheet declaring `color-scheme` itself, which Valence does for the app. `light-dark()` now ships as written (Chrome 123, Firefox 120, Safari 17.5)",
       "type": "patch"
+    },
+    {
+      "packageName": "@excom/vite-plugin-nucleus",
+      "comment": "Improve the first paint of a `kit: \"unpkg\"` site: the Nucleus Kit stylesheet is now a `<link rel=\"stylesheet\">` at the start of the `<head>` of each page that uses it, after a `preconnect` to unpkg, instead of an `@import` the browser found only after your stylesheet loaded. The minified `<name>.min.css` is linked when the kit has one. A kit `@import` with a media query, `layer()` or `supports()` now stops the build",
+      "type": "minor"
     }
   ],
   "packageName": "@excom/vite-plugin-nucleus"

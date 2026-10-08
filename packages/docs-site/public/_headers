@@ -39,6 +39,9 @@
 /shell.js
   Cache-Control: public, max-age=0, must-revalidate
 
+/highlight.js
+  Cache-Control: public, max-age=0, must-revalidate
+
 /demo-utils.js
   Cache-Control: public, max-age=0, must-revalidate
 

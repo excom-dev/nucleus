@@ -40,8 +40,8 @@ const SOURCES: Record<string, string> = {
 };
 const apiPath = (ext: string) => `/api/sandbox/views/${APP}/${APP}.${ext}`;
 
-/** Minimal stand-in for `@use "/shell"`, the real module boots Shiki. */
-const shellStub = {
+/** Minimal stand-in for `@use "/highlight"`, the real module boots Shiki. */
+const highlightStub = {
   renderLang: (val: string, lang: string) =>
     `<pre class="shiki" data-lang="${lang}">${val
       .replace(/&/g, "&amp;")
@@ -50,14 +50,29 @@ const shellStub = {
   renderPre: (e: Event) => {
     const target = e.target as HTMLTextAreaElement;
     target.parentElement!.querySelector("[data-highlight]")!.innerHTML =
-      shellStub.renderLang(target.value, "any");
+      highlightStub.renderLang(target.value, "any");
   },
+};
+
+/** Minimal stand-in for `@use "/shell"`. */
+const shellStub = {
   buildAppFileLink: (app: string, ext: string) =>
     `https://github.com/excom-dev/nucleus/tree/main/packages/docs-site/public/views/${app}/${app}.${ext}`,
 };
 
 type Call = { method: string; url: string; body?: string };
 const calls: Call[] = [];
+/** `@use` modules the sheets asked for, in order. */
+const used: string[] = [];
+/** What each `lazy-load` host's observer was given, by host. */
+const observed = new Map<Element, IntersectionObserverCallback>();
+
+/** The host comes on screen. */
+const show = (host: Element) =>
+  observed.get(host)!(
+    [{ isIntersecting: true, target: host } as IntersectionObserverEntry],
+    {} as IntersectionObserver,
+  );
 const overrides = new Map<string, string>();
 
 const mockFetch = () =>
@@ -94,8 +109,18 @@ const mockFetch = () =>
 const stripAssets = (s: string) =>
   s.replace(/<link[\s\S]*?>/g, "").replace(/\s+src-url="[^"]*"/g, "");
 
-/** Mount the view under a stand-in for the hosting `spa-route[data-app]`. */
-const mountApp = async () => {
+const previewOf = (root: HTMLElement) =>
+  root.querySelector<HTMLElement>("[aria-label='preview'] > include-content")!;
+
+const editorsOf = (root: HTMLElement) =>
+  root.querySelector<HTMLElement>("[bind-editors]")!;
+
+/**
+ * Mount the view under a stand-in for the hosting `spa-route[data-app]`,
+ * up to its mount-time DELETE: neither the frame nor the editors are on
+ * screen yet.
+ */
+const mountView = async () => {
   const host = document.createElement("spa-route");
   host.setAttribute("data-app", APP);
   host.setAttribute("data-files", FILES.join(" "));
@@ -105,8 +130,21 @@ const mountApp = async () => {
   document.body.append(host);
   if (!sheet.quarkInstance) await waitForEvent(sheet, "quark-sheet-success");
   const root = host.querySelector<HTMLElement>(".live-app")!;
+  const fresh = root.querySelector<HTMLElement>("provider-fetch.fresh")!;
+  if (!fresh.hasAttribute("is-success")) {
+    await waitForEvent(fresh, "provider-fetch-success");
+  }
+  for (let i = 0; i < 6; i++) await flush();
+  return { root, quark: sheet.quarkInstance! };
+};
+
+/** Mount the view with its frame and its editors on screen, every source read. */
+const mountApp = async () => {
+  const { root, quark } = await mountView();
+  show(previewOf(root));
+  show(editorsOf(root));
   // four source reads
-  for (let i = 0; i < 20 && sourcesOf(root).length < FILES.length; i++) {
+  for (let i = 0; i < 40 && sourcesOf(root).length < FILES.length; i++) {
     await flush();
   }
   await Promise.all(
@@ -118,7 +156,7 @@ const mountApp = async () => {
   );
   await flush();
   await flush();
-  return { root, quark: sheet.quarkInstance! };
+  return { root, quark };
 };
 
 const sourcesOf = (root: HTMLElement) =>
@@ -151,17 +189,79 @@ describe("live-app view", () => {
         throw e;
       }
     });
+    used.length = 0;
     Quark.moduleLoader = async (url: string) => {
+      used.push(url);
       if (url.includes("shell")) return shellStub;
+      if (url.includes("highlight")) return highlightStub;
       throw new Error(`unexpected @use module: ${url}`);
     };
+    observed.clear();
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        constructor(private callback: IntersectionObserverCallback) {}
+        observe(host: Element) {
+          observed.set(host, this.callback);
+        }
+        disconnect() {}
+        unobserve() {}
+      },
+    );
     mockFetch();
   });
 
   afterEach(() => {
     document.body.innerHTML = "";
     Quark.moduleLoader = originalLoader;
+    vi.unstubAllGlobals();
     vi.restoreAllMocks();
+  });
+
+  it("loads the frame, the editors and the highlighter only once each is on screen", async () => {
+    const { root } = await mountView();
+    const sandboxReads = () =>
+      calls.filter((c) => c.method === "GET" && c.url.startsWith("/api/sandbox/"));
+
+    // the mount settled: tabs and room for both, nothing loaded for either
+    expect(calls.some((c) => c.method === "DELETE")).toBe(true);
+    expect(root.querySelectorAll("content-tabs-header").length).toBe(FILES.length);
+    expect(previewOf(root).hasAttribute("lazy-load")).toBe(true);
+    expect(editorsOf(root).hasAttribute("lazy-load")).toBe(true);
+    expect(root.querySelector("iframe, textarea, provider-fetch.source")).toBeNull();
+    expect(sandboxReads()).toEqual([]);
+    expect(used).toEqual([]);
+
+    // the frame comes on screen: it alone loads
+    show(previewOf(root));
+    for (let i = 0; i < 6; i++) await flush();
+    expect(
+      root.querySelector("[aria-label='preview'] iframe")?.getAttribute("src"),
+    ).toBe(`/sandbox/${APP}`);
+    expect(root.querySelector("textarea, provider-fetch.source")).toBeNull();
+    expect(sandboxReads()).toEqual([]);
+    expect(used).toEqual([]);
+
+    // the editors come on screen: the highlighter, the sources
+    show(editorsOf(root));
+    for (let i = 0; i < 40 && sourcesOf(root).length < FILES.length; i++) {
+      await flush();
+    }
+    await Promise.all(
+      sourcesOf(root).map((p) =>
+        p.hasAttribute("is-success")
+          ? undefined
+          : waitForEvent(p, "provider-fetch-success"),
+      ),
+    );
+    await flush();
+    await flush();
+    expect(used.some((url) => url.includes("highlight"))).toBe(true);
+    expect(sandboxReads().map((c) => c.url)).toEqual(FILES.map(apiPath));
+    expect(root.querySelectorAll("textarea").length).toBe(FILES.length);
+    expect(
+      bodyOf(root, "css").querySelector("[data-highlight] .shiki")?.textContent,
+    ).toBe(SOURCES.css);
   });
 
   it("renders one editor per file, saves edits, reloads the preview, and resets", async () => {

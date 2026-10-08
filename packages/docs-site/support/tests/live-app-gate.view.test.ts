@@ -36,11 +36,20 @@ const originalLoader = Quark.moduleLoader;
 afterEach(() => {
   document.body.innerHTML = "";
   Quark.moduleLoader = originalLoader;
+  vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
 
 describe("live-app view before its worker observer mounts", () => {
   it("renders its header and tabs, writes nothing, and starts once the observer mounts", async () => {
+    // never on screen
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        observe() {}
+        disconnect() {}
+      }
+    );
     const settings = (window as any).happyDOM?.settings;
     if (settings) settings.disableIframePageLoading = true;
     Quark.moduleLoader = async () => ({
@@ -86,5 +95,14 @@ describe("live-app view before its worker observer mounts", () => {
     await waitForEvent(fresh, "provider-fetch-success");
     expect(fresh.hasAttribute("is-paused")).toBe(false);
     expect(calls).toContain("DELETE /api/sandbox/views/counter-app");
+
+    // started, not loaded: the frame and the editors wait to be on screen
+    for (let i = 0; i < 6; i++) await flush();
+    expect(
+      [...host.querySelectorAll("include-content[lazy-load]")].map((el) =>
+        el.hasAttribute("is-active")
+      )
+    ).toEqual([false, false]);
+    expect(host.querySelector("provider-fetch.source, iframe")).toBeNull();
   });
 });

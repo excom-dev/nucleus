@@ -33,6 +33,9 @@
     .imported-header {
       display: none;
     }
+    [aria-label="preview"] {
+      min-height: var(--pane-height);
+    }
     [aria-label="preview"] iframe {
       min-height: var(--pane-height) !important;
     }
@@ -84,6 +87,9 @@
       }
     }
   }
+  /* `[bind-editors]`: the include-content the editors load into, sized
+     before they do so it is on screen when the editor is */
+  [bind-editors],
   [bind-file-bodies] {
     flex: 1;
     min-height: 0;
@@ -223,6 +229,9 @@
     padding: 0;
     background: transparent;
     display: flex;
+    /* the frame's room (its own `min-height`), kept before it loads:
+       nothing below it moves when it does */
+    min-height: 60vh;
     /* containing block for the Code pill */
     position: relative;
     include-content {

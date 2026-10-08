@@ -26,7 +26,16 @@ export const moduleFile = (url: string): string => {
   return pathToFileURL(join(DIST, file)).href;
 };
 
-Quark.moduleLoader = (url) => import(/* @vite-ignore */ moduleFile(url));
+/*
+ * `/shell` arrives with its highlighter loaded: a markdown code block is then
+ * highlighted as it renders (`upgradeTemplateCode`), not after its page was
+ * written. In a browser the first such block loads it.
+ */
+Quark.moduleLoader = async (url) => {
+  const module = await import(/* @vite-ignore */ moduleFile(url));
+  await module.loadHighlight?.();
+  return module;
+};
 
 const GUIDE = new RegExp(`^${SITE_BASE}/docs/([^/]+)$`);
 const PACKAGE = new RegExp(`^${SITE_BASE}/packages/([^/]+)$`);
