@@ -1,6 +1,6 @@
 {
   "name": "@excom/dismiss-watcher",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "<dismiss-watcher> custom element",
   "license": "MIT",
   "engines": {

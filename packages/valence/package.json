@@ -1,6 +1,6 @@
 {
   "name": "@excom/valence",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Semantic CSS with class / ARIA aliases for native HTML and custom elements",
   "license": "MIT",
   "engines": {

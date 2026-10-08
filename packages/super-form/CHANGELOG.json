@@ -2,6 +2,26 @@
   "name": "@excom/super-form",
   "entries": [
     {
+      "version": "0.1.8",
+      "tag": "@excom/super-form_v0.1.8",
+      "date": "Thu, 08 Oct 2026 09:18:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix the `doFetch([url, requestInit])` wording in the API reference"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/quark\" to `^0.4.1`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/quark-sheet\" to `^0.2.1`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.7",
       "tag": "@excom/super-form_v0.1.7",
       "date": "Thu, 08 Oct 2026 05:32:46 GMT",

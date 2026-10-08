@@ -2,6 +2,24 @@
   "name": "@excom/gesture-handler",
   "entries": [
     {
+      "version": "0.2.4",
+      "tag": "@excom/gesture-handler_v0.2.4",
+      "date": "Thu, 08 Oct 2026 09:18:50 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/content-drawer\" to `^0.2.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/quark\" to `^0.4.1`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/quark-sheet\" to `^0.2.1`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.2.3",
       "tag": "@excom/gesture-handler_v0.2.3",
       "date": "Thu, 08 Oct 2026 05:32:46 GMT",
