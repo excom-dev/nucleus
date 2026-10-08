@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/valence",
+      "comment": "Update the Themes page to the NucleusKit name",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/valence"
+}

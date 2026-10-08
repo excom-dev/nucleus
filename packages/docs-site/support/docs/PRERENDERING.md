@@ -4,7 +4,7 @@ Render every route to static HTML when the site is built. The browser takes each
 
 ## Setup
 
-[nucleus-ssr](/packages/nucleus-ssr) renders the built site in Node: a config module names the routes, an entry module loads the app. Build the site with [vite-plugin-nucleus](/packages/vite-plugin-nucleus), then run `npx nucleus-ssr prerender.config.js`: it prerenders every route, reports each page and fails on a broken internal link. The nucleus-ssr page has the working example, the options and what fails a page. The app itself stays as it is: the same HTML, sheets, views and kit `<script>`. Prerender after every fresh build: a shell an earlier prerender wrote is refused.
+[nucleus-ssr](/packages/nucleus-ssr) renders the built site in Node: a config module names the routes and the app, which for an app built on NucleusKit is the kit's server entry: `entry: () => import("@excom/nucleus-kit/server")`. Build the site with [vite-plugin-nucleus](/packages/vite-plugin-nucleus), then run `npx nucleus-ssr prerender.config.js`: it prerenders every route, reports each page and fails on a broken internal link. The nucleus-ssr page has the working example, the options and what fails a page. The app itself stays as it is: the same HTML, sheets, views and kit `<script>`. Prerender after every fresh build: a shell an earlier prerender wrote is refused.
 
 ## How it fits
 
@@ -56,7 +56,7 @@ Four smaller things:
 
 What should not render at build time mounts in the browser instead, as on a cold load.
 
-**`no-ssr` keeps a region out.** No Neutron element on or inside an element with the attribute mounts in the prerender, Nucleus Kit elements included. Use it for one place in a page, such as a live demo or a `lazy-load` view that should stay lazy:
+**`no-ssr` keeps a region out.** No Neutron element on or inside an element with the attribute mounts in the prerender, NucleusKit elements included. Use it for one place in a page, such as a live demo or a `lazy-load` view that should stay lazy:
 
 ```html
 <include-content no-ssr lazy-load template-ref="/views/map/map.html"></include-content>
@@ -79,7 +79,7 @@ A `provision` of plain data (what JSON carries) is restored from the page before
 ## Static hosting
 
 - **Slashless files.** `/docs/intro` is written to `docs/intro.html` and `/` to `index.html`. The host must serve `/docs/intro` from that file: many static hosts do, some need a rewrite rule.
-- **A real 404.** Prerender the not-found route to `404.html`. Once `/` is prerendered, `index.html` is the home page: a host that falls back to it would answer every unknown URL with the home page and a 200. With a `404.html`, every route needs its file: a route that depends on the person (a bag, an account) is written as the untouched shell, through [`shellRoutes`](/packages/nucleus-ssr#md-options), and renders in the browser.
+- **A real 404.** Prerender the not-found route to `404.html`. Once `/` is prerendered, `index.html` is the home page: a host that falls back to it would answer every unknown URL with the home page and a 200. With a `404.html`, every route needs its file: a route that depends on the person (a bag, an account) is written as the untouched shell, through [`shellRoutes`](/packages/nucleus-ssr#md-options), and renders in the browser. The kit's server entry fails a soft 404, a page only the fallback route matches, so a link to a page that is gone cannot be written as one.
 - **A file served for another URL** still works: the content of a route the URL does not match is removed, and the matching route renders.
 - **Script loading.** Load the kit as a module or deferred script, so the page paints before the kit runs. A classic script works too: elements mount once the document is parsed.
 - **Public files.** Nothing a per-person response returned may be in a prerendered page. nucleus-ssr fails a page built from a response marked private.

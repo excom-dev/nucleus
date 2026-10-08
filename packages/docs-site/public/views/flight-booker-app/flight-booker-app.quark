@@ -1,31 +1,45 @@
+@use "quark:date" as date;
+
 /* State: `data-trip` / `data-outbound` / `data-inbound` on the host, copied
    from the form on every edit (the field names double as the POST payload).
-   `data-is-bookable` is derived once; the controls select on the facts. */
+   Each constraint is a fact derived from them; the controls select on the
+   facts. */
 :scope {
   $trip: attr("data-trip");
   $outbound: attr("data-outbound");
   $inbound: attr("data-inbound");
-  /* data-trip, data-outbound, data-inbound */
   @on input, change {
     $inputs: event.target.form.elements;
     data-trip: $inputs["data-trip"].value;
     data-outbound: $inputs["data-outbound"].value;
     data-inbound: $inputs["data-inbound"].value;
   }
-  data-is-bookable: if(
-    $outbound and ($trip == "one-way" or $inbound and $inbound >= $outbound):
-      "";
-    else: none
-  );
-  input[name="data-inbound"] {
-    min: $outbound;
-  }
-  &[data-trip="one-way"] input[name="data-inbound"],
-  &:not([data-is-bookable]) button[type="submit"] {
+  /* well-formed: YYYY-MM-DD, the text a date gives back unchanged. The return
+     date only counts while its field is enabled. */
+  data-is-outbound-invalid: date.parse($outbound).toISOString().slice(0, 10) !=
+    $outbound;
+  data-is-inbound-invalid: $trip == "return" and
+    date.parse($inbound).toISOString().slice(0, 10) != $inbound;
+  data-is-return-early: $trip == "return" and $inbound < $outbound;
+
+  &[data-trip="one-way"] input[name="data-inbound"] {
     disabled: "";
   }
-  &[data-trip="return"] input[name="data-inbound"],
-  &[data-is-bookable] button[type="submit"] {
+  &[data-trip="return"] input[name="data-inbound"] {
+    disabled: none;
+  }
+  &[data-is-outbound-invalid] input[name="data-outbound"],
+  &[data-is-inbound-invalid] input[name="data-inbound"] {
+    aria-invalid: "true";
+  }
+  &:not([data-is-outbound-invalid]) input[name="data-outbound"],
+  &:not([data-is-inbound-invalid]) input[name="data-inbound"] {
+    aria-invalid: none;
+  }
+  &:is([data-is-outbound-invalid], [data-is-inbound-invalid], [data-is-return-early]) button[type="submit"] {
+    disabled: "";
+  }
+  &:not([data-is-outbound-invalid], [data-is-inbound-invalid], [data-is-return-early]) button[type="submit"] {
     disabled: none;
   }
   super-form[is-success] {

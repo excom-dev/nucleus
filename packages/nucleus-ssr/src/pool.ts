@@ -18,8 +18,8 @@ import {
 export interface Renderers {
   /** Their part of the cache key. */
   key: string;
-  /** `url` rendered, with the time (ms) its renderer took. */
-  render(url: string): Promise<Outcome & { ms: number }>;
+  /** `url` rendered, as the not-found page or not, with the time (ms) its renderer took. */
+  render(url: string, notFound?: boolean): Promise<Outcome & { ms: number }>;
   /** `url`'s untouched shell, not rendered, with the time (ms) it took. */
   shell(url: string): Promise<Outcome & { ms: number }>;
   /** What of a cached page's inputs answers otherwise, if anything, with the time (ms) the check took. */
@@ -257,7 +257,7 @@ export async function openRenderers(
   };
   return {
     key: key!,
-    render: (url) => page({ type: "render", url }),
+    render: (url, notFound) => page({ type: "render", url, notFound }),
     shell: (url) => page({ type: "shell", url }),
     async changed(url, inputs) {
       const done = await run({ type: "check", url, inputs });

@@ -73,7 +73,7 @@ A module should be pure business logic: it takes values and returns a value. It 
 
 | You want to… | Reach for |
 | --- | --- |
-| Bridge a protocol — a browser API, a store, a person's interaction (tabs, drawers) — configurably | A **Nucleus Kit element** |
+| Bridge a protocol — a browser API, a store, a person's interaction (tabs, drawers) — configurably | A **NucleusKit element** |
 | React to state, bind data, render lists, wire an event | A **Quark rule** |
 | Compute or format a value | A **pure function** via `@use` |
 | Style something | **CSS / Valence.css**, keyed to state attributes |
@@ -83,7 +83,7 @@ A module should be pure business logic: it takes values and returns a value. It 
 
 - [Quick Start - A working page, in five minutes.](/docs/quick_start)
 - [Core Concepts - The mental model, in one sitting.](/docs/core_concepts)
-- [Using Elements - The Nucleus Kit catalog and how elements behave.](/docs/using_elements)
+- [Using Elements - The NucleusKit catalog and how elements behave.](/docs/using_elements)
 - [Orchestrating - Get familiar with Quark.](/docs/orchestrating)
 - [Styling - Valence.css themes, tokens, and state-driven CSS.](/docs/styling)
 - [Building Views - Structure a real app: routes, views, lazy loading.](/docs/building_views)

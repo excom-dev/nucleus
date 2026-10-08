@@ -1,21 +1,21 @@
 /**
- * The site in the prerenderer's window: Nucleus Kit's server build, Quark
- * `@use` modules from `dist`, and the hooks run around each page.
+ * The site in the prerenderer's window: Nucleus Kit's server entry (its
+ * elements, and the hooks run around each page), Quark `@use` modules from
+ * `dist`, and the site's own `afterRender`.
  */
-import { DIST, NOT_FOUND } from "./prerender.config";
+import { DIST } from "./prerender.config";
 import {
   SITE_BASE,
   SITE_HOME,
   SITE_HOME_DOC,
 } from "@excom/heft-rig/scripts/site-base.mjs";
+import { afterRender as checkRoute } from "@excom/nucleus-kit/server";
 import type { RenderPage } from "@excom/nucleus-ssr";
 import { Quark } from "@excom/quark";
-import { resetRouter } from "@excom/spa-route/testing";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
-// the renderer checks none of these got defined
-export { SERVER_EXCLUDED_TAGS } from "@excom/nucleus-kit/server";
+export * from "@excom/nucleus-kit/server";
 
 /** The built file a `@use` URL serves: an extensionless one is `<path>.js` (`_redirects`). */
 export const moduleFile = (url: string): string => {
@@ -27,11 +27,6 @@ export const moduleFile = (url: string): string => {
 };
 
 Quark.moduleLoader = (url) => import(/* @vite-ignore */ moduleFile(url));
-
-export const beforeRender = ({ url }: RenderPage) => resetRouter(url);
-
-// `budgetMs` bounds the page; `whenSettled()` alone gives up after 1 s
-export const settle = () => Quark.whenSettled({ timeout: Infinity });
 
 const GUIDE = new RegExp(`^${SITE_BASE}/docs/([^/]+)$`);
 const PACKAGE = new RegExp(`^${SITE_BASE}/packages/([^/]+)$`);
@@ -74,22 +69,14 @@ const linkMarkdown = async (
  * Canonical URL and `og:url` of a routed page, and, once the page's own
  * window has asked and the file answers, a link to its markdown. The request
  * is the page's own so the prerender cache sees it: a file that appears or
- * goes is a changed page. Fails a sitemap URL only the fallback route
- * matches (a soft 404), and a not-found path a route matches.
+ * goes is a changed page. The kit's check runs first: it fails a sitemap
+ * URL only the fallback route matches (a soft 404), and a not-found path a
+ * route matches. The not-found page gets none of these.
  */
-export const afterRender = ({
-  url,
-  window,
-  document,
-}: RenderPage & { document: Document }) => {
-  const notFound = !!document.querySelector(
-    "spa-route[is-fallback][is-active]"
-  );
-  if (notFound !== (url === NOT_FOUND))
-    throw new Error(
-      notFound ? `${url} matches no route` : `${url} is not the fallback route`
-    );
-  if (notFound) return;
+export const afterRender = (page: RenderPage & { document: Document }) => {
+  checkRoute(page);
+  if (page.notFound) return;
+  const { url, window, document } = page;
   const { origin, pathname } = new URL(url, document.location.href);
   const canonical = Object.assign(document.createElement("link"), {
     rel: "canonical",

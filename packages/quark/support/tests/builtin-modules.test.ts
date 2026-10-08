@@ -4,7 +4,11 @@
  * (the docs and the runtime export lists are kept in step here).
  */
 import { AT_RULES, BUILTIN_MODULES } from "../../src/language";
-import { QUARK_MODULES } from "../../src/builtin-modules";
+import {
+  QUARK_MODULES,
+  builtinModuleName,
+  resolveBuiltinModule,
+} from "../../src/builtin-modules";
 import { QuarkLogger } from "../../src/utils";
 import {
   afterEach,
@@ -332,6 +336,89 @@ describe("built-in modules", () => {
       expect(util["from-json"]('{"a":1}')).toEqual({ a: 1 });
       expect(util["from-json"]("nope")).toBeNull();
       expect(util["from-json"](5)).toBeNull();
+    });
+  });
+  describe("edge inputs", () => {
+    it("reads a path through a null segment as missing, and the empty path as the value", () => {
+      expect(map.get({ a: null }, "a.b", "fallback")).toBe("fallback");
+      expect(map["has-key"]({ a: null }, "a.b")).toBe(false);
+      expect(map.get({ a: 1 }, "", "fallback")).toEqual({ a: 1 });
+    });
+
+    it("steps a range by 1 when the step is zero or not a number", () => {
+      expect(list.range(0, 3, 0)).toEqual([0, 1, 2]);
+      expect(list.range(0, 3, "x")).toEqual([0, 1, 2]);
+    });
+
+    it("groups an item whose path is missing under the empty key", () => {
+      expect(list["group-by"]([{ s: "a" }, {}], "s")).toEqual({
+        a: [{ s: "a" }],
+        "": [{}],
+      });
+    });
+
+    it("returns empty collections for map functions given a non-map", () => {
+      expect(map.values("text")).toEqual([]);
+      expect(map.values([1])).toEqual([]);
+      expect(map.entries(null)).toEqual([]);
+      expect(map.pick("text", "a")).toEqual({});
+      expect(map.omit(null, "a")).toEqual({});
+    });
+
+    it("picks the plural form with a locale, then other, then one, then empty", () => {
+      expect(string.plural(1, { one: "# a", other: "# b" }, "en")).toBe("1 a");
+      expect(string.plural(1, { one: "# a", other: "# b" }, 7)).toBe("1 a");
+      // 5 is category "other": fall back to `one` when `other` is absent
+      expect(string.plural(5, { one: "# only" })).toBe("5 only");
+      expect(string.plural(5, { few: "x" })).toBe("");
+    });
+
+    it("treats a missing value as empty text", () => {
+      expect(string.slugify(null)).toBe("");
+      expect(string.slugify(undefined)).toBe("");
+      expect(string.truncate(null, 3)).toBe("");
+      expect(string.capitalize(undefined)).toBe("");
+    });
+
+    it("takes a Date as-is, and an invalid Date as unparseable", () => {
+      const valid = new Date("2026-09-13T00:00:00Z");
+      expect(date.parse(valid)).toBe(valid);
+      expect(date.parse(new Date(NaN))).toBeNull();
+      expect(date["is-valid"](new Date(NaN))).toBe(false);
+      expect(date.add(new Date(NaN), 1)).toBeNull();
+    });
+
+    it("formats with the default locale when locale or options are not usable", () => {
+      const at = "2026-09-13T12:00:00Z";
+      const expected = new Intl.DateTimeFormat().format(new Date(at));
+      expect(date.format(at)).toBe(expected);
+      expect(date.format(at, 5, "nope")).toBe(expected);
+      expect(date.format(at, "en-US", [1])).toBe(
+        new Intl.DateTimeFormat("en-US").format(new Date(at))
+      );
+    });
+
+    it("counts an unknown unit as days in add and diff", () => {
+      expect(date.add("2026-09-13T00:00:00Z", 2, "fortnights")!.toISOString()).toBe(
+        "2026-09-15T00:00:00.000Z"
+      );
+      expect(
+        date.diff("2026-09-16T00:00:00Z", "2026-09-13T00:00:00Z", "fortnights")
+      ).toBe(3);
+    });
+
+    it("collects a key repeated three times into one list, and encodes a missing value as empty", () => {
+      expect(url.params("t=1&t=2&t=3")).toEqual({ t: ["1", "2", "3"] });
+      expect(url.encode(null)).toBe("");
+      expect(url.encode(undefined)).toBe("");
+    });
+
+    it("resolves only quark: urls", () => {
+      expect(builtinModuleName("quark:math")).toBe("math");
+      expect(builtinModuleName("./math.js")).toBeNull();
+      expect(resolveBuiltinModule("quark:math")).toBe(math);
+      expect(resolveBuiltinModule("quark:nope")).toBeUndefined();
+      expect(resolveBuiltinModule("./math.js")).toBeUndefined();
     });
   });
 });

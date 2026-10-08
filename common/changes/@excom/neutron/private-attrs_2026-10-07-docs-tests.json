@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/neutron",
+      "comment": "Update the README to the NucleusKit name, and add tests for the entry, the element config and the devtools hook",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/neutron"
+}

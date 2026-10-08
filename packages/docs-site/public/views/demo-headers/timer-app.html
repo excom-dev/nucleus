@@ -1,4 +1,5 @@
 <hgroup>
   <h2>Timer</h2>
-  <p>Time is the one thing the document cannot hold, so CSS owns it: the bar and readout are a registered custom property animating over <code>--timer-duration</code>. The slider writes that duration; Reset re-renders the bar. Zero app JS.</p>
+  <p>Elapsed time is an attribute on this view's root. The stylesheet keeps the clock: a CSS animation runs on the readout while the timer does, and Quark adds a tenth of a second per iteration until the elapsed time reaches the duration. The slider writes the duration; Reset writes zero.</p>
+  <p>Task 4 of <a href="https://eugenkiss.github.io/7guis/tasks" target="_blank" rel="noopener">7GUIs</a>, a GUI programming benchmark.</p>
 </hgroup>

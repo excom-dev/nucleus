@@ -19,8 +19,12 @@ import { sameTree } from "@excom/nucleus-dom";
 interface PrerenderTargets {
   /** Paths to render, each to `<out>/<path>.html` (`/` → `index.html`, `/a/b` → `a/b.html`). */
   routes: readonly string[];
-  /** Output directory (path or `file:` URL); may be `root`: files are written once every page rendered. */
-  out: string | URL;
+  /**
+   * Output directory (path or `file:` URL); may be `root`: files are written
+   * once every page rendered.
+   * @default `root`
+   */
+  out?: string | URL;
   /**
    * Paths written as the untouched shell, not rendered, to the files
    * `routes` would write: pages that depend on the person (a bag, an
@@ -28,7 +32,11 @@ interface PrerenderTargets {
    * `routes`, or `notFound`, is refused.
    */
   shellRoutes?: readonly string[];
-  /** Path of the not-found page, rendered last to `404.html`. */
+  /**
+   * Path of the not-found page, rendered last to `404.html`. Its hooks get
+   * `page.notFound`, so the app's entry need not know the path. A path
+   * also in `routes` is refused: a page is one or the other.
+   */
   notFound?: string;
   /**
    * Pages whose inputs did not change since the last run are written from
@@ -58,6 +66,8 @@ export interface PooledPrerenderOptions
   extends PrerenderTargets, Partial<Record<keyof RendererOptions, never>> {
   /** The worker module (path or `file:` URL), which calls `serveRenderer()`. */
   worker: string | URL;
+  /** Output directory (path or `file:` URL). No default: `root` is the worker's. */
+  out: string | URL;
   /**
    * Workers rendering at once. A page that never yields is stopped at twice
    * `budgetMs` and fails; its worker is replaced.
@@ -122,14 +132,15 @@ export const routeFile = (route: string): string => {
  * reused ones, picked at random, rendered all the same. One of those that
  * differs from its cached copy (`sameTree`: attribute order aside) renders
  * once more: `unstable` when the two renders differ too. Each of `shells` is
- * its untouched shell.
+ * its untouched shell, `notFound` rendered as the not-found page.
  */
 const renderAll = async (
   renderers: Renderers,
   urls: string[],
   shells: string[],
   cached: Record<string, CachedPage>,
-  verify: number
+  verify: number,
+  notFound?: string
 ) => {
   try {
     const checks = new Map(
@@ -160,7 +171,7 @@ const renderAll = async (
               url,
               reused.has(url) && !verified.has(url)
                 ? { ...cached[url]!, ms: checks.get(url)!.ms }
-                : await renderers.render(url),
+                : await renderers.render(url, url === notFound),
             ] as const
         ),
         ...shells.map(
@@ -174,7 +185,7 @@ const renderAll = async (
       return !diagnostics.errors.length && !sameTree(html!, cached[url]!.html);
     });
     const again = await Promise.all(
-      differing.map((url) => renderers.render(url))
+      differing.map((url) => renderers.render(url, url === notFound))
     );
     const unstable = differing.filter(
       (url, index) =>
@@ -199,7 +210,8 @@ const renderAll = async (
  * `concurrency`); with a `cache`, pages whose
  * inputs did not change are not rendered again. Files are written once
  * every page has rendered, so no page reads another's output; routes that
- * would share a file (`/a` and `/A`, `/a?x` and `/a?y`) are refused first.
+ * would share a file (`/a` and `/A`, `/a?x` and `/a?y`) are refused first,
+ * as is a `notFound` path that is a route too.
  * Rejects (`error.report`), writing nothing, if a page failed under the
  * `"fail"` policy; rejects writing nothing, whatever the policy, if the
  * shell is a page an earlier prerender wrote, or one a browser parses
@@ -225,11 +237,21 @@ export async function prerenderWith(
 ): Promise<PrerenderReport> {
   const { mkdirSync, writeFileSync } = builtin("node:fs");
   const { dirname, join } = builtin("node:path");
-  const outPath = pathOf(out);
+  const destination = out ?? (options as Partial<RendererOptions>).root;
+  if (destination === undefined)
+    throw new TypeError(
+      "nucleus-ssr: out is missing: with a worker it has no default (root is the worker's)"
+    );
+  const outPath = pathOf(destination);
   const both = shellRoutes.filter((url) => [...routes, notFound].includes(url));
   if (both.length)
     throw new TypeError(
       `nucleus-ssr: shell routes also rendered (routes, notFound): ${both.join(", ")}`
+    );
+  // it would render once, as the not-found page, for both files
+  if (notFound !== undefined && routes.includes(notFound))
+    throw new TypeError(
+      `nucleus-ssr: the not-found page is also a route (routes, notFound): ${notFound}`
     );
   const targets = [
     ...[...routes, ...shellRoutes].map((url) => [url, routeFile(url)]),
@@ -262,11 +284,18 @@ export async function prerenderWith(
           env,
         }
   );
-  const key = cache ? runKey(cache, renderers.key) : "";
+  const key = cache ? runKey(cache, renderers.key, notFound) : "";
   const stored = cache && readCache(cache);
   const cached = stored?.key === key ? stored.pages : {};
   const { pages, reused, verified, differing, unstable, changed } =
-    await renderAll(renderers, urls, [...shells], cached, cache?.verify ?? 2);
+    await renderAll(
+      renderers,
+      urls,
+      [...shells],
+      cached,
+      cache?.verify ?? 2,
+      notFound
+    );
   if (unstable.length)
     throw new Error(
       `nucleus-ssr: ${unstable.join(", ")} rendered other HTML each time: its output is not deterministic (ids, the clock, the order requests complete in), so no cache can hold it`

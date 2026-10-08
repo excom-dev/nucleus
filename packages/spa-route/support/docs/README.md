@@ -51,6 +51,8 @@ Wrap screens in `<spa-manager>`, give each `<spa-route>` a `route-href`, and lin
 
 Tests in Vitest on happy-dom import the router helpers from `@excom/spa-route/testing`: `resetRouter`, `navigate`, `popstate`, `installViewTransition`, `trackUnhandledRejections`.
 
+For [prerendering](/docs/prerendering), `@excom/spa-route/server` exports the router's hooks: `beforeRender` starts each page from a cold load of its URL, `afterRender` fails a soft 404 (a page only the `is-fallback` route matches) and a not-found page that route does not render. Only the outermost routes decide: a nested layout's own fallback is part of an ordinary page. `@excom/nucleus-kit/server` already has both.
+
 ### API Reference
 
 <include-content is-active template-ref="/views/api-reference/api-reference.html"></include-content>

@@ -30,16 +30,16 @@ const viewsOf = (path: string) => {
 describe("prerender config", () => {
   it("renders the catalogue's pages from dist into dist, the fallback to 404.html", async () => {
     const options = config.default(CATALOG);
+    // relative to the config's folder; no `out`: pages are written into `root`
     expect(options).toMatchObject({
-      root: config.DIST,
-      out: config.DIST,
+      root: "../../dist",
       origin: "https://wrenfield.excom.dev",
       notFound: "/404",
       shellRoutes: config.SHELL_ROUTES,
       exclude: config.isDeviceState,
       servedElsewhere: config.isServedElsewhere,
     });
-    expect(config.DIST).toMatch(/\/packages\/wrenfield\/dist$/);
+    expect(options).not.toHaveProperty("out");
     // the backend's categories, the catalogue's pieces
     expect(config.catalogRoutes({ products: [{ category: "tables", slug: "a-table" }] })).toEqual([
       "/",
@@ -107,14 +107,22 @@ describe("prerender entry", () => {
       "text/html",
     );
 
+  it("is Nucleus Kit's server entry, its afterRender with the app's check added", async () => {
+    const entry = await import("../prerender/entry");
+    const kit = await import("@excom/nucleus-kit/server");
+    expect(entry).toMatchObject({ beforeRender: kit.beforeRender, settle: kit.settle, SERVER_EXCLUDED_TAGS: kit.SERVER_EXCLUDED_TAGS });
+    expect(entry.afterRender).not.toBe(kit.afterRender);
+  });
+
   it("fails a route only the fallback matches, a not-found path a route matches, and data that came back an error", async () => {
     const { afterRender } = await import("../prerender/entry");
-    expect(() => afterRender({ url: "/shop", document: page(false) })).not.toThrow();
-    expect(() => afterRender({ url: config.NOT_FOUND, document: page(true) })).not.toThrow();
-    expect(() => afterRender({ url: "/shop/nope", document: page(true) })).toThrow("/shop/nope matches no route");
-    expect(() => afterRender({ url: config.NOT_FOUND, document: page(false) })).toThrow("/404 is not the fallback route");
+    const check = (url: string, document: Document) => () => afterRender({ url, notFound: url === config.NOT_FOUND, document });
+    expect(check("/shop", page(false))).not.toThrow();
+    expect(check(config.NOT_FOUND, page(true))).not.toThrow();
+    expect(check("/shop/nope", page(true))).toThrow("/shop/nope matches no route");
+    expect(check(config.NOT_FOUND, page(false))).toThrow("/404 is not the fallback route");
     const failed = page(false, '<provider-fetch api-url="/api/products/gone" is-error></provider-fetch>');
-    expect(() => afterRender({ url: "/shop", document: failed })).toThrow("/shop: /api/products/gone answered an error");
+    expect(check("/shop", failed)).toThrow("/shop: /api/products/gone answered an error");
   });
 });
 

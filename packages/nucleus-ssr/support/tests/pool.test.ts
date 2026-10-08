@@ -112,6 +112,32 @@ describe("prerender in a pool", () => {
   );
 
   it(
+    "tells each worker's hooks which page is the not-found route: Nucleus Kit's server entry passes it and fails a soft 404",
+    async () => {
+      const site = copySite();
+      const report = await pooled(
+        { root: site, kitEntry: true },
+        { routes: ["/menu"], notFound: "/no-such-page", out: site, concurrency: 2 }
+      );
+      expect(report.failed).toEqual([]);
+      expect(read(site, "404.html")).toContain("<h1>Not found</h1>");
+      const out = tempDir();
+      const failure = await pooled(
+        { root: copySite(), kitEntry: true },
+        { routes: ["/", "/gone"], notFound: "/menu", out, concurrency: 2 }
+      ).catch((error) => error);
+      expect(failure.report.failed).toEqual(["/gone", "/menu"]);
+      expect(failure.report.pages.map(({ diagnostics }: { diagnostics: { errors: string[] } }) => diagnostics.errors)).toEqual([
+        [],
+        ["Error: /gone matches no route"],
+        ["Error: /menu is not the fallback route: the not-found page needs a <spa-route is-fallback> that matches it"],
+      ]);
+      expect(readdirSync(out)).toEqual([]);
+    },
+    SLOW
+  );
+
+  it(
     "writes shell routes as the untouched shell, as an in-process run does, from any worker",
     async () => {
       const site = copySite();
@@ -269,6 +295,9 @@ describe("prerender in a pool", () => {
     const worker = join(out, "never-started.mjs");
     await expect(prerender({ worker, out, routes: ["/menu", "/Menu"] })).rejects.toThrow(
       "nucleus-ssr: routes /menu and /Menu would both write Menu.html"
+    );
+    await expect(prerender({ worker, out, routes: ["/", "/menu"], notFound: "/menu" })).rejects.toThrow(
+      "nucleus-ssr: the not-found page is also a route (routes, notFound): /menu"
     );
     for (const concurrency of [0, 1.5])
       await expect(prerender({ worker, out, routes: ["/"], concurrency })).rejects.toThrow(

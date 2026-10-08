@@ -20,9 +20,10 @@ Until then: **pin your versions**, and read the change notes before you upgrade.
 
 Work that is done or nearly done, landing in the next releases.
 
-- **More elements in the catalog.** May include some of the following elements. Interaction: `content-sortable`, `content-splitter`, `content-popover`, `super-file-input`. Actions: `clipboard-copy`, `web-share`, `file-download`. Sensors: `detect-visibility`, `detect-size`, `detect-scroll`, `detect-document`, `detect-permission`. Providers: `provider-url-params`, `provider-event-source`, `provider-websocket`, `provider-worker`.
+- **More elements in the catalog.** May include some of the following elements. Interaction: `content-sortable`, `content-splitter`, `content-popover`, `super-file-input`. Actions: `clipboard-copy`, `web-share`, `file-download`. Sensors: `detect-visibility`, `detect-size`, `detect-scroll`, `detect-document`, `detect-permission`. Providers: `provider-url-params`, `provider-sse`, `provider-websocket`, `provider-worker`.
 - **Polyfills** Some features will be broken for certain browsers whose versions are older than a year (mainly Firefox & Safari, mid-2025). This will be remedied in the first stable release.
 - **The small-bug backlog.** A coverage sweep across every package surfaced a list of minor defects. They are being triaged and fixed ahead of a stable release.
+- **Sophisticated mobile features** These features - implemented via CSS and custom elements - will make a Nucleus app behave like a polished native app.
 - **More themes for Valence.css.** Broader theme and scheme coverage, so a view's `--v-*` tokens carry further without custom CSS.
 - **HTML/Quark "type checking"** Editor integration and optional build tool to raise warnings about unknown elements/attributes/provisions.
 

@@ -1108,6 +1108,34 @@ describe("renderer options", () => {
     }
   });
 
+  it("tells the hooks a page is the not-found page only when render() is told", async () => {
+    const seen: [string, boolean][] = [];
+    const renderer = await createRenderer({
+      root: SITE,
+      origin: ORIGIN,
+      shell: "<p>static</p>",
+      entry: ownEntry({
+        beforeRender: ({ url, notFound }: RenderPage) => seen.push([`before ${url}`, notFound]),
+        afterRender: ({ url, notFound }: RenderPage) => seen.push([`after ${url}`, notFound]),
+      }),
+    });
+    try {
+      await renderer.render("/menu");
+      await renderer.render("/404", { notFound: true });
+      await renderer.render("/404", {});
+      expect(seen).toEqual([
+        ["before /menu", false],
+        ["after /menu", false],
+        ["before /404", true],
+        ["after /404", true],
+        ["before /404", false],
+        ["after /404", false],
+      ]);
+    } finally {
+      await renderer.close();
+    }
+  });
+
   it("fails a page whose hook throws, and uses only hooks that are functions", async () => {
     const renderer = await createRenderer({
       root: SITE,

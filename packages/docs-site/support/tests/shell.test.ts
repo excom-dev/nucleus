@@ -7,7 +7,7 @@ import {
   readFileRelative,
   vi,
 } from "@excom/nucleus-test";
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { KitRoute, KitRouter } from "@excom/kit-router";
 import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
@@ -140,7 +140,7 @@ describe("catalog helpers", () => {
 
   it("displayName labels the libraries in prose and leaves every other package on its shortName", () => {
     expect(displayName("quark")).toBe("Quark");
-    expect(displayName("nucleus-kit")).toBe("Nucleus Kit");
+    expect(displayName("nucleus-kit")).toBe("NucleusKit");
     expect(displayName("valence")).toBe("Valence.css");
     expect(displayName("neutron")).toBe("Neutron");
     expect(displayName("spa-route")).toBe("spa-route");
@@ -756,6 +756,103 @@ describe("site route table", () => {
     expect(
       activate(routes, `${SITE_BASE}/examples/todos`).route.templateRef
     ).toBe("/views/live-app/live-app.html");
+  });
+});
+
+/* An example is a route (the playground, told which app and which files),
+   a sidebar entry, a view folder and an intro. */
+describe("examples", () => {
+  const shell = readFileRelative(import.meta.url, "../../index.html").replace(
+    /<link[\s\S]*?>/g,
+    ""
+  );
+  const doc = new DOMParser().parseFromString(shell, "text/html");
+  const views = resolve(
+    dirname(fileURLToPath(import.meta.url)),
+    "../../public/views"
+  );
+  const isExample = (el: Element) =>
+    el.getAttribute("route-href")?.startsWith("/examples/");
+  const examples = [...doc.querySelectorAll("spa-manager > spa-route")]
+    .filter(isExample)
+    .map((route) => ({
+      href: route.getAttribute("route-href"),
+      app: route.getAttribute("data-app")!,
+      files: route.getAttribute("data-files")!,
+      title: route.getAttribute("document-title"),
+    }));
+  /** The seven 7GUIs tasks, by task number. */
+  const SEVEN_GUIS = [
+    "counter-app",
+    "temperature-app",
+    "flight-booker-app",
+    "timer-app",
+    "crud-app",
+    "circle-drawer-app",
+    "cells-app",
+  ];
+
+  it("routes each example to the playground, in the sidebar's order", () => {
+    expect(examples).toEqual([
+      { href: "/examples/todos", app: "todo-app", files: "html quark css", title: "Todo App · Nucleus · docs" },
+      { href: "/examples/counter", app: "counter-app", files: "html quark", title: "Counter · Nucleus · docs" },
+      { href: "/examples/temperature", app: "temperature-app", files: "html quark css", title: "Temperature Converter · Nucleus · docs" },
+      { href: "/examples/flight-booker", app: "flight-booker-app", files: "html quark css", title: "Flight Booker · Nucleus · docs" },
+      { href: "/examples/timer", app: "timer-app", files: "html quark css", title: "Timer · Nucleus · docs" },
+      { href: "/examples/crud", app: "crud-app", files: "html quark css", title: "CRUD · Nucleus · docs" },
+      { href: "/examples/circle-drawer", app: "circle-drawer-app", files: "html quark js css", title: "Circle Drawer · Nucleus · docs" },
+      { href: "/examples/cells", app: "cells-app", files: "html quark js css", title: "Cells · Nucleus · docs" },
+      { href: "/examples/returns", app: "returns-app", files: "html quark css", title: "Furniture Returns · Nucleus · docs" },
+      { href: "/examples/view-transitions", app: "view-transitions-app", files: "html quark css", title: "View Transitions · Nucleus · docs" },
+    ]);
+    expect(
+      [
+        ...doc
+          .querySelector<HTMLTemplateElement>("#template-site-nav")!
+          .content.querySelectorAll("spa-a"),
+      ]
+        .filter(isExample)
+        .map((link) => [
+          link.getAttribute("route-href"),
+          link.textContent!.replace(/\s+/g, " ").trim(),
+        ])
+    ).toEqual(
+      examples.map(({ href, title }) => [
+        href,
+        title!.replace(" · Nucleus · docs", ""),
+      ])
+    );
+  });
+
+  it("every example has the files its route lists, and an intro", () => {
+    const missing = examples.flatMap(({ app, files }) =>
+      [
+        ...files.split(" ").map((ext) => `${app}/${app}.${ext}`),
+        `demo-headers/${app}.html`,
+      ].filter((file) => !existsSync(resolve(views, file)))
+    );
+    expect(missing).toEqual([]);
+  });
+
+  it("the seven 7GUIs intros end with the same line, numbered by task", () => {
+    const lastLines = SEVEN_GUIS.map((app) => {
+      const file = resolve(views, `demo-headers/${app}.html`);
+      if (!existsSync(file)) return `${app}: no intro`;
+      const intro = new DOMParser().parseFromString(
+        readFileSync(file, "utf8"),
+        "text/html"
+      );
+      return intro.querySelector("hgroup")?.lastElementChild?.outerHTML;
+    });
+    expect(lastLines).toEqual(
+      SEVEN_GUIS.map(
+        (_app, i) =>
+          `<p>Task ${i + 1} of <a href="https://eugenkiss.github.io/7guis/tasks" target="_blank" rel="noopener">7GUIs</a>, a GUI programming benchmark.</p>`
+      )
+    );
+    expect(examples.map(({ app }) => app)).toEqual(
+      expect.arrayContaining(SEVEN_GUIS)
+    );
   });
 });
 

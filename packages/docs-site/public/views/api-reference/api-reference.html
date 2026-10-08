@@ -265,9 +265,29 @@
             </article>
         </template>
     </div>
+    <div bind-releases></div>
     <small role="note" id="api-github-link">
         View Source <a bind-src-link target="_blank" class="icon-button"><span class="ico-github"></span></a>
     </small>
+    <template id="release-notes">
+        <article class="nested">
+            <details class="accordion">
+                <summary>Release notes <small role="note" bind-releases-length></small></summary>
+                <section bind-release-list>
+                    <template>
+                        <section>
+                            <h3><span bind-version></span> <time bind-day></time></h3>
+                            <ul bind-notes>
+                                <template>
+                                    <li bind-note></li>
+                                </template>
+                            </ul>
+                        </section>
+                    </template>
+                </section>
+            </details>
+        </article>
+    </template>
     <template id="description-popover">
         <span>
             <event-handler target-ref=":scope + [popover]" command-name="toggle-popover" role="button"

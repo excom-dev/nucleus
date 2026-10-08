@@ -1,6 +1,7 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { buildCem } from "../../scripts/build-cem.mjs";
 import { makeTempDir, packageJson, removeDir, writeFiles } from "./docs-pipeline-fixtures";
 
@@ -174,5 +175,121 @@ describe("buildCem", () => {
     const decl = readCem(root).modules[0].declarations[0];
     expect(decl.cssProperties).toBeUndefined();
     expect(decl._neutron).toBeUndefined();
+  });
+});
+
+describe("buildCem with an analyzer that returns less than a source declares", () => {
+  let tmp: string;
+  beforeAll(() => {
+    tmp = makeTempDir("heft-rig-cem-mocked-");
+  });
+  afterAll(() => removeDir(tmp));
+  afterEach(() => {
+    vi.doUnmock("../../scripts/cem-analyze.mjs");
+    vi.doUnmock("../../scripts/cem-analyze-css.mjs");
+    vi.resetModules();
+  });
+
+  const element = { kind: "class", customElement: true, tagName: "x-one" };
+  const helper = { kind: "class", name: "Helper" };
+  const aliasOnly = { cssProperties: [], cssClasses: [], cssAliases: [{ name: "loose" }] };
+
+  /** `buildCem` over a package of `sources`, its analyzers answering as `analyze` / `css` say. */
+  const build = async (
+    id: string,
+    sources: string[],
+    analyze: (modulePath: string) => unknown,
+    css = aliasOnly,
+  ) => {
+    vi.resetModules();
+    vi.doMock("../../scripts/cem-analyze.mjs", () => ({
+      analyzeSource: (_src: string, { modulePath }: { modulePath: string }) => analyze(modulePath),
+      makeImportResolver: () => () => undefined,
+    }));
+    vi.doMock("../../scripts/cem-analyze-css.mjs", async (original) => ({
+      ...(await original<object>()),
+      analyzeCss: () => css,
+    }));
+    const root = path.join(tmp, id);
+    writeFiles(root, {
+      "package.json": packageJson(`@excom/${id}`),
+      "src/styles.css": "/* analyzed by the mock */",
+      ...Object.fromEntries(sources.map((source) => [source, "export {};"])),
+    });
+    const { buildCem } = await import("../../scripts/build-cem.mjs");
+    await buildCem(root);
+    return root;
+  };
+
+  it("gives an alias without selectors or a :-- prefix to the elements, when no tag matches its name", async () => {
+    const root = await build("loose", ["one.ts", "none.ts"], (modulePath) =>
+      modulePath === "none.ts" ? {} : { modules: [{ path: modulePath, declarations: [element, helper] }, { path: "bare.ts" }] },
+    );
+    const [one] = readCem(root).modules;
+    expect(one.path).toBe("bare.ts");
+    const decls = readCem(root).modules.flatMap((m: any) => m.declarations ?? []);
+    expect(decls.find((d: any) => d.tagName === "x-one")._neutron.cssAliases).toEqual([{ name: "loose" }]);
+    expect(decls.find((d: any) => d.name === "Helper")._neutron).toBeUndefined();
+  });
+
+  it("merges no alias when no declaration is an element or a mixin, and still writes the manifest", async () => {
+    const root = await build("helpers", ["helpers.ts"], (modulePath) => ({
+      modules: [{ path: modulePath, declarations: [helper] }],
+    }));
+    expect(readCem(root).modules).toEqual([{ path: "helpers.ts", declarations: [helper] }]);
+  });
+
+  it("binds a stylesheet's classes to the elements only, not to a declaration that is neither element nor mixin", async () => {
+    const root = await build(
+      "classes",
+      ["one.ts"],
+      (modulePath) => ({ modules: [{ path: modulePath, declarations: [element, helper] }] }),
+      { cssProperties: [], cssClasses: [{ name: "raised" }], cssAliases: [] },
+    );
+    const [{ declarations }] = readCem(root).modules;
+    expect(declarations[0]._neutron.cssClasses).toEqual([{ name: "raised" }]);
+    expect(declarations[1]._neutron).toBeUndefined();
+  });
+
+  it("writes nothing when neither the sources nor index.ts yield a module list", async () => {
+    const root = await build("nothing", ["one.ts", "index.ts"], () => ({}));
+    expect(existsSync(path.join(root, "support/custom-elements.json"))).toBe(false);
+  });
+});
+
+describe("build-cem.mjs run as a script", () => {
+  const SCRIPT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../scripts/build-cem.mjs");
+  const originalArgv = process.argv;
+  let tmp: string;
+  beforeAll(() => {
+    tmp = makeTempDir("heft-rig-cem-main-");
+  });
+  afterAll(() => removeDir(tmp));
+  afterEach(() => {
+    process.argv = originalArgv;
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
+  const importWith = async (argv: string[], root: string) => {
+    vi.resetModules();
+    vi.spyOn(process, "cwd").mockReturnValue(root);
+    process.argv = argv;
+    await import("../../scripts/build-cem.mjs");
+  };
+
+  it("builds the manifest of the package it runs in when it is the script Node started", async () => {
+    const root = path.join(tmp, "run-el");
+    writeFiles(root, { "package.json": packageJson("@excom/run-el"), "run-el.ts": element("run-el", "RunEl") });
+    await importWith([process.execPath, SCRIPT], root);
+    expect(readCem(root).modules.map((m: any) => m.path)).toEqual(["run-el.ts"]);
+  });
+
+  it("builds nothing when imported, with no script given, or with one that does not exist", async () => {
+    const root = path.join(tmp, "not-run");
+    writeFiles(root, { "package.json": packageJson("@excom/not-run"), "not-run.ts": element("not-run", "NotRun") });
+    for (const argv of [[process.execPath, "/elsewhere.mjs"], [process.execPath]])
+      await importWith(argv, root);
+    expect(existsSync(path.join(root, "support/custom-elements.json"))).toBe(false);
   });
 });

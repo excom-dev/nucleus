@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import path from "node:path";
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { fileURLToPath } from "node:url";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { checkPublishedKit } from "../../scripts/kit-check.mjs";
 import { makeTempDir, removeDir, writeFiles } from "./docs-pipeline-fixtures";
 
@@ -57,15 +58,103 @@ describe("checkPublishedKit", () => {
       );
   });
 
-  it("waits out a version unpkg does not list yet, and fails on any other answer", async () => {
-    const late = vi.fn().mockResolvedValueOnce(reply(404)).mockResolvedValueOnce(reply(200, listing(DIST)));
-    expect(await checkPublishedKit({ root, fetch: late, delay: 0 })).toMatchObject({ files: 3 });
-    expect(late).toHaveBeenCalledTimes(2);
+  it("waits out a version unpkg does not serve yet, saying so once, and fails on any other answer", async () => {
+    const log = vi.fn();
+    const late = vi
+      .fn()
+      .mockResolvedValueOnce(reply(404))
+      .mockResolvedValueOnce(reply(404))
+      .mockResolvedValueOnce(reply(200, listing(DIST)));
+    expect(await checkPublishedKit({ root, fetch: late, attempts: 5, delay: 0, log })).toMatchObject({ files: 3 });
+    expect(late).toHaveBeenCalledTimes(3);
+    expect(log.mock.calls).toEqual([["unpkg does not serve this version yet: asking again for up to 0 s"]]);
     const never = vi.fn(async () => reply(404));
-    await expect(checkPublishedKit({ root, fetch: never, attempts: 3, delay: 0 })).rejects.toThrow("answered 404");
+    await expect(checkPublishedKit({ root, fetch: never, attempts: 3, delay: 0, log })).rejects.toThrow(
+      "/dist/?meta answered 404 for 0 s: unpkg does not serve this version (yet). Deploy again once it does."
+    );
     expect(never).toHaveBeenCalledTimes(3);
     const broken = vi.fn(async () => reply(500));
-    await expect(checkPublishedKit({ root, fetch: broken, delay: 0 })).rejects.toThrow("answered 500");
+    await expect(checkPublishedKit({ root, fetch: broken, delay: 0, log })).rejects.toThrow("answered 500");
     expect(broken).toHaveBeenCalledTimes(1);
+  });
+
+  it("waits eight minutes by default: unpkg lagged the 0.4.0 publish by more than the old 50 s", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout"] });
+    try {
+      const never = vi.fn(async () => reply(404));
+      let error: Error | undefined;
+      checkPublishedKit({ root, fetch: never, log: vi.fn() }).catch((cause) => (error = cause));
+      // the file reads are real: let them finish between the waits
+      while (!error) {
+        await vi.advanceTimersByTimeAsync(15_000);
+        await new Promise(setImmediate);
+      }
+      expect(error.message).toContain("answered 404 for 480 s");
+      expect(never).toHaveBeenCalledTimes(33);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+describe("kit-check.mjs run as a script", () => {
+  const SCRIPT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../scripts/kit-check.mjs");
+  const sha = (text: string) => `sha256-${createHash("sha256").update(text).digest("base64")}`;
+  const originalArgv = process.argv;
+  let site: string;
+
+  beforeAll(() => {
+    site = makeTempDir("heft-rig-kit-main-");
+    writeFiles(site, {
+      "node_modules/@excom/nucleus-kit/package.json": JSON.stringify({ name: "@excom/nucleus-kit", version: "9.9.9" }),
+      "node_modules/@excom/nucleus-kit/dist/nucleus-kit.progressive.min.js": "entry",
+    });
+  });
+  afterAll(() => removeDir(site));
+  afterEach(() => {
+    process.argv = originalArgv;
+    process.exitCode = undefined;
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
+  /** Imports the script with `argv`, in `site`, unpkg answering `integrity` for the entry file. */
+  const importWith = async (argv: string[], integrity = sha("entry")) => {
+    vi.resetModules();
+    vi.spyOn(process, "cwd").mockReturnValue(site);
+    const log = vi.spyOn(console, "log").mockImplementation(() => {});
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const fetch = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ files: [{ path: "/dist/nucleus-kit.progressive.min.js", integrity }] }),
+    }));
+    vi.stubGlobal("fetch", fetch);
+    process.argv = argv;
+    await import("../../scripts/kit-check.mjs");
+    return { log, error, fetch };
+  };
+
+  it("says the kit on unpkg is the kit built here, and leaves the exit code alone", async () => {
+    const { log, error } = await importWith([process.execPath, SCRIPT]);
+    expect(log).toHaveBeenCalledWith("@excom/nucleus-kit@9.9.9 on unpkg is the kit built here (1 files)");
+    expect(error).not.toHaveBeenCalled();
+    expect(process.exitCode).toBeUndefined();
+  });
+
+  it("prints the difference to stderr and sets the exit code to 1", async () => {
+    const { log, error } = await importWith([process.execPath, SCRIPT], sha("other"));
+    expect(error).toHaveBeenCalledWith(expect.stringContaining("dist/nucleus-kit.progressive.min.js differs"));
+    expect(log).not.toHaveBeenCalled();
+    expect(process.exitCode).toBe(1);
+  });
+
+  it("checks nothing when imported, with no script given, or with one that does not exist", async () => {
+    for (const argv of [[process.execPath, "/elsewhere.mjs"], [process.execPath], [process.execPath, "nope.mjs"]]) {
+      const { log, error, fetch } = await importWith(argv);
+      expect([log, error, fetch].map((spy) => spy.mock.calls.length)).toEqual([0, 0, 0]);
+    }
+    expect(process.exitCode).toBeUndefined();
   });
 });

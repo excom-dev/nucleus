@@ -1,7 +1,9 @@
 /**
  * `server.ts` is `index.ts` minus the packages whose elements read the device
- * or the person. Both files are parsed: a package added to `index.ts` has to
- * land in `server.ts` or have its tags listed in `SERVER_EXCLUDED_TAGS`.
+ * or the person, plus the server entries (`<package>/server`: the prerender
+ * hooks) of packages it re-exports. Both files are parsed: a package added to
+ * `index.ts` has to land in `server.ts` or have its tags listed in
+ * `SERVER_EXCLUDED_TAGS`.
  */
 import { SERVER_EXCLUDED_TAGS } from "../../server";
 import { afterEach, describe, expect, it, vi } from "@excom/nucleus-test";
@@ -28,8 +30,10 @@ const tagsDefinedBy = async (name: string): Promise<string[]> => {
 };
 
 describe("nucleus-kit server entry vs index", () => {
+  const SERVER_ENTRY = /\/server$/;
   const index = reExported("index.ts");
-  const server = reExported("server.ts");
+  const server = reExported("server.ts").filter((name) => !SERVER_ENTRY.test(name));
+  const serverEntries = reExported("server.ts").filter((name) => SERVER_ENTRY.test(name));
   const excluded = index.filter((name) => !server.includes(name));
 
   afterEach(() => {
@@ -39,6 +43,12 @@ describe("nucleus-kit server entry vs index", () => {
   it("re-exports nothing index.ts does not, in the same order", () => {
     expect(server.length).toBeGreaterThan(0);
     expect(server).toEqual(index.filter((name) => server.includes(name)));
+  });
+
+  it("adds only the server entries of packages it re-exports: the prerender hooks", () => {
+    expect(serverEntries).toEqual(["@excom/quark-sheet/server", "@excom/spa-route/server"]);
+    expect(serverEntries.map((name) => name.replace(SERVER_ENTRY, "")).filter((name) => !server.includes(name))).toEqual([]);
+    expect(reExported("index.ts").filter((name) => name.split("/").length > 2)).toEqual([]);
   });
 
   it("lists the tags of every package it leaves out, and no others", async () => {

@@ -106,12 +106,100 @@ describe("workerKey of another checkout", () => {
   });
 });
 
+describe("workerKey of modules without code", () => {
+  it("counts a module with no code or external path by its id alone", async () => {
+    const { workerKey } = await import("../../scripts/prerender-worker.mjs");
+    const site = mkdtempSync(path.join(os.tmpdir(), "rig-prerender-site-"));
+    const runner = (modules: { id: string; meta?: object }[]) => ({
+      import: async () => ({ default: { version: "1.0.0", dependencies: { "happy-dom": "20.8.3" } } }),
+      modules: () => modules,
+    });
+    try {
+      const keyOf = (modules: { id: string; meta?: object }[]) => workerKey(runner(modules), site, "/work/a");
+      const bare = await keyOf([{ id: "node:fs" }]);
+      expect(await keyOf([{ id: "node:fs", meta: {} }])).toBe(bare);
+      expect(await keyOf([{ id: "node:path" }])).not.toBe(bare);
+    } finally {
+      rmSync(site, { recursive: true, force: true });
+    }
+  });
+});
+
 describe("serveWorker", () => {
   it("loads the config through a runner of its own, and serves only in a pool's worker", async () => {
     const { serveWorker } = await import("../../scripts/prerender-worker.mjs");
     await expect(serveWorker({ packageRoot: FIXTURE, configFile: path.join(FIXTURE, "fail.config.ts") })).rejects.toThrow(
       "nucleus-ssr: serveRenderer() serves prerender()'s pool",
     );
+  });
+});
+
+describe("serveWorker with the pool's pieces replaced", () => {
+  afterEach(() => {
+    vi.doUnmock("../../scripts/prerender.mjs");
+    vi.resetModules();
+  });
+
+  /** A runner that answers the imports `serveWorker` and `workerKey` make; `served` gets what `serveRenderer` is given. */
+  const fakeRunner = (served: unknown[], root: string) => {
+    const files: Record<string, unknown> = {
+      "@excom/nucleus-ssr/package.json": { default: { version: "1.0.0" } },
+      "@excom/nucleus-dom/package.json": { default: { version: "2.0.0", dependencies: { "happy-dom": "20.0.0" } } },
+      "@excom/nucleus-ssr/src/run": {
+        loadPrerenderConfig: async (file: string) => ({ root, origin: "https://wren.test", routes: ["/"], file }),
+      },
+      "@excom/nucleus-ssr": { serveRenderer: async (options: unknown) => void served.push(options) },
+    };
+    return {
+      import: vi.fn(async (id: string) => files[id]),
+      modules: () => [{ id: "/site/entry.ts", meta: { code: "export {};" } }],
+      close: vi.fn(async () => {}),
+    };
+  };
+
+  it("serves the config's options with the worker's cache key, and keeps the runner open for the pages", async () => {
+    const served: any[] = [];
+    const site = mkdtempSync(path.join(os.tmpdir(), "rig-prerender-site-"));
+    const runner = fakeRunner(served, site);
+    vi.resetModules();
+    vi.doMock("../../scripts/prerender.mjs", async (original) => ({
+      ...(await original<object>()),
+      createWorkspaceRunner: async () => runner,
+    }));
+    const { serveWorker } = await import("../../scripts/prerender-worker.mjs");
+    await serveWorker({ packageRoot: FIXTURE, configFile: "site.config.ts" });
+    expect(runner.import).toHaveBeenCalledWith("@excom/nucleus-ssr/src/run");
+    expect(served).toHaveLength(1);
+    expect(served[0]).toMatchObject({ origin: "https://wren.test", routes: ["/"], file: "site.config.ts" });
+    expect(await served[0].cacheKey()).toMatch(/^[0-9a-f]{64}$/);
+    expect(runner.close).not.toHaveBeenCalled();
+    rmSync(site, { recursive: true, force: true });
+  });
+});
+
+describe("prerender-worker.mjs run as a script", () => {
+  afterEach(() => {
+    delete process.env.RIG_PRERENDER_WORKER;
+    vi.resetModules();
+  });
+
+  const importWorker = async (argv: string[]) => {
+    const { WORKER_ENV } = await load();
+    process.env[WORKER_ENV] = JSON.stringify({ packageRoot: FIXTURE, configFile: path.join(FIXTURE, "fail.config.ts") });
+    vi.resetModules();
+    process.argv = argv;
+    return import("../../scripts/prerender-worker.mjs");
+  };
+
+  it("serves the site its environment names when it is the script Node started", async () => {
+    // outside a pool's worker: the serving itself refuses, which shows it ran
+    await expect(importWorker([process.execPath, path.join(RIG_ROOT, "scripts/prerender-worker.mjs")])).rejects.toThrow(
+      "nucleus-ssr: serveRenderer() serves prerender()'s pool",
+    );
+  });
+
+  it("serves nothing when imported or started as another script", async () => {
+    await expect(importWorker([process.execPath, "/elsewhere.mjs"])).resolves.toHaveProperty("serveWorker");
   });
 });
 

@@ -14,6 +14,7 @@ export type {
   RendererHooks,
   RendererOptions,
   RenderPage,
+  RenderPageOptions,
   RenderResult,
 } from "./src/renderer";
 export { createRenderer } from "./src/renderer";
@@ -24,6 +25,11 @@ export type {
   RunPage,
   RunReport,
 } from "./src/run";
-export { checkLinks, runPrerender, sitemapRoutes } from "./src/run";
+export {
+  checkLinks,
+  defineConfig,
+  runPrerender,
+  sitemapRoutes,
+} from "./src/run";
 export type { ServeRendererOptions } from "./src/worker";
 export { serveRenderer } from "./src/worker";

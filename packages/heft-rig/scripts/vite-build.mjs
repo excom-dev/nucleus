@@ -7,14 +7,11 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { build } from "vite";
-import { createRigViteConfig, writeMinifiedCss } from "./vite-config.mjs";
+import { createRigViteConfig, NODE_ONLY_ENTRIES, writeMinifiedCss } from "./vite-config.mjs";
 import { buildSizeReport } from "./build-size.mjs";
 import { buildExports } from "./build-exports.mjs";
 import { isSitePackage, readPackageJson, usesSiteBuild } from "./package-type.mjs";
 import { prepareSiteDocs } from "./collect-docs-metas.mjs";
-
-/** Root entries that only run in Node: an ESM pair, never a UMD. */
-const NODE_ONLY_ENTRIES = ["testing", "server"];
 
 /**
  * Run the full Vite build for the current package (or given root).

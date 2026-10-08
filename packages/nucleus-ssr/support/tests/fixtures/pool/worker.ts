@@ -20,6 +20,8 @@ export interface TestWorker {
   crashShell?: string[];
   /** The worker's part of the cache key; `"pid"`: its process id, which no two workers share. */
   cacheKey?: string;
+  /** The entry is Nucleus Kit's server entry alone: its elements and its hooks. */
+  kitEntry?: boolean;
 }
 
 const {
@@ -30,6 +32,7 @@ const {
   stale = [],
   crashShell = [],
   cacheKey,
+  kitEntry,
 }: TestWorker = JSON.parse(process.env.NUCLEUS_SSR_TEST_WORKER!);
 const SHELL = readFileSync(join(root, "index.html"), "utf8");
 
@@ -54,6 +57,7 @@ await serveRenderer({
       ? undefined
       : () => (cacheKey === "pid" ? String(process.pid) : cacheKey),
   entry: async () => {
+    if (kitEntry) return import("@excom/nucleus-kit/server");
     await import("@excom/spa-route");
     await import("@excom/include-content");
     await import("@excom/provider-fetch");

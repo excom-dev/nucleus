@@ -33,13 +33,11 @@ Documentation: https://nucleus.excom.dev/packages/nucleus-devtools
 
 **Language**: English
 
-**Store icon**: `public/icon/128.png` (the dashboard reads it from the manifest; upload the same file if asked)
+**Store icon** (128×128): `public/icon/128.png`
 
-**Screenshots** (1280×800 or 640×400, PNG, 1–5): take on https://nucleus.excom.dev/examples/todos with DevTools docked right, Elements panel, Element pane open:
-1. Quark tab — a `<li>` inside the todo list selected, rule rows expanded.
-2. Neutron tab — a `provider-fetch` or `content-drawer` selected, lifecycle rows expanded.
-3. Hover state — the declaration tooltip over a key.
-4. Heatmap — toolbar popup with the toggle on and the overlay visible on the page.
+**Small promo tile** (440×280): `support/store/promo-small-440x280.png` (source `promo-small-440x280.svg`; re-render with `@resvg/resvg-js`, `loadSystemFonts: true`)
+
+**Screenshots** (1280×800 PNG, 1–5): `support/store/screenshots/` — `1-quark-tab.png`, `2-neutron-tab.png` (owner's captures, metadata stripped, letterboxed from 1309×948; a capture of a 1280×800 or any 16:10 window avoids the side bars). Still worth adding: the hover tooltip over a key, and the heatmap overlay with the toolbar popup. Never drop screenshots into `public/` — everything there ships inside the extension zip.
 
 **Official URL**: https://excom.dev
 **Homepage URL**: https://nucleus.excom.dev/packages/nucleus-devtools
@@ -63,7 +61,7 @@ The probe must be installed at document_start on any page that might use the Nuc
 - I do not use or transfer user data for purposes that are unrelated to my item's single purpose
 - I do not use or transfer user data to determine creditworthiness or for lending purposes
 
-**Privacy policy URL**: https://nucleus.excom.dev/packages/nucleus-devtools/privacy
+**Privacy policy URL**: https://excom.dev/nucleus/packages/nucleus-devtools/privacy (live today; becomes https://nucleus.excom.dev/packages/nucleus-devtools/privacy once the restructured site is deployed on that domain — update the dashboard then)
 
 ## Distribution
 

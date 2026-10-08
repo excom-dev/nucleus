@@ -1,17 +1,17 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`flight-booker-app view > disables return and book until dates are valid, then confirms > complexity 1`] = `
+exports[`flight-booker-app view (7GUIs task 3) > clicking B displays a message with the selection (return flight) > complexity 1`] = `
 {
   "attributeRuns": 1,
   "closest": 0,
   "getVar": 4,
   "importNode": 0,
   "listenerRuns": 0,
-  "matches": 7,
+  "matches": 11,
   "parentElement": 21,
   "parentNode": 0,
   "quarkRuns": 1,
-  "queryScopeCost": 15,
+  "queryScopeCost": 17,
   "querySelectorAll": 2,
   "removeAttribute": 1,
   "ruleRuns": 2,

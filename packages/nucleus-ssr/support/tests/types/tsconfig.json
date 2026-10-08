@@ -1,0 +1,7 @@
+{
+  // the type tests: a project of their own, so the package's build emits no
+  // declarations for them
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": { "noEmit": true, "emitDeclarationOnly": false, "declaration": false, "declarationMap": false },
+  "include": ["./*.ts"]
+}

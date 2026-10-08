@@ -514,7 +514,7 @@ describe("buildPackageMetas", () => {
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('"gone"'));
   });
 
-  it("ends the README with the release notes as a closed details, not the doc pages", async () => {
+  it("puts the releases in the meta as data, with notes as inline HTML, and keeps them out of the README", async () => {
     const name = "@excom/noted-lib";
     const root = path.join(tmp, "noted-lib");
     writeFiles(root, {
@@ -522,7 +522,9 @@ describe("buildPackageMetas", () => {
         excom: { documented: true, packageType: "library" },
       }),
       "index.ts": "export const x = 1;",
-      "support/docs/README.md": "# noted-lib\n\nIntro.",
+      "support/docs/README.md":
+        "# noted-lib\n\nIntro.\n\n### API Reference\n\n" +
+        '<include-content is-active template-ref="/views/api-reference/api-reference.html"></include-content>\n',
       "support/docs/PROPS.md": "# Props",
       "CHANGELOG.json": changelogJson(name, [
         {
@@ -539,20 +541,47 @@ describe("buildPackageMetas", () => {
     await buildPackageMetas(root);
     const meta = readMeta(root);
 
-    expect(meta.readme).toBe(
-      '<h1 id="md-noted-lib">noted-lib</h1>\n<p>Intro.</p>\n' +
-        '<details class="release-notes">\n' +
-        "<summary>Release notes</summary>\n" +
-        "<h3>0.2.0 <time>2026-10-01</time></h3>\n<ul>\n<li>Add <code>newApi()</code></li>\n</ul>\n" +
-        "<h3>0.1.0 <time>2026-09-30</time></h3>\n<ul>\n<li>Fix a crash</li>\n</ul>\n" +
-        "</details>\n",
-    );
+    expect(meta.releases).toEqual([
+      { version: "0.2.0", day: "2026-10-01", notesHtml: ["Add <code>newApi()</code>"] },
+      { version: "0.1.0", day: "2026-09-30", notesHtml: ["Fix a crash"] },
+    ]);
+    expect(meta.readme).not.toContain("release-notes");
+    expect(meta.readme).not.toContain("<details");
+    // the README already includes the view: no second include
+    expect(meta.readme.match(/api-reference\.html/g)).toHaveLength(1);
     expect(meta.docs.readme).not.toContain("release-notes");
     expect(meta.docs.props).toBe('<h1 id="md-props">Props</h1>\n');
     expect(meta).not.toHaveProperty("changelog");
   });
 
-  it("adds no details without CHANGELOG.json or when nothing survives the filter", async () => {
+  it("ends a README without an API section with the api-reference include when there are releases", async () => {
+    const name = "@excom/no-api-lib";
+    const root = path.join(tmp, "no-api-lib");
+    writeFiles(root, {
+      "package.json": packageJson(name, {
+        excom: { documented: true, packageType: "library" },
+      }),
+      "index.ts": "export const x = 1;",
+      "support/docs/README.md": "# no-api-lib\n\nIntro.",
+      "support/docs/PROPS.md": "# Props",
+      "CHANGELOG.json": changelogJson(name, [
+        { version: "0.1.0", comments: { minor: ["Add a thing"] } },
+      ]),
+    });
+    await buildPackageMetas(root);
+    const meta = readMeta(root);
+
+    expect(meta.readme).toBe(
+      '<h1 id="md-no-api-lib">no-api-lib</h1>\n<p>Intro.</p>\n' +
+        '<include-content is-active template-ref="/views/api-reference/api-reference.html"></include-content>\n',
+    );
+    expect(meta.releases).toHaveLength(1);
+    // doc pages never carry the include
+    expect(meta.docs.props).toBe('<h1 id="md-props">Props</h1>\n');
+    expect(meta.docs.readme).not.toContain("api-reference");
+  });
+
+  it("adds neither releases nor the include without CHANGELOG.json or when nothing survives the filter", async () => {
     const readme = '<h1 id="md-lib">lib</h1>\n';
     const none = path.join(tmp, "no-notes");
     writeFiles(none, {
@@ -564,6 +593,7 @@ describe("buildPackageMetas", () => {
     });
     await buildPackageMetas(none);
     expect(readMeta(none).readme).toBe(readme);
+    expect(readMeta(none)).not.toHaveProperty("releases");
 
     const noise = path.join(tmp, "noise-only");
     writeFiles(noise, {
@@ -579,6 +609,7 @@ describe("buildPackageMetas", () => {
     });
     await buildPackageMetas(noise);
     expect(readMeta(noise).readme).toBe(readme);
+    expect(readMeta(noise)).not.toHaveProperty("releases");
   });
 
   it("keeps release notes out of the slim meta of a site package", async () => {
@@ -593,7 +624,9 @@ describe("buildPackageMetas", () => {
       ]),
     });
     await buildPackageMetas(root);
-    expect(JSON.stringify(readMeta(root))).not.toContain("release-notes");
+    const meta = readMeta(root);
+    expect(meta).not.toHaveProperty("releases");
+    expect(JSON.stringify(meta)).not.toContain("api-reference");
   });
 
   it("names the package and CHANGELOG.json when the file is malformed", async () => {

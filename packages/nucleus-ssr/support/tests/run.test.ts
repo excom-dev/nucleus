@@ -1,5 +1,5 @@
 import { main, serveWorker } from "../../cli";
-import { checkLinks, runPrerender, sitemapRoutes } from "../../index";
+import { checkLinks, defineConfig, runPrerender, sitemapRoutes } from "../../index";
 import { parseArguments } from "../../src/cli";
 import { forkWorker } from "../../src/node";
 import {
@@ -11,7 +11,7 @@ import {
   liveMarkup,
   loadPrerenderConfig,
 } from "../../src/run";
-import { afterEach, describe, expect, it, vi } from "@excom/nucleus-test";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "@excom/nucleus-test";
 import childProcess, { type ForkOptions, spawnSync } from "node:child_process";
 import {
   existsSync,
@@ -390,6 +390,62 @@ describe("nucleus-ssr.mjs", () => {
     expect(outcome(run({ NUCLEUS_SSR_WORKER: "1" }))).toEqual(command);
   });
 
+  // in this process, where coverage sees it: the built `dist/cli.js` mocked, and `process` as a child's or not
+  describe("in this process", () => {
+    const originalSend = Object.getOwnPropertyDescriptor(process, "send");
+    const originalArgv = process.argv;
+    const originalCode = process.exitCode;
+
+    // the wrapper's import must resolve before the mock can answer it: a fresh checkout has no build
+    const BUILT = join(PACKAGE, "dist/cli.js");
+    const stubbed = !existsSync(BUILT);
+    beforeAll(() => {
+      if (!stubbed) return;
+      mkdirSync(dirname(BUILT), { recursive: true });
+      writeFileSync(BUILT, "export const main = async () => 1;\nexport const serveWorker = async () => {};\n");
+    });
+    afterAll(() => {
+      if (stubbed) rmSync(join(PACKAGE, "dist"), { recursive: true, force: true });
+    });
+
+    afterEach(() => {
+      process.argv = originalArgv;
+      process.exitCode = originalCode;
+      if (originalSend) Object.defineProperty(process, "send", originalSend);
+      else delete (process as unknown as Record<string | symbol, unknown>).send;
+      delete process.env.NUCLEUS_SSR_WORKER;
+      vi.doUnmock("../../dist/cli.js");
+      vi.resetModules();
+    });
+
+    const load = async (asWorker: boolean) => {
+      const cli = { main: vi.fn(async () => 3), serveWorker: vi.fn(async () => {}) };
+      vi.resetModules();
+      vi.doMock("../../dist/cli.js", () => cli);
+      process.argv = [process.execPath, WRAPPER, "a.config.js", "--no-cache"];
+      // a channel either way: only the marker, which the run's fork sets, tells a worker
+      Object.defineProperty(process, "send", { configurable: true, writable: true, value: () => true });
+      if (asWorker) process.env.NUCLEUS_SSR_WORKER = "1";
+      await import("../../nucleus-ssr.mjs");
+      return cli;
+    };
+
+    it("runs the command with its arguments and takes its code as the exit code, channel or not, without the marker", async () => {
+      const cli = await load(false);
+      expect(cli.main).toHaveBeenCalledWith(["a.config.js", "--no-cache"]);
+      expect(cli.serveWorker).not.toHaveBeenCalled();
+      expect(process.exitCode).toBe(3);
+    });
+
+    it("serves a worker, and runs no command, when an IPC channel and the marker say its run forked it", async () => {
+      process.exitCode = undefined;
+      const cli = await load(true);
+      expect(cli.serveWorker).toHaveBeenCalledTimes(1);
+      expect(cli.main).not.toHaveBeenCalled();
+      expect(process.exitCode).toBeUndefined();
+    });
+  });
+
   it(
     "serves a worker when its run forked it, with the config of that run",
     async () => {
@@ -509,6 +565,41 @@ describe("loadPrerenderConfig", () => {
     expect(await loadPrerenderConfig("a.ts", load({ routes: ["/"] }))).toEqual({ routes: ["/"] });
     expect(await loadPrerenderConfig("b.ts", load(async () => ({ routes: [] })))).toEqual({
       routes: [],
+    });
+  });
+
+  it("resolves relative root, out and cache.dir against the config's folder; out is root when it names none", async () => {
+    const folder = join(tmpdir(), "site");
+    const file = join(folder, "prerender.config.ts");
+    expect(await loadPrerenderConfig(file, load({ root: "dist", routes: ["/"] }))).toEqual({
+      root: join(folder, "dist"),
+      out: join(folder, "dist"),
+      routes: ["/"],
+    });
+    expect(
+      await loadPrerenderConfig(
+        file,
+        load({ root: "../dist", out: "public", cache: { dir: "temp", key: "k" }, routes: ["/"] })
+      )
+    ).toEqual({
+      root: join(tmpdir(), "dist"),
+      out: join(folder, "public"),
+      cache: { dir: join(folder, "temp"), key: "k" },
+      routes: ["/"],
+    });
+    const root = new URL("file:///srv/dist/");
+    expect(await loadPrerenderConfig(file, load({ root, routes: ["/"] }))).toMatchObject({ root, out: root });
+  });
+
+  it("defineConfig returns the options, or the function returning them, as given", async () => {
+    const options = { root: "dist", origin: "https://wren.test", entry: async () => ({}), routes: ["/"] };
+    expect(defineConfig(options)).toBe(options);
+    const later = async (routes = ["/"]) => ({ ...options, routes });
+    expect(defineConfig(later)).toBe(later);
+    // a function keeps its own parameters
+    expect((await defineConfig(later)(["/menu"])).routes).toEqual(["/menu"]);
+    expect(await loadPrerenderConfig(join(tmpdir(), "c.ts"), load(defineConfig(() => options)))).toMatchObject({
+      routes: ["/"],
     });
   });
 

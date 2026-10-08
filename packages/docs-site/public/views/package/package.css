@@ -59,10 +59,6 @@
       }
     }
   }
-
-  .release-notes h3 {
-    font-size: 1rem;
-  }
 }
 
 /* Pre-load placeholder for lazy live demos: must apply before the

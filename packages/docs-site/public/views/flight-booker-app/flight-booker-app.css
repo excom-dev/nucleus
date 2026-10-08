@@ -28,6 +28,11 @@
     margin: 0;
   }
 
+  /* the date format, beside the field's name */
+  label small {
+    color: var(--v-muted-color);
+  }
+
   select,
   input {
     margin: 0;

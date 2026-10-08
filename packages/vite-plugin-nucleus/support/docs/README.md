@@ -7,7 +7,7 @@ Build, serve and preview a Nucleus Stack site with one Vite plugin: pages, Quark
 - **One line of config** `plugins: [nucleus()]` covers `vite`, `vite build` and `vite preview`
 - **Conventions, not entry lists** Root `*.html` files are pages, `*.ts` files are Quark `@use` modules, the service worker is bundled
 - **Host-true preview** `vite preview` answers as Cloudflare Workers static assets do: `_redirects`, `_headers`, the 404 page
-- **Kit from a CDN** `kit: "unpkg"` loads the Nucleus Kit from unpkg in a deploy build instead of bundling it
+- **Kit from a CDN** `kit: "unpkg"` loads the NucleusKit from unpkg in a deploy build instead of bundling it
 - **CSS chain included** `@import` / `@import-glob`, mixins, custom selectors and preset-env, nesting shipped as written
 - **Prerender-ready** Builds what [nucleus-ssr](/packages/nucleus-ssr) prerenders, and serves it for browser checks
 
@@ -48,7 +48,7 @@ public/
 
 ### The kit
 
-A page loads the kit from a module script: `import "@excom/nucleus-kit/nucleus-kit.progressive";`. That path resolves from the first Nucleus Kit release after 0.3.0; with 0.3.0 write `…/nucleus-kit.progressive.min`, which works in both modes.
+A page loads the kit from a module script: `import "@excom/nucleus-kit/nucleus-kit.progressive";`. That path resolves from the first NucleusKit release after 0.3.0; with 0.3.0 write `…/nucleus-kit.progressive.min`, which works in both modes.
 
 - `kit: "bundled"` (default) Vite bundles the kit like any dependency
 - `kit: "unpkg"` `vite build` loads it from unpkg at the installed version, so the kit must be installed in the app. Imports of `@excom/nucleus-kit/<entry>` in a script and of `@excom/nucleus-kit/<name>.css` in a stylesheet are rewritten; the bare `@excom/nucleus-kit` is not. The build stops when kit code would ship, or on a path the kit does not export

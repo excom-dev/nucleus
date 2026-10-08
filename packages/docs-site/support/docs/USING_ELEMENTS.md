@@ -1,6 +1,6 @@
-# Using Nucleus Kit Elements
+# Using NucleusKit Elements
 
-Every Nucleus Kit element obeys the same contract: it is an [Adapter](/docs/adapter_state_orchestrator), bridging one protocol and the document. Learn that contract once and any package page becomes readable in a minute.
+Every NucleusKit element obeys the same contract: it is an [Adapter](/docs/adapter_state_orchestrator), bridging one protocol and the document. Learn that contract once and any package page becomes readable in a minute.
 
 ## The contract
 
@@ -42,7 +42,7 @@ provider-fetch[is-success] { $user: prop("provision").body; }
 
 ## Naming tells you the shape
 
-Nucleus Kit elements follow the recommended naming conventions.
+NucleusKit elements follow the recommended naming conventions.
 
 | Prefix | Meaning | Examples |
 | --- | --- | --- |
@@ -97,7 +97,7 @@ details[open] #status { content: "Open"; }
 details:not([open]) #status { content: "Closed"; }
 ```
 
-The Nucleus Kit catalog exists to give the *same* contract to protocols the platform does not cover yet — not to replace what it already does.
+The NucleusKit catalog exists to give the *same* contract to protocols the platform does not cover yet — not to replace what it already does.
 
 ## Two habits worth forming
 
@@ -108,7 +108,7 @@ The Nucleus Kit catalog exists to give the *same* contract to protocols the plat
 
 - [Quick Start - A working page, in five minutes.](/docs/quick_start)
 - [Core Concepts - The mental model, in one sitting.](/docs/core_concepts)
-- [Using Elements - The Nucleus Kit catalog and how elements behave.](/docs/using_elements)
+- [Using Elements - The NucleusKit catalog and how elements behave.](/docs/using_elements)
 - [Orchestrating - Get familiar with Quark.](/docs/orchestrating)
 - [Styling - Valence.css themes, tokens, and state-driven CSS.](/docs/styling)
 - [Building Views - Structure a real app: routes, views, lazy loading.](/docs/building_views)

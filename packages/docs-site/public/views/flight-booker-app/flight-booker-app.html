@@ -1,4 +1,4 @@
-<article id="flight-booker-app" data-trip="one-way">
+<article id="flight-booker-app" data-trip="one-way" data-outbound="2027-04-04" data-inbound="2027-04-04">
   <link rel="stylesheet" href="/views/flight-booker-app/flight-booker-app.css">
   <quark-sheet src-url="/views/flight-booker-app/flight-booker-app.quark"></quark-sheet>
   <event-handler listen-for="super-form-success" target-ref="#flight-booker-app dialog" command-name="show-modal">
@@ -12,14 +12,14 @@
           </select>
         </label>
         <label>
-          Departure
-          <input type="date" name="data-outbound" required>
+          Departure <small>YYYY-MM-DD</small>
+          <input type="text" name="data-outbound" value="2027-04-04" inputmode="numeric" autocomplete="off" required>
         </label>
         <label>
-          Return
-          <input type="date" name="data-inbound" required>
+          Return <small>YYYY-MM-DD</small>
+          <input type="text" name="data-inbound" value="2027-04-04" inputmode="numeric" autocomplete="off" required disabled>
         </label>
-        <button type="submit" disabled>Book</button>
+        <button type="submit">Book</button>
       </form>
       <dialog>
         <article>

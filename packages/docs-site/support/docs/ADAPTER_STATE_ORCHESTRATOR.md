@@ -36,7 +36,7 @@ Updates cross the bridge in one direction or both. **Driving**: the protocol cha
 
 **Three customization surfaces.** Configuration attributes inform behavior before it instantiates; events report what happened or will happen; a cancelable default action lets a listener prevent what happens next. Taken together they follow the *template method* pattern expressed in markup: the Adapter owns the algorithm, the author controls the hooks.
 
-**Capability bases.** A minority of Nucleus Kit elements are composed from shared contracts — `abortable`, `renderable`, `fetchable`, `listenable`, `routable`. Composition is opt-in. Most Adapters are standalone.
+**Capability bases.** A minority of NucleusKit elements are composed from shared contracts — `abortable`, `renderable`, `fetchable`, `listenable`, `routable`. Composition is opt-in. Most Adapters are standalone.
 
 ## State
 

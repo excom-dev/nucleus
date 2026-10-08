@@ -1,4 +1,4 @@
-import { createRenderer, prerender } from "../../index";
+import { createRenderer, prerender, type RenderPage } from "../../index";
 import { routeFile } from "../../src/prerender";
 import { loadKit, ORIGIN, ownEntry, parse, SITE } from "./helpers";
 import { afterEach, describe, expect, it } from "@excom/nucleus-test";
@@ -101,6 +101,39 @@ describe("prerender", () => {
     ).toBe("Not found");
   });
 
+  it("tells the hooks which page is the not-found route, and writes into root when out names none", async () => {
+    const site = copySite();
+    const seen: [string, string, boolean][] = [];
+    const report = await prerender({
+      root: site,
+      origin: ORIGIN,
+      shell: "<x-own></x-own>",
+      entry: ownEntry({
+        beforeRender: ({ url, notFound }: RenderPage) => seen.push(["before", url, notFound]),
+        afterRender: ({ url, notFound }: RenderPage) => seen.push(["after", url, notFound]),
+      }),
+      routes: ["/", "/menu"],
+      notFound: "/no-such-page",
+    });
+    expect(report.failed).toEqual([]);
+    expect(seen).toEqual([
+      ["before", "/", false],
+      ["after", "/", false],
+      ["before", "/menu", false],
+      ["after", "/menu", false],
+      ["before", "/no-such-page", true],
+      ["after", "/no-such-page", true],
+    ]);
+    for (const file of ["index.html", "menu.html", "404.html"])
+      expect(read(site, file)).toContain("<x-own></x-own>");
+  });
+
+  it("refuses a pool without out: root is its worker's", async () => {
+    await expect(prerender({ worker: "worker.mjs", routes: ["/"] } as never)).rejects.toThrow(
+      "nucleus-ssr: out is missing: with a worker it has no default (root is the worker's)"
+    );
+  });
+
   it("writes no file before every page has rendered: none reads another's output", async () => {
     const site = copySite();
     await prerender({
@@ -136,6 +169,8 @@ describe("prerender", () => {
       [["/menu", "/Menu"], undefined, "routes /menu and /Menu would both write Menu.html"],
       [["/a?x=1", "/a?x=2"], undefined, "routes /a?x=1 and /a?x=2 would both write a.html"],
       [["/404"], "/missing", "routes /404 and /missing would both write 404.html"],
+      // one render cannot be a route's page and the not-found page
+      [["/", "/menu"], "/menu", "the not-found page is also a route (routes, notFound): /menu"],
     ] as const)
       await expect(prerender({ ...options, routes, notFound })).rejects.toThrow(
         `nucleus-ssr: ${clash}`

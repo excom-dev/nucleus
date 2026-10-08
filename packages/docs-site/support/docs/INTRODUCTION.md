@@ -24,16 +24,16 @@ Your HTML __*is*__ the app! Drop-in custom elements that each have a single resp
 
 ## What's in the stack
 
-- **Nucleus Kit elements** A growing catalog of drop-in custom elements, including: drawers, tabs, tables, lazy views, forms, routing, passkeys, data fetching, and more.
+- **NucleusKit elements** A growing catalog of drop-in custom elements, including: drawers, tabs, tables, lazy views, forms, routing, passkeys, data fetching, and more.
 - **Quark** Like CSS, for document mutation. Select elements, bind data, stamp lists, wire events, and drive state transitions with simple rules instead of imperative code.
 - **Valence.css** Semantic, classless CSS that caters to both native and custom elements, with themes, light/dark schemes, and design tokens. Designed for easy drop-in. Optional.
-- **Neutron** The small JS factory used to author the elements above. Reach for it only when the Nucleus Kit catalog lacks what you need. Optional.
+- **Neutron** The small JS factory used to author the elements above. Reach for it only when the NucleusKit catalog lacks what you need. Optional.
 
 Every piece stands alone. Use one element on an existing site, or compose the whole stack into a full single-page app. `nucleus-kit` bundles it all behind one import; if you find you only use a handful of elements, install those packages à la carte instead (`@excom/content-drawer`, `@excom/quark-sheet`, …) and skip the rest.
 
 ## Why teams pick it
 
-- **Significantly less app code** This is possible for two primary reasons. First, because Nucleus Kit elements are fully composable, configurable, and controllable, they will likely be compatible with the desired experience of most applications that use them; there is a low likelihood you will need to build your own. Secondly, Quark enables the majority of customization without needing to invite JavaScript.
+- **Significantly less app code** This is possible for two primary reasons. First, because NucleusKit elements are fully composable, configurable, and controllable, they will likely be compatible with the desired experience of most applications that use them; there is a low likelihood you will need to build your own. Secondly, Quark enables the majority of customization without needing to invite JavaScript.
 - **No components** There is no "component" concept in this architecture. This allows application pieces to be maximally reusable and composable, as there is no home to entrap logic with a tightly coupled view.
 - **One source of truth** Live markup _is_ the primary application state, so an entire family of bugs ("the UI disagrees with the model") cannot exist.
 - **Fully inspectable** Open devtools and the entire application is in front of you: every value, every binding, and every transition. The state is the document/DOM, so all is plainly transparent to see, alter, and debug in your inspector.
@@ -78,7 +78,7 @@ The Nucleus Stack is MIT licensed and will remain free and open source, with lon
 
 - [Quick Start - A working page, in five minutes.](/docs/quick_start)
 - [Core Concepts - The mental model, in one sitting.](/docs/core_concepts)
-- [Using Elements - The Nucleus Kit catalog and how elements behave.](/docs/using_elements)
+- [Using Elements - The NucleusKit catalog and how elements behave.](/docs/using_elements)
 - [Orchestrating - Get familiar with Quark.](/docs/orchestrating)
 - [Styling - Valence.css themes, tokens, and state-driven CSS.](/docs/styling)
 - [Building Views - Structure a real app: routes, views, lazy loading.](/docs/building_views)

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/heft-rig",
+      "comment": "Keep a dependency's `/server` and `/testing` entries external in a library build, so a package that re-exports them shares the dependency's state",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/heft-rig"
+}

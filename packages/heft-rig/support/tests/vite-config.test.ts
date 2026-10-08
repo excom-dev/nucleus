@@ -4,6 +4,8 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 import {
   createRigViteConfig,
   CSS_MINIFY_TARGET,
+  esmExternals,
+  NODE_ONLY_ENTRIES,
   progressiveChunks,
   resolveCoverageReporters,
   resolveCoverageThresholds,
@@ -251,7 +253,15 @@ describe("createRigViteConfig", () => {
         entry: entry(ws.site),
       });
       const rolldown = config.build!.rolldownOptions!;
-      expect(rolldown.external).toEqual(["dep-a", "peer-b"]);
+      // each, then each one's Node-only entries
+      expect(rolldown.external).toEqual([
+        "dep-a",
+        "peer-b",
+        "dep-a/testing",
+        "dep-a/server",
+        "peer-b/testing",
+        "peer-b/server",
+      ]);
       expect(rolldown.preserveEntrySignatures).toBe("exports-only");
       expect(config.build!.lib).toEqual({ entry: path.join(ws.site, "index.ts") });
       expect(config.build!.outDir).toBe("./dist");
@@ -283,6 +293,33 @@ describe("createRigViteConfig", () => {
         entryRoot: ws.site,
         tsconfigPath: path.join(ws.site, "tsconfig.json"),
       });
+    });
+
+    it("leaves a dependency's Node-only entries external, and bundles its other subpaths", async () => {
+      const { external } = (await createRigViteConfig({ mode: "build-js", root: ws.site, entry: entry(ws.site) })).build!
+        .rolldownOptions!;
+      // an array of exact ids: what Rolldown leaves out of the bundle
+      const isExternal = (id: string) => (external as string[]).includes(id);
+      expect(NODE_ONLY_ENTRIES).toEqual(["testing", "server"]);
+      for (const name of ["dep-a", "peer-b"]) {
+        // bundled, `<dep>/server` would bring a copy of what it imports: a second router
+        expect(NODE_ONLY_ENTRIES.map((nodeOnly) => isExternal(`${name}/${nodeOnly}`))).toEqual([true, true]);
+        expect(["other", "load-dependency", "server/deep", "index.css"].map((sub) => isExternal(`${name}/${sub}`))).toEqual([
+          false,
+          false,
+          false,
+          false,
+        ]);
+      }
+      // not a dependency: bundled, whatever its entry
+      expect(["dev-c", "dev-c/server", "stranger/server", "stranger/testing"].map(isExternal)).toEqual([
+        false,
+        false,
+        false,
+        false,
+      ]);
+      expect(esmExternals([])).toEqual([]);
+      expect(esmExternals(["@excom/dep"])).toEqual(["@excom/dep", "@excom/dep/testing", "@excom/dep/server"]);
     });
 
     it("has no externals when the package has no package.json or deps", async () => {

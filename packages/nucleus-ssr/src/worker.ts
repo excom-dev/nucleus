@@ -9,7 +9,7 @@ import {
 
 /** What `prerender()` asks a renderer, in a worker or in its own process. */
 export type Task =
-  | { type: "render"; url: string }
+  | { type: "render"; url: string; notFound?: boolean }
   | { type: "shell"; url: string }
   | { type: "check"; url: string; inputs: PageInputs }
   | { type: "lost"; url: string; diagnostics: Diagnostics };
@@ -58,7 +58,7 @@ export const perform = async (
       type: "page",
       outcome:
         task.type === "render"
-          ? await renderer.renderPage(task.url)
+          ? await renderer.renderPage(task.url, { notFound: task.notFound })
           : task.type === "shell"
             ? await renderer.shellPage(task.url)
             : await renderer.lost(task.url, task.diagnostics),
@@ -79,7 +79,7 @@ export const perform = async (
  *
  * ```js
  * // prerender-worker.mjs
- * await serveRenderer({ root: "dist", origin: "https://example.com", entry: () => import("./prerender-entry.js") });
+ * await serveRenderer({ root: "dist", origin: "https://example.com", entry: () => import("@excom/nucleus-kit/server") });
  * ```
  * Node only.
  */

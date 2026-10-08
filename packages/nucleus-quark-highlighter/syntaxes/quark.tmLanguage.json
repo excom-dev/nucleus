@@ -148,21 +148,6 @@
       ],
       "comment": "`@warn \"…\";` / `@debug \"size\", attr(\"width\");` / `@error …;`: any expression, tokenized like a property value"
     },
-    "comment_docblock": {
-      "name": "comment.block.documentation.scss",
-      "begin": "///",
-      "beginCaptures": {
-        "0": {
-          "name": "punctuation.definition.comment.scss"
-        }
-      },
-      "end": "(?=$)",
-      "patterns": [
-        {
-          "include": "source.sassdoc"
-        }
-      ]
-    },
     "comment_block": {
       "begin": "/\\*",
       "beginCaptures": {
@@ -237,24 +222,32 @@
       "name": "support.constant.mathematical-symbols.scss"
     },
     "constant_sass_functions": {
-      "begin": "(?<!\\.)\\b([A-Za-z-]+)(\\(|\\b)",
-      "beginCaptures": {
-        "1": {
-          "name": "support.function.misc.scss"
-        },
-        "2": {
-          "name": "punctuation.section.function.scss"
-        }
-      },
-      "end": "(\\))|(?<=\\b)",
-      "endCaptures": {
-        "1": {
-          "name": "punctuation.section.function.scss"
-        }
-      },
       "patterns": [
         {
-          "include": "#parameters"
+          "begin": "(?<!\\.)\\b([A-Za-z-]+)(\\()",
+          "beginCaptures": {
+            "1": {
+              "name": "support.function.misc.scss"
+            },
+            "2": {
+              "name": "punctuation.section.function.scss"
+            }
+          },
+          "end": "\\)",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.section.function.scss"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#parameters"
+            }
+          ]
+        },
+        {
+          "match": "(?<!\\.)\\b[A-Za-z-]+\\b",
+          "name": "support.function.misc.scss"
         }
       ]
     },
@@ -262,9 +255,6 @@
       "patterns": [
         {
           "include": "#variables"
-        },
-        {
-          "include": "#comment_docblock"
         },
         {
           "include": "#comment_block"
@@ -327,9 +317,6 @@
       },
       "name": "meta.definition.variable.map.scss",
       "patterns": [
-        {
-          "include": "#comment_docblock"
-        },
         {
           "include": "#comment_block"
         },
@@ -1218,9 +1205,6 @@
           },
           "end": "(?=;)",
           "patterns": [
-            {
-              "include": "#comment_docblock"
-            },
             {
               "include": "#comment_block"
             },

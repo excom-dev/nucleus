@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/kit-utils",
+      "comment": "Add tests for the key filter",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/kit-utils"
+}

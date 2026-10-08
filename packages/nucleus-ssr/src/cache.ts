@@ -34,13 +34,17 @@ export interface CachedPage {
 const FILE = "pages.json";
 
 /**
- * `cache.key` and the renderers' key: versions, data options, what `entry`
- * fetched while it loaded, a pool's `cacheKey()`. Each page's shell and
- * requests are checked apart. Data a module fetches when it is evaluated is
- * recorded only by the first page that loads it: cover it with `cache.key`.
+ * `cache.key`, the renderers' key (versions, data options, what `entry`
+ * fetched while it loaded, a pool's `cacheKey()`) and the not-found route,
+ * which the hooks of every page are told of. Each page's shell and requests
+ * are checked apart. Data a module fetches when it is evaluated is recorded
+ * only by the first page that loads it: cover it with `cache.key`.
  */
-export const runKey = (cache: PrerenderCache, renderers: string): string =>
-  sha256(JSON.stringify([cache.key, renderers]));
+export const runKey = (
+  cache: PrerenderCache,
+  renderers: string,
+  notFound?: string
+): string => sha256(JSON.stringify([cache.key, renderers, notFound ?? null]));
 
 const fileOf = ({ dir }: PrerenderCache) =>
   builtin("node:path").join(builtin("node:path").resolve(dir), FILE);

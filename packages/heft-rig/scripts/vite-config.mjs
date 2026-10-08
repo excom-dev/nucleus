@@ -105,6 +105,25 @@ export function umdGlobalName(packageName, entryName) {
   return `NucleusStack.${camelCase(packageName.replace(/^@[^/]+\//, ""))}`;
 }
 
+/** Root entries that only run in Node: an ESM pair, never a UMD. */
+export const NODE_ONLY_ENTRIES = ["testing", "server"];
+
+/**
+ * Module ids a package's ESM build (`build-js`) leaves external: each
+ * dependency, and each dependency's Node-only entries
+ * (`@excom/spa-route/server`). Bundling one of those would bundle what it
+ * imports too: a second copy of a singleton (the router) the dependency's
+ * own elements never see. Any other subpath stays bundled.
+ * @param {string[]} dependencies names of the dependencies and peer dependencies
+ * @returns {string[]}
+ */
+export function esmExternals(dependencies) {
+  return [
+    ...dependencies,
+    ...dependencies.flatMap((name) => NODE_ONLY_ENTRIES.map((entry) => `${name}/${entry}`)),
+  ];
+}
+
 /**
  * Module ids a package's UMD build leaves external: the shared globals,
  * minus the package itself. Nucleus Kit inlines everything.
@@ -454,7 +473,7 @@ async function getConfig(
         lib: { entry: entry.path },
         rolldownOptions: {
           checks: ROLLDOWN_CHECKS,
-          external: externalDependencies,
+          external: esmExternals(externalDependencies),
           preserveEntrySignatures: "exports-only",
           output: [
             {

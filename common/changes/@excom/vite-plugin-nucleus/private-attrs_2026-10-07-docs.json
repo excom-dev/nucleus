@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/vite-plugin-nucleus",
+      "comment": "Update the README to the NucleusKit name",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/vite-plugin-nucleus"
+}

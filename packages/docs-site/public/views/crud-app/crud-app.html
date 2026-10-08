@@ -1,0 +1,37 @@
+<article id="crud-app">
+  <link rel="stylesheet" href="/views/crud-app/crud-app.css">
+  <quark-sheet src-url="/views/crud-app/crud-app.quark"></quark-sheet>
+  <provider-fetch api-url="/api/names">
+    <super-form id="crud-create" api-url="/api/names" api-method="post">
+      <form id="crud-fields" autocomplete="off">
+        <label>
+          Filter prefix:
+          <input type="search" name="data-prefix">
+        </label>
+        <fieldset aria-label="Names">
+          <template>
+            <label>
+              <input type="radio" name="data-selected">
+              <span></span>
+            </label>
+          </template>
+        </fieldset>
+        <label>
+          Name:
+          <input name="name">
+        </label>
+        <label>
+          Surname:
+          <input name="surname">
+        </label>
+        <footer>
+          <button type="button" name="create" command="--submit" commandfor="crud-create">Create</button>
+          <button type="button" name="update" command="--submit" commandfor="crud-update" disabled>Update</button>
+          <button type="button" name="delete" command="--submit" commandfor="crud-delete" disabled>Delete</button>
+        </footer>
+      </form>
+    </super-form>
+    <super-form id="crud-update" form-ref="#crud-fields" api-method="patch"></super-form>
+    <super-form id="crud-delete" api-method="delete"></super-form>
+  </provider-fetch>
+</article>

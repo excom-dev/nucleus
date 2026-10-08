@@ -148,7 +148,7 @@ describe("site nav packages", () => {
     for (const nav of await mountNav()) {
       expect(
         linksOf(nav.querySelector("[bind-libraries]")).map((l) => l.text)
-      ).toEqual(["Neutron", "Nucleus Kit", "Quark", "Valence.css"]);
+      ).toEqual(["Neutron", "NucleusKit", "Quark", "Valence.css"]);
     }
   });
 

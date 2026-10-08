@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/include-content",
+      "comment": "Update the README to the NucleusKit name",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/include-content"
+}

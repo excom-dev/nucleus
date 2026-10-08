@@ -1,0 +1,140 @@
+/* State, on the host. `data-changes`: the history, a JSON list of changes (a
+   circle drawn, or its id again at a new diameter). `data-step`: how many of
+   them are applied; undo and redo only move it, and the drawing is derived.
+   `data-x` / `data-y`: the point (the pointer, or the keyboard's).
+   `data-diameter`: a diameter still being adjusted. */
+@use "/views/circle-drawer-app/circle-drawer-app.js" as *;
+@use "quark:list" as *;
+@use "quark:map" as *;
+@use "quark:math" as *;
+@use "quark:util" as *;
+
+:scope {
+  $changes: from-json(attr("data-changes"));
+  $step: +attr("data-step");
+  $done: $changes.slice(0, $step);
+  /* each circle's last change, in the order the circles were drawn */
+  $circles: sort-by(unique(reverse($done), "id"), "id");
+
+  [data-action="undo"] {
+    disabled: $step == 0;
+  }
+  [data-action="redo"] {
+    disabled: $step == $changes.length;
+  }
+  [bind-circles] {
+    content: iterate($circles, none, "id");
+    li {
+      --x: item.x;
+      --y: item.y;
+      /* a diameter being adjusted shows at once */
+      --d: if(item.id == $selected.id and $adjusting: $adjusting; else: item.d);
+      data-is-selected: item.id == $selected.id;
+      aria-label: "Circle at #{item.x}, #{item.y}, diameter #{item.d}";
+    }
+  }
+
+  @on click (target: "[data-action=undo]") {
+    data-step: $step - 1;
+  }
+  @on click (target: "[data-action=redo]") {
+    data-step: $step + 1;
+  }
+  /* Where an event on the canvas happens: a pointer's says so itself, the
+     cursor's (Enter, the menu key) happen at the point. Bound at once, so the
+     selection follows at once, and declared first: the two listeners below
+     act on this event's point, not on the one last painted. */
+  @on pointermove, click, contextmenu (target: "[bind-canvas]") {
+    $x: if(event.target == target: round(event.offsetX); else: preserve);
+    $y: if(event.target == target: round(event.offsetY); else: preserve);
+    data-x: $x;
+    data-y: $y;
+  }
+  /* empty canvas: a circle. A new change drops the undone ones */
+  @on click (target: if($selected: preserve; else: "[bind-canvas]")) {
+    data-changes: to-json($done.concat((id: $step + 1, x: $x, y: $y, d: 40)));
+    data-step: $step + 1;
+  }
+  /* a circle: its menu, by right-click, and by click for touch and Enter */
+  @on click, contextmenu (
+    target: if($selected: "[bind-canvas]"; else: preserve),
+    prevent-default
+  ) {
+    @command show-modal (target: "#circle-menu");
+  }
+  @on input (target: "#circle-adjust input") {
+    data-diameter: if(
+      +event.target.value == $selected.d: none;
+      else: event.target.value
+    );
+  }
+  /* `close` does not bubble, hence `capture`: closing the frame makes the
+     diameter it left a change */
+  @on close (capture, target: "[data-diameter] #circle-adjust") {
+    data-changes: to-json($done.concat(merge($selected, (d: $adjusting))));
+    data-step: $step + 1;
+    data-diameter: none;
+  }
+
+  @on keydown (
+    target: "[bind-point]",
+    key: "ArrowLeft ArrowRight",
+    prevent-default
+  ) {
+    data-x: clamp(
+      0,
+      $x + if(event.key == "ArrowLeft": -10; else: 10),
+      target.parentElement.clientWidth
+    );
+  }
+  @on keydown (
+    target: "[bind-point]",
+    key: "ArrowUp ArrowDown",
+    prevent-default
+  ) {
+    data-y: clamp(
+      0,
+      $y + if(event.key == "ArrowUp": -10; else: 10),
+      target.parentElement.clientHeight
+    );
+  }
+
+  dialog {
+    /* a click beside a frame's content lands on the dialog itself */
+    @on click (self) {
+      @command close;
+    }
+  }
+  #circle-menu button {
+    @on click {
+      @command close (target: "#circle-menu");
+      @command show-modal (target: "#circle-adjust");
+    }
+  }
+}
+
+/* The point and the circle it selects: the one that contains it, the nearest
+   if several do. A rule of its own, so a moving point re-runs this and not
+   the history above. Both dialogs are modal: the point, and so the selected
+   circle, holds still while one is open. */
+:scope {
+  $x: +attr("data-x");
+  $y: +attr("data-y");
+  $adjusting: +attr("data-diameter");
+  $selected: nearest($circles, $x, $y);
+  data-selected: $selected.id;
+
+  [bind-point] {
+    --x: $x;
+    --y: $y;
+  }
+  /* the frame opens on a selected circle only */
+  &[data-selected] #circle-adjust {
+    [bind-centre] {
+      content: "(#{$selected.x}, #{$selected.y})";
+    }
+    input {
+      value: $selected.d;
+    }
+  }
+}

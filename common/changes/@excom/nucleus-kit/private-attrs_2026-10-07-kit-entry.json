@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Add the prerender hooks to `@excom/nucleus-kit/server` (`beforeRender`, `settle`, `afterRender`): a kit app prerenders with `entry: () => import(\"@excom/nucleus-kit/server\")` and no entry module of its own",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@excom/nucleus-kit"
+}

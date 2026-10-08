@@ -329,4 +329,11 @@ describe("static introspection", () => {
     expect(Ctor.getPropConfig({ attr: "nope" })).toBeUndefined();
     expect(Ctor.getPropConfig({ prop: "nope" })).toBeUndefined();
   });
+
+  it("getConfig() and getPropConfig() are undefined on a class never given a definition", () => {
+    class Bare extends NeutronElement {}
+    expect(Bare.getConfig()).toBeUndefined();
+    expect(Bare.getPropConfig({ attr: "is-open" })).toBeUndefined();
+    expect(Bare.getPropConfig({ prop: "isOpen" })).toBeUndefined();
+  });
 });

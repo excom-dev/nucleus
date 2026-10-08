@@ -69,6 +69,18 @@ describe("Nucleus DevTools hook", () => {
     injectedRenderer = null;
   });
 
+  it("inspects an element whose definition has no runtime config as having no props", () => {
+    installHook();
+    const stub = document.createElement("div");
+    (stub as any)._n_ = { ctr: {} };
+    const snapshot = injectedRenderer!.inspect(stub)!;
+    expect(snapshot.tag).toBe("div");
+    expect(snapshot.propNames).toEqual([]);
+    expect(snapshot.props).toEqual({});
+    // not a Neutron element: no snapshot
+    expect(injectedRenderer!.inspect(document.createElement("p"))).toBeNull();
+  });
+
   it("pathMatches supports prefix and wildcard", () => {
     expect(pathMatches(["neutron", "constructed"], ["neutron"])).toBe(true);
     expect(pathMatches(["neutron", "constructed"], ["neutron", "constructed"])).toBe(

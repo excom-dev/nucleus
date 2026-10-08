@@ -1,0 +1,25 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/docs-site",
+      "comment": "Update the prerender entry and config to NucleusKit's server entry and `defineConfig()`, and the Prerendering guide to the one-file setup",
+      "type": "none"
+    },
+    {
+      "packageName": "@excom/docs-site",
+      "comment": "Add the Circle Drawer and CRUD examples, and bring the Temperature Converter, Flight Booker, Timer and Cells examples to the 7GUIs criteria; the CRUD example reads and writes `/api/names` in the service worker",
+      "type": "none"
+    },
+    {
+      "packageName": "@excom/docs-site",
+      "comment": "Update a package page to show its release notes in the API reference, under the tables",
+      "type": "none"
+    },
+    {
+      "packageName": "@excom/docs-site",
+      "comment": "Update the docs to the NucleusKit name",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/docs-site"
+}

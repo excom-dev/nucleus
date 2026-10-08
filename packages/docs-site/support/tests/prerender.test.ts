@@ -37,11 +37,12 @@ describe("prerender config", () => {
     const options = config.default(SITEMAP);
     expect(options).toMatchObject({
       root: config.DIST,
-      out: config.DIST,
       origin: "https://nucleus.excom.dev",
       routes: ["/", "/docs/quick_start", "/packages/a&b"],
       notFound: "/404",
     });
+    // no `out`: pages are written into `root`
+    expect(options).not.toHaveProperty("out");
     expect(config.DIST).toMatch(/\/packages\/docs-site\/dist$/);
     expect(options.exclude).toBe(config.isClientState);
     // the runner's link check skips them too: no file serves them
@@ -84,6 +85,11 @@ describe("prerender config", () => {
     expect(await get("/api/todos/2")).toEqual([200, all[1]]);
     expect(await get("/api/todos/9")).toEqual([404, { message: "not found" }]);
     expect(await get("/api/todos/x")).toBeUndefined();
+    expect(await get("/api/names")).toEqual([200, [
+      { id: 1, name: "Hans", surname: "Emil" },
+      { id: 2, name: "Max", surname: "Mustermann" },
+      { id: 3, name: "Roman", surname: "Tisch" },
+    ]]);
     expect(await get("/api/echo")).toBeUndefined();
   });
 });
@@ -129,7 +135,12 @@ describe("prerender entry", () => {
     vi.spyOn(window, "fetch").mockResolvedValue(
       new Response(null, { status: 404 })
     );
-    entry.afterRender({ url, window, document } as never);
+    entry.afterRender({
+      url,
+      window,
+      notFound: url === config.NOT_FOUND,
+      document,
+    } as never);
     return [
       document.head
         .querySelector('link[rel="canonical"]')

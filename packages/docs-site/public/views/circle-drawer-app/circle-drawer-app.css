@@ -1,0 +1,179 @@
+@scope {
+  /* data-driven css: Quark hands each circle its centre and diameter and
+     marks the one the point selects. The gray shows while the pointer or the
+     keyboard is on the canvas, or a frame about that circle is open */
+  [bind-circles] li {
+    left: calc((var(--x) - var(--d) / 2) * 1px);
+    top: calc((var(--y) - var(--d) / 2) * 1px);
+    width: calc(var(--d) * 1px);
+  }
+  [bind-canvas]:is(:hover, :focus-within) [data-is-selected],
+  :scope:has(dialog[open]) [data-is-selected] {
+    background: gray;
+  }
+  :scope[data-selected] [bind-canvas] {
+    cursor: context-menu;
+  }
+  button[bind-point] {
+    left: calc(var(--x) * 1px - var(--circle-point) / 2);
+    top: calc(var(--y) * 1px - var(--circle-point) / 2);
+  }
+
+  /* styling */
+  :scope {
+    --circle-point: 1.25rem;
+    max-width: 100%;
+    margin: 0;
+    padding: calc(var(--v-spacing) * 0.75) 1.1rem 2.5rem;
+    background: var(--v-background-color);
+    color: var(--v-color);
+  }
+
+  [role="group"] {
+    margin-bottom: calc(var(--v-spacing) * 0.75);
+  }
+
+  [bind-canvas] {
+    position: relative;
+    width: 26rem;
+    max-width: 100%;
+    height: 16rem;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--v-muted-border-color);
+    border-radius: var(--v-border-radius);
+    background: var(--v-card-background-color);
+    cursor: crosshair;
+  }
+
+  /* neither the list nor a circle takes the pointer: every pointer event
+     lands on the canvas, so its offsetX / offsetY are canvas coordinates */
+  [bind-circles] {
+    display: contents;
+
+    li {
+      position: absolute;
+      box-sizing: border-box;
+      aspect-ratio: 1;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      border: 1px solid currentColor;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+  }
+
+  /* the keyboard's pointer: a crosshair, seen only while it has focus. It
+     takes no pointer events, so an event it is the target of came from the
+     keyboard. No transform: the menu anchors to this box */
+  button[bind-point] {
+    position: absolute;
+    width: var(--circle-point);
+    height: var(--circle-point);
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: none;
+    box-shadow: none;
+    opacity: 0;
+    pointer-events: none;
+    anchor-name: --circle-drawer-point;
+
+    &:focus-visible {
+      opacity: 1;
+      outline: var(--v-outline-width) solid var(--v-primary);
+      background:
+        linear-gradient(var(--v-primary) 0 0) center / 100% 1px no-repeat,
+        linear-gradient(var(--v-primary) 0 0) center / 1px 100% no-repeat;
+    }
+  }
+
+  small {
+    display: block;
+    max-width: 26rem;
+    margin-top: 0.5rem;
+    color: var(--v-muted-color);
+    font-size: 0.8125rem;
+  }
+
+  /* the canvas stays in view behind both frames */
+  dialog::backdrop {
+    background: transparent;
+    backdrop-filter: none;
+  }
+
+  #circle-menu menu {
+    margin: 0;
+    padding: 0.25rem;
+    list-style: none;
+    border: 1px solid var(--v-muted-border-color);
+    border-radius: var(--v-border-radius);
+    background: var(--v-card-background-color);
+    box-shadow: var(--v-card-box-shadow);
+
+    /* at the point, like a context menu; centred where anchors are missing */
+    @supports (anchor-name: --a) {
+      position: absolute;
+      position-anchor: --circle-drawer-point;
+      top: anchor(center);
+      left: anchor(center);
+      position-try-fallbacks: flip-inline, flip-block, flip-block flip-inline;
+    }
+
+    li {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    button {
+      margin: 0;
+      padding: 0.35rem 0.75rem;
+      border: 0;
+      background: none;
+      box-shadow: none;
+      color: var(--v-color);
+      font-size: 0.875rem;
+      white-space: nowrap;
+
+      &:is(:hover, :focus-visible) {
+        background: var(--v-primary);
+        color: var(--v-primary-inverse);
+      }
+    }
+  }
+
+  #circle-adjust {
+    /* at the foot of the window, off the circle being resized */
+    align-items: end;
+
+    > article {
+      max-width: min(24rem, 100%);
+      padding: var(--v-spacing);
+    }
+
+    form {
+      display: grid;
+      gap: calc(var(--v-spacing) * 0.5);
+      margin: 0;
+    }
+
+    label,
+    input,
+    button {
+      margin: 0;
+    }
+
+    [bind-centre] {
+      font-variant-numeric: tabular-nums;
+    }
+
+    button {
+      justify-self: end;
+      width: auto;
+    }
+  }
+}
