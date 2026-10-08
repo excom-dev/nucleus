@@ -246,3 +246,22 @@ describe("a kit shaped as published", () => {
     );
   });
 });
+
+describe("light-dark()", () => {
+  // Valence declares `color-scheme` in a stylesheet compiled on its own (and, in an unpkg build,
+  // loaded on its own). Lowered, `light-dark()` waits for two variables that only a sheet
+  // declaring `color-scheme` itself is given: every colour an app sets with it would be invalid.
+  it.each(["bundled", "unpkg"] as const)("ships as written in a %s build", async (kit) => {
+    const out = await built(
+      `light-dark-${kit}`,
+      {
+        "index.html": page(`<link rel="stylesheet" href="./shell.css">${KIT_SCRIPT}`),
+        "shell.css":
+          '@import "@excom/nucleus-kit/basic.css";\n:root { --ink: light-dark(#1d1b18, #ece7de); }\np { color: var(--ink); }\n',
+      },
+      kit
+    );
+    expect(out).toMatch(/--ink:\s*light-dark\(#1d1b18,\s*#ece7de\)/);
+    expect(out).not.toContain("lightningcss");
+  });
+});

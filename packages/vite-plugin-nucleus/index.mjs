@@ -287,7 +287,8 @@ const buildOf = ({ pages, modules }, { outDir, emptyOutDir, assetsDir }) => {
  *
  * It sets the build's inputs and file names (modules unhashed at their URL) and
  * the PostCSS chain: a PostCSS config file is not read, more PostCSS plugins go
- * in `css.postcss.plugins`. `publicDir`, `build.outDir`, `build.emptyOutDir` and
+ * in `css.postcss.plugins`. The minifier leaves `light-dark()` as written
+ * (`css.lightningcss.exclude`). `publicDir`, `build.outDir`, `build.emptyOutDir` and
  * `build.assetsDir` stay the app's. The site is read once per config
  * resolution: a page or module added while dev runs needs a restart.
  * @param {{ kit?: "bundled" | "unpkg" }} [options]

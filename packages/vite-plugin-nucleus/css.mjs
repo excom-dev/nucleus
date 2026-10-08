@@ -1,4 +1,5 @@
 import postcssCustomSelectorsAtRuleParams from "./src/postcss-custom-selectors-atrule-params.mjs";
+import { Features } from "lightningcss";
 import postcss from "postcss";
 import postcssCustomSelectors from "postcss-custom-selectors";
 import atImport from "postcss-import";
@@ -7,10 +8,11 @@ import postcssMixins from "postcss-mixins";
 import postcssPresetEnv from "postcss-preset-env";
 
 /**
- * Vite `css` option (PostCSS chain) of a Nucleus Stack site: `@import` and
+ * Vite `css` option of a Nucleus Stack site. The PostCSS chain: `@import` and
  * `@import-glob` inlined, mixins, custom selectors, preset-env stage 3, nesting
- * shipped as authored. `nucleus()` sets it; another Vite config (a library
- * build, a browser extension) can set it too.
+ * shipped as authored. The minifier: `light-dark()` shipped as authored.
+ * `nucleus()` sets it; another Vite config (a library build, a browser
+ * extension) can set it too.
  *
  * @type {import("vite").CSSOptions}
  */
@@ -65,6 +67,18 @@ export const cssConfig = {
         warnForUnsupportedFeatures: false, // Suppress warnings
       }),
     ],
+  },
+  /*
+   * Vite's CSS minifier would lower `light-dark(a, b)` to
+   * `var(--lightningcss-light, a) var(--lightningcss-dark, b)`, and define
+   * those two variables only in a stylesheet that declares `color-scheme`
+   * itself. An app's sheet does not: Valence declares it, compiled on its own
+   * (and loaded on its own in a `kit: "unpkg"` build). Both fallbacks would
+   * then apply at once and every colour set with `light-dark()` be invalid.
+   * So it ships as written: Chrome 123, Firefox 120, Safari 17.5.
+   */
+  lightningcss: {
+    exclude: Features.LightDark,
   },
 };
 

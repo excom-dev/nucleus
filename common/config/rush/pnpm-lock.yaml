@@ -1213,6 +1213,9 @@ importers:
       esbuild:
         specifier: ^0.28.2
         version: 0.28.2
+      lightningcss:
+        specifier: ^1.33.0
+        version: 1.33.0
       postcss:
         specifier: ^8.5.3
         version: 8.5.28

@@ -27,4 +27,8 @@ describe.each(Object.entries(SIZES))("%s", (_name, size) => {
     expect(shown("#home .wf-skeleton")).toHaveLength(0);
     expect(shown("#home data-product")).toHaveLength(24);
   });
+
+  it.skip("the theme's colours apply", () => {
+    // Needs the built stylesheet and a browser's colour resolution: happy-dom has neither. Chrome only.
+  });
 });

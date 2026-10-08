@@ -4,8 +4,9 @@
     <p><strong>Beta.</strong> The Nucleus Stack is in beta for a few weeks until features are stabilized and
       optimized.</p>
   </blockquote>
-  <super-form>
-    <!-- cross-origin: the company site's API (CORS allows this origin) -->
+  <!-- cross-origin: the company site's API (CORS allows this origin). Sent without
+       credentials: the API takes none, and does not allow a credentialed request. -->
+  <super-form fetch-credentials="omit">
     <form action="https://excom.dev/api/release-subscribers" method="post">
       <fieldset role="group">
         <input type="email" name="email" required autocomplete="email" placeholder="you@example.com">

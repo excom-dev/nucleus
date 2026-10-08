@@ -170,6 +170,27 @@ const CHECKS = [
     },
   },
   {
+    // A token the build made invalid (a lowered `light-dark()` with nothing behind it) computes
+    // to nothing: black text on no background. Chrome is opened with the light scheme.
+    name: "the theme's colours apply",
+    start: "/",
+    run: async (page) => {
+      const colours = () => {
+        const probe = document.body.appendChild(document.createElement("i"));
+        probe.style.cssText = "color: var(--v-color); background-color: var(--v-background-color); border: 1px solid var(--v-primary)";
+        const { color, backgroundColor, borderTopColor } = getComputedStyle(probe);
+        probe.remove();
+        return { text: color, background: backgroundColor, primary: borderTopColor, body: getComputedStyle(document.body).color };
+      };
+      await expect(page, "colours", colours, {
+        text: "rgb(29, 27, 24)",
+        background: "rgb(246, 242, 234)",
+        primary: "rgb(47, 74, 60)",
+        body: "rgb(29, 27, 24)",
+      });
+    },
+  },
+  {
     name: "tab highlight and title follow every route",
     start: "/",
     setup: [["POST", "/bag", { sku: TABLE.sku }], ["POST", "/orders"]],

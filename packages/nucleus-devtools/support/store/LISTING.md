@@ -1,5 +1,7 @@
 # Chrome Web Store listing
 
+Listed since 2026-10-08: https://chromewebstore.google.com/detail/nucleus-devtools/mgfckaipagbdcacfgefodccipkpojlan
+
 Copy for the Developer Dashboard. Fields are named as the dashboard names
 them (2026). The zip to upload is `.output/nucleus-devtools-<version>-chrome.zip`
 from `pnpm run zip`.
@@ -61,7 +63,7 @@ The probe must be installed at document_start on any page that might use the Nuc
 - I do not use or transfer user data for purposes that are unrelated to my item's single purpose
 - I do not use or transfer user data to determine creditworthiness or for lending purposes
 
-**Privacy policy URL**: https://excom.dev/nucleus/packages/nucleus-devtools/privacy (live today; becomes https://nucleus.excom.dev/packages/nucleus-devtools/privacy once the restructured site is deployed on that domain — update the dashboard then)
+**Privacy policy URL**: https://nucleus.excom.dev/packages/nucleus-devtools/privacy (the address submitted for review, https://excom.dev/nucleus/packages/nucleus-devtools/privacy, redirects there)
 
 ## Distribution
 
