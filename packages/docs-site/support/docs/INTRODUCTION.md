@@ -22,7 +22,7 @@ Your HTML __*is*__ the app! Drop-in custom elements that each have a single resp
 - **No reconciliation tax** No large memory copies of state/DOM to be rebuilt, diffed against the DOM, recompiled with every state change.
 - **Lightweight** All Nucleus elements + Quark + Neutron have a smaller footprint (just over ~50kb compressed) than some UI framework cores alone.
 
-To see it running in a production-grade app, see [Wrenfield](https://wrenfield.excom.dev) - a full ecommerce site with SSG, SPA, web AR/3d models, WebAuthn, View Transitions, touch gestures, and more. Try it on mobile to get a native-like experience. Wrenfield was built with no app JS and no UI build process.
+To see it running in a production-grade app, see [Wrenfield](https://wrenfield.excom.dev) - a fictional, full-featured ecommerce site with SSG, SPA, web AR/3d models, WebAuthn, View Transitions, touch gestures, and more. Try it on mobile to get a native-like experience. Wrenfield was built with no app JS and no UI build process.
 
 ## What's in the stack
 
