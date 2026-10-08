@@ -7,7 +7,8 @@
 #      (`apply-exports`) can leak into it.
 #   2. Build everything from the bumped tree, so package metas, CDN
 #      snippets, npm READMEs and the docs site carry the new versions.
-#   3. Publish to npm (and the VS Code extension).
+#   3. Publish to npm (and the VS Code extension). The `exports` maps are
+#      written into the manifests for the tarballs, then taken out again.
 #   4. Deploy the docs site and Wrenfield, on every push: a docs-only change
 #      has nothing to publish but still needs a deploy. Their deploy builds load
 #      the Kit from unpkg at the version just bumped, so they run after the
@@ -121,6 +122,12 @@ jobs:
         if: env.VSCE_PAT != '' || env.OVSX_PAT != ''
         working-directory: packages/nucleus-quark-highlighter
         run: npm run publish:vsix
+      # `apply-exports` was for the tarballs. From here on the tree is the one
+      # every pull request builds: the manifests as committed (the bump),
+      # without `exports`. A workspace import a site build resolves there
+      # (`@excom/valence/src/mixins.basic.css`) resolves here too.
+      - name: Restore the manifests apply-exports rewrote
+        run: git checkout -- 'packages/*/package.json'
 
       # 4. Deploy. Bundle-size baseline for PR comments: merge this build's
       # size reports over the previous baseline and cache it for pr.yml.
