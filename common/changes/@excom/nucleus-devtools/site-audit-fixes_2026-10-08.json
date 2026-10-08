@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/nucleus-devtools",
+      "comment": "Fix the local-build instructions in the README",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/nucleus-devtools"
+}

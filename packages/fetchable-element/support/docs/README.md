@@ -27,7 +27,7 @@ track loading / success / error state automatically.
 
 ## Usage
 
-Compose `FetchableElement`, then call `doFetch(url, requestInit)` —
+Compose `FetchableElement`, then call `doFetch([url, requestInit])` —
 usually built via `getFetchArgs(customFetchArgs?)` — whenever the
 subclass decides a request should run. Concrete consumers include
 `<provider-fetch>` (fetch on attribute change), `<super-form>` (fetch on
@@ -43,7 +43,7 @@ export const RefreshOnClick = Neutron.compose([
   Neutron({ tag: "refresh-on-click" }),
 ])
   .onEvent("click", ({ getFetchArgs }) => ({
-    doFetch: getFetchArgs(),
+    doFetch: [getFetchArgs()],
   }));
 
 RefreshOnClick.define();

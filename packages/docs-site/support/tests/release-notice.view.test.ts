@@ -167,7 +167,7 @@ describe("release notice view", () => {
 
   // a popover toggle appends a proxy button under <body>, which re-runs the
   // whole shell sheet; an ungated `@delay` restarted and reopened the banner
-  it("opens once after 3s; a sheet re-run never reopens it (shell sheet)", async () => {
+  it("opens once after 7s; a sheet re-run never reopens it (shell sheet)", async () => {
     vi.useFakeTimers();
     const mounted = mountWithSheet(
       `<quark-sheet>${shellRule()}</quark-sheet>${html}`,
@@ -176,7 +176,7 @@ describe("release notice view", () => {
     const { root } = await mounted;
     const notice = root.querySelector<HTMLElement>("#release-notice")!;
 
-    await tick(2850);
+    await tick(6850);
     expect(notice.hasAttribute("is-open")).toBe(false);
     await tick(150);
     expect(notice.hasAttribute("is-open")).toBe(true);
@@ -187,7 +187,7 @@ describe("release notice view", () => {
     expect(notice.hasAttribute("is-open")).toBe(false);
 
     root.append(document.createElement("button"));
-    await tick(3500);
+    await tick(7500);
     expect(notice.hasAttribute("is-open")).toBe(false);
     expect(notice.hasAttribute("data-did-open")).toBe(true);
   });

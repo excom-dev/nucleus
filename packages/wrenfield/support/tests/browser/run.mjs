@@ -126,7 +126,11 @@ const expect = async (page, label, fn, expected, ...args) => {
   if (!(await until(matches, 10_000))) equal(label, actual, expected);
 };
 
-const noIssues = (issues) => {
+// Chrome's own notice where there is no GPU (a CI runner), raised by the product viewer's WebGL: not the app's.
+const NOT_THE_APP = /Automatic fallback to software WebGL has been deprecated/;
+
+const noIssues = (all) => {
+  const issues = all.filter((issue) => !NOT_THE_APP.test(issue));
   if (issues.length) throw new Error(`${issues.length} console or network issue(s), first: ${issues[0]}`);
 };
 

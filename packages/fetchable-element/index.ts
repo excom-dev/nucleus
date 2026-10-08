@@ -59,7 +59,7 @@ export type FetchableErrorEvent = TEvent & {
  * (fetch-on-attribute-change), `<super-form>` (fetch-on-submit), and
  * `<web-authn>` (WebAuthn ceremonies that still round-trip to a server).
  *
- * Subclasses call `doFetch(url, requestInit)` — typically built via
+ * Subclasses call `doFetch([url, requestInit])` — typically built via
  * `getFetchArgs(customFetchArgs?)`, which deep-merges (lowest → highest
  * priority) the element's own attributes, the `<form>` referenced by
  * `form-ref` (action/method/enctype/fields), and any custom args passed

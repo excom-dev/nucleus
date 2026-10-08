@@ -378,7 +378,7 @@ export const BUILTIN_FUNCTIONS: readonly BuiltinDoc[] = [
       "child (or the template at `template-ref`, a selector / URL) per " +
       "array item or object entry, keyed by `key-property` (else a content " +
       "hash) so existing rows are reused. `null` / `undefined` wipes the " +
-      "rows; an empty collection clears them; a non-collection no-ops.",
+      "rows; an empty collection or a non-collection clears them.",
     group: "render",
   },
   {

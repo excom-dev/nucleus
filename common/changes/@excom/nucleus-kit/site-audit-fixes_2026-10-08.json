@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/nucleus-kit",
+      "comment": "Fix the progressive entry's path in the README",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/nucleus-kit"
+}

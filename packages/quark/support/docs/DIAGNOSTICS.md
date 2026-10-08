@@ -26,7 +26,7 @@ Each statement evaluates its expression on the matched element — bindings, `at
 
 ## Where it goes
 
-- The console, at the matching logger level: `Quark @warn (img:not([alt])): img needs alt`. `@debug` is silent unless Quark logs at debug level (`VITE_LOG_LEVEL` ≥ 3).
+- The console, at the matching logger level: `Quark @warn (img:not([alt])): img needs alt`. Published builds log errors only; raise the level in app code with `import { QuarkLogger } from "@excom/quark"` (or `@excom/nucleus-kit`) and `QuarkLogger.level = 2` for `@warn`, `3` for `@debug`.
 - The DevTools hook, as `["quark", "diagnostic"]` — `level`, `values`, `message`, `expression`, the selector, rule and element — so the Nucleus DevTools extension and the agent tools can list them next to the rule. See [JS API](./JS_API.md).
 
 Use `@warn` for invariants a sheet can state better than a test (`img:not([alt])`, `button:not([type])`), `@error` for States that should never occur, and `@debug` while developing a rule — then remove it. The `log()` and `debug()` built-ins remain for tracing inside an expression.

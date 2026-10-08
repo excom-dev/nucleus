@@ -23,9 +23,8 @@ Point `target-ref` at any selector, then react to `dom-observer-change`
 with `<event-handler>` (or Quark).
 
 ```html
-<dom-observer target-ref="#watched"></dom-observer>
-<event-handler listen-for="dom-observer-change" target-ref="#log">
-  <!-- runs on every #watched mutation, and once on attach -->
+<event-handler listen-for="dom-observer-change" fire-event="watched-changed">
+  <dom-observer target-ref="#watched"></dom-observer>
 </event-handler>
 ```
 

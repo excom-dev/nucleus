@@ -327,7 +327,7 @@ function buildInstallation(pkgJson, cssFiles, { packageRoot, hasUmdEntry } = {})
       ? "basic.css"
       : cssFiles[0];
   const cssImport = cssFiles.includes("index.css")
-    ? `@import "${name}";`
+    ? `@import "${name}/index.css";`
     : cssEntry
       ? `@import "${name}/${cssEntry}";`
       : undefined;

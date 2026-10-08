@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/dom-observer",
+      "comment": "Fix the usage sample so the handler receives the event",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/dom-observer"
+}

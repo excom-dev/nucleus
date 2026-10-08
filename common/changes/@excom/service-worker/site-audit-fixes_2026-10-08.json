@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/service-worker",
+      "comment": "Fix the relay sample and the `is-ready` note in the README",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/service-worker"
+}

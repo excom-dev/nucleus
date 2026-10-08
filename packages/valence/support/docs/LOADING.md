@@ -12,4 +12,4 @@
 <article aria-busy="true">Loading…</article>
 ```
 
-The spinner is `--v-icon-loading` (`1em`); empty busy elements center it. Form controls (`input`, `select`, `textarea`) and `form` / `html` are excluded. Because the state is an attribute, a Quark rule sets it from any fact: `button { aria-busy: attr("is-loading") != null; }` or `provider-fetch[is-loading] button { aria-busy: "true"; }` (with its inverse).
+The spinner is `--v-icon-loading` (`1em`); empty busy elements center it. Form controls (`input`, `select`, `textarea`) and `form` / `html` are excluded. Because the state is an attribute, a Quark rule sets it from any fact: `button { aria-busy: ternary(attr("is-loading") != null, "true", none); }` or `provider-fetch[is-loading] button { aria-busy: "true"; }` (with its inverse).

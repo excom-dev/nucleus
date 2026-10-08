@@ -53,7 +53,7 @@ await __NUCLEUS_DEVTOOLS__.tools.evaluate_expression({ selector: "#cart", expres
 
 ### No extension available
 
-Evaluate `agent-tools.js` from the extension's release zip in the page (`evaluate_script`, `addScriptTag`, or a `<script>` when CSP allows). It installs the same tools; history starts at injection, so boot-time records are missed. With chrome-devtools-mcp, call `list_3p_developer_tools` after injecting.
+Evaluate `agent-tools.js` from the extension's build output (`.output/chrome-mv3/` after `pnpm run build` in `packages/nucleus-devtools`) in the page (`evaluate_script`, `addScriptTag`, or a `<script>` when CSP allows). It installs the same tools; history starts at injection, so boot-time records are missed. With chrome-devtools-mcp, call `list_3p_developer_tools` after injecting.
 
 ## A workflow that works
 

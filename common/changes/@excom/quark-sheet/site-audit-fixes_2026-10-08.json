@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/quark-sheet",
+      "comment": "Improve the README with where to load the scripts for an inline sheet",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/quark-sheet"
+}
