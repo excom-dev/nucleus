@@ -3,7 +3,7 @@
 Wrenfield is a fictional furniture house: pieces made to order, restored antiques, lighting and objects.
 It is a whole shop, from the home screen through checkout to order tracking, built as the reference example of a [Nucleus Stack](https://nucleus.excom.dev) app. There is no server of its own: a service worker mocks the API.
 It has zero lines of app JS (except to import the mock API SW) and no UI build process.
-It has a number of sophisticated features, including: SSG, SPA, web AR/3d models, WebAuthn, View Transitions
+It has a number of sophisticated features, including: SSG, SPA, web AR/3d models, WebAuthn, View Transitions, touch gestures
 
 ## Run it
 
