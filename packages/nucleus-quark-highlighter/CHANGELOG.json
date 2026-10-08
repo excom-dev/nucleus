@@ -2,6 +2,18 @@
   "name": "@excom/nucleus-quark-highlighter",
   "entries": [
     {
+      "version": "0.1.5",
+      "tag": "@excom/nucleus-quark-highlighter_v0.1.5",
+      "date": "Thu, 08 Oct 2026 05:32:46 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix highlighting after a bare word directly before a closing bracket, as in `if($a: 1; else: preserve)`: the rest of the sheet was coloured as one value. Remove the `///` documentation comment rule: Quark has only `/* … */` comments, so a `///` line is no longer coloured as one in the editor"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.4",
       "tag": "@excom/nucleus-quark-highlighter_v0.1.4",
       "date": "Wed, 07 Oct 2026 20:47:39 GMT",

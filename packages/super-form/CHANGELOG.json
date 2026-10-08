@@ -2,6 +2,18 @@
   "name": "@excom/super-form",
   "entries": [
     {
+      "version": "0.1.7",
+      "tag": "@excom/super-form_v0.1.7",
+      "date": "Thu, 08 Oct 2026 05:32:46 GMT",
+      "comments": {
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/quark-sheet\" to `^0.2.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.6",
       "tag": "@excom/super-form_v0.1.6",
       "date": "Wed, 07 Oct 2026 20:47:39 GMT",

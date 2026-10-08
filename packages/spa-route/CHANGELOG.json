@@ -2,6 +2,23 @@
   "name": "@excom/spa-route",
   "entries": [
     {
+      "version": "0.5.0",
+      "tag": "@excom/spa-route_v0.5.0",
+      "date": "Thu, 08 Oct 2026 05:32:46 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add `@excom/spa-route/server`, the router's prerender hooks: `beforeRender` starts each page from a cold load of its URL, `afterRender` fails a soft 404 (a page only the `is-fallback` route matches) and a not-found page that route does not render"
+          }
+        ],
+        "none": [
+          {
+            "comment": "Fix the types of `@excom/spa-route/testing`: the declaration of `resetRouter`, which it re-exports from `src`, is now built into the package"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.4.0",
       "tag": "@excom/spa-route_v0.4.0",
       "date": "Wed, 07 Oct 2026 20:47:39 GMT",

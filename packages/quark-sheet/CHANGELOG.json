@@ -2,6 +2,18 @@
   "name": "@excom/quark-sheet",
   "entries": [
     {
+      "version": "0.2.0",
+      "tag": "@excom/quark-sheet_v0.2.0",
+      "date": "Thu, 08 Oct 2026 05:32:46 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add `@excom/quark-sheet/server`, which exports `settle`: the prerender hook that holds a page until its sheets are quiet, without the 1 s limit of `Quark.whenSettled()`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.6",
       "tag": "@excom/quark-sheet_v0.1.6",
       "date": "Wed, 07 Oct 2026 20:47:39 GMT",

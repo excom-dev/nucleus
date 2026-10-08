@@ -2,6 +2,29 @@
   "name": "@excom/nucleus-ssr",
   "entries": [
     {
+      "version": "0.2.0",
+      "tag": "@excom/nucleus-ssr_v0.2.0",
+      "date": "Thu, 08 Oct 2026 05:32:46 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add `page.notFound` to the `beforeRender` and `afterRender` hooks: true for `prerender()`'s `notFound` route, so an entry needs no path from the config. `render(url, { notFound: true })` says so for a renderer driven by hand, and a cache renders every page again when `notFound` changes. A path listed in both `routes` and `notFound` is now refused"
+          },
+          {
+            "comment": "Add `defineConfig()`, which types a config module's default export: the options, or a function returning them. A misspelt option is a type error"
+          },
+          {
+            "comment": "Update `out` to default to `root` in `prerender()` and in a config; a pool (`worker`) still names it"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/nucleus-kit\" to `^0.5.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.1.1",
       "tag": "@excom/nucleus-ssr_v0.1.1",
       "date": "Wed, 07 Oct 2026 20:47:39 GMT",

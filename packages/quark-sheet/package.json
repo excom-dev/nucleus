@@ -1,6 +1,6 @@
 {
   "name": "@excom/quark-sheet",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "description": "<quark-sheet> — host a Quark orchestration sheet for sibling markup",
   "license": "MIT",
   "engines": {

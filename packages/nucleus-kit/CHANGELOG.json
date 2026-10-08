@@ -2,6 +2,38 @@
   "name": "@excom/nucleus-kit",
   "entries": [
     {
+      "version": "0.5.0",
+      "tag": "@excom/nucleus-kit_v0.5.0",
+      "date": "Thu, 08 Oct 2026 05:32:46 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add the prerender hooks to `@excom/nucleus-kit/server` (`beforeRender`, `settle`, `afterRender`): a kit app prerenders with `entry: () => import(\"@excom/nucleus-kit/server\")` and no entry module of its own"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@excom/detect-media\" to `^0.1.7`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/dismiss-watcher\" to `^0.1.7`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/gesture-handler\" to `^0.2.3`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/quark-sheet\" to `^0.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/spa-route\" to `^0.5.0`"
+          },
+          {
+            "comment": "Updating dependency \"@excom/super-form\" to `^0.1.7`"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.4.0",
       "tag": "@excom/nucleus-kit_v0.4.0",
       "date": "Wed, 07 Oct 2026 20:47:39 GMT",
