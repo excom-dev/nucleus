@@ -120,17 +120,18 @@ const siteMeta = {
   exportedFiles: {},
 };
 
-/** The closing details `build-package-metas` appends to a README with release notes. */
-const releaseNotes =
-  '<details class="release-notes">\n<summary>Release notes</summary>\n' +
-  "<h3>1.0.0 <time>2026-09-30</time></h3>\n<ul>\n<li>Add <code>x</code></li>\n</ul>\n" +
-  "</details>\n";
+/** What `build-package-metas` appends to a README with releases but no API section. */
+const apiInclude =
+  '<include-content template-ref="/views/api-reference/api-reference.html"></include-content>\n';
 
 const notedMeta: PackageMeta = {
   ...neutronMeta,
   shortName: "noted",
-  readme: `${neutronMeta.readme}${releaseNotes}`,
-};
+  readme: `${neutronMeta.readme}${apiInclude}`,
+  releases: [
+    { version: "1.0.0", day: "2026-09-30", notesHtml: ["Add <code>x</code>"] },
+  ],
+} as PackageMeta;
 
 const requested: string[] = [];
 
@@ -336,27 +337,30 @@ describe("package view", () => {
     expect(page.querySelector(".md-content")?.innerHTML).toBe("");
   });
 
-  it("ends the README article with the release notes its meta carries, closed", async () => {
+  it("ends the README article with the api-reference include, which paints the release notes, not the README", async () => {
     const { page } = await mountPage({ packageName: "noted" });
 
-    const notes = page.querySelector<HTMLDetailsElement>(
-      ".md-content > details.release-notes:last-child",
+    const include = page.querySelector(
+      ".md-content > include-content:last-child",
     )!;
-    expect(notes.open).toBe(false);
-    expect(notes.querySelector("summary")?.textContent).toBe("Release notes");
-    expect(notes.querySelector("h3")?.textContent).toBe("1.0.0 2026-09-30");
-    expect(notes.querySelector("li")?.innerHTML).toBe("Add <code>x</code>");
-    expect(page.querySelectorAll(".release-notes")).toHaveLength(1);
+    expect(include.getAttribute("template-ref")).toBe(
+      "/views/api-reference/api-reference.html",
+    );
+    expect(page.querySelector(".md-content details")).toBeNull();
+    expect(page.querySelector(".md-content")?.textContent).not.toContain(
+      "Release notes",
+    );
   });
 
-  it("keeps release notes off the doc pages of that package", async () => {
+  it("keeps the api-reference include and release notes off the doc pages of that package", async () => {
     const { page } = await mountPage({
       packageName: "noted",
       docName: "props",
     });
 
     expect(page.querySelector(".md-content h1")?.textContent).toBe("Props");
-    expect(page.querySelector(".release-notes")).toBeNull();
+    expect(page.querySelector(".md-content include-content")).toBeNull();
+    expect(page.querySelector(".md-content details")).toBeNull();
   });
 
   it("marks guide links the router has a past visit to", async () => {

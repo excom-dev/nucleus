@@ -9,19 +9,16 @@
  */
 import { createApi, memoryStore } from "../../public/service-worker/api.js";
 import { CATEGORIES } from "../../public/service-worker/config.js";
+import { defineConfig } from "@excom/nucleus-ssr";
 
-// Node's built-ins, typed here: the package has no Node types (support/tests/app.ts)
+// Node's file read, typed here: the package has no Node types (support/tests/app.ts)
 declare const process: {
-  getBuiltinModule(id: "node:fs"): { readFileSync(path: string, encoding: "utf8"): string };
-  getBuiltinModule(id: "node:path"): { dirname(path: string): string; join(...paths: string[]): string };
-  getBuiltinModule(id: "node:url"): { fileURLToPath(url: string): string };
+  getBuiltinModule(id: "node:fs"): { readFileSync(path: URL, encoding: "utf8"): string };
 };
 const { readFileSync } = process.getBuiltinModule("node:fs");
-const { dirname, join } = process.getBuiltinModule("node:path");
-const { fileURLToPath } = process.getBuiltinModule("node:url");
 
-/** The built app: read and written in place. */
-export const DIST = join(dirname(fileURLToPath(import.meta.url)), "../../dist");
+// the built app, from this folder: read and written in place
+const DIST = "../../dist";
 
 /** The production origin (`routes` in wrangler.jsonc). */
 export const ORIGIN = "https://wrenfield.excom.dev";
@@ -74,9 +71,8 @@ export const firstVisitApi =
       : undefined;
 
 /** The `prerender()` options; `catalog` is the JSON the build copied into `dist`. */
-export default (catalog = readFileSync(join(DIST, "data/catalog.json"), "utf8")) => ({
+export default defineConfig((catalog = readFileSync(new URL(`${DIST}/data/catalog.json`, import.meta.url), "utf8")) => ({
   root: DIST,
-  out: DIST,
   origin: ORIGIN,
   routes: catalogRoutes(JSON.parse(catalog)),
   shellRoutes: SHELL_ROUTES,
@@ -86,4 +82,4 @@ export default (catalog = readFileSync(join(DIST, "data/catalog.json"), "utf8"))
   // the runner's link check (not a `prerender()` option)
   servedElsewhere: isServedElsewhere,
   api: firstVisitApi(catalog),
-});
+}));

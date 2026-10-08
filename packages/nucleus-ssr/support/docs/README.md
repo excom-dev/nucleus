@@ -17,48 +17,61 @@ Prerender a Nucleus Stack app to static HTML that the browser takes over as it s
 
 ## Usage
 
-`prerender()` renders every route of a built site and writes the files. Run it in Node (24.13 or newer) once the site is built; the app itself needs no change. How a prerendered page behaves in the browser: [Prerendering](/docs/prerendering).
+`nucleus-ssr` renders every route of a built site and writes the files. Run it in Node (24.13 or newer) once the site is built; the app itself needs no change. How a prerendered page behaves in the browser: [Prerendering](/docs/prerendering).
+
+A config module names the site and its routes. An app built on NucleusKit needs no other file: the kit's server entry is the app as the renderer loads it.
 
 ```js
-// prerender.mjs
-import { prerender } from "@excom/nucleus-ssr";
+// prerender.config.js
+import { defineConfig } from "@excom/nucleus-ssr";
 
-const { pages } = await prerender({
-  root: "dist", // the built site, served at `origin` while rendering
-  out: "dist", // may be `root`: files are written once every page has rendered
+export default defineConfig({
+  root: "dist", // the built site: served at `origin` while rendering, pages written into it
   origin: "https://example.com", // the production origin
-  entry: () => import("./prerender-entry.js"),
+  entry: () => import("@excom/nucleus-kit/server"), // NucleusKit, and the hooks run around each page
   routes: ["/", "/menu"], // index.html, menu.html
   notFound: "/404", // 404.html
 });
-for (const { file, bytes, ms } of pages) console.log(file, bytes, `${ms} ms`);
 ```
 
-`entry` loads the app once the renderer's window is in place, so it is a dynamic `import()`. The module it resolves to defines the elements and exports the hooks:
+`npx nucleus-ssr prerender.config.js` renders it in a pool of workers, one per core but one and at most 6, prints a line per page and a summary, then checks that every `<a href>` / `<spa-a route-href>` of the written pages leads to a page. It exits 1 when a page failed or a link leads to no page.
+
+### Entry
+
+`entry` loads the app once the renderer's window is in place, so it is a dynamic `import()`. The module it resolves to defines the elements and exports the hooks the renderer runs around each page. `@excom/nucleus-kit/server` is a complete one:
+
+- `beforeRender({ url, window, notFound })` puts the router back to a cold load of the page's URL
+- `settle()` resolves once the sheets are quiet: a page is rendered once the window and Quark are quiet together
+- `afterRender({ url, window, notFound, document })` fails a soft 404, a route only `<spa-route is-fallback>` matches, and a `notFound` page no fallback route renders: the not-found page needs a `<spa-route is-fallback>` that matches it. Only the outermost routes decide: a nested layout's own fallback is part of an ordinary page
+- `SERVER_EXCLUDED_TAGS` lists the elements that read the device or the person: the renderer checks none is defined
+
+An app with elements or checks of its own has an entry module that adds to the kit's:
 
 ```js
 // prerender-entry.js
-import { Quark } from "@excom/nucleus-kit/server";
-import { resetRouter } from "@excom/spa-route/testing";
+import "./elements/price-tag.js";
+import { afterRender as checkRoute } from "@excom/nucleus-kit/server";
 
-// elements that read the device or the person: the renderer checks none is defined
-export { SERVER_EXCLUDED_TAGS } from "@excom/nucleus-kit/server";
+export * from "@excom/nucleus-kit/server";
 
-// before each page parses: module state back to a cold load of `url`
-export const beforeRender = ({ url }) => resetRouter(url);
-
-// a page is rendered once the window and Quark are quiet together
-export const settle = () => Quark.whenSettled({ timeout: Infinity });
+// the kit's check, then the app's: a page whose data came back as an error
+export const afterRender = (page) => {
+  checkRoute(page);
+  const failed = page.document.querySelector("provider-fetch[is-error]");
+  if (failed) throw new Error(`${page.url}: ${failed.getAttribute("api-url")} answered an error`);
+};
 ```
 
-- The page's own `<script>`s never run in the renderer: import your own elements from the entry too, or they stay undefined in the page
-- `afterRender({ url, window, document })` runs before the page is serialized: add its `<link rel="canonical">` or `<meta name="description">` there
+- Without NucleusKit, the entry imports the elements the app uses and exports the hooks from their packages: `beforeRender` / `afterRender` from `@excom/spa-route/server`, `settle` from `@excom/quark-sheet/server`
+- `page.notFound` is true for the `notFound` route, so an entry needs no path from the config. A path in both `routes` and `notFound` is refused: a page is one or the other
+- The page's own `<script>`s never run in the renderer: import your own elements from the entry, or they stay undefined in the page
+- `afterRender` runs before the page is serialized: add its `<link rel="canonical">` or `<meta name="description">` there
 - A sheet's `@use "/helpers.js"` is imported by Node: point `Quark.moduleLoader` at the built file, `(url) => import(pathToFileURL(join("dist", url)).href)` with `join` / `pathToFileURL` from `node:path` / `node:url`
 - Modules evaluate once per process, so a process gets one renderer; pages render one at a time, or in [a pool of worker processes](#md-workers-cache)
 
 ### Command
 
-`npx nucleus-ssr prerender.config.js` runs the same from a config module, which default-exports the `prerender()` options (type `PrerenderConfig`) or a function returning them. It renders in a pool of workers, one per core but one and at most 6, prints a line per page and a summary, then checks that every `<a href>` / `<spa-a route-href>` of the written pages leads to a page. It exits 1 when a page failed or a link leads to no page.
+The config module default-exports the `prerender()` options, or a function returning them, `async` when the routes come from a file or a request. `defineConfig()` types either.
 
 - Relative `root`, `out` and `cache.dir` are the config file's folder's, wherever the command runs
 - `--concurrency <n>` sizes the pool, `--no-cache` leaves the config's `cache` unused, `--save-shell <file>` saves the untouched shell (a `shell` function has none to save), `--help` lists them
@@ -66,8 +79,25 @@ export const settle = () => Quark.whenSettled({ timeout: Infinity });
 - The config and `entry` run in plain Node, in the command and again in every worker: keep the config free of side effects. A TypeScript config runs on Node's type stripping: erasable syntax only, relative imports with their extension
 - From code, `await runPrerender({ config: "prerender.config.js" })` resolves `{ pages, links, exitCode }`; `checkLinks(pages, { out, origin })` is its link check, and `sitemapRoutes(xml, origin)` turns a sitemap's `<urlset>` into `routes`
 
+`prerender()` takes the same options and renders in the process that calls it, one page at a time, without the report or the link check:
+
+```js
+// prerender.mjs
+import { prerender } from "@excom/nucleus-ssr";
+
+const { pages } = await prerender({
+  root: "dist",
+  origin: "https://example.com",
+  entry: () => import("@excom/nucleus-kit/server"),
+  routes: ["/", "/menu"],
+  notFound: "/404",
+});
+for (const { file, bytes, ms } of pages) console.log(file, bytes, `${ms} ms`);
+```
+
 ### Options
 
+- `out` is the directory the pages are written to: `root` unless named. Files are written once every page has rendered, so no page reads another's output
 - `shell` is the page each route starts from: `<root>/index.html` by default, read once before any page renders, or a string / `(url) => html`. A shell an earlier prerender wrote (`<html n-ssr>`) rejects the whole run, whatever `onError` says: prerender always follows a fresh build of the site. So does a shell, or the `fallback` file, that [a browser parses into other elements](#md-failures)
 - `api` answers `/api/*` GET / HEAD requests, as a mock backend: `(request) => Response | null`
 - `fallback` is the file under `root` served for an extensionless path with no file of its own, e.g. `"index.html"`
@@ -89,7 +119,7 @@ await prerender({
   worker: new URL("./prerender-worker.mjs", import.meta.url),
   concurrency: 4,
   cache: { dir: ".prerender-cache", key: appDigest }, // e.g. a hash of the built scripts
-  out: "dist",
+  out: "dist", // no default here: `root` is the worker's
   routes: ["/", "/menu"],
   notFound: "/404",
 });
@@ -102,7 +132,7 @@ import { serveRenderer } from "@excom/nucleus-ssr";
 await serveRenderer({
   root: "dist",
   origin: "https://example.com",
-  entry: () => import("./prerender-entry.js"),
+  entry: () => import("@excom/nucleus-kit/server"),
 });
 ```
 
@@ -155,7 +185,7 @@ One slashless file per route: `/` is `index.html`, `/docs/intro` is `docs/intro.
 
 ### Test hydration
 
-`createRenderer()` is the renderer `prerender()` drives: `render(url)` resolves `{ html, diagnostics }` and writes nothing. `hydrate()` from `@excom/nucleus-ssr/testing` then loads that HTML into the renderer's window as a browser would and reports what hydration changed from the page as parsed, element upgrades included. Nothing in `removed`, `added`, `attributes` and `texts`: hydration was a no-op. Nothing in `flashes`: nothing the server painted was missing between two tasks and back later, a gap a browser could paint.
+`createRenderer()` is the renderer `prerender()` drives: `render(url)` resolves `{ html, diagnostics }` and writes nothing; `render("/404", { notFound: true })` renders the not-found page as `prerender()` does. `hydrate()` from `@excom/nucleus-ssr/testing` then loads that HTML into the renderer's window as a browser would and reports what hydration changed from the page as parsed, element upgrades included. Nothing in `removed`, `added`, `attributes` and `texts`: hydration was a no-op. Nothing in `flashes`: nothing the server painted was missing between two tasks and back later, a gap a browser could paint.
 
 ```js
 import { createRenderer } from "@excom/nucleus-ssr";
@@ -167,7 +197,7 @@ beforeAll(async () => {
   renderer = await createRenderer({
     root: "dist",
     origin: "https://example.com",
-    entry: async () => (app = await import("./prerender-entry.js")),
+    entry: async () => (app = await import("@excom/nucleus-kit/server")),
   });
 });
 afterAll(() => renderer.close());

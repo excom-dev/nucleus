@@ -1,7 +1,8 @@
 /**
  * `@excom/nucleus-kit/server`: the Nucleus Kit for prerendering in Node. Every
  * `index` export except the elements that read the device or the person, which
- * must never upgrade on the server. Not for the browser.
+ * must never upgrade on the server, plus the hooks run around each page: a
+ * complete `entry` for `@excom/nucleus-ssr`. Not for the browser.
  */
 export * from "@excom/content-carousel";
 export * from "@excom/content-drawer";
@@ -17,8 +18,10 @@ export * from "@excom/neutron";
 export * from "@excom/provider-fetch";
 export * from "@excom/quark";
 export * from "@excom/quark-sheet";
+export { settle } from "@excom/quark-sheet/server";
 export * from "@excom/scroll-into-view";
 export * from "@excom/spa-route";
+export { afterRender, beforeRender } from "@excom/spa-route/server";
 export * from "@excom/super-form";
 export * from "@excom/super-input";
 

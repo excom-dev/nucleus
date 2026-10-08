@@ -66,7 +66,12 @@ describe("a prerendered page's head", () => {
     fetch = vi.fn(async (path: string) => answer(path))
   ) => {
     document.body.innerHTML = routes;
-    await entry.afterRender({ url, window: { fetch }, document } as never);
+    await entry.afterRender({
+      url,
+      window: { fetch },
+      notFound: url === "/404",
+      document,
+    } as never);
     return {
       fetch,
       link: document.head.querySelector('link[rel="alternate"]'),

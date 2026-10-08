@@ -1,17 +1,33 @@
-/* State: `data-duration` on the host (seconds), written by the slider.
-   `--timer-duration` hands it to the CSS animation, which owns the clock. */
+/* State: `data-duration` (the slider) and `data-elapsed` on the host, in
+   seconds. The stylesheet keeps the clock: the readout animates while it is
+   busy, and each iteration is one tick of 0.1 s, counted here. */
 :scope {
-  $duration: +attr("data-duration");
-  --timer-duration: $duration;
-  [bind-duration] {
-    content: "#{$duration}s";
-  }
   @on input {
     data-duration: event.target.value;
   }
-  button {
-    @on click {
-      @command --reload (target: "#timer-app include-content");
-    }
+  @on click (target: "button") {
+    data-elapsed: 0;
+  }
+  @on animationiteration (target: "[bind-elapsed]") {
+    data-elapsed: if(
+      $elapsed < $duration: ($elapsed + 0.1).toFixed(1);
+      else: preserve
+    );
+  }
+}
+:scope {
+  $duration: +attr("data-duration");
+  $elapsed: +attr("data-elapsed");
+  [bind-duration] {
+    content: "#{$duration}s";
+  }
+  progress {
+    max: $duration;
+    value: $elapsed;
+  }
+  [bind-elapsed] {
+    content: "#{$elapsed.toFixed(1)}s";
+    /* busy = the timer runs; a screen reader hears the readout once it stops */
+    aria-busy: if($elapsed < $duration: "true"; else: none);
   }
 }

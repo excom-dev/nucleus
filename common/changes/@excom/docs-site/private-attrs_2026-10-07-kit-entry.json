@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/docs-site",
+      "comment": "Update the prerender entry and config to Nucleus Kit's server entry and `defineConfig()`, and the Prerendering guide to the one-file setup",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/docs-site"
+}

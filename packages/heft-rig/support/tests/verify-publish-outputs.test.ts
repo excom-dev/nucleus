@@ -2,6 +2,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 import type { MockInstance } from "vitest";
 import path from "node:path";
 import { mkdirSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { verifyPublishOutputs } from "../../scripts/verify-publish-outputs.mjs";
 import { makeTempDir, removeDir, writeFiles } from "./docs-pipeline-fixtures";
 
@@ -289,6 +290,59 @@ describe("verifyPublishOutputs", () => {
     });
   });
 
+  it("names a package by its project entry or its folder when its package.json has no name", async () => {
+    const files = { ...completePackage("a", { files: [] }), ...completePackage("b", { files: [] }) };
+    for (const id of ["a", "b"]) {
+      const pkg = JSON.parse(files[`packages/${id}/package.json`]);
+      delete pkg.name;
+      files[`packages/${id}/package.json`] = JSON.stringify(pkg);
+    }
+    const repo = makeRepo(tmp, "nameless", files);
+    writeFiles(repo, {
+      "rush.json": JSON.stringify({
+        projects: [{ packageName: "@excom/named-by-rush", projectFolder: "packages/a" }, { projectFolder: "packages/b" }],
+      }),
+    });
+    log = vi.spyOn(console, "log").mockImplementation(() => {});
+    error = vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(await verifyPublishOutputs(repo)).toEqual([
+      '@excom/named-by-rush: "files" is empty',
+      'packages/b: "files" is empty',
+    ]);
+  });
+
+  it("names a project folder with no readable package.json by the folder when rush.json gives no name", async () => {
+    const repo = path.join(tmp, "no-pkg-no-name");
+    writeFiles(repo, { "rush.json": JSON.stringify({ projects: [{ projectFolder: "packages/gone" }] }) });
+    log = vi.spyOn(console, "log").mockImplementation(() => {});
+    error = vi.spyOn(console, "error").mockImplementation(() => {});
+    expect(await verifyPublishOutputs(repo)).toEqual(["packages/gone: no readable package.json in packages/gone"]);
+  });
+
+  it("reports an empty export target, and a files entry that is no string", async () => {
+    const problems = await run("odd", {
+      ...completePackage("lib", { exports: { ".": "", "./ok": "./dist/index.js" }, files: [42] }),
+    });
+    expect(problems).toEqual([
+      '@excom/lib: missing export target  (exports["."])',
+      '@excom/lib: "files" does not include "dist" (has: 42)',
+    ]);
+  });
+
+  it("accepts a wildcard target whose literal prefix is a file, and rejects one whose prefix is missing", async () => {
+    const problems = await run("glob-file", {
+      ...completePackage("lib", { exports: { "./a*": "./dist/index.js*", "./b*": "./nowhere/*.js" } }),
+    });
+    expect(problems).toEqual(['@excom/lib: missing export target ./nowhere/*.js (exports["./b*"])']);
+  });
+
+  it("checks no declarations for a package with no dist", async () => {
+    const problems = await run("no-dist", {
+      "packages/lib/package.json": JSON.stringify({ name: "@excom/lib", files: ["dist"], exports: { ".": "./dist/index.js" } }),
+    });
+    expect(problems).toEqual(['@excom/lib: missing export target ./dist/index.js (exports["."])']);
+  });
+
   it("skips private packages entirely", async () => {
     const files = completePackage("tooling", { private: true });
     delete files["packages/tooling/dist/exports.generated.json"];
@@ -353,5 +407,56 @@ describe("verifyPublishOutputs", () => {
     mkdirSync(orphan, { recursive: true });
     process.chdir(orphan);
     await expect(verifyPublishOutputs()).rejects.toThrow(/Could not find rush.json/);
+  });
+});
+
+describe("verify-publish-outputs.mjs run as a script", () => {
+  const SCRIPT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../scripts/verify-publish-outputs.mjs");
+  const originalArgv = process.argv;
+  const cwd = process.cwd();
+  let tmp: string;
+
+  beforeAll(() => {
+    tmp = makeTempDir("heft-rig-verify-main-");
+  });
+  afterAll(() => removeDir(tmp));
+  afterEach(() => {
+    process.argv = originalArgv;
+    process.chdir(cwd);
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
+  const importWith = async (argv: string[], files: Record<string, string>, id: string) => {
+    const repo = makeRepo(tmp, id, files);
+    vi.resetModules();
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const exit = vi.spyOn(process, "exit").mockImplementation((() => undefined) as never);
+    process.chdir(repo);
+    process.argv = argv;
+    await import("../../scripts/verify-publish-outputs.mjs");
+    return { exit, log: console.log as unknown as MockInstance, error: console.error as unknown as MockInstance };
+  };
+
+  it("verifies the repository it runs in, and exits 1 when a package has a problem", async () => {
+    const unbuilt = completePackage("lib");
+    delete unbuilt["packages/lib/dist/exports.generated.json"];
+    const { exit, error } = await importWith([process.execPath, SCRIPT], unbuilt, "main-bad");
+    expect(error).toHaveBeenCalledWith(expect.stringContaining("the package was not built"));
+    expect(exit).toHaveBeenCalledWith(1);
+  });
+
+  it("exits with no code when every package is complete", async () => {
+    const { exit, log } = await importWith([process.execPath, SCRIPT], completePackage("lib"), "main-ok");
+    expect(log).toHaveBeenCalledWith(expect.stringContaining("OK: 1 publishable package(s)"));
+    expect(exit).not.toHaveBeenCalled();
+  });
+
+  it("verifies nothing when imported, with no script given, or with one that does not exist", async () => {
+    for (const argv of [[process.execPath, "/elsewhere.mjs"], [process.execPath]]) {
+      const { exit, log, error } = await importWith(argv, completePackage("lib"), "main-not-run");
+      expect([exit, log, error].map((spy) => spy.mock.calls.length)).toEqual([0, 0, 0]);
+    }
   });
 });

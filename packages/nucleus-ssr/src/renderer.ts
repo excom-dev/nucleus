@@ -35,11 +35,26 @@ export type ErrorPolicy = "fail" | "shell";
 export interface RenderPage {
   url: string;
   window: DomWindow;
+  /** This page is `prerender()`'s `notFound` route. */
+  notFound: boolean;
 }
 
-/** App code the renderer calls around each page: return them from `entry`. */
+/** What `render()` is told of a page besides its URL. */
+export interface RenderPageOptions {
+  /**
+   * The page is the site's not-found page: the hooks get it as
+   * `page.notFound`. `prerender()` says so for its `notFound` route.
+   * @default false
+   */
+  notFound?: boolean;
+}
+
+/**
+ * App code the renderer calls around each page: the module `entry`
+ * resolves to exports them. `@excom/nucleus-kit/server` exports all three.
+ */
 export interface RendererHooks {
-  /** Once the previous page is gone, before this one parses: reset module-level state, e.g. `resetRouter(url)`. */
+  /** Once the previous page is gone, before this one parses: reset module-level state, e.g. the router to a cold load of `url`. */
   beforeRender?(page: RenderPage): unknown;
   /**
    * Resolves once the app is quiet; a page settles when this and the window
@@ -48,7 +63,12 @@ export interface RendererHooks {
    * fire, `holdTimersAbove` ≥ 1000) and `budgetMs` already bounds the page.
    */
   settle?(): unknown;
-  /** After the page settled, before it is serialized: per-page `<link rel="canonical">`, `<link rel="alternate">` or `<meta name="description">`. */
+  /**
+   * After the page settled, before it is serialized: per-page
+   * `<link rel="canonical">`, `<link rel="alternate">` or
+   * `<meta name="description">`, or a check that fails the page by throwing
+   * (a soft 404: a route only the fallback matches).
+   */
   afterRender?(page: RenderPage & { document: Document }): unknown;
 }
 
@@ -59,11 +79,12 @@ export interface RendererOptions {
   origin: string;
   /**
    * Loads and defines the app's elements, after the window's globals are
-   * installed: `() => import("./prerender-entry.js")`. The `beforeRender`,
-   * `settle` and `afterRender` functions of what it resolves to are the
-   * hooks; its `SERVER_EXCLUDED_TAGS` (`export * from
-   * "@excom/nucleus-kit/server"`) join `excludedTags`. Modules evaluate once
-   * per process: a process gets one renderer per entry (a later one would
+   * installed: `() => import("@excom/nucleus-kit/server")`, or a module of
+   * the app's own that adds to it (`export * from
+   * "@excom/nucleus-kit/server"`). The `beforeRender`, `settle` and
+   * `afterRender` functions of what it resolves to are the hooks; its
+   * `SERVER_EXCLUDED_TAGS` join `excludedTags`. Modules evaluate once per
+   * process: a process gets one renderer per entry (a later one would
    * define nothing, and is refused).
    */
   entry: () => Promise<unknown>;
@@ -153,7 +174,7 @@ export interface Renderer {
    * in call order. A failed page rejects with `error.diagnostics` (`"fail"`);
    * an error without them (a prerendered shell) means the run cannot go on.
    */
-  render(url: string): Promise<RenderResult>;
+  render(url: string, options?: RenderPageOptions): Promise<RenderResult>;
   /** The one window every page renders in. */
   readonly window: DomWindow;
   /** Restores the globals and closes the window. */
@@ -174,7 +195,10 @@ export interface RendererHandle extends Renderer {
   readonly key: string;
   readonly budgetMs: number;
   /** `render()`, with the digest of the shell for a page without errors. */
-  renderPage(url: string): Promise<RenderResult & { shell?: string }>;
+  renderPage(
+    url: string,
+    options?: RenderPageOptions
+  ): Promise<RenderResult & { shell?: string }>;
   /** What of `url`'s shell and requests answers otherwise now; none when nothing does. */
   changed(url: string, inputs: PageInputs): Promise<string | undefined>;
   /**
@@ -618,7 +642,8 @@ export async function openRenderer({
   };
 
   const renderPage = async (
-    url: string
+    url: string,
+    { notFound = false }: RenderPageOptions = {}
   ): Promise<RenderResult & { shell?: string }> => {
     const { target, path } = targetOf(url);
     const state = idlePage();
@@ -642,7 +667,7 @@ export async function openRenderer({
           page = state;
           // a new object per page: kit-utils starts its caches afresh
           global.__NUCLEUS_SSR__ = server;
-          await hooks.beforeRender?.({ url: path, window });
+          await hooks.beforeRender?.({ url: path, window, notFound });
           shellHead = watchShellHead(window);
         },
       });
@@ -651,7 +676,7 @@ export async function openRenderer({
         throw staleShell(kit);
       checkShell(html, `route ${path}`);
       diagnostics.heldTimers = (await settle()).held;
-      await hooks.afterRender?.({ url: path, window, document });
+      await hooks.afterRender?.({ url: path, window, notFound, document });
       // e.g. a `ready-on` event that never came: the page would be written half-rendered
       const waiting = notReady(document, kit.NO_SSR_ATTR);
       if (waiting.length)
@@ -822,9 +847,11 @@ export async function openRenderer({
     window,
     key,
     budgetMs,
-    renderPage: (url) => serially(() => renderPage(url)),
-    async render(url) {
-      const { html, diagnostics } = await serially(() => renderPage(url));
+    renderPage: (url, options) => serially(() => renderPage(url, options)),
+    async render(url, options) {
+      const { html, diagnostics } = await serially(() =>
+        renderPage(url, options)
+      );
       return { html, diagnostics };
     },
     changed: (url, inputs) => serially(() => changed(url, inputs)),

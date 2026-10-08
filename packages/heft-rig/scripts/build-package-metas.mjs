@@ -5,8 +5,8 @@
  *   1. `support/custom-elements.json` via `build-cem.mjs` when the package
  *      defines Neutron elements.
  *   2. `support/package-meta.json` for documented packages — the docs-site
- *      bundle (flattened APIs, demos, README HTML ending with the release
- *      notes from `CHANGELOG.json`, installation, exports).
+ *      bundle (flattened APIs, demos, README HTML, release notes from
+ *      `CHANGELOG.json`, installation, exports).
  *
  * `excom.documented: false` (or no `excom`) skips the full meta, except
  * site packages with `support/docs/*.md` — those emit a slim meta (`docs`,
@@ -94,7 +94,7 @@ export async function buildPackageMetas(packageRoot = process.cwd()) {
     package: packageBlock,
     demos,
     ...(docs.readme !== undefined
-      ? { readme: docs.readme + releaseNotesHtml(releases) }
+      ? { readme: withApiInclude(docs.readme, releases) }
       : {}),
     ...(Object.keys(docs).length ? { docs } : {}),
     ...(docSections ? { docSections } : {}),
@@ -103,6 +103,7 @@ export async function buildPackageMetas(packageRoot = process.cwd()) {
       hasUmdEntry: pkg.excom?.umd !== false && rootFiles.includes(UMD_ENTRY_SOURCE),
     }),
     elementApis,
+    ...(releases.length ? { releases: releases.map(releaseWithHtml) } : {}),
     exportedFiles: buildExportedFiles(exportsMap),
   });
 }
@@ -197,19 +198,24 @@ async function readDocSections(packageRoot, docs) {
   return out;
 }
 
-const releaseHtml = ({ version, day, notes }) => {
-  const items = notes.map((note) => `<li>${renderMarkdownInline(note)}</li>`);
-  return `<h3>${version}${day && ` <time>${day}</time>`}</h3>\n<ul>\n${items.join("\n")}\n</ul>\n`;
-};
+/** Release notes for the `api-reference` view: each Markdown note as inline HTML. */
+const releaseWithHtml = ({ version, day, notes }) => ({
+  version,
+  day,
+  notesHtml: notes.map((note) => renderMarkdownInline(note)),
+});
+
+const API_REFERENCE_INCLUDE =
+  '<include-content is-active template-ref="/views/api-reference/api-reference.html"></include-content>\n';
 
 /**
- * The closing `<details>` of the README: per release an `<h3>` with version
- * and date, then a `<ul>` of its notes. Empty string without releases.
+ * The `api-reference` view paints the release notes. A README with releases
+ * but no API section gets the include at its end so they show there too.
  */
-const releaseNotesHtml = (releases) =>
-  releases.length
-    ? `<details class="release-notes">\n<summary>Release notes</summary>\n${releases.map(releaseHtml).join("")}</details>\n`
-    : "";
+const withApiInclude = (readme, releases) =>
+  releases.length && !readme.includes("/views/api-reference/api-reference.html")
+    ? readme + API_REFERENCE_INCLUDE
+    : readme;
 
 function resolveMixinCem(packageRoot) {
   return (ref) => {

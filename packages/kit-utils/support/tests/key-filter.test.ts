@@ -32,6 +32,16 @@ describe("matchesKey", () => {
     expect(matchesKey("alt", key("Alt", { altKey: true }))).toBe(true);
   });
 
+  it("accepts `control` and `meta` as modifier names, alone and in chords", () => {
+    expect(matchesKey("control+a", key("a", { ctrlKey: true }))).toBe(true);
+    expect(matchesKey("control+a", key("a"))).toBe(false);
+    expect(matchesKey("meta+a", key("a", { metaKey: true }))).toBe(true);
+    expect(matchesKey("meta+a", key("a", { ctrlKey: true }))).toBe(false);
+    expect(matchesKey("control", key("Control", { ctrlKey: true }))).toBe(true);
+    expect(matchesKey("meta", key("Meta", { metaKey: true }))).toBe(true);
+    expect(matchesKey("meta", key("Control", { ctrlKey: true }))).toBe(false);
+  });
+
   it.each(["space", "Space", "SPACEBAR", "spacebar"])(
     "names the space bar %s",
     (name) => {

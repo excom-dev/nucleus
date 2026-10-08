@@ -23,6 +23,29 @@
   [bind-type-expanded] {
     content: formatTsType(item.typeExpanded, $tag);
   }
+  /* one dropdown per package, after the element tables; absent without releases */
+  [bind-releases] {
+    content: if($package-meta.releases.length: template("#release-notes"));
+    [bind-releases-length] {
+      content: "(#{$package-meta.releases.length})";
+    }
+    [bind-release-list] {
+      content: iterate($package-meta.releases);
+      [bind-version] {
+        content: item.version;
+      }
+      [bind-day] {
+        datetime: item.day;
+        content: item.day;
+      }
+      [bind-notes] {
+        content: iterate(item.notesHtml);
+        [bind-note] {
+          content: dangerous-html(item);
+        }
+      }
+    }
+  }
   data-thead include-content {
     /* to prevent the table from being sorted when the sorts are clicked */
     @on click (stop-propagation);

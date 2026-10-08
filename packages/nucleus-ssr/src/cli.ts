@@ -15,8 +15,8 @@ const HELP = `${USAGE}
 
 Prerenders every route of a built site. <config> default-exports the
 prerender() options, or a function returning them; relative root, out and
-cache.dir in it are its own folder's. Exits 1 when a page failed, a route
-has no file or a link leads to no page.
+cache.dir in it are its own folder's, and out is root when it names none.
+Exits 1 when a page failed, a route has no file or a link leads to no page.
 
   --concurrency <n>    workers rendering at once (default: one per core but one, at most 6)
   --no-cache           neither read nor write the cache the config names

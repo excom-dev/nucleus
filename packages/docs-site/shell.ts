@@ -66,6 +66,8 @@ export type PackageMeta = {
   docSections?: DocSection[];
   installation?: Installation;
   elementApis: ElementApi[];
+  /** Releases from `CHANGELOG.json`, newest first; each note is inline HTML. Absent without releases. */
+  releases?: Array<{ version: string; day: string; notesHtml: string[] }>;
   exportedFiles: Record<string, unknown>;
 };
 
@@ -109,7 +111,7 @@ export const getPackagesByType = (
 const DISPLAY_NAMES: Record<string, string> = {
   quark: "Quark",
   neutron: "Neutron",
-  "nucleus-kit": "Nucleus Kit",
+  "nucleus-kit": "NucleusKit",
   valence: "Valence.css",
 };
 

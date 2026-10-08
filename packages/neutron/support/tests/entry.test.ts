@@ -5,6 +5,7 @@ import {
   describe,
   expect,
   it,
+  vi,
 } from "@excom/nucleus-test";
 import { NUCLEUS_DEVTOOLS_HOOK_KEY } from "@excom/kit-devtools";
 
@@ -25,6 +26,30 @@ describe("Package entry", () => {
     expect(barrel.compose).toBe(barrel.Neutron.compose);
     expect(barrel.Neutron.DOM.TokenList).toBe(barrel.TokenList);
     expect(barrel.Neutron.attachDevtools).toBe(barrel.attachDevtools);
+  });
+
+  describe("window.Neutron global", () => {
+    afterEach(() => {
+      vi.unstubAllEnvs();
+      vi.resetModules();
+      delete (window as any).Neutron;
+    });
+
+    it("is exposed in development builds", async () => {
+      vi.stubEnv("DEV", true);
+      vi.resetModules();
+      delete (window as any).Neutron;
+      const { Neutron } = await import("../../src/neutron");
+      expect((window as any).Neutron).toBe(Neutron);
+    });
+
+    it("is not exposed outside development", async () => {
+      vi.stubEnv("DEV", false);
+      vi.resetModules();
+      delete (window as any).Neutron;
+      await import("../../src/neutron");
+      expect((window as any).Neutron).toBeUndefined();
+    });
   });
 
   it("NeutronError carries its class name", () => {

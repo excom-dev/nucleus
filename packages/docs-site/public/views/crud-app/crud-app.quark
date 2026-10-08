@@ -1,0 +1,66 @@
+/* State, on the host: `data-prefix` is the filter, `data-selected` the
+   selected entry's id. The names are the API's (`/api/names`): the sheet
+   reads the provision and never holds a copy. Every entry keeps its row: a
+   row hides when its surname does not start with the prefix, and a hidden row
+   is never the selected one. */
+@use "quark:list" as *;
+
+:scope {
+  $prefix: (attr("data-prefix") or "").toLowerCase();
+  $selected: attr("data-selected");
+
+  provider-fetch[is-success] {
+    $names: prop("provision").body;
+    $current: find($names, "id", $selected);
+    /* selected and showing: the one entry Update and Delete may act on */
+    $is-active: $current and $current.surname.toLowerCase().startsWith($prefix);
+
+    fieldset {
+      content: iterate($names, none, "id");
+      label {
+        $is-listed: item.surname.toLowerCase().startsWith($prefix);
+        hidden: not $is-listed;
+        input {
+          value: item.id;
+          checked: $is-listed and item.id == $selected;
+        }
+        span {
+          content: "#{item.surname}, #{item.name}";
+        }
+      }
+    }
+    :is([name="update"], [name="delete"]) {
+      disabled: not $is-active;
+    }
+    /* Update and Delete have no form of their own: the selected entry is their URL */
+    :is(#crud-update, #crud-delete) {
+      api-url: if($is-active: "/api/names/#{$selected}");
+    }
+
+    /* the fields take the entry, ready for Update */
+    @on change (target: "fieldset input") {
+      [name="name"] {
+        value: find($names, "id", target.value).name;
+      }
+      [name="surname"] {
+        value: find($names, "id", target.value).surname;
+      }
+    }
+    /* the API changed: read it again */
+    @on super-form-success {
+      @command --fetch;
+    }
+  }
+
+  /* data-prefix */
+  @on input (target: "[name=data-prefix]") {
+    data-prefix: target.value;
+  }
+  /* data-selected */
+  @on change (target: "fieldset input") {
+    data-selected: target.value;
+  }
+  @on super-form-success (target: "#crud-delete") {
+    data-selected: none;
+  }
+}

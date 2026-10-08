@@ -2,7 +2,7 @@
 
 How to get the monorepo running, what the conventions are, and what a reviewable pull request looks like.
 
-The stack lives in one repository: [excom-dev/nucleus](https://github.com/excom-dev/nucleus). Every published package — the Nucleus Kit elements, Neutron, Quark, Valence.css — is a folder under `packages/`, managed by [Rush](https://rushjs.io) on top of pnpm.
+The stack lives in one repository: [excom-dev/nucleus](https://github.com/excom-dev/nucleus). Every published package — the NucleusKit elements, Neutron, Quark, Valence.css — is a folder under `packages/`, managed by [Rush](https://rushjs.io) on top of pnpm.
 
 ## Getting set up
 

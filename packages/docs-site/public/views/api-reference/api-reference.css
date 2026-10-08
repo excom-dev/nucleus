@@ -85,3 +85,22 @@
     }
   }
 }
+
+/* Release notes: a card of their own after the elements', with the same dropdown. */
+[bind-releases] {
+  display: contents;
+  > article {
+    --v-spacing: 0.5rem;
+    padding-block: 0;
+  }
+  h3 {
+    font-size: 1rem;
+  }
+  time:empty {
+    display: none;
+  }
+}
+/* A package without elements has no API heading for the link to sit beside. */
+#api-reference:not(:has(> article)) ~ #api-github-link {
+  display: none;
+}

@@ -6,14 +6,15 @@
  * when a written page links a page of the site that has no file, so a
  * route the sitemap misses cannot go unnoticed.
  */
+import { SEED as NAMES } from "../../public/service-worker/names.js";
 import { SEED } from "../../public/service-worker/todos.js";
 import { SITE_ORIGIN } from "@excom/heft-rig/scripts/build-npm-readmes.mjs";
-import { sitemapRoutes } from "@excom/nucleus-ssr";
+import { defineConfig, sitemapRoutes } from "@excom/nucleus-ssr";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-/** The built site: read and written in place. */
+/** The built site: read and written in place (`out` is `root`). The entry loads its modules from here. */
 export const DIST = join(dirname(fileURLToPath(import.meta.url)), "../../dist");
 
 /** Matched by the fallback route alone: rendered to `404.html`. */
@@ -37,10 +38,12 @@ const json = (data: unknown, status = 200) =>
 
 /**
  * The demos' reads of the service worker's mock API, answered from its
- * seed: what a first visit shows. `GET /api/todos[/<id>][?_limit=<n>]`.
+ * seed: what a first visit shows. `GET /api/todos[/<id>][?_limit=<n>]`,
+ * `GET /api/names`.
  */
 export const api = (request: Request): Response | undefined => {
   const { pathname, searchParams } = new URL(request.url);
+  if (pathname === "/api/names") return json(NAMES);
   const match = /^\/api\/todos(?:\/(\d+))?$/.exec(pathname);
   if (!match) return undefined;
   const [, id] = match;
@@ -53,9 +56,8 @@ export const api = (request: Request): Response | undefined => {
 };
 
 /** The `prerender()` options; `sitemap` is the XML `build:docs-index` wrote. */
-export default (sitemap = readFileSync(join(DIST, "sitemap.xml"), "utf8")) => ({
+export default defineConfig((sitemap = readFileSync(join(DIST, "sitemap.xml"), "utf8")) => ({
   root: DIST,
-  out: DIST,
   origin: SITE_ORIGIN,
   routes: sitemapRoutes(sitemap, SITE_ORIGIN),
   notFound: NOT_FOUND,
@@ -67,4 +69,4 @@ export default (sitemap = readFileSync(join(DIST, "sitemap.xml"), "utf8")) => ({
   // the slowest page, the spa-route README (all its demos at once), took
   // ~16 s locally: 2.5x for a slower CI runner
   budgetMs: 40_000,
-});
+}));

@@ -1,10 +1,10 @@
-# Nucleus Kit
+# NucleusKit
 
 The whole Nucleus Stack in one package — every element, provider, Quark, and Valence.css behind a single import.
 
 ## Features
 
-- **One JS import** Registers every Nucleus Kit element
+- **One JS import** Registers every NucleusKit element
 - **One CSS import** Valence.css theme + shared element styles (`basic.css`)
 - **App-ready** Routing, sheets, forms, drawers, providers, and more
 - **À la carte** Every package is published on its own; if you only use a few elements, install just those
@@ -29,7 +29,7 @@ packages below.
 ### Progressive bundle (experimental)
 
 `nucleus-kit.progressive.min.js` registers nothing up front. It watches the
-document for Nucleus Kit element tags and imports each element's package the
+document for NucleusKit element tags and imports each element's package the
 first time its tag appears (initial scan, then every inserted subtree), so a
 page pays only for the elements it uses. Packages shared by several elements
 (`neutron`, `kit-utils`, `quark`, the element bases) are separate chunks
@@ -67,11 +67,11 @@ An empty value loads everything; a space-separated list loads only the packages 
 
 ### Server entry
 
-`@excom/nucleus-kit/server` is the kit for [prerendering](/docs/prerendering) in Node: every export of the main entry except the elements that read the device or the person (`detect-browser`, `detect-features`, `detect-media`, `gesture-handler`, `network-status`, `provider-geolocation`, `provider-orientation`, `provider-storage`, `service-worker`, `web-authn`). Those stay as written in the prerendered page and upgrade in the browser; `SERVER_EXCLUDED_TAGS` lists their tags. ES modules only, not for the browser.
+`@excom/nucleus-kit/server` is the kit for [prerendering](/docs/prerendering) in Node: every export of the main entry except the elements that read the device or the person (`detect-browser`, `detect-features`, `detect-media`, `gesture-handler`, `network-status`, `provider-geolocation`, `provider-orientation`, `provider-storage`, `service-worker`, `web-authn`). Those stay as written in the prerendered page and upgrade in the browser; `SERVER_EXCLUDED_TAGS` lists their tags. It also exports the hooks a prerender runs around each page (`beforeRender`, `settle`, `afterRender`), so it is the whole `entry` of a [nucleus-ssr](/packages/nucleus-ssr) config: `entry: () => import("@excom/nucleus-kit/server")`. ES modules only, not for the browser.
 
 ### À la carte
 
-Nucleus Kit is a convenience, not a requirement. If you find you are not using
+NucleusKit is a convenience, not a requirement. If you find you are not using
 most of its elements, install the packages you do use individually and drop it:
 
 ```sh
@@ -89,7 +89,7 @@ and its README documents the slim install. Valence.css is `@excom/valence`.
 
 ### TypeScript
 
-Generally, you are advised to avoid TypeScript unless your app starts having a lot of complex JS customization. In that case, Nucleus Kit elements declare global types: their `HTML…Element` interfaces, `HTMLElementTagNameMap` entries (so `querySelector("spa-manager")` and `closest(…)` are typed) and Quark's `element.quark`. TypeScript loads them only when it sees an import of the package, so an app that loads Nucleus Kit from a `<script type="module">` or a CDN gets "Property does not exist" on `element.closest("spa-manager")?.router` or `element.quark`.
+Generally, you are advised to avoid TypeScript unless your app starts having a lot of complex JS customization. In that case, NucleusKit elements declare global types: their `HTML…Element` interfaces, `HTMLElementTagNameMap` entries (so `querySelector("spa-manager")` and `closest(…)` are typed) and Quark's `element.quark`. TypeScript loads them only when it sees an import of the package, so an app that loads NucleusKit from a `<script type="module">` or a CDN gets "Property does not exist" on `element.closest("spa-manager")?.router` or `element.quark`.
 
 Add one declaration file that the app's `tsconfig.json` includes:
 
@@ -98,7 +98,7 @@ Add one declaration file that the app's `tsconfig.json` includes:
 import "@excom/nucleus-kit";
 ```
 
-A `.d.ts` file emits nothing: no runtime import, no bundle cost. À la carte apps import each package they use instead (`import "@excom/spa-route"; import "@excom/quark";`). If a TypeScript file in the app already imports Nucleus Kit or the packages, nothing is needed.
+A `.d.ts` file emits nothing: no runtime import, no bundle cost. À la carte apps import each package they use instead (`import "@excom/spa-route"; import "@excom/quark";`). If a TypeScript file in the app already imports NucleusKit or the packages, nothing is needed.
 
 ### What's included
 
@@ -148,7 +148,7 @@ A `.d.ts` file emits nothing: no runtime import, no bundle cost. À la carte app
 - [`network-status`](/packages/network-status)
 - [`service-worker`](/packages/service-worker)
 
-### Not in Nucleus Kit
+### Not in NucleusKit
 
 Install separately when needed: `mapbox-view`, `super-img`, element bases
 (`abortable-element`, `fetchable-element`, …), and editor tooling such as

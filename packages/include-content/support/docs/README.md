@@ -6,7 +6,7 @@ One-stop shop for rendering a view when & where you need it — lazy-loading/unl
 
 ## Features
 
-- **Zero JS** Sophisticated UX from a simple HTML-only API, as with all Nucleus Kit elements.
+- **Zero JS** Sophisticated UX from a simple HTML-only API, as with all NucleusKit elements.
 - **Lazy (un)load** Lazy load and lazy unload your views
 - **Eager / idle** Prioritize critical content; defer the rest
 - **Prefetch** Warm templates so they're ready on activate

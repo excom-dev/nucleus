@@ -1,12 +1,18 @@
 @scope {
-  /* data-driven css: a formula cell (data-formula starts with "=") shows its
-     result until it is edited; every other cell simply shows its input */
-  td[data-formula^="="]:not(:focus-within) input {
-    opacity: 0;
+  /* data-driven css: a cell is closed (its input `readonly`) until a
+     double-click opens it. A formula cell (data-formula starts with "=")
+     shows its result while closed, its formula while open; every other cell
+     simply shows its input. The text is hidden, not the input: a closed cell
+     keeps its focus ring. */
+  td[data-formula^="="] input[readonly] {
+    color: transparent;
   }
   td:not([data-formula^="="]) output,
-  td:focus-within output {
+  td:has(input:not([readonly])) output {
     visibility: hidden;
+  }
+  input[readonly] {
+    cursor: cell;
   }
 
   /* styling */
@@ -124,7 +130,6 @@
 
   td:focus-within input {
     z-index: 1;
-    background: var(--v-background-color);
     outline: 2px solid var(--v-primary);
     outline-offset: -2px;
   }

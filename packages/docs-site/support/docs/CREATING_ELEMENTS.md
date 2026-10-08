@@ -1,6 +1,6 @@
 # Creating Elements
 
-Most apps won't need to define any of their own custom elements. This will continue to get even less necessary as time goes on, as more elements will increasingly be added to the Nucleus Kit catalog.
+Most apps won't need to define any of their own custom elements. This will continue to get even less necessary as time goes on, as more elements will increasingly be added to the NucleusKit catalog.
 Reach for your own only when neither the catalog nor Quark can cover the job — and when you do, build it as an **Adapter**: one protocol, its own state, events out.
 
 ## Element or rule?
@@ -86,7 +86,7 @@ Consumers now have a state attribute to style (`copy-button[did-copy]`), an even
 
 **Reactions.** `onPropSet` / `onPropUnset` / `onPropChanged` for one prop; `onEffect([...])` for a batch; `onPromiseResolved` / `Rejected` for promise props. `onConstructed` / `onConnected` / `onAdopted` / `onDisconnected` / `onError` for lifecycles. `onEvent` / `onEventDefault` / `onBroadcast` for events.
 
-**Compose.** `Neutron.compose([Base, Neutron({...})])` stacks builders. The Nucleus Kit bases encode shared contracts you can opt into: `abortable-element` (cancelable async work), `fetchable-element` (a request lifecycle with `is-loading` / `is-success` / `is-error`), `renderable-element` (template rendering), `listenable-element` (declarative `listen-for`), `routable-element` (URL matching). Most elements are standalone; compose only when you need the contract.
+**Compose.** `Neutron.compose([Base, Neutron({...})])` stacks builders. The NucleusKit bases encode shared contracts you can opt into: `abortable-element` (cancelable async work), `fetchable-element` (a request lifecycle with `is-loading` / `is-success` / `is-error`), `renderable-element` (template rendering), `listenable-element` (declarative `listen-for`), `routable-element` (URL matching). Most elements are standalone; compose only when you need the contract.
 
 **Provisions.** To publish rich data, set the `provision` prop (tag it `@provision` in JSDoc). Quark reads it with `prop("provision")` and re-runs when it is assigned; Neutron also fires `neutron-provision` for app JS. Provisions must be plain objects or arrays — assign a new one, in-place mutation is not observed.
 

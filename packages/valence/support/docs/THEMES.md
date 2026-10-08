@@ -11,7 +11,7 @@ A theme is a token file plus the shared mixins; `basic` (Pico-faithful) ships to
 
 `basic.css` is `mixins.basic.css` + `basic-vars.css` (the tokens, both schemes) + `apply.css` (every module applied once). `basic-vars.css` alone gives the tokens without any element styling.
 
-The `nucleus-kit` bundle re-exports `basic.css`, so Nucleus Kit users already have it.
+The `nucleus-kit` bundle re-exports `basic.css`, so NucleusKit users already have it.
 
 ## Layers
 

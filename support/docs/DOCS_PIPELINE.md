@@ -4,7 +4,7 @@ Deeper notes on how this repository is put together. Package-level architecture 
 
 ## Monorepo layout
 
-- **Nucleus Kit elements** — one tag (or a small family) per package, `excom.packageType: "kit-element"`.
+- **NucleusKit elements** — one tag (or a small family) per package, `excom.packageType: "kit-element"`.
 - **Element bases** — `Neutron.compose` mixins (`fetchable-element`, `renderable-element`, …). Not registered on their own (`noop-tag`).
 - **Libraries** — Quark, Valence.css, the shared `kit-*` modules, parsers. No custom-element tag. Node-only ones (`nucleus-dom`, `nucleus-ssr`, `nucleus-test`, and the `vite-plugin-nucleus` tool) set `excom.umd: false`: no UMD bundle, and the install snippet lists no CDN script.
 - **Site** — `@excom/docs-site`. `documented: false`, but `support/docs/*.md` still emit a slim `package-meta.json` so these pages can be fetched like package READMEs.
@@ -40,7 +40,7 @@ One workflow, **Release** (`.github/workflows/publish.yml`), runs on every push 
 2. **Build** — full `rush build`, package metas, docs, llms index and npm READMEs, all from the bumped tree, so the site and every generated file carry the new versions. `apply-exports` runs after the bump commit; its `exports` edits are never committed.
 3. **Publish** — every package whose version npm lacks; the rest are skipped.
 4. **Deploy** — bundle-size baseline, then each site in turn, the docs site and Wrenfield: the kit check, a deploy build (`pnpm run build --kit=unpkg`; the default is `bundled`), for the docs site `rush build:docs-index` again (the build empties `dist`), `rush build:prerender --only <project>` between the restore and save steps of its prerender cache, the site's Chrome suite (`node support/tests/browser/run.mjs`, `continue-on-error` for now), then `wrangler deploy --config packages/<site>/wrangler.jsonc` to Cloudflare Workers static assets. Runs on every push, including docs-only pushes with nothing to publish.
-   - A deploy build loads the Nucleus Kit from unpkg at the version just published, not bundled. The kit check (`scripts/kit-check.mjs` in the rig) stops the deploy unless that version on unpkg is, file for file, the kit built here: prerendered pages hydrate with it.
+   - A deploy build loads the NucleusKit from unpkg at the version just published, not bundled. The kit check (`scripts/kit-check.mjs` in the rig) stops the deploy unless that version on unpkg is, file for file, the kit built here: prerendered pages hydrate with it.
 5. **Push** — the bump commit goes to `main` last, once npm has the versions. A push rejected because `main` moved fails the run; the run queued by that newer push re-applies the change files, skips versions already on npm and pushes the bump.
 
 Why one workflow: a deploy running in parallel builds the pre-bump commit and leaves the site one version behind npm, and the bump commit starts no workflow to correct it (`[skip ci]`, pushed with `GITHUB_TOKEN`). **Deploy Docs Site** and **Deploy Wrenfield** (`deploy-docs.yml`, `deploy-wrenfield.yml`) are manual-only (`workflow_dispatch`), for redeploying one site from `main` without a release, by the same deploy steps.

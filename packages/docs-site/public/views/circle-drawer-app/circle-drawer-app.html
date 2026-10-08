@@ -1,0 +1,33 @@
+<article id="circle-drawer-app" data-changes="[]" data-step="0" data-x="120" data-y="120">
+  <link rel="stylesheet" href="/views/circle-drawer-app/circle-drawer-app.css">
+  <quark-sheet src-url="/views/circle-drawer-app/circle-drawer-app.quark"></quark-sheet>
+  <div role="group">
+    <button data-action="undo" disabled>Undo</button>
+    <button data-action="redo" disabled>Redo</button>
+  </div>
+  <figure bind-canvas aria-label="Canvas">
+    <ul bind-circles aria-label="Circles">
+      <template>
+        <li></li>
+      </template>
+    </ul>
+    <button bind-point aria-label="Point on the canvas" aria-describedby="circle-drawer-keys"></button>
+  </figure>
+  <small id="circle-drawer-keys">Keyboard: Tab to the canvas, arrow keys move the point, Enter draws a circle or opens the gray circle's menu.</small>
+  <dialog id="circle-menu" aria-label="Circle">
+    <menu>
+      <li><button autofocus>Adjust diameter..</button></li>
+    </menu>
+  </dialog>
+  <dialog id="circle-adjust" aria-label="Adjust diameter">
+    <article>
+      <form method="dialog">
+        <label>
+          Adjust diameter of circle at <span bind-centre></span>
+          <input type="range" name="diameter" min="10" max="200" value="40">
+        </label>
+        <button>Done</button>
+      </form>
+    </article>
+  </dialog>
+</article>

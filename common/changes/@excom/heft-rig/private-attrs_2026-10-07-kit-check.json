@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/heft-rig",
+      "comment": "Fix the published-kit check failing a release: it now waits up to 8 minutes for unpkg to serve a version that was just published (it gave up after 50 seconds), and says that it is waiting",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/heft-rig"
+}

@@ -27,59 +27,162 @@ const quarkSrc = readFileRelative(
   "../../public/views/flight-booker-app/flight-booker-app.quark",
 );
 
-describe("flight-booker-app view", () => {
+const DATE = "2027-04-04";
+
+const mountApp = async () => {
+  const mounted = await mountView(html, quarkSrc);
+  const { root } = mounted;
+  const edit = (control: HTMLInputElement | HTMLSelectElement, value: string) => {
+    control.value = value;
+    control.dispatchEvent(
+      new Event(control instanceof HTMLSelectElement ? "change" : "input", { bubbles: true }),
+    );
+    return flush();
+  };
+  return {
+    ...mounted,
+    edit,
+    trip: root.querySelector<HTMLSelectElement>('select[name="data-trip"]')!,
+    outbound: root.querySelector<HTMLInputElement>('input[name="data-outbound"]')!,
+    inbound: root.querySelector<HTMLInputElement>('input[name="data-inbound"]')!,
+    book: root.querySelector<HTMLButtonElement>('button[type="submit"]')!,
+    superForm: root.querySelector<HTMLSuperFormElement>("super-form")!,
+    confirmation: root.querySelector("[bind-confirmation]")!,
+  };
+};
+
+const submit = async (superForm: HTMLSuperFormElement) => {
+  await waitForEvent(superForm, "super-form-success", () => {
+    superForm.getFormElement()!.dispatchEvent(new Event("submit", { bubbles: true }));
+  });
+  await flush();
+};
+
+describe("flight-booker-app view (7GUIs task 3)", () => {
   afterEach(() => {
     document.body.innerHTML = "";
   });
 
-  it("disables return and book until dates are valid, then confirms", async () => {
+  it("initially: one-way flight, T1 and T2 hold the same date, T2 is disabled, B is enabled", async () => {
+    // the served markup, then the same once the sheet has run
+    const served = document.createElement("div");
+    served.innerHTML = html;
+    const state = (root: ParentNode) => ({
+      trip: root.querySelector<HTMLSelectElement>("select")!.value,
+      types: [...root.querySelectorAll("input")].map((input) => input.type),
+      dates: [...root.querySelectorAll("input")].map((input) => input.value),
+      inboundDisabled: root.querySelector<HTMLInputElement>('[name="data-inbound"]')!.disabled,
+      bookDisabled: root.querySelector<HTMLButtonElement>("button")!.disabled,
+      invalid: root.querySelectorAll("[aria-invalid]").length,
+    });
+    const initial = {
+      trip: "one-way",
+      types: ["text", "text"],
+      dates: [DATE, DATE],
+      inboundDisabled: true,
+      bookDisabled: false,
+      invalid: 0,
+    };
+    expect(state(served)).toEqual(initial);
+    expect(
+      [...served.querySelectorAll("option")].map((option) => option.textContent),
+    ).toEqual(["one-way flight", "return flight"]);
+
+    const { root } = await mountApp();
+    expect(state(root)).toEqual(initial);
+  });
+
+  it("T2 is enabled iff C is 'return flight'", async () => {
+    const { edit, trip, inbound } = await mountApp();
+    expect(inbound.disabled).toBe(true);
+    await edit(trip, "return");
+    expect(inbound.disabled).toBe(false);
+    await edit(trip, "one-way");
+    expect(inbound.disabled).toBe(true);
+  });
+
+  it("B is disabled when a return flight's T2 is strictly before T1", async () => {
+    const { edit, trip, outbound, inbound, book } = await mountApp();
+    await edit(trip, "return");
+    // the same day is not before
+    expect(book.disabled).toBe(false);
+
+    await edit(outbound, "2027-04-05");
+    expect(book.disabled).toBe(true);
+    expect(inbound.hasAttribute("aria-invalid")).toBe(false);
+
+    await edit(inbound, "2027-04-06");
+    expect(book.disabled).toBe(false);
+    await edit(inbound, "2026-12-31");
+    expect(book.disabled).toBe(true);
+
+    // a one-way flight ignores T2
+    await edit(trip, "one-way");
+    expect(book.disabled).toBe(false);
+  });
+
+  it.each([
+    ["empty", ""],
+    ["another format", "04.04.2027"],
+    ["unpadded", "2027-4-4"],
+    ["no such day", "2027-02-30"],
+    ["no such month", "2027-13-01"],
+    ["words", "tomorrow"],
+    ["a date and more", "2027-04-04T10:00"],
+  ])("an ill-formatted date (%s) in an enabled field marks it invalid and disables B", async (_label, text) => {
+    const { edit, trip, outbound, inbound, book } = await mountApp();
+
+    await edit(outbound, text);
+    expect(outbound.getAttribute("aria-invalid")).toBe("true");
+    expect(book.disabled).toBe(true);
+    await edit(outbound, DATE);
+    expect(outbound.hasAttribute("aria-invalid")).toBe(false);
+    expect(book.disabled).toBe(false);
+
+    await edit(trip, "return");
+    await edit(inbound, text);
+    expect(inbound.getAttribute("aria-invalid")).toBe("true");
+    expect(outbound.hasAttribute("aria-invalid")).toBe(false);
+    expect(book.disabled).toBe(true);
+
+    // disabled again, T2 no longer counts: not marked, B enabled
+    await edit(trip, "one-way");
+    expect(inbound.disabled).toBe(true);
+    expect(inbound.hasAttribute("aria-invalid")).toBe(false);
+    expect(book.disabled).toBe(false);
+
+    // and counts again as soon as it is enabled
+    await edit(trip, "return");
+    expect(inbound.getAttribute("aria-invalid")).toBe("true");
+    expect(book.disabled).toBe(true);
+    await edit(inbound, DATE);
+    expect(inbound.hasAttribute("aria-invalid")).toBe(false);
+    expect(book.disabled).toBe(false);
+  });
+
+  it("clicking B displays a message with the selection (return flight)", async () => {
     spyFetch({
       status: 200,
       body: JSON.stringify({
-        json: { "data-trip": "return", "data-outbound": "2026-09-10", "data-inbound": "2026-09-20" },
+        json: { "data-trip": "return", "data-outbound": "2027-04-10", "data-inbound": "2027-04-20" },
       }),
     });
-    const { root, quark } = await mountView(html, quarkSrc);
-    const trip = root.querySelector<HTMLSelectElement>('select[name="data-trip"]')!;
-    const outbound = root.querySelector<HTMLInputElement>(
-      'input[name="data-outbound"]',
-    )!;
-    const inbound = root.querySelector<HTMLInputElement>(
-      'input[name="data-inbound"]',
-    )!;
-    const book = root.querySelector<HTMLButtonElement>('button[type="submit"]')!;
-    const superForm = root.querySelector<HTMLSuperFormElement>("super-form")!;
+    const { root, quark, edit, trip, outbound, inbound, book, superForm, confirmation } =
+      await mountApp();
     const dialog = root.querySelector("dialog")!;
 
-    expect(root.getAttribute("data-trip")).toBe("one-way");
-    expect(inbound.disabled).toBe(true);
-    expect(book.disabled).toBe(true);
-
-    trip.value = "return";
-    trip.dispatchEvent(new Event("change", { bubbles: true }));
-    await flush();
-    expect(root.getAttribute("data-trip")).toBe("return");
-    expect(inbound.disabled).toBe(false);
-
-    outbound.value = "2026-09-10";
-    outbound.dispatchEvent(new Event("input", { bubbles: true }));
-    inbound.value = "2026-09-20";
-    inbound.dispatchEvent(new Event("input", { bubbles: true }));
-    await flush();
+    await edit(trip, "return");
+    await edit(outbound, "2027-04-10");
+    await edit(inbound, "2027-04-20");
     expect(book.disabled).toBe(false);
 
     const meter = measureComplexity(quark!);
-    await waitForEvent(superForm, "super-form-success", () => {
-      superForm
-        .getFormElement()!
-        .dispatchEvent(new Event("submit", { bubbles: true }));
-    });
-    await flush();
+    await submit(superForm);
     const budget = meter.take();
     meter.stop();
 
-    expect(dialog.querySelector("[bind-confirmation]")?.textContent).toMatch(
-      /return flight from 2026-09-10 to 2026-09-20/,
+    expect(confirmation.textContent).toBe(
+      "You have booked a return flight from 2027-04-10 to 2027-04-20.",
     );
     // Confirmation copy is written; opening the dialog uses command-name
     // show-modal, which happy-dom does not implement.
@@ -87,58 +190,15 @@ describe("flight-booker-app view", () => {
     expectComplexity(budget);
   });
 
-  it("keeps Book disabled when return is before departure", async () => {
-    const { root } = await mountView(html, quarkSrc);
-    const trip = root.querySelector<HTMLSelectElement>('select[name="data-trip"]')!;
-    const outbound = root.querySelector<HTMLInputElement>(
-      'input[name="data-outbound"]',
-    )!;
-    const inbound = root.querySelector<HTMLInputElement>(
-      'input[name="data-inbound"]',
-    )!;
-    const book = root.querySelector<HTMLButtonElement>('button[type="submit"]')!;
-
-    trip.value = "return";
-    trip.dispatchEvent(new Event("change", { bubbles: true }));
-    outbound.value = "2026-09-20";
-    outbound.dispatchEvent(new Event("input", { bubbles: true }));
-    inbound.value = "2026-09-10";
-    inbound.dispatchEvent(new Event("input", { bubbles: true }));
-    await flush();
-    expect(book.disabled).toBe(true);
-  });
-
-  it("books a one-way flight once departure is set", async () => {
+  it("clicking B displays a message with the selection (one-way flight, as served)", async () => {
     spyFetch({
       status: 200,
-      body: JSON.stringify({
-        json: { "data-trip": "one-way", "data-outbound": "2026-09-10" },
-      }),
+      body: JSON.stringify({ json: { "data-trip": "one-way", "data-outbound": DATE } }),
     });
-    const { root } = await mountView(html, quarkSrc);
-    const outbound = root.querySelector<HTMLInputElement>(
-      'input[name="data-outbound"]',
-    )!;
-    const inbound = root.querySelector<HTMLInputElement>(
-      'input[name="data-inbound"]',
-    )!;
-    const book = root.querySelector<HTMLButtonElement>('button[type="submit"]')!;
-    const superForm = root.querySelector<HTMLSuperFormElement>("super-form")!;
-
-    expect(inbound.disabled).toBe(true);
-    outbound.value = "2026-09-10";
-    outbound.dispatchEvent(new Event("input", { bubbles: true }));
-    await flush();
+    const { book, superForm, confirmation } = await mountApp();
     expect(book.disabled).toBe(false);
 
-    await waitForEvent(superForm, "super-form-success", () => {
-      superForm
-        .getFormElement()!
-        .dispatchEvent(new Event("submit", { bubbles: true }));
-    });
-    await flush();
-    expect(
-      root.querySelector("[bind-confirmation]")?.textContent,
-    ).toMatch(/one-way flight on 2026-09-10/);
+    await submit(superForm);
+    expect(confirmation.textContent).toBe(`You have booked a one-way flight on ${DATE}.`);
   });
 });

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/heft-rig",
+      "comment": "Change `build-package-metas` to put a package's release notes in its `package-meta.json` as `releases` (`version`, `day`, `notesHtml`) instead of appending a details to the README HTML; a README with releases but no API section now ends with the `api-reference` view include, which paints them",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/heft-rig",
+  "email": "133191653+excom-dev@users.noreply.github.com"
+}

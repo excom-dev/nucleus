@@ -16,7 +16,7 @@ export function handleWebAuthn(request) {
   if (path.endsWith("/register/options")) {
     return json({
       challenge: b64url(),
-      rp: { name: "excom-dev docs", id: rpId },
+      rp: { name: "excom docs", id: rpId },
       user: { id: b64url(), name: "demo", displayName: "Demo User" },
       pubKeyCredParams: [
         { type: "public-key", alg: -7 },

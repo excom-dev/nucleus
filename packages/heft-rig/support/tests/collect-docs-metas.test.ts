@@ -1,6 +1,7 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, symlinkSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   collectDocsMetas,
   prepareSiteDocs,
@@ -241,11 +242,92 @@ describe("collectDocsMetas", () => {
     ]);
   });
 
+  it("takes a package linked twice once, and skips a dead link and a folder with no package.json", async () => {
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const root = path.join(tmp, "links-site");
+    const shared = path.join(tmp, "links-shared");
+    writeFiles(shared, {
+      "package.json": packageJson("@excom/shared", { excom: { packageType: "library" } }),
+      "support/docs/README.md": "# Shared\n\nShared intro.",
+    });
+    writeFiles(root, {
+      "package.json": packageJson("@excom/docs-site", { excom: { documented: false, packageType: "site" } }),
+      "node_modules/@excom/no-package/readme.txt": "a folder that is no package",
+      "support/docs/INTRO.md": "# Intro\n\nHi.",
+    });
+    linkNodeModule(root, "@excom/shared-a", shared);
+    linkNodeModule(root, "@excom/shared-b", shared);
+    symlinkSync(path.join(tmp, "nowhere"), path.join(root, "node_modules/@excom/dead"), "dir");
+
+    const outDir = await prepareSiteDocs(root);
+    expect(readdirSync(outDir).sort()).toEqual(["docs-site.json", "index.json", "search-docs.json", "shared.json"]);
+    expect(existsSync(path.join(shared, "support/package-meta.json"))).toBe(true);
+  });
+
+  it("generates the site's own meta but collects an empty index when no @excom package is linked", async () => {
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const root = path.join(tmp, "unlinked-site");
+    writeFiles(root, {
+      "package.json": packageJson("@excom/docs-site", { excom: { documented: false, packageType: "site" } }),
+      "support/docs/INTRO.md": "# Intro\n\nHi.",
+    });
+    const outDir = await prepareSiteDocs(root);
+    expect(existsSync(path.join(root, "support/package-meta.json"))).toBe(true);
+    expect(readdirSync(outDir).sort()).toEqual(["index.json", "search-docs.json"]);
+    expect(readJson(path.join(outDir, "index.json"))).toEqual({ packages: [], docs: [] });
+  });
+
+  it("lists a meta that names neither a package nor its type, under its folder's name", async () => {
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const root = path.join(tmp, "bare-meta-site");
+    writeFiles(root, { "node_modules/@excom/bare/support/package-meta.json": "{}" });
+    const outDir = await collectDocsMetas(root);
+    expect(readJson(path.join(outDir, "index.json"))).toEqual({ packages: [{ shortName: "bare" }], docs: [] });
+    expect(readdirSync(outDir)).toContain("bare.json");
+  });
+
   it("topoPackageRoots visits dependencies before dependents and ignores cycles", () => {
     const a = { root: "/a", name: "@excom/a", deps: ["@excom/b"] };
     const b = { root: "/b", name: "@excom/b", deps: ["@excom/c"] };
     const c = { root: "/c", name: "@excom/c", deps: ["@excom/a"] };
     const lone = { root: "/z", name: "@excom/z", deps: ["@excom/missing"] };
     expect(topoPackageRoots([a, b, c, lone])).toEqual(["/c", "/b", "/a", "/z"]);
+  });
+});
+
+describe("collect-docs-metas.mjs run as a script", () => {
+  const SCRIPT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../scripts/collect-docs-metas.mjs");
+  const originalArgv = process.argv;
+  let tmp: string;
+  beforeAll(() => {
+    tmp = makeTempDir("heft-rig-collect-main-");
+  });
+  afterAll(() => removeDir(tmp));
+  afterEach(() => {
+    process.argv = originalArgv;
+    vi.restoreAllMocks();
+    vi.resetModules();
+  });
+
+  const importWith = async (argv: string[], root: string) => {
+    vi.resetModules();
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    vi.spyOn(process, "cwd").mockReturnValue(root);
+    process.argv = argv;
+    await import("../../scripts/collect-docs-metas.mjs");
+  };
+
+  it("collects the metas of the site it runs in when it is the script Node started", async () => {
+    const root = path.join(tmp, "run-site");
+    mkdirSync(root, { recursive: true });
+    await importWith([process.execPath, SCRIPT], root);
+    expect(readJson(path.join(root, "public/package-metas/index.json"))).toEqual({ packages: [], docs: [] });
+  });
+
+  it("collects nothing when imported, with no script given, or with one that does not exist", async () => {
+    const root = path.join(tmp, "not-run-site");
+    mkdirSync(root, { recursive: true });
+    for (const argv of [[process.execPath, "/elsewhere.mjs"], [process.execPath]]) await importWith(argv, root);
+    expect(existsSync(path.join(root, "public"))).toBe(false);
   });
 });

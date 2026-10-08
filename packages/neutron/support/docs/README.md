@@ -2,7 +2,7 @@
 
 Define typed custom elements with effect-based lifecycles — props, events, and compose without rewriting the Custom Elements boilerplate.
 
-Neutron is the element factory of the Nucleus Stack: `Neutron({ tag, props })` returns a builder you chain lifecycles onto, then `define()`. Every Nucleus Kit element is a Neutron element, and so is every element you write yourself.
+Neutron is the element factory of the Nucleus Stack: `Neutron({ tag, props })` returns a builder you chain lifecycles onto, then `define()`. Every NucleusKit element is a Neutron element, and so is every element you write yourself.
 
 ## Features
 

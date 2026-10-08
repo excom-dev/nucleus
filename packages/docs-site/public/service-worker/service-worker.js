@@ -1,6 +1,7 @@
 import { CACHE_VERSION, handleAsset } from "./cache.js";
 import { handleApi } from "./api.js";
 import { matchSandboxOverride } from "./sandbox.js";
+import { seedNames } from "./names.js";
 import { seedTodos } from "./todos.js";
 
 self.addEventListener("install", (event) => {
@@ -14,7 +15,7 @@ self.addEventListener("activate", (event) => {
       await Promise.all(
         keys.filter((key) => key !== CACHE_VERSION).map((key) => caches.delete(key)),
       );
-      await seedTodos();
+      await Promise.all([seedTodos(), seedNames()]);
       await self.clients.claim();
     })(),
   );

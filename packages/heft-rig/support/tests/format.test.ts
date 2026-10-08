@@ -194,6 +194,25 @@ describe("format.mjs", () => {
     expect(console.log).toHaveBeenCalledWith("Formatting complete");
   });
 
+  it("says the formatter's build time is unknown when its file cannot be read", async () => {
+    vi.doMock("node:fs/promises", async (original) => {
+      const mocked = {
+        ...(await original<object>()),
+        stat: async () => {
+          throw new Error("ENOENT");
+        },
+      };
+      return { ...mocked, default: mocked };
+    });
+    try {
+      await run(withQuark);
+    } finally {
+      vi.doUnmock("node:fs/promises");
+    }
+    expect(console.error).toHaveBeenCalledWith(expect.stringMatching(/formatter build: .*quark-formatter\/dist\/index\.js \(built unknown\);/));
+    expect(process.exitCode).toBe(1);
+  });
+
   it("leaves the exit code alone when every .quark file formats cleanly", async () => {
     await run(allClean);
     expect(console.error).not.toHaveBeenCalled();

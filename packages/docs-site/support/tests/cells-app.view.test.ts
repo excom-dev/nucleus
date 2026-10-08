@@ -103,6 +103,28 @@ const cellInput = (root: HTMLElement, ref: string) =>
 const cellDisplay = (root: HTMLElement, ref: string) =>
   cellInput(root, ref).previousElementSibling as HTMLElement;
 
+/** Focus a cell the way a click or Tab does, then fire `type` on it. */
+const fireOnCell = async (
+  root: HTMLElement,
+  ref: string,
+  type: string,
+  init: KeyboardEventInit = {},
+) => {
+  const input = cellInput(root, ref);
+  input.focus();
+  input.dispatchEvent(
+    type === "keydown"
+      ? new KeyboardEvent(type, { bubbles: true, ...init })
+      : new Event(type, { bubbles: true }),
+  );
+  await flush();
+};
+
+const openCells = (root: HTMLElement) =>
+  [...root.querySelectorAll<HTMLInputElement>("tbody input:not([readonly])")].map(
+    (input) => input.name,
+  );
+
 const commitCell = (root: HTMLElement, ref: string, value: string) => {
   const input = cellInput(root, ref);
   input.value = value;
@@ -186,5 +208,47 @@ describe("cells-app view", () => {
     commitCell(root, "D0", "=(");
     await flush();
     expect(cellDisplay(root, "D0").textContent).toBe("#ERROR");
+  }, 180_000);
+
+  it("double-clicking a cell lets the user change its formula; a click or focus does not", async () => {
+    const { root } = await mountCellsApp();
+    expect(root.querySelectorAll("tbody input[readonly]")).toHaveLength(CELL_COUNT);
+
+    // a single click (focus, then click) leaves the cell closed
+    await fireOnCell(root, "B1", "click");
+    expect(openCells(root)).toEqual([]);
+
+    await fireOnCell(root, "B1", "dblclick");
+    expect(openCells(root)).toEqual(["B1"]);
+
+    // finished: the formula is evaluated and the cell closes on leaving it
+    commitCell(root, "B1", "=2*21");
+    await fireOnCell(root, "B1", "focusout");
+    expect(openCells(root)).toEqual([]);
+    expect(cellDisplay(root, "B1").textContent).toBe("42");
+    expect(cellInput(root, "B1").value).toBe("=2*21");
+
+    // the next double-click opens only the cell it lands on
+    await fireOnCell(root, "C7", "dblclick");
+    expect(openCells(root)).toEqual(["C7"]);
+  }, 180_000);
+
+  it("Enter or F2 opens the focused cell from the keyboard, and Enter closes it", async () => {
+    const { root } = await mountCellsApp();
+
+    await fireOnCell(root, "A0", "keydown", { key: "a" });
+    expect(openCells(root)).toEqual([]);
+
+    await fireOnCell(root, "A0", "keydown", { key: "Enter" });
+    expect(openCells(root)).toEqual(["A0"]);
+    await fireOnCell(root, "A0", "keydown", { key: "Enter" });
+    expect(openCells(root)).toEqual([]);
+
+    await fireOnCell(root, "A0", "keydown", { key: "F2" });
+    expect(openCells(root)).toEqual(["A0"]);
+    // typing in an open cell keeps it open
+    await fireOnCell(root, "A0", "keydown", { key: "F2" });
+    await fireOnCell(root, "A0", "keydown", { key: "7" });
+    expect(openCells(root)).toEqual(["A0"]);
   }, 180_000);
 });

@@ -1,4 +1,5 @@
 import { prerender, type PrerenderCache } from "../../index";
+import { missOf } from "../../src/cache";
 import { loadKit, ORIGIN, ownEntry, SITE } from "./helpers";
 import { afterEach, describe, expect, it } from "@excom/nucleus-test";
 import {
@@ -77,7 +78,7 @@ const setUp = (cache: Partial<PrerenderCache> = {}) => {
   const root = tempDir();
   cpSync(SITE, root, { recursive: true });
   const options = { dir: tempDir(), key: "v1", verify: 0, ...cache };
-  const run = async (overrides: Partial<PrerenderCache> = {}) => {
+  const run = async (overrides: Partial<PrerenderCache> = {}, notFound = NOT_FOUND) => {
     const out = tempDir();
     const report = await prerender({
       root,
@@ -87,7 +88,7 @@ const setUp = (cache: Partial<PrerenderCache> = {}) => {
       budgetMs: BUDGET,
       shell: (url) => (url === "/optional" ? OPTIONAL : SITE_SHELL),
       routes: ROUTES,
-      notFound: NOT_FOUND,
+      notFound,
       cache: { ...options, ...overrides },
     });
     return { report, out, reused: report.pages.filter((page) => page.reused).map(({ url }) => url) };
@@ -271,6 +272,15 @@ describe("prerender with a cache", { timeout: LIMIT }, () => {
     expect(Object.keys(missesOf(report))).toHaveLength(5);
   });
 
+  it("renders every page again when another path is the not-found page: every page's hooks are told", async () => {
+    const { run } = setUp();
+    await run();
+    const { reused, report } = await run({}, "/another-missing-page");
+    expect(reused).toEqual([]);
+    expect(new Set(Object.values(missesOf(report)))).toEqual(new Set(["the cache key changed"]));
+    expect((await run({}, "/another-missing-page")).reused).toEqual([...ROUTES, "/another-missing-page"]);
+  });
+
   it("says a page was not in the cache, or failed in the run that wrote it", async () => {
     const root = tempDir();
     cpSync(SITE, root, { recursive: true });
@@ -414,5 +424,18 @@ describe("prerender with a cache", { timeout: LIMIT }, () => {
     const second = await run({ dir: tempDir() });
     expect(second.reused).toEqual([]);
     expect(pagesIn(second.out)).toEqual(pagesIn(first.out));
+  });
+});
+
+describe("missOf", () => {
+  const page = { html: "", diagnostics: {}, shell: "" } as never;
+  const stored = { key: "k", pages: { "/": page }, failed: ["/broken"] } as never;
+
+  it("names why a page has no copy to check, and none when it has one", () => {
+    expect(missOf(undefined, "k", "/")).toBe("no cache found");
+    expect(missOf(stored, "other", "/")).toBe("the cache key changed");
+    expect(missOf(stored, "k", "/broken")).toBe("it failed in the last run");
+    expect(missOf(stored, "k", "/new")).toBe("not in the cache");
+    expect(missOf(stored, "k", "/")).toBeUndefined();
   });
 });

@@ -38,7 +38,7 @@ Wrap the surface the user touches. Pick the gestures with `gesture-types`; read 
 
 Values persist after release until the next gesture starts. On release the default action writes `--gesture-progress` straight to `detail.snap` and the element's own `transition` settles it there over `--gesture-snap-duration` (`200ms`) with `--gesture-snap-ease` (`ease-out`), firing `gesture-handler-snap` when it lands; the transition is off while `is-active`, so the finger itself is never eased, and a new gesture that interrupts the settle simply cancels it (no `-snap`).
 
-### Driving Nucleus Kit elements
+### Driving NucleusKit elements
 
 Elements that can be scrubbed expose a `--<tag>-…-progress` input and an `is-scrubbing` attribute; both default to the wrapping gesture-handler's `--gesture-progress`, so no mapping is needed:
 

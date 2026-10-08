@@ -1,7 +1,9 @@
 # Wrenfield
 
 Wrenfield is a fictional furniture house: pieces made to order, restored antiques, lighting and objects.
-It is a whole shop, from the home screen through checkout to order tracking, built as the reference example of a [Nucleus Stack](https://nucleus.excom.dev) app. There is no server of its own: a service worker plays the API.
+It is a whole shop, from the home screen through checkout to order tracking, built as the reference example of a [Nucleus Stack](https://nucleus.excom.dev) app. There is no server of its own: a service worker mocks the API.
+It has zero lines of app JS (except to import the mock API SW) and no UI build process.
+It has a number of sophisticated features, including: SSG, SPA, web AR/3d models, WebAuthn, View Transitions
 
 ## Run it
 
@@ -23,7 +25,7 @@ npm test          # backend scenarios, dev server and app views, on vitest
 npm run coverage  # the same, gated at 90%
 ```
 
-Tests import the Nucleus Kit from the workspace source.
+Tests import the NucleusKit from the workspace source.
 
 `support/tests/backend/golden.mjs` records every API response on a fixed clock: run it before and after a change, and the two files must match.
 
@@ -31,7 +33,7 @@ Tests import the Nucleus Kit from the workspace source.
 
 `support/tests/browser/run.mjs` drives the whole app in headless Chrome at phone and desktop size and prints one line per check. `shot.mjs` is the harness under it, and also a screenshot tool. Vitest only picks up `*.test.ts`, so neither runs with `npm test` or counts towards coverage.
 
-Their checks also run on happy-dom with `npm test`, in `support/tests/*.view.test.ts`: one test per Chrome check under the same name, at both layouts. Those mount `index.html`'s body with the Nucleus Kit from the workspace source and answer files and `/api/*` from the package, the API through the same worker as the backend scenarios. A check that needs layout, scroll positions or a real service worker is skipped there: only Chrome covers it.
+Their checks also run on happy-dom with `npm test`, in `support/tests/*.view.test.ts`: one test per Chrome check under the same name, at both layouts. Those mount `index.html`'s body with the NucleusKit from the workspace source and answer files and `/api/*` from the package, the API through the same worker as the backend scenarios. A check that needs layout, scroll positions or a real service worker is skipped there: only Chrome covers it.
 
 They stay as the regression baseline for the app's happy-dom tests. They need Google Chrome (`CHROME=<path>` overrides the location) and launch a browser on every run, so run them only with the repo owner's go-ahead. From the package root:
 
@@ -55,7 +57,7 @@ Views: home, shop, product, saved, bag, checkout (four steps), account, order, s
 
 ## How it is built
 
-The Nucleus Stack loads the progressive Nucleus Kit bundle, which imports each element the first time its tag appears and, with `nucleus-kit-idle` on `body`, fetches the rest while the page is idle, and Valence.css with the elements' own styles. The app itself is HTML views, Quark sheets (Quark is a derivative of CSS that writes to the document) and CSS.
+The Nucleus Stack loads the progressive NucleusKit bundle, which imports each element the first time its tag appears and, with `nucleus-kit-idle` on `body`, fetches the rest while the page is idle, and Valence.css with the elements' own styles. The app itself is HTML views, Quark sheets (Quark is a derivative of CSS that writes to the document) and CSS.
 
 **One provider, read everywhere.** `index.html` wraps the app in a single `provider-fetch#me` for `GET /api/me`. `shell.quark` publishes the answer as bindings every view reads (`$me`, `$bag`, `$saved-skus`, `$bag-skus`) and as facts on `#me` (`is-trade`, `bag-count`, `saved-count`). The whole Saved sheet is two bindings, the list and its count.
 

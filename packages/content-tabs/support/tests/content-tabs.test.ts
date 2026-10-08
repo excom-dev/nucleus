@@ -423,4 +423,43 @@ describe("content-tabs (unpaired headers)", () => {
     );
     expect(body1).dom.to.equalTag(`<content-tabs-body></content-tabs-body>`);
   });
+  it("keeps the same provision object when a rebuild finds nothing changed", async () => {
+    const tabs = buildTabs(`tab-type="multi"`);
+    const { header1, header2 } = queryParts(tabs);
+    await wait(0);
+    await clickHeader(header1);
+    await clickHeader(header2);
+    const before = tabs.provision;
+    expect(before?.openTabs).toEqual([0, 1]);
+    const provisionSpy = vi.fn();
+    tabs.addEventListener("neutron-provision", provisionSpy);
+
+    (tabs as any)._syncProvision();
+    expect(tabs.provision).toBe(before);
+    expect(provisionSpy).not.toHaveBeenCalled();
+
+    // a differing open tab with the same count is a change, not a no-op
+    await clickHeader(header1);
+    expect(tabs.provision?.openTabs).toEqual([1]);
+    expect(tabs.provision).not.toBe(before);
+  });
+
+  it("reads `is-open` from the attribute on a header that has not upgraded", async () => {
+    const tabs = buildTabs();
+    const { header1, header2 } = queryParts(tabs);
+    await wait(0);
+    // an own `isOpen` of undefined stands in for a header that has not upgraded
+    Object.defineProperty(header1, "isOpen", { value: undefined });
+    header1.setAttribute("is-open", "");
+    (tabs as any)._syncProvision();
+    expect(tabs.provision).toEqual({
+      tabType: null,
+      openTabs: [0],
+      activeTab: 0,
+    });
+    header1.removeAttribute("is-open");
+    (tabs as any)._syncProvision();
+    expect(tabs.provision?.openTabs).toEqual([]);
+    expect(header2.hasAttribute("is-open")).toBe(false);
+  });
 });

@@ -11,10 +11,7 @@ import {
  * What a config module of `runPrerender()` and the `nucleus-ssr` command
  * default-exports, or a function returns: the `prerender()` options. Its
  * relative `root`, `out` and `cache.dir` are the config file's folder's.
- *
- * ```ts
- * export default { root: "dist", out: "dist", origin: "https://example.com", entry: () => import("./prerender-entry.js"), routes: ["/"] } satisfies PrerenderConfig;
- * ```
+ * See `defineConfig()`.
  */
 export type PrerenderConfig = LocalPrerenderOptions & {
   /**
@@ -23,6 +20,46 @@ export type PrerenderConfig = LocalPrerenderOptions & {
    */
   servedElsewhere?: (absoluteUrl: string) => boolean;
 };
+
+/** A config module's default export as a function: its options, or a promise of them. */
+type ConfigFactory = () => PrerenderConfig | Promise<PrerenderConfig>;
+
+/** The keys of what `F` returns that are no option: a misspelt `notfound`. */
+type UnknownOptions<F extends ConfigFactory> = Exclude<
+  keyof Awaited<ReturnType<F>>,
+  keyof PrerenderConfig
+>;
+
+/**
+ * Types a config module's default export: the options, or a function
+ * returning them (a promise of them, when the routes come from a file or a
+ * request). Returns it as given; a function keeps its own parameters. A key
+ * that is no option (`notfound`) is a type error in either form.
+ *
+ * ```ts
+ * // prerender.config.ts
+ * export default defineConfig({
+ *   root: "dist",
+ *   origin: "https://example.com",
+ *   entry: () => import("@excom/nucleus-kit/server"),
+ *   routes: ["/", "/menu"],
+ *   notFound: "/404",
+ * });
+ * ```
+ */
+export function defineConfig(config: PrerenderConfig): PrerenderConfig;
+export function defineConfig<F extends ConfigFactory>(
+  // a function returning an unknown key matches no function: the error names the key
+  config: [UnknownOptions<F>] extends [never]
+    ? F
+    : () => { [K in UnknownOptions<F>]: never }
+): F;
+export function defineConfig(config: unknown): unknown {
+  return config;
+}
+
+/** A config as loaded: `out` is `root` when it names none. */
+export type LoadedPrerenderConfig = PrerenderConfig & { out: string | URL };
 
 /** A mistake in what a run was given: the command prints its message alone, no stack. */
 export class InputError extends Error {
@@ -36,8 +73,9 @@ export interface RunOptions {
   /**
    * The config module, relative to `cwd` (see `PrerenderConfig`). Its
    * default export is the `prerender()` options with `routes`, or a function
-   * returning them. Relative `root`, `out` and `cache.dir` in it are its own
-   * folder's, whatever the working directory.
+   * returning them (`defineConfig()` types either). Relative `root`, `out`
+   * and `cache.dir` in it are its own folder's, whatever the working
+   * directory.
    */
   config: string;
   /**
@@ -123,12 +161,13 @@ const importFile: Load = (file) =>
 /**
  * The `prerender()` options `file` default-exports (an object, or a
  * function returning one), its relative `root`, `out` and `cache.dir`
- * resolved against its folder: in the parent and in every worker alike.
+ * resolved against its folder, `out` being `root` when it names none: in
+ * the parent and in every worker alike.
  */
 export const loadPrerenderConfig = async (
   file: string,
   load: Load = importFile
-): Promise<PrerenderConfig> => {
+): Promise<LoadedPrerenderConfig> => {
   const { dirname, isAbsolute, resolve } = builtin("node:path");
   const { default: config } = (await load(file)) as { default?: unknown };
   const options: PrerenderConfig = await (typeof config === "function"
@@ -145,7 +184,7 @@ export const loadPrerenderConfig = async (
   return {
     ...options,
     root: at(options.root),
-    out: at(options.out),
+    out: at(options.out ?? options.root),
     ...(options.cache && {
       cache: { ...options.cache, dir: at(options.cache.dir) },
     }),
@@ -168,7 +207,7 @@ export const classifyPages = (
     pages,
     verified = [],
   }: Pick<PrerenderReport, "pages"> & { verified?: string[] },
-  options: Pick<PrerenderConfig, "out" | "onError">,
+  options: Pick<LoadedPrerenderConfig, "out" | "onError">,
   written = true
 ): RunPage[] => {
   const { existsSync } = builtin("node:fs");

@@ -7,7 +7,7 @@
     content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
   <title>Nucleus · docs</title>
   <meta name="description"
-    content="Documentation for the Nucleus Stack — Quark, Neutron, Nucleus Kit, Valence.css. Plain-text docs for agents start at /llms.txt." />
+    content="Documentation for the Nucleus Stack — Quark, Neutron, NucleusKit, Valence.css. Plain-text docs for agents start at /llms.txt." />
   <meta name="application-name" content="Nucleus Stack" />
   <meta name="robots" content="index,follow" />
   <!-- Valence follows prefers-color-scheme; theme-color is the site header
@@ -30,14 +30,14 @@
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt"
-    content="The Nucleus Stack logo and wordmark: Quark, Neutron, Nucleus Kit, Valence.css" />
+    content="The Nucleus Stack logo and wordmark: Quark, Neutron, NucleusKit, Valence.css" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Nucleus Stack" />
   <meta name="twitter:description"
     content="Rich HTML apps with drop-in custom elements and Quark, CSS-derived rules that observe the page and react. No components, no virtual DOM, no build process." />
   <meta name="twitter:image" content="https://nucleus.excom.dev/og-image.png" />
   <meta name="twitter:image:alt"
-    content="The Nucleus Stack logo and wordmark: Quark, Neutron, Nucleus Kit, Valence.css" />
+    content="The Nucleus Stack logo and wordmark: Quark, Neutron, NucleusKit, Valence.css" />
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -54,7 +54,7 @@
           "@id": "https://nucleus.excom.dev/#website",
           "name": "Nucleus Stack",
           "url": "https://nucleus.excom.dev/",
-          "description": "Documentation, live examples and API reference for the Nucleus Stack: Quark, Neutron, Nucleus Kit and Valence.css.",
+          "description": "Documentation, live examples and API reference for the Nucleus Stack: Quark, Neutron, NucleusKit and Valence.css.",
           "inLanguage": "en",
           "publisher": { "@id": "https://excom.dev/#organization" }
         },
@@ -310,6 +310,13 @@
                   <spa-a route-href="/examples/timer" role="link" class="secondary">Timer</spa-a>
                 </li>
                 <li>
+                  <spa-a route-href="/examples/crud" role="link" class="secondary">CRUD</spa-a>
+                </li>
+                <li>
+                  <spa-a route-href="/examples/circle-drawer" role="link" class="secondary">Circle
+                    Drawer</spa-a>
+                </li>
+                <li>
                   <spa-a route-href="/examples/cells" role="link" class="secondary">Cells</spa-a>
                 </li>
                 <li>
@@ -533,6 +540,11 @@
           document-title="Flight Booker · Nucleus · docs"></spa-route>
         <spa-route route-href="/examples/timer" template-ref="/views/live-app/live-app.html"
           data-app="timer-app" data-files="html quark css" document-title="Timer · Nucleus · docs"></spa-route>
+        <spa-route route-href="/examples/crud" template-ref="/views/live-app/live-app.html" data-app="crud-app"
+          data-files="html quark css" document-title="CRUD · Nucleus · docs"></spa-route>
+        <spa-route route-href="/examples/circle-drawer" template-ref="/views/live-app/live-app.html"
+          data-app="circle-drawer-app" data-files="html quark js css"
+          document-title="Circle Drawer · Nucleus · docs"></spa-route>
         <spa-route route-href="/examples/cells" template-ref="/views/live-app/live-app.html"
           data-app="cells-app" data-files="html quark js css" document-title="Cells · Nucleus · docs"></spa-route>
         <spa-route route-href="/examples/returns" template-ref="/views/live-app/live-app.html"

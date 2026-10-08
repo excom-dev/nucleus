@@ -1,26 +1,21 @@
-/* State: `data-celsius` / `data-fahrenheit` on the host, plus `data-source`
-   naming the side the user last typed. Only the other side is ever written. */
+/* State: the last entry on the host, `data-entry` (the field's value) and
+   `data-unit` (the field's name). A number field's value is "" while its text
+   is empty or not a number: no rule matches then, so the other field keeps
+   what it shows. */
 :scope {
   @on input {
-    data-source: event.target.name.replace("data-", "");
-    data-celsius: if(
-      event.target.name == "data-celsius": event.target.value;
-      else: preserve
-    );
-    data-fahrenheit: if(
-      event.target.name == "data-fahrenheit": event.target.value;
-      else: preserve
-    );
+    data-entry: event.target.value;
+    data-unit: event.target.name;
   }
 }
-:scope[data-source="celsius"] {
-  $celsius: attr("data-celsius");
+:scope[data-unit="celsius"]:not([data-entry=""]) {
+  $celsius: attr("data-entry");
   [bind-fahrenheit] input {
     value: ($celsius * 9 / 5 + 32).toFixed(1);
   }
 }
-:scope[data-source="fahrenheit"] {
-  $fahrenheit: attr("data-fahrenheit");
+:scope[data-unit="fahrenheit"]:not([data-entry=""]) {
+  $fahrenheit: attr("data-entry");
   [bind-celsius] input {
     value: (($fahrenheit - 32) * 5 / 9).toFixed(1);
   }

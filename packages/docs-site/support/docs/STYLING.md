@@ -10,7 +10,7 @@ Style the state, not the script. CSS in the Nucleus Stack can read the same attr
 @import "@excom/valence/basic.css";
 ```
 
-`nucleus-kit/basic.css` already includes Valence.css plus every element's own styles, so loading Nucleus Kit means you are already styled.
+`nucleus-kit/basic.css` already includes Valence.css plus every element's own styles, so loading NucleusKit means you are already styled.
 
 - **Semantic tag aliases** — `article`, `button`, `dialog`, `table`, forms, and typography look right with no classes at all.
 - **Role and class forms** — every tag alias is also matched by an ARIA role and a `.tag-*` class, so a custom element can borrow a native look: `<event-handler role="button">` or `<my-card class="tag-article">`. Prefer the role; semantics come along for free.
@@ -93,7 +93,7 @@ Each view owns its stylesheet, loaded by a `<link>` at the top of the fragment. 
 
 - [Quick Start - A working page, in five minutes.](/docs/quick_start)
 - [Core Concepts - The mental model, in one sitting.](/docs/core_concepts)
-- [Using Elements - The Nucleus Kit catalog and how elements behave.](/docs/using_elements)
+- [Using Elements - The NucleusKit catalog and how elements behave.](/docs/using_elements)
 - [Orchestrating - Get familiar with Quark.](/docs/orchestrating)
 - [Styling - Valence.css themes, tokens, and state-driven CSS.](/docs/styling)
 - [Building Views - Structure a real app: routes, views, lazy loading.](/docs/building_views)

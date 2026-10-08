@@ -42,6 +42,8 @@ way. Language details live in the [`quark`](/packages/quark) docs.
 
 An inline sheet is HTML content: a browser reads `<` followed by a letter, `/`, `!` or `?` as markup, in a sheet comment or string too, and a `<title>` or `<textarea>` there takes the rest of the page as its text (the sheet fails with a parse error far from the cause). Keep such text out of an inline sheet, or load the sheet with `src-url`.
 
+For [prerendering](/docs/prerendering), `@excom/quark-sheet/server` exports `settle`, the hook that holds a page until its sheets are quiet. `@excom/nucleus-kit/server` already has it.
+
 ### API Reference
 
 <include-content is-active template-ref="/views/api-reference/api-reference.html"></include-content>

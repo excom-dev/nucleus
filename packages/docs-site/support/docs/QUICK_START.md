@@ -4,7 +4,7 @@ One HTML file is enough. No install, no build, no framework.
 
 What follows is our [Todo App example](/examples/todos), verbatim, with one deliberate change — it reads from the public [JSONPlaceholder](https://jsonplaceholder.typicode.com) API and sorts the list with a built-in module. Open the example to edit any of it live.
 
-## 1. Load Nucleus Kit
+## 1. Load NucleusKit
 
 `nucleus-kit` packages the elements, Quark, and Valence.css behind a single import.
 
@@ -155,7 +155,7 @@ That loop is the entire architecture. [Core Concepts](/docs/core_concepts) walks
 
 - [Quick Start - A working page, in five minutes.](/docs/quick_start)
 - [Core Concepts - The mental model, in one sitting.](/docs/core_concepts)
-- [Using Elements - The Nucleus Kit catalog and how elements behave.](/docs/using_elements)
+- [Using Elements - The NucleusKit catalog and how elements behave.](/docs/using_elements)
 - [Orchestrating - Get familiar with Quark.](/docs/orchestrating)
 - [Styling - Valence.css themes, tokens, and state-driven CSS.](/docs/styling)
 - [Building Views - Structure a real app: routes, views, lazy loading.](/docs/building_views)

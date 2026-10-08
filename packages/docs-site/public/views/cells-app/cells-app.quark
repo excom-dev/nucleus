@@ -1,11 +1,34 @@
 /* State: each <td data-formula> holds its cell's committed text; the form's
    data-revision counts commits. Only formula cells derive a value, and only
-   when the revision changes. */
+   when the revision changes. A cell's <input> is `readonly` until it is
+   opened for editing. */
 @use "/views/cells-app/cells-app.js" as *;
 
 :scope {
   $columns: " ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
   @on change (handle: commit);
+  /* a double-click opens the focused cell, as do Enter / F2 */
+  @on dblclick (target: "input[readonly]") {
+    input:focus {
+      readonly: none;
+    }
+  }
+  @on keydown (target: "input[readonly]", key: "Enter F2") {
+    input:focus {
+      readonly: none;
+    }
+  }
+  /* Enter, or leaving the cell, closes it */
+  @on keydown (target: "input:not([readonly])", key: "Enter") {
+    input:not([readonly]) {
+      readonly: "";
+    }
+  }
+  @on focusout (target: "input:not([readonly])") {
+    input:not([readonly]) {
+      readonly: "";
+    }
+  }
 
   form {
     @on submit (prevent-default);

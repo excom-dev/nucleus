@@ -32,13 +32,13 @@ One definition per term. Capitalization marks a term that names one of the three
 
 **Neutron** — The declarative factory for building custom elements as Adapters. Optional; an ASO app can use only native elements or other Custom Element constructors, so long as the elements themselves adhere to the Adapter definition.
 
-**Neutron element** — Any custom element built with the Neutron factory, whether it ships in Nucleus Kit or the app author wrote it.
+**Neutron element** — Any custom element built with the Neutron factory, whether it ships in NucleusKit or the app author wrote it.
 
-**Nucleus Kit** — The package that bundles the whole stack behind one import: `nucleus-kit`.
+**NucleusKit** — The package that bundles the whole stack behind one import: `nucleus-kit`.
 
-**Nucleus Kit element** — One of the drop-in custom elements in the Nucleus Kit catalog (`content-drawer`, `super-form`, `spa-route`, …). Each is also published on its own.
+**NucleusKit element** — One of the drop-in custom elements in the NucleusKit catalog (`content-drawer`, `super-form`, `spa-route`, …). Each is also published on its own.
 
-**Nucleus Stack** — The whole combination: Nucleus Kit elements + Neutron + Quark + Valence.css + Nucleus DevTools, published as `@excom/*`.
+**Nucleus Stack** — The whole combination: NucleusKit elements + Neutron + Quark + Valence.css + Nucleus DevTools, published as `@excom/*`.
 
 **Option attribute** — An attribute the author sets to configure an element (`api-url`, `lazy-load`).
 

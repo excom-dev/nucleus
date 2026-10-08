@@ -4,7 +4,7 @@ Runaway write chains are cut, not prevented: one shared guard bounds every chain
 
 ## What it cuts
 
-Two rules that flip each other's attributes, a rule and an element effect feeding each other, an event whose listener re-writes the attribute that fired it, or content that re-matches its own paint would otherwise run forever. The Nucleus Stack bounds every such chain with one shared guard, `LoopGuard` from `@excom/kit-utils` (Nucleus Kit users: `Neutron.DOM.LoopGuard`). Each write an engine makes carries the depth of the chain that caused it — Quark attributes, `content`, `$bindings`; Neutron attribute reflection and observed property assignments; `dom-observer` events — and the hop past the limit is **dropped**:
+Two rules that flip each other's attributes, a rule and an element effect feeding each other, an event whose listener re-writes the attribute that fired it, or content that re-matches its own paint would otherwise run forever. The Nucleus Stack bounds every such chain with one shared guard, `LoopGuard` from `@excom/kit-utils` (NucleusKit users: `Neutron.DOM.LoopGuard`). Each write an engine makes carries the depth of the chain that caused it — Quark attributes, `content`, `$bindings`; Neutron attribute reflection and observed property assignments; `dom-observer` events — and the hop past the limit is **dropped**:
 
 - default limit **50** dependent writes (a legitimate chain is under ten);
 - the dropped write is logged once (`Loop guard: a chain of 51 dependent writes reached "data-x" on <p> — …`) and published to DevTools as `quark/error`;
