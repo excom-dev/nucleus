@@ -824,6 +824,16 @@ describe("examples", () => {
     );
   });
 
+  it("ends the sidebar's examples with a link out to the Wrenfield demo app", () => {
+    const nav = doc.querySelector<HTMLTemplateElement>("#template-site-nav")!.content;
+    const items = [...nav.querySelector('summary[title="Examples"]')!.parentElement!.querySelectorAll("li")];
+    const link = items[items.length - 1].querySelector("a")!;
+    expect(link.textContent).toBe("Wrenfield");
+    expect(link.getAttribute("href")).toBe("https://wrenfield.excom.dev");
+    expect([link.target, link.rel]).toEqual(["_blank", "noopener"]);
+    expect(items).toHaveLength(examples.length + 1);
+  });
+
   it("every example has the files its route lists, and an intro", () => {
     const missing = examples.flatMap(({ app, files }) =>
       [
