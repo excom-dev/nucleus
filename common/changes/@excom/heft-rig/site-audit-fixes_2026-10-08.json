@@ -3,7 +3,7 @@
     {
       "packageName": "@excom/heft-rig",
       "comment": "Fix the generated CSS install line for packages that ship `index.css`",
-      "type": "none"
+      "type": "patch"
     }
   ],
   "packageName": "@excom/heft-rig"
