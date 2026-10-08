@@ -8,7 +8,7 @@ Build, serve and preview a Nucleus Stack site with one Vite plugin: pages, Quark
 - **Conventions, not entry lists** Root `*.html` files are pages, `*.ts` files are Quark `@use` modules, the service worker is bundled
 - **Host-true preview** `vite preview` answers as Cloudflare Workers static assets do: `_redirects`, `_headers`, the 404 page
 - **Kit from a CDN** `kit: "unpkg"` loads the NucleusKit from unpkg in a deploy build instead of bundling it
-- **CSS chain included** `@import` / `@import-glob`, mixins, custom selectors and preset-env, nesting shipped as written
+- **CSS chain included** `@import` / `@import-glob`, mixins, custom selectors and preset-env; nesting and `light-dark()` shipped as written
 - **Prerender-ready** Builds what [nucleus-ssr](/packages/nucleus-ssr) prerenders, and serves it for browser checks
 
 ## Installation
@@ -55,7 +55,7 @@ A page loads the kit from a module script: `import "@excom/nucleus-kit/nucleus-k
 
 ### What the plugin sets
 
-- **Set by the plugin** The build's inputs and output file names, `css.postcss` and, with `kit: "unpkg"`, `build.modulePreload: { polyfill: false }`. A PostCSS config file is not read: add plugins in `css.postcss.plugins`
+- **Set by the plugin** The build's inputs and output file names, `css.postcss`, `css.lightningcss.exclude` (the minifier leaves `light-dark()` alone: Valence declares `color-scheme` in its own stylesheet, and a lowered `light-dark()` only works in a sheet that declares it itself) and, with `kit: "unpkg"`, `build.modulePreload: { polyfill: false }`. A PostCSS config file is not read: add plugins in `css.postcss.plugins`
 - **Yours** `publicDir`, `build.outDir`, `build.emptyOutDir` (default `true`) and `build.assetsDir`
 - **Not supported** `base`: the site is served from `/`
 

@@ -25,7 +25,7 @@ Tool descriptions carry the facts an agent tends to get wrong about this stack: 
 
 ### chrome-devtools-mcp (recommended)
 
-Install the extension in the Chrome you debug with, then point [chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) at that profile with the third-party tools category enabled:
+Install the extension from the [Chrome Web Store](https://chromewebstore.google.com/detail/nucleus-devtools/mgfckaipagbdcacfgefodccipkpojlan) in the Chrome you debug with, then point [chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp) at that profile with the third-party tools category enabled:
 
 ```json
 {

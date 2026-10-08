@@ -122,7 +122,7 @@ The loop guard stops this after 50 nested paints, but the fix is the selector: m
 ## Debugging tools
 
 - **The inspector is the debugger.** Application state *is* the DOM. Watch attributes change in the Elements panel; that is your state timeline.
-- **Nucleus DevTools** First-party devtools that will upgrade your Chromium dev tools to assist in inspectablility of both Neutron elements and Quark rules.
+- **Nucleus DevTools** First-party devtools that will upgrade your Chromium dev tools to assist in inspectablility of both Neutron elements and Quark rules. Install it from the [Chrome Web Store](https://chromewebstore.google.com/detail/nucleus-devtools/mgfckaipagbdcacfgefodccipkpojlan).
 - **Coding agents** The extension's probe exposes selector-addressed JSON tools (`diagnostics`, `state_snapshot`, `explain_attribute`, …) that chrome-devtools-mcp discovers as a "Nucleus Stack" tool group, or any browser automation calls as `__NUCLEUS_DEVTOOLS__.tools.*`; the pane's **Copy for AI** button copies a one-file bug report. Works on production sites with no app changes. See [Debugging with Agents](/docs/debugging_with_agents).
 - **Custom debugging** `Neutron.attachDevtools()` is available.
 - **`QuarkRegistry`** is exposed on `window` in development. `QuarkRegistry.findRules("bind-title")` returns the rules that touch a selector; each rule tracks `numberOfRuns`.

@@ -132,6 +132,9 @@ describe("release notice view", () => {
     const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
     expect(String(url)).toBe("https://excom.dev/api/release-subscribers");
     expect(init.method).toBe("POST");
+    // cross-origin, and the API sends no Access-Control-Allow-Credentials: a
+    // request with credentials (the element's default) is blocked by the browser
+    expect(init.credentials).toBe("omit");
     expect(JSON.parse(init.body as string)).toEqual({
       email: "ada@example.com",
       website: "",

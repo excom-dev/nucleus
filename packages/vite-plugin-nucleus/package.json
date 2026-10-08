@@ -25,6 +25,7 @@
   "dependencies": {
     "compression": "^1.8.1",
     "esbuild": "^0.28.2",
+    "lightningcss": "^1.33.0",
     "postcss": "^8.5.3",
     "postcss-custom-selectors": "^9.0.1",
     "postcss-import": "^16.1.0",
