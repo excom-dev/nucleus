@@ -36,10 +36,10 @@ Install from the [Chrome Web Store](https://chromewebstore.google.com/detail/nuc
 (also loads in Edge, Brave and other Chromium browsers). It updates itself from
 there.
 
-To run a local build instead, download `nucleus-devtools-<version>-chrome.zip`
-from the [GitHub releases](https://github.com/excom-dev/nucleus/releases),
-unzip it, open `chrome://extensions`, enable *Developer mode* and choose
-*Load unpacked*. A build installed this way does not update itself.
+To run a local build instead, build the extension from the repository with
+`pnpm run build` in `packages/nucleus-devtools`, open `chrome://extensions`,
+enable *Developer mode* and choose *Load unpacked* on `.output/chrome-mv3`.
+A build installed this way does not update itself.
 
 The extension collects no data and makes no network requests — see the
 [privacy policy](./PRIVACY.md).
@@ -152,8 +152,7 @@ await __NUCLEUS_DEVTOOLS__.tools.evaluate_expression({ selector: "#cart", expres
 
 #### Without the extension
 
-`agent-tools.js` (in the release zip, or `.output/chrome-mv3/agent-tools.js`
-after `pnpm run build`) installs the same probe and tools when evaluated in
+`agent-tools.js` (`.output/chrome-mv3/agent-tools.js` after `pnpm run build`) installs the same probe and tools when evaluated in
 a page: `evaluate_script` with the file's contents, Playwright
 `addScriptTag`, or a `<script>` tag when the page's CSP allows. Evaluating
 it returns `{ installed, tools, hint }`. What it cannot do is see the past:

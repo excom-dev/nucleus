@@ -43,7 +43,7 @@ export type SuperFormNativeSubmitEvent = SubmitEvent & {
  *   commandfor="…">`) — the only option when `form-ref` points to a form
  *   that isn't a descendant, since this element can't hear its `submit`
  *   event directly.
- * @default-action super-form-submit - Calls `doFetch(url, requestInit)`
+ * @default-action super-form-submit - Calls `doFetch([url, requestInit])`
  *   with the event's detail.
  *
  * @example

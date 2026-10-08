@@ -1,0 +1,20 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/valence",
+      "comment": "Fix dropdown menus being clipped inside `details.dropdown`",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/valence",
+      "comment": "Fix the group focus ring showing while no button is focused",
+      "type": "patch"
+    },
+    {
+      "packageName": "@excom/valence",
+      "comment": "Fix the `aria-busy` Quark sample on the Loading page",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@excom/valence"
+}

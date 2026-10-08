@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/fetchable-element",
+      "comment": "Fix the usage sample and the `doFetch([url, requestInit])` wording",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/fetchable-element"
+}

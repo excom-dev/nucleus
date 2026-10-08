@@ -15,11 +15,16 @@ The payoff is not brevity. It is that a rule and its evidence sit in the documen
 Stamp the server's answer onto the document *before* deciding anything with it. A record gets an element named after it — custom `data-` attributes and/or a custom tag starting with `data-` — and every field lands on its own line as a dashed attribute:
 
 ```html
-<li></li>
+<provider-fetch api-url="/api/session">
+  <ul><li></li></ul>
+</provider-fetch>
 ```
 
 ```quark
-li { dataset: prop("provision").body; }
+provider-fetch[api-url="/api/session"][is-success] {
+  $record: prop("provision").body;
+  li { dataset: $record; }
+}
 ```
 
 Or:
@@ -224,7 +229,7 @@ When you do, `@use` it and let it return a value for Quark to write:
 
 provider-fetch[is-success] {
   $quote: prop("provision").body;
-  :scope {
+  [bind-quote] {
     contract-total: pricing.contractTotal($quote.lines, $quote.termMonths);
     is-above-approval-limit: pricing.contractTotal($quote.lines, $quote.termMonths) > 50000;
   }

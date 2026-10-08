@@ -249,7 +249,7 @@ describe("buildPackageMetas", () => {
     });
     expect(meta.installation.imports).toEqual({
       js: undefined,
-      css: '@import "@excom/themes";',
+      css: '@import "@excom/themes/index.css";',
       html: undefined,
     });
     // No `index.ts`, so no UMD — the CDN snippet is the stylesheet alone.

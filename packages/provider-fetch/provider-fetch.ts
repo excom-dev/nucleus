@@ -26,8 +26,8 @@ export type ProviderFetchSubmitEvent = TEvent & {
  * @type ProviderFetchSubmitEvent
  * @command --fetch - Re-runs the request with the current attributes,
  *   even while `is-paused`.
- * @default-action provider-fetch-submit - Calls `doFetch(url,
- *   requestInit)` with the event's detail.
+ * @default-action provider-fetch-submit - Calls `doFetch([url,
+ *   requestInit])` with the event's detail.
  */
 export const ProviderFetch = Neutron.compose([
   FetchableElement,

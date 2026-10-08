@@ -20,7 +20,7 @@ Drop a Quark sheet next to your markup — bind, render, and react without a com
 ## Usage
 
 Place `<quark-sheet>` under the same parent as the elements it should orchestrate.
-Inline Quark text is enough for most apps.
+Inline Quark text is enough for most apps. An inline sheet reads its text when it connects, so load the scripts with `defer`, as a module script, or after the markup (end of `<body>`); a plain `<script src>` in `<head>` leaves it dead. A `src-url` sheet is not affected.
 
 ```html
 <section>

@@ -48,7 +48,7 @@ import {
  * @command --submit - Starts the ceremony programmatically (`<button
  *   command="--submit" commandfor="…">`) — the only option when `form-ref`
  *   points to a form that isn't a descendant.
- * @default-action web-authn-submit - Calls `doFetch(url, requestInit)`
+ * @default-action web-authn-submit - Calls `doFetch([url, requestInit])`
  *   with the event's detail (the verify-url request).
  *
  * @example

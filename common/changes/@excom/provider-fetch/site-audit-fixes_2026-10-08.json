@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/provider-fetch",
+      "comment": "Fix the `doFetch([url, requestInit])` wording in the API reference",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/provider-fetch"
+}

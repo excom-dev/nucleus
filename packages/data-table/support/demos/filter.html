@@ -25,7 +25,7 @@
       </label>
     </fieldset>
   </form>
-  <data-table id="demo-data-table-filter">
+  <data-table id="filter-people-table">
     <data-thead>
       <data-tr>
         <data-th column-type="string">Name</data-th>
@@ -40,7 +40,7 @@
     </data-tbody>
   </data-table>
   <hr />
-  <button type="button" command="--export" commandfor="demo-data-table-filter">
+  <button type="button" command="--export" commandfor="filter-people-table">
     Export as-is
   </button>
   <hr />
@@ -62,6 +62,6 @@
       <input name="full" type="checkbox" role="switch" />
       Full table (ignores active filter/sort)
     </label>
-    <button type="button" command="--export" commandfor="demo-data-table-filter">Export</button>
+    <button type="button" command="--export" commandfor="filter-people-table">Export</button>
   </form>
 </div>

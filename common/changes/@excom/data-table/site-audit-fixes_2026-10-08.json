@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/data-table",
+      "comment": "Fix the filter demo's export buttons",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/data-table"
+}

@@ -56,9 +56,11 @@ import { Quark } from "@excom/quark";
 
 const quark = new Quark({
   src: `span { content: "four times two equals #{twice(4)}"; }`,
+});
+quark.register({
+  sheetElement, // host = sheetElement.parentElement
   modules: { dfault: { twice: (n) => n * 2 } },
 });
-quark.register({ sheetElement }); // host = sheetElement.parentElement
 // …
 quark.unregister();
 ```

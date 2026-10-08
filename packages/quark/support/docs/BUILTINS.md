@@ -27,7 +27,7 @@ Available in every expression, after `@use` exports: element reads, loop context
 
 | Name | Description |
 | --- | --- |
-| `iterate(collection, "template-ref"?, "key-property"?)` | For `content`: renders one clone of the element's `<template>` child (or the template at `template-ref`, a selector / URL) per array item or object entry, keyed by `key-property` (else a content hash) so existing rows are reused. `null` / `undefined` wipes the rows; an empty collection clears them; a non-collection no-ops. |
+| `iterate(collection, "template-ref"?, "key-property"?)` | For `content`: renders one clone of the element's `<template>` child (or the template at `template-ref`, a selector / URL) per array item or object entry, keyed by `key-property` (else a content hash) so existing rows are reused. `null` / `undefined` wipes the rows; an empty collection or a non-collection clears them. |
 | `template("template-ref"?)` | For `content`: renders one clone of the referenced `<template>` (selector or URL; defaults to the element's own `<template>` child). |
 | `dangerous-html(html)` | For `content`: sets `innerHTML` to the string. No sanitizing: never pass user-controlled markup. |
 

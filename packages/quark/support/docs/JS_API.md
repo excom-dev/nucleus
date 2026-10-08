@@ -9,14 +9,16 @@ import { Quark } from "@excom/quark";
 
 const quark = new Quark({
   src: `span { content: "four times two equals #{twice(4)}"; }`,
+});
+quark.register({
+  sheetElement, // host = sheetElement.parentElement
   modules: { dfault: { twice: (n) => n * 2 } },
 });
-quark.register({ sheetElement }); // host = sheetElement.parentElement
 // …
 quark.unregister();
 ```
 
-`isScoped` mirrors `<quark-sheet>`'s default (see [Sheets & scoping](./SHEETS.md)); `modules` pre-provides what `@use` would import; `Quark.moduleLoader` can be overridden in tests.
+`isScoped` mirrors `<quark-sheet>`'s default (see [Sheets & scoping](./SHEETS.md)); `register({ sheetElement, modules })` pre-provides what `@use` would import (the constructor ignores `modules`); `Quark.moduleLoader` can be overridden in tests.
 
 `Quark.whenSettled({ timeout? })` resolves once no rule pass, paint, template load or `@use` load is pending (`"settled"`), or after `timeout` ms (`"timeout"`, default 1000; `Infinity` is no cap) — for tests and tools; sheets have no after-render hook.
 

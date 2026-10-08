@@ -70,7 +70,7 @@
     }
 
     /* Group box shadow when a button is focused */
-    &:has(:--button, [type="submit"]:focus) {
+    &:has(:--button:focus, [type="submit"]:focus) {
       --v-group-box-shadow: var(--v-group-box-shadow-focus-with-button);
 
       input:not([type="checkbox"], [type="radio"]),

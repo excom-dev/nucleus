@@ -371,8 +371,12 @@ export function copySource(e) {
   /* Shiki examples vs live elements; the playground copies the
    * `<textarea>`'s current value. */
   const isCodeText = e.target.matches?.(".shiki");
+  /* Highlighted blank lines hold U+200B; not part of the source. */
   navigator.clipboard.writeText(
-    e.target.value ?? e.target[isCodeText ? "textContent" : "innerHTML"]
+    e.target.value ??
+      (isCodeText
+        ? e.target.textContent.replace(/\u200B/g, "")
+        : e.target.innerHTML)
   );
 }
 

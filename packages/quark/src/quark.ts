@@ -906,6 +906,28 @@ function deriveUseNamespace(url: string): string {
   return segment.replace(/\.[a-zA-Z]+$/, "");
 }
 
+/** `@use` imports still loading, by URL. */
+const LOADING = new Map<string, Promise<Vars>>();
+
+/**
+ * Loads a `@use` module. Sheets asking for one URL while it loads share
+ * that load: WebKit resolves a second `import()` of a module that awaits at
+ * its top level before the await has settled, so sheets importing such a
+ * module at once (a page's first load) got functions whose module had not
+ * finished. Once loaded, or failed, the URL is forgotten: the next sheet
+ * asks the loader again.
+ */
+function loadModule(url: string): Promise<Vars> {
+  let loading = LOADING.get(url);
+  if (!loading) {
+    loading = Promise.resolve(Quark.moduleLoader(url));
+    LOADING.set(url, loading);
+    const forget = () => LOADING.delete(url);
+    loading.then(forget, forget);
+  }
+  return loading;
+}
+
 /**
  * Import all `@use` modules in parallel. `as *` exports land in the bare
  * `dfault` bucket; others under their given or derived namespace. Failed
@@ -928,7 +950,7 @@ function loadUseModules(useRules: UseRule[]): Promise<{ [key: string]: Vars }> {
           }
           return { use, mod };
         }
-        return { use, mod: await Quark.moduleLoader(use.url) };
+        return { use, mod: await loadModule(use.url) };
       } catch (error) {
         QuarkLogger.error({
           method: "use",

@@ -452,6 +452,12 @@ describe("editor helpers", () => {
     expect(write).toHaveBeenLastCalledWith("value text");
     copySource({ target: document.querySelector("pre") });
     expect(write).toHaveBeenLastCalledWith("code text");
+    document.querySelector("pre")!.innerHTML = "<span>a</span>\n\u200B\n<span>b</span>";
+    copySource({ target: document.querySelector("pre") });
+    expect(write).toHaveBeenLastCalledWith("a\n\nb");
+    document.querySelector("textarea")!.value = "x\u200By";
+    copySource({ target: document.querySelector("textarea") });
+    expect(write).toHaveBeenLastCalledWith("x\u200By");
     copySource({ target: document.querySelector("#raw") });
     expect(write).toHaveBeenLastCalledWith("<i>html</i>");
     copySource({ target: { innerHTML: "plain" } });

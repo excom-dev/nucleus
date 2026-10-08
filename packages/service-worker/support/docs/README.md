@@ -21,9 +21,8 @@ Observes `navigator.serviceWorker` and optionally relays its events — zero app
 This element only *observes* an already-registered Service Worker — it does not call `navigator.serviceWorker.register(...)` itself. Register your Service Worker separately (in app code, or your build tool), then drop this element anywhere to expose its state as attributes and, optionally, relay its events.
 
 ```html
-<service-worker relay-events></service-worker>
 <event-handler listen-for="message" fire-event="sw-message-received">
-  ...
+  <service-worker relay-events="message"></service-worker>
 </event-handler>
 ```
 
@@ -37,7 +36,7 @@ Relayed events (`message`, `messageerror`, `controllerchange`) are dispatched wi
 
 #### Support / mount / ready state
 
-`is-supported`, `is-mounted` (reflected by default), and `is-ready` are all plain attributes — style or branch on them with CSS. `is-ready` needs an app-registered Service Worker to ever resolve, so it will likely stay unset in this docs site.
+`is-supported`, `is-mounted` (reflected by default), and `is-ready` are all plain attributes — style or branch on them with CSS. `is-ready` needs an app-registered Service Worker to ever resolve, and this docs site registers one, so it is set here.
 
 <include-content data-demo="simple"></include-content>
 

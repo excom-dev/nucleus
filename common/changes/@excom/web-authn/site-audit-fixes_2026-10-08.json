@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/web-authn",
+      "comment": "Fix the `doFetch([url, requestInit])` wording in the API reference",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/web-authn"
+}

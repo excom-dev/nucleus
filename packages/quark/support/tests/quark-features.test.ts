@@ -1947,6 +1947,38 @@ describe("Quark features", () => {
       quark.unregister();
     });
 
+    // WebKit resolves a second concurrent import() of a module with a top-level
+    // await before the await settles: the sheets must share the first one
+    it("shares one load between sheets that @use a URL while it loads, then asks again", async () => {
+      const loads: Array<(mod: Record<string, unknown>) => void> = [];
+      Quark.moduleLoader = (url: string) =>
+        new Promise((resolve) => url === "/slow-mod" && loads.push(resolve));
+      const sheet = () =>
+        createSheet(
+          `<span bind-label></span>`,
+          `@use "/slow-mod" as *; [bind-label] { content: greet(); }`
+        );
+      const [first, second] = [sheet(), sheet()];
+      first.register();
+      second.register();
+      await flush();
+      expect(loads).toHaveLength(1);
+
+      loads[0]({ greet: () => "hi" });
+      await flush();
+      for (const { root } of [first, second])
+        expect(root.querySelector("[bind-label]")?.textContent).toBe("hi");
+
+      const third = sheet();
+      third.register();
+      await flush();
+      expect(loads).toHaveLength(2);
+      loads[1]({ greet: () => "again" });
+      await flush();
+      expect(third.root.querySelector("[bind-label]")?.textContent).toBe("again");
+      for (const { quark } of [first, second, third]) quark.unregister();
+    });
+
     it("hoists leading @use imports out of the implicit @scope wrap", () => {
       Quark.moduleLoader = async () => ({ greet: () => "hi" });
       const quark = new Quark({

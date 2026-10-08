@@ -38,7 +38,7 @@ under `dist/progressive/`, fetched once. The entry is 3.5 kB; a page using
 build.
 
 ```html
-<script type="module" src="/node_modules/@excom/nucleus-kit/nucleus-kit.progressive.min.js"></script>
+<script type="module" src="/node_modules/@excom/nucleus-kit/dist/nucleus-kit.progressive.min.js"></script>
 ```
 
 With a bundler, `import "@excom/nucleus-kit/nucleus-kit.progressive";` loads the same entry.
@@ -60,7 +60,7 @@ Opt in on `<body>` (works with inline / bundled imports) or on the entry's own `
 <body nucleus-kit-idle>                                    <!-- every package -->
 <body nucleus-kit-idle="spa-route super-form data-table">  <!-- only these -->
 
-<script type="module" src="/node_modules/@excom/nucleus-kit/nucleus-kit.progressive.min.js" data-idle></script>
+<script type="module" src="/node_modules/@excom/nucleus-kit/dist/nucleus-kit.progressive.min.js" data-idle></script>
 ```
 
 An empty value loads everything; a space-separated list loads only the packages behind those tags (unknown tags log a warning). `data-idle` is read only from the `<script>` whose `src` is the entry itself and wins over the body attribute. Nothing is prefetched in data-saver mode (Save-Data). From JS, `idleLoadElements(tags?)` does the same.

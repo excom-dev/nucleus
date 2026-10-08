@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/super-form",
+      "comment": "Fix the `doFetch([url, requestInit])` wording in the API reference",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/super-form"
+}
