@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/nucleus-dom",
+      "comment": "Add tests for the frame shim",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/nucleus-dom"
+}

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@excom/gesture-handler",
+      "comment": "Update the README to the NucleusKit name",
+      "type": "none"
+    }
+  ],
+  "packageName": "@excom/gesture-handler"
+}
