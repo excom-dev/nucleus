@@ -1,6 +1,6 @@
 {
   "name": "@excom/vite-plugin-nucleus",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Vite plugin that builds, serves and previews a Nucleus Stack site",
   "license": "MIT",
   "engines": {
